@@ -257,102 +257,151 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // Configuración de Supabase (¡REEMPLAZA CON TUS VALORES!)
-        const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
 
-        // Elementos del DOM
-        const loginScreen = document.getElementById('login-screen');
-        const mainSystem = document.getElementById('main-system');
-        const userNameElement = document.getElementById('user-name');
-        const expedientesList = document.getElementById('expedientes-list');
+// Inicialización segura de Supabase
+let supabase;
+try {
+    supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    console.log('Supabase inicializado correctamente');
+} catch (error) {
+    console.error('Error al inicializar Supabase:', error);
+    alert('Error de configuración: ' + error.message);
+}
 
-        // Eventos
-        document.addEventListener('DOMContentLoaded', () => {
-            // Configura los eventos
-            document.getElementById('login-form').addEventListener('submit', login);
-            document.getElementById('register-form').addEventListener('submit', register);
-            document.getElementById('expediente-form').addEventListener('submit', saveExpediente);
-            document.getElementById('logout-btn').addEventListener('click', logout);
-            document.getElementById('show-register').addEventListener('click', showRegisterForm);
-            document.getElementById('show-login').addEventListener('click', showLoginForm);
+// Elementos del DOM
+const loginScreen = document.getElementById('login-screen');
+const mainSystem = document.getElementById('main-system');
+const userNameElement = document.getElementById('user-name');
+const expedientesList = document.getElementById('expedientes-list');
 
-            // Verifica si hay sesión activa
-            checkSession();
+// Función para verificar la sesión
+async function checkSession() {
+    try {
+        const {  { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+            // Usuario autenticado
+            loginScreen.classList.add('d-none');
+            mainSystem.classList.remove('d-none');
+            
+            // Muestra el nombre del usuario
+            const user = session.user;
+            userNameElement.textContent = user.user_metadata?.full_name || user.email;
+            
+            // Carga los expedientes
+            await loadExpedientes();
+        } else {
+            // Usuario no autenticado
+            loginScreen.classList.remove('d-none');
+            mainSystem.classList.add('d-none');
+        }
+    } catch (error) {
+        console.error('Error al verificar sesión:', error);
+        alert('Error al verificar sesión: ' + error.message);
+    }
+}
+
+// Función para iniciar sesión
+async function login(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    try {
+        console.log('Intentando iniciar sesión con:', email);
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
         });
-
-        // Función para verificar la sesión
-        async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            if (session) {
-                // Usuario autenticado
-                loginScreen.classList.add('d-none');
-                mainSystem.classList.remove('d-none');
-                
-                // Muestra el nombre del usuario
-                const user = session.user;
-                userNameElement.textContent = user.user_metadata?.full_name || user.email;
-                
-                // Carga los expedientes
-                loadExpedientes();
-            } else {
-                // Usuario no autenticado
-                loginScreen.classList.remove('d-none');
-                mainSystem.classList.add('d-none');
-            }
+        
+        if (error) {
+            console.error('Error de autenticación:', error);
+            alert('Error: ' + error.message);
+            return;
         }
+        
+        console.log('Inicio de sesión exitoso', data);
+        await checkSession();
+    } catch (error) {
+        console.error('Error inesperado al iniciar sesión:', error);
+        alert('Error inesperado: ' + error.message);
+    }
+}
 
-        // Función para iniciar sesión
-        async function login(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            try {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-                
-                if (error) throw error;
-                
-                // Verifica la sesión nuevamente
-                await checkSession();
-            } catch (error) {
-                alert('Error de autenticación: ' + error.message);
+// Función para registrarse
+async function register(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    const fullName = document.getElementById('reg-name').value;
+    
+    try {
+        console.log('Intentando registrar:', email);
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    full_name: fullName
+                }
             }
+        });
+        
+        if (error) {
+            console.error('Error al registrar:', error);
+            alert('Error: ' + error.message);
+            return;
         }
-
-        // Función para registrarse
-        async function register(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            const fullName = document.getElementById('reg-name').value;
-            
-            try {
-                const { data, error } = await supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: {
-                            full_name: fullName
-                        }
-                    }
-                });
-                
-                if (error) throw error;
-                
-                alert('Usuario registrado correctamente. Por favor, inicia sesión.');
-                showLoginForm();
-            } catch (error) {
-                alert('Error al registrar: ' + error.message);
-            }
+        
+        if (data.user) {
+            console.log('Registro exitoso', data);
+            alert('¡Cuenta creada! Revisa tu correo para confirmar.');
+            showLoginForm();
+        } else {
+            console.log('Registro pendiente de confirmación', data);
+            alert('¡Cuenta creada! Revisa tu correo para confirmar.');
+            showLoginForm();
         }
+    } catch (error) {
+        console.error('Error inesperado al registrar:', error);
+        alert('Error inesperado: ' + error.message);
+    }
+}
 
+// Configura los eventos con manejo de errores
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        // Configura los eventos
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const expedienteForm = document.getElementById('expediente-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        const showRegisterBtn = document.getElementById('show-register');
+        const showLoginBtn = document.getElementById('show-login');
+        
+        if (loginForm) loginForm.addEventListener('submit', login);
+        if (registerForm) registerForm.addEventListener('submit', register);
+        if (expedienteForm) expedienteForm.addEventListener('submit', saveExpediente);
+        if (logoutBtn) logoutBtn.addEventListener('click', logout);
+        if (showRegisterBtn) showRegisterBtn.addEventListener('click', showRegisterForm);
+        if (showLoginBtn) showLoginBtn.addEventListener('click', showLoginForm);
+        
+        // Verifica la sesión
+        checkSession();
+        
+        console.log('Event listeners configurados correctamente');
+    } catch (error) {
+        console.error('Error al configurar eventos:', error);
+        alert('Error al configurar el sistema: ' + error.message);
+    }
+});
+
+// Resto de las funciones (saveExpediente, loadExpedientes, etc.)
+// ¡Mantén el resto del código igual!
         // Función para cerrar sesión
         async function logout() {
             try {
