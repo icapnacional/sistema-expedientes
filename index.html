@@ -263,7 +263,40 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  console.log("Intentando iniciar sesión...");
+  
+  try {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    console.log("Credenciales ingresadas:", email, "y contraseña");
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+    
+    if (error) {
+      console.error('Error de autenticación:', error);
+      alert('Error: ' + error.message);
+      return;
+    }
+    
+    console.log('Inicio de sesión exitoso', data);
+    // Redirigir o mostrar interfaz principal
+    document.getElementById('login-screen').classList.add('d-none');
+    document.getElementById('main-system').classList.remove('d-none');
+    document.getElementById('user-name').textContent = email;
+    
+    // Cargar expedientes
+    await loadExpedientes();
+    
+  } catch (error) {
+    console.error('Error inesperado al iniciar sesión:', error);
+    alert('Error inesperado: ' + error.message);
+  }
+});
 // Inicialización segura de Supabase
 let supabase;
 try {
