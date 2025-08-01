@@ -350,8 +350,8 @@
         <div class="logo-container">
     <img src="images/policia-nacional-bolivariana.png" 
          alt="Logo Policía Nacional Bolivariana"
-         class="img-fluid"
-         onerror="this.onerror=null; this.src='https://i.imgur.com/7Kbq0Xl.png'; this.alt='Logo PNB';">
+         class="img-fluid rounded-circle"
+         style="max-width: 250px; border: 2px solid #003366; padding: 8px; background: white; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
 </div>
         
         <div class="login-header">
@@ -520,7 +520,27 @@
             errorMessage.textContent = message;
             errorMessage.classList.remove('d-none');
         }
-        
+        <script>
+    // Manejo de errores para el logo
+    document.addEventListener('DOMContentLoaded', function() {
+        const logo = document.querySelector('.logo-container img');
+        if (logo) {
+            logo.onerror = function() {
+                console.warn('El logo local no se pudo cargar. Usando versión alternativa.');
+                this.src = 'https://i.imgur.com/7Kbq0Xl.png';
+            };
+            
+            // Verifica si el logo se cargó correctamente
+            if (!logo.complete) {
+                logo.onload = function() {
+                    console.log('Logo cargado correctamente');
+                };
+                logo.onerror = function() {
+                    this.src = 'https://i.imgur.com/7Kbq0Xl.png';
+                };
+            }
+        }
+    });    
         // Configura los eventos
         document.getElementById('login-form').addEventListener('submit', login);
         logoutBtn.addEventListener('click', logout);
