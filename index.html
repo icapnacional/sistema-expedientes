@@ -254,45 +254,95 @@
             }
         }
 
-        .header {
+ .header {
     text-align: center;
     margin-bottom: 30px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 20px;
-    width: 100%;
-}
-
-.header h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #003366;
-    letter-spacing: 0.5px;
-    margin-bottom: 10px;
+    padding-bottom: 25px;
     position: relative;
+    z-index: 1;
 }
 
-.header h1:after {
+.title-container {
+    background: linear-gradient(135deg, rgba(0, 33, 71, 0.85), rgba(0, 51, 102, 0.95));
+    padding: 25px 30px;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 800px;
+    margin: 0 auto;
+    transition: all 0.4s ease;
+}
+
+.title-container:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.title-container h1 {
+    color: white;
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+    display: inline-block;
+}
+
+.title-container h1:after {
     content: "";
-    display: block;
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
     width: 80px;
     height: 4px;
-    background: linear-gradient(to right, #003366, #0066CC);
-    margin: 10px auto 0;
+    background: linear-gradient(to right, #0066CC, #00A3FF);
     border-radius: 2px;
 }
 
-.header p {
-    font-size: 1.1rem;
+.title-container p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.25rem;
     max-width: 600px;
     margin: 0 auto;
-    color: #666;
+    line-height: 1.6;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+}
+
+.title-container p:hover {
+    color: white;
+    letter-spacing: 0.5px;
+}
+
+/* Efecto de brillo sutil */
+.title-container:before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+}
+
+.title-container:hover:before {
+    opacity: 1;
 }
     </style>
 </head>
 <body>
     <div class="header">
-    <h1 class="text-center w-100">Sistema de Expedientes</h1>
-    <p class="text-muted text-center w-100">Registre y gestione expedientes de manera sencilla</p>
+    <div class="title-container">
+        <h1 class="text-center w-100">Sistema de Expedientes</h1>
+        <p class="text-center w-100">Registre y gestione expedientes de manera sencilla</p>
+    </div>
 </div>
     
     <!-- Pantalla de Login -->
