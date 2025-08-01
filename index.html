@@ -202,24 +202,6 @@
                 font-size: 16px;
                 padding: 20px 0;
 }
-            .form-check-input {
-    margin-top: 6px;
-    cursor: pointer;
-}
-
-.form-check-label {
-    cursor: pointer;
-    color: #6c757d;
-    transition: all 0.2s;
-}
-
-.form-check-input:focus {
-    box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.25);
-}
-
-.form-check-label:hover {
-    color: #003366;
-}
     </style>
 </head>
 <body>
@@ -254,10 +236,6 @@
                 </div>
             </div>
             
-            <div class="mb-3 form-check">
-    <input type="checkbox" class="form-check-input" id="remember-credentials">
-    <label class="form-check-label" for="remember-credentials">Recordar mis credenciales</label>
-</div>
             <div id="error-message" class="alert alert-danger error-message d-none" role="alert">
                 <i class="fas fa-exclamation-circle me-2"></i>Error al iniciar sesión. Verifique sus credenciales.
             </div>
@@ -285,123 +263,18 @@
         </form>
     </div>
 
-<!-- Panel Principal (oculto al inicio) -->
-<div class="container panel-container" id="main-panel" style="display: none;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Bienvenido, <span id="user-name" class="text-primary"></span></h2>
-        <button id="logout-btn" class="btn btn-outline-danger">
-            <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
-        </button>
-    </div>
-    
-    <!-- Tarjetas de resumen -->
-    <div class="row mb-4">
-        <div class="col-md-4 mb-3">
-            <div class="card border-primary shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted">Expedientes Totales</h6>
-                            <h2 id="total-expedientes" class="mb-0">0</h2>
-                        </div>
-                        <div class="bg-primary bg-opacity-10 p-3 rounded">
-                            <i class="fas fa-file-alt fa-2x text-primary"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Panel Principal (oculto al inicio) -->
+    <div class="container panel-container" id="main-panel" style="display: none;">
+        <h2 class="text-center mb-4">Panel de Control</h2>
+        <div class="alert alert-success">
+            ¡Ha iniciado sesión correctamente!
         </div>
-        
-        <div class="col-md-4 mb-3">
-            <div class="card border-success shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted">Hoy</h6>
-                            <h2 id="expedientes-hoy" class="mb-0">0</h2>
-                        </div>
-                        <div class="bg-success bg-opacity-10 p-3 rounded">
-                            <i class="fas fa-calendar-day fa-2x text-success"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4 mb-3">
-            <div class="card border-warning shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted">Pendientes</h6>
-                            <h2 id="expedientes-pendientes" class="mb-0">0</h2>
-                        </div>
-                        <div class="bg-warning bg-opacity-10 p-3 rounded">
-                            <i class="fas fa-clock fa-2x text-warning"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="text-center">
+            <button id="logout-btn" class="btn btn-outline-danger">Cerrar sesión</button>
         </div>
     </div>
-    
-    <!-- Formulario de Expedientes -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white py-3">
-            <h5 class="mb-0">Nuevo Expediente</h5>
-        </div>
-        <div class="card-body">
-            <form id="expediente-form">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="expediente-numero" class="form-label">Número de Expediente</label>
-                        <input type="text" class="form-control" id="expediente-numero" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="registrado-por" class="form-label">Registrado por</label>
-                        <input type="text" class="form-control" id="registrado-por" required>
-                    </div>
-                </div>
-                <!-- Resto del formulario de expedientes -->
-                <button type="submit" class="btn btn-primary w-100 py-2">
-                    <i class="fas fa-save me-2"></i>Guardar Expediente
-                </button>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Lista de Expedientes -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Expedientes Registrados</h5>
-            <div class="input-group w-auto" style="max-width: 300px;">
-                <span class="input-group-text bg-light">
-                    <i class="fas fa-search"></i>
-                </span>
-                <input type="text" class="form-control" id="search-expedientes" placeholder="Buscar...">
-            </div>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Número</th>
-                            <th>Registrado por</th>
-                            <th>Remisión</th>
-                            <th>Sustanciador</th>
-                            <th>Fecha</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="expedientes-list">
-                        <!-- Los expedientes se cargarán aquí dinámicamente -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
+
+    <!-- Pie de página con el texto solicitado -->
     <!-- Pie de página mejorado con texto en minúsculas -->
 <div class="footer">
     <div class="footer-line"></div>
@@ -416,8 +289,6 @@
         </div>
     </div>
 </div>
-
-   
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -435,95 +306,50 @@
         const mainPanel = document.getElementById('main-panel');
         const errorMessage = document.getElementById('error-message');
         const logoutBtn = document.getElementById('logout-btn');
-        // Función para guardar el correo electrónico
-function saveRememberedEmail(email) {
-    localStorage.setItem('rememberedEmail', email);
-}
-
-// Función para obtener el correo electrónico guardado
-function getRememberedEmail() {
-    return localStorage.getItem('rememberedEmail') || '';
-}
-
-// Función para limpiar el correo electrónico guardado
-function clearRememberedEmail() {
-    localStorage.removeItem('rememberedEmail');
-}
+        
         // Verifica si hay sesión activa al cargar la página
         checkSession();
         
-      // Función para verificar la sesión
-async function checkSession() {
-    try {
-        const { session } = await supabaseClient.auth.getSession();
-        
-        if (session) {
-            // Usuario autenticado - muestra el panel principal
-            loginScreen.style.display = 'none';
-            mainPanel.style.display = 'block';
-            document.getElementById('user-name').textContent = session.user.email;
-            
-            // Carga los expedientes
-            await loadExpedientes();
-        } else {
-            // Usuario no autenticado - muestra el login
-            loginScreen.style.display = 'block';
-            mainPanel.style.display = 'none';
-            
-            // Rellena el campo de email si hay uno guardado
-            const rememberedEmail = getRememberedEmail();
-            if (rememberedEmail) {
-                document.getElementById('email').value = rememberedEmail;
-                document.getElementById('remember-credentials').checked = true;
+        // Función para verificar la sesión
+        async function checkSession() {
+            try {
+                const { session } = await supabaseClient.auth.getSession();
+                
+                if (session) {
+                    // Usuario autenticado - muestra el panel principal
+                    loginScreen.style.display = 'none';
+                    mainPanel.style.display = 'block';
+                } else {
+                    // Usuario no autenticado - muestra el login
+                    loginScreen.style.display = 'block';
+                    mainPanel.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error al verificar sesión:', error);
+                showError('Error al verificar sesión. Recarga la página.');
             }
         }
-    } catch (error) {
-        console.error('Error al verificar sesión:', error);
-        showError('Error al verificar sesión. Recarga la página.');
-    }
-}
         
         // Función para iniciar sesión
-async function login(e) {
-    e.preventDefault();
-    
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const rememberCredentials = document.getElementById('remember-credentials').checked;
-    
-    try {
-        // Oculta mensajes de error anteriores
-        errorMessage.classList.add('d-none');
-        
-        // Intenta iniciar sesión
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
-        
-        if (error) {
-            throw error;
-        }
-        
-        // Si el usuario quiere recordar sus credenciales, guarda el correo
-        if (rememberCredentials) {
-            saveRememberedEmail(email);
-        } else {
-            clearRememberedEmail();
-        }
-        
-        // Si llegamos aquí, el inicio de sesión fue exitoso
-        loginScreen.style.display = 'none';
-        mainPanel.style.display = 'block';
-        document.getElementById('user-name').textContent = email;
-        
-        // Carga los expedientes
-        await loadExpedientes();
-    } catch (error) {
-        console.error('Error de autenticación:', error);
-        showError('Error: ' + error.message);
-    }
-}
+        async function login(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                // Oculta mensajes de error anteriores
+                errorMessage.classList.add('d-none');
+                
+                // Intenta iniciar sesión
+                const { error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) {
+                    throw error;
+                }
                 
                 // Si llegamos aquí, el inicio de sesión fue exitoso
                 loginScreen.style.display = 'none';
