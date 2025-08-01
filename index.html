@@ -235,10 +235,6 @@
                     </label>
                 </div>
             </div>
-            <div class="mb-3 form-check">
-    <input type="checkbox" class="form-check-input" id="remember-credentials">
-    <label class="form-check-label" for="remember-credentials">Recordar mis credenciales</label>
-</div>
             
             <div id="error-message" class="alert alert-danger error-message d-none" role="alert">
                 <i class="fas fa-exclamation-circle me-2"></i>Error al iniciar sesión. Verifique sus credenciales.
@@ -300,18 +296,7 @@
         // Configuración de Supabase
         const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
-// Funciones para manejar "Recordar mis credenciales"
-function saveRememberedEmail(email) {
-    localStorage.setItem('rememberedEmail', email);
-}
-
-function getRememberedEmail() {
-    return localStorage.getItem('rememberedEmail') || '';
-}
-
-function clearRememberedEmail() {
-    localStorage.removeItem('rememberedEmail');
-}
+        
         // Inicialización CORRECTA de Supabase
         const { createClient } = supabase;
         const supabaseClient = createClient(supabaseUrl, supabaseKey);
@@ -325,74 +310,56 @@ function clearRememberedEmail() {
         // Verifica si hay sesión activa al cargar la página
         checkSession();
         
-       // Función para verificar la sesión
-async function checkSession() {
-    try {
-        const { session } = await supabase.auth.getSession();
-        
-        if (session) {
-            // Usuario autenticado
-            loginScreen.classList.add('d-none');
-            mainSystem.classList.remove('d-none');
-            
-            // Muestra el nombre del usuario
-            const user = session.user;
-            userNameElement.textContent = user.user_metadata?.full_name || user.email;
-            
-            // Carga los expedientes
-            await loadExpedientes();
-        } else {
-            // Usuario no autenticado
-            loginScreen.classList.remove('d-none');
-            mainSystem.classList.add('d-none');
-            
-            // Rellenar el correo si está guardado
-            const rememberedEmail = getRememberedEmail();
-            if (rememberedEmail) {
-                document.getElementById('email').value = rememberedEmail;
-                document.getElementById('remember-credentials').checked = true;
+        // Función para verificar la sesión
+        async function checkSession() {
+            try {
+                const { session } = await supabaseClient.auth.getSession();
+                
+                if (session) {
+                    // Usuario autenticado - muestra el panel principal
+                    loginScreen.style.display = 'none';
+                    mainPanel.style.display = 'block';
+                } else {
+                    // Usuario no autenticado - muestra el login
+                    loginScreen.style.display = 'block';
+                    mainPanel.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error al verificar sesión:', error);
+                showError('Error al verificar sesión. Recarga la página.');
             }
         }
-    } catch (error) {
-        console.error('Error al verificar sesión:', error);
-        alert('Error al verificar sesión: ' + error.message);
-    }
-}
         
-  // Función para iniciar sesión
-async function login(e) {
-    e.preventDefault();
-    
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const rememberCredentials = document.getElementById('remember-credentials').checked;
-    
-    try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
-        
-        if (error) {
-            console.error('Error de autenticación:', error);
-            alert('Error: ' + error.message);
-            return;
+        // Función para iniciar sesión
+        async function login(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                // Oculta mensajes de error anteriores
+                errorMessage.classList.add('d-none');
+                
+                // Intenta iniciar sesión
+                const { error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                // Si llegamos aquí, el inicio de sesión fue exitoso
+                loginScreen.style.display = 'none';
+                mainPanel.style.display = 'block';
+            } catch (error) {
+                console.error('Error de autenticación:', error);
+                showError('Error: ' + error.message);
+            }
         }
         
-        // Guardar el correo si se seleccionó "Recordar mis credenciales"
-        if (rememberCredentials) {
-            saveRememberedEmail(email);
-        } else {
-            clearRememberedEmail();
-        }
-        
-        console.log('Inicio de sesión exitoso', data);
-        await checkSession();
-    } catch (error) {
-        console.error('Error inesperado al iniciar sesión:', error);
-        alert('Error inesperado: ' + error.message);
-    }
-}
         // Función para cerrar sesión
         async function logout() {
             try {
