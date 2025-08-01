@@ -223,6 +223,83 @@
         .form-check-label:hover {
             color: #003366;
         }
+        /* Estilos para los logos de redes sociales */
+.social-media-container {
+    padding: 15px 0;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.social-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.social-icon i {
+    position: relative;
+    z-index: 2;
+    transition: transform 0.3s ease;
+}
+
+/* Efectos de hover */
+.social-icon:hover {
+    transform: translateY(-4px) scale(1.08);
+    box-shadow: 0 7px 15px rgba(0, 0, 0, 0.2);
+}
+
+.social-icon:hover i {
+    transform: scale(1.1);
+}
+
+/* Colores reales de las redes sociales */
+.instagram {
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+}
+
+.facebook {
+    background: #1877f2;
+}
+
+.google {
+    background: linear-gradient(45deg, #ea4335, #fbbc05, #34a853, #4285f4);
+}
+
+.telegram {
+    background: #0088cc;
+}
+
+/* Efecto de brillo sutil */
+.social-icon::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    transform: rotate(30deg);
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+.social-icon:hover::before {
+    opacity: 1;
+}
     </style>
 </head>
 <body>
@@ -270,15 +347,25 @@
                 <i class="fas fa-exclamation-circle me-2"></i>Error al iniciar sesión. Verifique sus credenciales.
             </div>
             
-            <button type="submit" class="btn btn-primary w-100 btn-login">
-                <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
-            </button>
-            
-            <div class="mt-4 text-center">
-                <button type="button" class="btn-register" id="show-register">
-                    <i class="fas fa-user-plus me-1"></i>¿No tiene cuenta? Regístrese
-                </button>
-            </div>
+           <button type="submit" class="btn btn-primary w-100 btn-login">Iniciar Sesión</button>
+
+<!-- Logos de redes sociales - Grandes y estéticos -->
+<div class="social-media-container mt-4">
+    <div class="social-icons d-flex justify-content-center gap-3">
+        <a href="#" class="social-icon instagram">
+            <i class="fab fa-instagram"></i>
+        </a>
+        <a href="#" class="social-icon facebook">
+            <i class="fab fa-facebook-f"></i>
+        </a>
+        <a href="#" class="social-icon google">
+            <i class="fab fa-google"></i>
+        </a>
+        <a href="#" class="social-icon telegram">
+            <i class="fab fa-telegram-plane"></i>
+        </a>
+    </div>
+</div>
             
             <div class="security-info mt-5">
                 <p class="mb-0"><i class="fas fa-shield-alt security-icon"></i> Sistema seguro con encriptación de extremo a extremo</p>
