@@ -316,17 +316,17 @@ const expedientesList = document.getElementById('expedientes-list');
 // Función para verificar la sesión
 async function checkSession() {
     try {
-        const {  { session } } = await supabase.auth.getSession();
-        
+        const { session } = await supabase.auth.getSession(); // ¡CORRECCIÓN AQUÍ!
+
         if (session) {
             // Usuario autenticado
             loginScreen.classList.add('d-none');
             mainSystem.classList.remove('d-none');
-            
+
             // Muestra el nombre del usuario
             const user = session.user;
             userNameElement.textContent = user.user_metadata?.full_name || user.email;
-            
+
             // Carga los expedientes
             await loadExpedientes();
         } else {
