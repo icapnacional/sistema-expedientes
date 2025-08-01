@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Expedientes - Modo Diagnóstico</title>
+    <title>Sistema de Expedientes - Versión Segura</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -37,7 +37,7 @@
     <div class="container">
         <div class="header">
             <h1>Sistema de Expedientes</h1>
-            <p class="text-muted">Modo Diagnóstico</p>
+            <p class="text-muted">Versión Segura</p>
         </div>
         
         <div id="error-container" class="error-box">
@@ -65,30 +65,29 @@
                     Verificando conexión...
                 </div>
             </div>
-            
-            <div class="mt-4">
-                <h5>Diagnóstico Rápido:</h5>
-                <ul class="list-group">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Supabase inicializado
-                        <span id="supabase-status" class="badge bg-secondary">...</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Elementos del DOM cargados
-                        <span id="dom-status" class="badge bg-secondary">...</span>
-                    </li>
-                </ul>
-            </div>
         </div>
     </div>
 
     <script>
         // Muestra cualquier error en la consola
-        console.log("✅ Iniciando sistema en modo diagnóstico");
+        console.log("✅ Iniciando sistema en modo seguro");
         
-        // Variables de estado
-        let supabaseInitialized = false;
-        let domLoaded = false;
+        // Variables globales
+        let supabase = null;
+        let supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
+        let supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
+        
+        // Muestra errores en la interfaz
+        function showError(message) {
+            const errorContainer = document.getElementById('error-container');
+            const errorMessage = document.getElementById('error-message');
+            
+            errorMessage.textContent = message;
+            errorContainer.style.display = 'block';
+            
+            console.error("❌ ERROR CRÍTICO:", message);
+            updateConnectionStatus("Error crítico: " + message, true);
+        }
         
         // Actualiza el estado de conexión
         function updateConnectionStatus(message, isError = false) {
@@ -101,22 +100,8 @@
             }
         }
         
-        // Muestra errores en la interfaz
-        function showError(message) {
-            const errorContainer = document.getElementById('error-container');
-            const errorMessage = document.getElementById('error-message');
-            
-            errorMessage.textContent = message;
-            errorContainer.style.display = 'block';
-            
-            console.error("❌ ERROR CRÍTICO:", message);
-        }
-        
         // Verifica credenciales de Supabase
         function verifySupabaseCredentials() {
-            const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
-            
             // Verifica que las credenciales no estén vacías
             if (!supabaseUrl || supabaseUrl.includes('tu-proyecto')) {
                 showError("URL de Supabase no configurada correctamente");
@@ -128,26 +113,53 @@
                 return false;
             }
             
-            return { url: supabaseUrl, key: supabaseKey };
+            return true;
         }
         
-        // Intenta inicializar Supabase
+        // Intenta inicializar Supabase de forma segura
         function initSupabase() {
-            const credentials = verifySupabaseCredentials();
-            if (!credentials) return null;
+            if (!verifySupabaseCredentials()) {
+                updateConnectionStatus("Credenciales inválidas", true);
+                return false;
+            }
             
             try {
                 console.log("✅ Intentando inicializar Supabase...");
-                const { createClient } = supabase;
-                const client = createClient(credentials.url, credentials.key);
                 
+                // Carga el script de Supabase si no está disponible
+                if (typeof supabase === 'undefined') {
+                    console.log("⚠️ Supabase no está disponible. Cargando script...");
+                    const script = document.createElement('script');
+                    script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+                    script.onload = () => {
+                        console.log("✅ Supabase cargado dinámicamente");
+                        initializeSupabaseClient();
+                    };
+                    script.onerror = () => {
+                        showError("No se pudo cargar la biblioteca de Supabase");
+                    };
+                    document.head.appendChild(script);
+                    return false;
+                }
+                
+                // Si Supabase ya está disponible, inicializa el cliente
+                initializeSupabaseClient();
+                return true;
+            } catch (error) {
+                console.error("❌ Error al inicializar Supabase:", error);
+                showError("Error al inicializar Supabase: " + error.message);
+                return false;
+            }
+        }
+        
+        // Inicializa el cliente de Supabase
+        function initializeSupabaseClient() {
+            try {
+                supabase = supabase.createClient(supabaseUrl, supabaseKey);
                 console.log("✅ Supabase inicializado correctamente");
-                document.getElementById('supabase-status').textContent = "✅";
-                document.getElementById('supabase-status').className = "badge bg-success";
-                supabaseInitialized = true;
                 
                 // Verifica la conexión
-                client.auth.getSession()
+                supabase.auth.getSession()
                     .then(({ data, error }) => {
                         if (error) {
                             console.error("❌ Error al verificar sesión:", error);
@@ -161,50 +173,52 @@
                         console.error("❌ Error al verificar sesión:", err);
                         updateConnectionStatus("Error de conexión: " + err.message, true);
                     });
-                
-                return client;
             } catch (error) {
-                console.error("❌ Error al inicializar Supabase:", error);
-                showError("Error al inicializar Supabase: " + error.message);
-                document.getElementById('supabase-status').textContent = "❌";
-                document.getElementById('supabase-status').className = "badge bg-danger";
-                return null;
+                console.error("❌ Error al crear el cliente de Supabase:", error);
+                showError("Error al crear el cliente de Supabase: " + error.message);
+            }
+        }
+        
+        // Función para iniciar sesión
+        async function login(e) {
+            e.preventDefault();
+            
+            if (!supabase) {
+                showError("Supabase no está inicializado. Recarga la página.");
+                return;
+            }
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            console.log("👉 Intentando iniciar sesión con:", email);
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) {
+                    console.error("❌ Error de autenticación:", error);
+                    showError("Error de autenticación: " + error.message);
+                    return;
+                }
+                
+                console.log("✅ Inicio de sesión exitoso", data);
+                alert("¡Inicio de sesión exitoso!");
+            } catch (error) {
+                console.error("❌ Error inesperado al iniciar sesión:", error);
+                showError("Error inesperado: " + error.message);
             }
         }
         
         // Configura los eventos
-        function setupEvents(supabase) {
+        function setupEvents() {
             const loginForm = document.getElementById('login-form');
             
             if (loginForm) {
-                loginForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    
-                    const email = document.getElementById('email').value;
-                    const password = document.getElementById('password').value;
-                    
-                    console.log("👉 Intentando iniciar sesión con:", email);
-                    
-                    try {
-                        const { data, error } = await supabase.auth.signInWithPassword({
-                            email: email,
-                            password: password
-                        });
-                        
-                        if (error) {
-                            console.error("❌ Error de autenticación:", error);
-                            alert("Error: " + error.message);
-                            return;
-                        }
-                        
-                        console.log("✅ Inicio de sesión exitoso", data);
-                        alert("¡Inicio de sesión exitoso!");
-                    } catch (error) {
-                        console.error("❌ Error inesperado al iniciar sesión:", error);
-                        alert("Error inesperado: " + error.message);
-                    }
-                });
-                
+                loginForm.addEventListener('submit', login);
                 console.log("✅ Eventos de login configurados");
             } else {
                 showError("No se encontró el formulario de login");
@@ -212,36 +226,32 @@
             }
         }
         
-        // Verifica el estado del DOM
-        function checkDOMStatus() {
-            domLoaded = true;
-            document.getElementById('dom-status').textContent = "✅";
-            document.getElementById('dom-status').className = "badge bg-success";
-            console.log("✅ DOM completamente cargado");
-        }
-        
         // Inicialización segura
-        document.addEventListener('DOMContentLoaded', () => {
-            checkDOMStatus();
-            
+        function initSystem() {
             try {
                 // Intenta inicializar Supabase
-                const supabase = initSupabase();
+                const isSupabaseReady = initSupabase();
                 
-                if (supabase) {
-                    // Configura los eventos
-                    setupEvents(supabase);
-                    
-                    // Actualiza el estado de conexión
+                // Configura los eventos
+                setupEvents();
+                
+                if (isSupabaseReady) {
                     updateConnectionStatus("Sistema listo para usar");
                 } else {
-                    updateConnectionStatus("No se pudo inicializar Supabase", true);
+                    updateConnectionStatus("Supabase no está disponible", true);
                 }
             } catch (error) {
                 showError("Error crítico: " + error.message);
                 updateConnectionStatus("Error crítico en la inicialización", true);
             }
-        });
+        }
+        
+        // Inicializa el sistema después de que el DOM esté cargado
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSystem);
+        } else {
+            initSystem();
+        }
     </script>
 </body>
 </html>
