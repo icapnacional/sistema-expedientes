@@ -65,9 +65,13 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Configuración de Supabase (¡NO CAMBIES ESTO!)
+        // Configuración de Supabase
         const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
+        
+        // Inicialización CORRECTA de Supabase
+        const { createClient } = supabase;
+        const supabaseClient = createClient(supabaseUrl, supabaseKey);
         
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
@@ -81,7 +85,7 @@
         // Función para verificar la sesión
         async function checkSession() {
             try {
-                const { session } = await supabase.auth.getSession();
+                const { session } = await supabaseClient.auth.getSession();
                 
                 if (session) {
                     // Usuario autenticado - muestra el panel principal
@@ -110,7 +114,7 @@
                 errorMessage.classList.add('d-none');
                 
                 // Intenta iniciar sesión
-                const { error } = await supabase.auth.signInWithPassword({
+                const { error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
@@ -131,7 +135,7 @@
         // Función para cerrar sesión
         async function logout() {
             try {
-                const { error } = await supabase.auth.signOut();
+                const { error } = await supabaseClient.auth.signOut();
                 
                 if (error) {
                     throw error;
