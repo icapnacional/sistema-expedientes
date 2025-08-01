@@ -3,63 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Expedientes - Login</title>
+    <title>Sistema de Expedientes - Policía Nacional Bolivariana</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #003366;
+            --secondary-color: #0066CC;
+            --accent-color: #FF0000;
+            --light-color: #F8F9FA;
+            --dark-color: #212529;
+        }
+        
         body {
-            background-color: #f8f9fa;
-            height: 100vh;
-            display: flex;
-            align-items: center;
+            background: linear-gradient(135deg, #003366 0%, #0066CC 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            color: var(--dark-color);
+            background-attachment: fixed;
         }
+        
         .login-container {
-            max-width: 400px;
+            max-width: 500px;
             width: 100%;
-            padding: 30px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 51, 102, 0.1);
+            transition: all 0.3s ease;
+            margin: 50px auto;
         }
-        .panel-container {
-            max-width: 800px;
-            width: 100%;
-            padding: 30px;
-            background-color: white;
+        
+        .login-container:hover {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transform: translateY(-5px);
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+        
+        .logo-container img {
+            max-width: 280px;
+            height: auto;
+            border: 3px solid var(--secondary-color);
+            border-radius: 50%;
+            padding: 10px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .logo-container img:hover {
+            transform: scale(1.05);
+            border-color: var(--accent-color);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-header h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 28px;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .login-header p {
+            color: var(--secondary-color);
+            font-weight: 500;
+            font-size: 16px;
+        }
+        
+        .form-floating > label {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .form-control {
+            border: 2px solid #e0e0e0;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            display: none;
+            padding: 12px 15px;
+            font-size: 16px;
+            transition: all 0.3s;
+            height: 55px;
+        }
+        
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.25);
+        }
+        
+        .btn-login {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            padding: 12px 0;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            height: 55px;
+            box-shadow: 0 4px 15px rgba(0, 51, 102, 0.3);
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0, 51, 102, 0.4);
+            background: linear-gradient(to right, #002244, #0055AA);
+        }
+        
+        .btn-register {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        
+        .btn-register:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+            transform: scale(1.03);
+        }
+        
+        .error-message {
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px 0;
+            margin-top: 30px;
+            border-top: 1px solid rgba(0, 51, 102, 0.1);
+            color: white;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-size: 18px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .system-name {
+            color: white;
+            font-weight: 700;
+            font-size: 24px;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.5), transparent);
+            margin: 25px 0;
+        }
+        
+        .security-info {
+            background: rgba(0, 51, 102, 0.05);
+            border-left: 3px solid var(--secondary-color);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .security-icon {
+            color: var(--secondary-color);
+            margin-right: 8px;
+        }
+        
+        @media (max-width: 576px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            
+            .footer {
+                font-size: 16px;
+                padding: 20px 0;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="system-name">SISTEMA DE GESTIÓN DE EXPEDIENTES</div>
+    
+    <div class="divider"></div>
+    
     <!-- Pantalla de Login -->
     <div class="container login-container" id="login-screen">
-        <h2 class="text-center mb-4">Sistema de Expedientes</h2>
+        <div class="logo-container">
+            <img src="images/policia-nacional-bolivariana.png" alt="Logo PNB">
+        </div>
+        
+        <div class="login-header">
+            <h1>Bienvenido al Sistema</h1>
+            <p>Inicie sesión para acceder a sus expedientes</p>
+        </div>
+        
         <form id="login-form">
-            <div class="mb-3">
-                <label for="email" class="form-label">Correo electrónico</label>
-                <input type="email" class="form-control" id="email" value="admin@empresa.com" required>
+            <div class="mb-4">
+                <div class="form-floating">
+                    <input type="email" class="form-control" id="email" value="admin@empresa.com" required>
+                    <label for="email">
+                        <i class="fas fa-envelope me-2"></i>Correo electrónico
+                    </label>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Contraseña</label>
-                <input type="password" class="form-control" id="password" value="admin123" required>
+            
+            <div class="mb-4">
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="password" value="admin123" required>
+                    <label for="password">
+                        <i class="fas fa-lock me-2"></i>Contraseña
+                    </label>
+                </div>
             </div>
-            <div id="error-message" class="alert alert-danger d-none" role="alert">
-                Error al iniciar sesión. Verifica tus credenciales.
+            
+            <div id="error-message" class="alert alert-danger error-message d-none" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>Error al iniciar sesión. Verifique sus credenciales.
             </div>
-            <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+            
+            <button type="submit" class="btn btn-primary w-100 btn-login">
+                <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+            </button>
+            
+            <div class="mt-4 text-center">
+                <a href="#" class="btn-register" id="show-register">
+                    <i class="fas fa-user-plus me-1"></i>¿No tiene cuenta? Regístrese
+                </a>
+            </div>
+            
+            <div class="security-info mt-5">
+                <p class="mb-0"><i class="fas fa-shield-alt security-icon"></i> Sistema seguro con encriptación de extremo a extremo</p>
+            </div>
         </form>
     </div>
 
     <!-- Panel Principal (oculto al inicio) -->
-    <div class="container panel-container" id="main-panel">
+    <div class="container panel-container" id="main-panel" style="display: none;">
         <h2 class="text-center mb-4">Panel de Control</h2>
         <div class="alert alert-success">
-            ¡Has iniciado sesión correctamente!
+            ¡Ha iniciado sesión correctamente!
         </div>
         <div class="text-center">
             <button id="logout-btn" class="btn btn-outline-danger">Cerrar sesión</button>
         </div>
+    </div>
+
+    <!-- Pie de página con el texto solicitado -->
+    <div class="footer">
+        COPYRT REDIPCOOCIDENTAL -CCEP ZULIA -OTIC ZULIA
     </div>
 
     <!-- Scripts -->
