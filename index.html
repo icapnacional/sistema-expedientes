@@ -1040,7 +1040,7 @@ function formatDate(dateString) {
 
 // Función para guardar un registro de personal
 async function savePersonal() {
-  const personal = {
+const personal = {
     id: editingPersonalId || Date.now().toString(),
     nombres: document.getElementById('nombres').value,
     apellidos: document.getElementById('apellidos').value,
@@ -1048,6 +1048,7 @@ async function savePersonal() {
     rango: document.getElementById('rango').value,
     sexo: document.getElementById('sexo').value,
     cedula: document.getElementById('cedula').value,
+    fechaRegistro: new Date().toISOString().split('T')[0], // ¡NUEVO!
     fechaInicio: document.getElementById('fecha-inicio').value,
     tipoExpediente: document.getElementById('tipo-expediente').value,
     icap: document.getElementById('icap').value,
@@ -1065,7 +1066,7 @@ async function savePersonal() {
     resena: document.getElementById('resena').value,
     causa: document.getElementById('causa').value,
     foto: document.getElementById('profile-picture').src
-    };
+};
 
     try {
         // Guardar en Supabase (reemplaza 'personal' con el nombre de tu tabla)
