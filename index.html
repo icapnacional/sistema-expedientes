@@ -488,6 +488,33 @@
                 </div>
             </div>
             
+            <!-- Nueva sección: Información del Expediente -->
+            <div class="card mb-4 bg-light">
+                <div class="card-body">
+                    <h6 class="card-title mb-3 text-primary">Información del Expediente</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="expediente-numero" class="form-label">Expediente Número</label>
+                            <input type="text" class="form-control" id="expediente-numero" placeholder="Ej: ZUL-2023-001">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="registrado-por" class="form-label">Registrado por</label>
+                            <input type="text" class="form-control" id="registrado-por" placeholder="Nombre del funcionario">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="sustanciador" class="form-label">Sustanciador</label>
+                            <input type="text" class="form-control" id="sustanciador" placeholder="Nombre del sustanciador">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="remision" class="form-label">Remisión</label>
+                            <input type="text" class="form-control" id="remision" placeholder="Órgano que remite">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="jerarquia" class="form-label">Jerarquía</label>
@@ -523,7 +550,6 @@
                 </div>
             </div>
             
-            <!-- Nuevos campos como desplegables -->
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="fecha-inicio" class="form-label">Fecha de Inicio</label>
@@ -741,6 +767,39 @@
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
+                        <th>Expediente</th>
+                        <th>Nombres</th>
+                        <th>Apellidos</th>
+                        <th>Cédula</th>
+                        <th>Jerarquía</th>
+                        <th>Fecha Registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="personal-list">
+                    <!-- Los registros de personal se cargarán aquí dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Personal Registrado -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Personal Registrado</h5>
+        <div class="input-group w-auto" style="max-width: 300px;">
+            <span class="input-group-text bg-light">
+                <i class="fas fa-search"></i>
+            </span>
+            <input type="text" class="form-control" id="search-personal" placeholder="Buscar...">
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
                         <th>Foto</th>
                         <th>Nombres</th>
                         <th>Apellidos</th>
@@ -911,8 +970,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             checkSession();
         });
-   // Variables globales
+// Variables globales
 let editingPersonalId = null;
+let isSaving = false; // Flag para evitar guardados duplicados
 
 // Función para formatear la fecha
 function formatDate(dateString) {
@@ -927,15 +987,27 @@ function formatDate(dateString) {
 
 // Función para guardar un registro de personal
 async function savePersonal() {
+    // Protección contra guardados duplicados
+    if (isSaving) {
+        console.log("Guardado ya en progreso, ignorando solicitud adicional");
+        return;
+    }
+    
     try {
+        isSaving = true; // Activar el flag
+        
         // Obtener la sesión actual
-        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
         if (sessionError || !session) {
             throw new Error("No hay sesión activa");
         }
 
         const personal = {
             id: editingPersonalId || Date.now().toString(),
+            expediente_numero: document.getElementById('expediente-numero').value,
+            registrado_por: document.getElementById('registrado-por').value,
+            sustanciador: document.getElementById('sustanciador').value,
+            remision: document.getElementById('remision').value,
             nombres: document.getElementById('nombres').value,
             apellidos: document.getElementById('apellidos').value,
             edad: document.getElementById('edad').value,
@@ -986,6 +1058,8 @@ async function savePersonal() {
     } catch (error) {
         console.error('Error al guardar registro de personal:', error);
         alert(`Error al guardar: ${error.message}`);
+    } finally {
+        isSaving = false; // Desactivar el flag
     }
 }
 
@@ -1007,7 +1081,7 @@ async function loadPersonal() {
         `;
         
         // Obtener los registros de Supabase
-        const { data: { session } } = await supabaseClient.auth.getSession();
+        const {  { session } } = await supabaseClient.auth.getSession();
         if (!session) throw new Error("No hay sesión activa");
         
         const { data, error } = await supabaseClient
@@ -1037,8 +1111,7 @@ async function loadPersonal() {
             const row = document.createElement('tr');
             
             row.innerHTML = `
-                <td><img src="${personal.foto || 'https://placehold.co/40x40/003366/white?text=FP'}" 
-                         class="rounded-circle" width="40"></td>
+                <td>${personal.expediente_numero || 'N/A'}</td>
                 <td>${personal.nombres || 'N/A'}</td>
                 <td>${personal.apellidos || 'N/A'}</td>
                 <td>${personal.cedula || 'N/A'}</td>
@@ -1101,6 +1174,10 @@ async function editPersonal(id) {
         }
         
         // Rellenar el formulario con los datos
+        document.getElementById('expediente-numero').value = data.expediente_numero || '';
+        document.getElementById('registrado-por').value = data.registrado_por || '';
+        document.getElementById('sustanciador').value = data.sustanciador || '';
+        document.getElementById('remision').value = data.remision || '';
         document.getElementById('nombres').value = data.nombres || '';
         document.getElementById('apellidos').value = data.apellidos || '';
         document.getElementById('edad').value = data.edad || '';
@@ -1165,6 +1242,10 @@ async function deletePersonal(id) {
 
 // Función para reiniciar el formulario
 function resetPersonalForm() {
+    document.getElementById('expediente-numero').value = '';
+    document.getElementById('registrado-por').value = '';
+    document.getElementById('sustanciador').value = '';
+    document.getElementById('remision').value = '';
     document.getElementById('nombres').value = '';
     document.getElementById('apellidos').value = '';
     document.getElementById('edad').value = '';
@@ -1193,11 +1274,16 @@ function resetPersonalForm() {
 }
 
 // Configurar eventos para el registro de personal
-document.addEventListener('DOMContentLoaded', async () => {
-    // Configurar el evento de submit del formulario
+document.addEventListener('DOMContentLoaded', () => {
+    // Configurar el evento de submit del formulario de forma segura
     const personalForm = document.getElementById('personal-form');
+    
     if (personalForm) {
-        personalForm.addEventListener('submit', (e) => {
+        // Verificar si ya existe un listener para evitar duplicados
+        const formClone = personalForm.cloneNode(true);
+        personalForm.parentNode.replaceChild(formClone, personalForm);
+        
+        formClone.addEventListener('submit', (e) => {
             e.preventDefault();
             savePersonal();
         });
@@ -1243,7 +1329,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Cargar los registros de personal
     if (document.getElementById('personal-list')) {
-        await loadPersonal();
+        loadPersonal();
     }
 });
     </script>
