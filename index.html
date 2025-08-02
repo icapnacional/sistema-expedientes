@@ -255,21 +255,6 @@
         .badge-secondary {
             background-color: #6c757d;
         }
-        /* Estilos para el logo */
-.logo-container {
-    padding: 15px 0;
-}
-
-.logo-container img {
-    max-width: 200px;
-    height: auto;
-    transition: all 0.3s ease;
-}
-
-/* Efecto hover opcional */
-.logo-container img:hover {
-    transform: scale(1.05);
-}
     </style>
 </head>
 <body>
@@ -278,12 +263,7 @@
         <h1 class="centered-title">SISTEMA DE GESTIÓN DE EXPEDIENTES</h1>
         <p class="centered-subtitle">Registre y gestione expedientes de manera sencilla</p>
     </div>
-    <div class="logo-container text-center mb-4">
-    <img src="https://raw.githubusercontent.com/gamakingrock/sistema-expedientes/main/images/policia-nacional-bolivariana.png" 
-     alt="Logo Policía Nacional Bolivariana" 
-     class="img-fluid" 
-     style="max-height: 150px;">
-</div>
+    
     <!-- Pantalla de Login -->
     <div class="container" id="login-screen">
         <div class="login-container">
@@ -497,11 +477,14 @@
                                 </button>
                             </div>
                         </div>
-                <div class="col-md-6">
-    <label for="expediente-penal" class="form-label">Expediente Penal</label>
-    <input type="text" class="form-control" id="expediente-penal" placeholder="Ingrese el número de expediente penal">
-</div>        
-                        <div class="row mb-3">
+                        <!-- Expediente Penal como campo de texto -->
+                        <div class="col-md-6">
+                            <label for="expediente-penal" class="form-label">Expediente Penal</label>
+                            <input type="text" class="form-control" id="expediente-penal" placeholder="Ingrese el número de expediente penal">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="servicio" class="form-label">Servicio donde Labora el Funcionario</label>
                             <div class="input-group">
@@ -738,7 +721,7 @@
         <div class="footer-line"></div>
         <div class="footer-content">
             <div class="footer-text">
-                sistema de gestión de expedientes - todos los derechos reservados © 2025 / REDIP OCCIDENTAL - CCPE ZULIA - OTIC ZULIA 
+                sistema de gestión de expedientes - todos los derechos reservados © 2023
             </div>
         </div>
     </div>
@@ -780,6 +763,7 @@
         let isSaving = false; // Flag para evitar guardados duplicados
         let currentDropdownField = null;
         let editingOptionId = null;
+        let currentUserRole = 'user'; // Por defecto es usuario normal
 
         // Función para mostrar mensajes de error
         function showError(message) {
@@ -828,7 +812,7 @@
         // Función para verificar si la sesión es válida
         async function isSessionValid() {
             try {
-                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                const {  { session }, error } = await supabaseClient.auth.getSession();
                 if (error) throw error;
                 return !!session;
             } catch (error) {
@@ -856,7 +840,7 @@
         async function checkSession() {
             try {
                 // Obtener la sesión CORRECTAMENTE
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 
                 if (sessionError) throw sessionError;
                 
@@ -869,7 +853,20 @@
                     const user = session.user;
                     const userNameElement = document.getElementById('user-name');
                     if (userNameElement) {
-                        userNameElement.textContent = user.user_metadata?.full_name || user.email;
+                        // Obtener el nombre completo del usuario
+                        const fullName = user.user_metadata?.full_name || 
+                                        user.user_metadata?.fullName || 
+                                        user.user_metadata?.name ||
+                                        user.email.split('@')[0];
+                        
+                        userNameElement.textContent = fullName;
+                        
+                        // Verificar el rol del usuario
+                        const userRole = user.user_metadata?.role || 'user';
+                        currentUserRole = userRole;
+                        
+                        // Aplicar restricciones según el rol
+                        applyRoleRestrictions(userRole);
                     }
                     
                     // Carga los registros de personal
@@ -889,6 +886,59 @@
             } catch (error) {
                 console.error('Error al verificar sesión:', error);
                 showError('Error al verificar sesión: ' + error.message);
+            }
+        }
+
+        // Función para aplicar restricciones según el rol del usuario
+        function applyRoleRestrictions(role) {
+            // Si es administrador, mostrar todos los elementos
+            if (role === 'admin') {
+                document.querySelectorAll('.edit-personal, .delete-personal').forEach(button => {
+                    button.style.display = '';
+                });
+                
+                // Mostrar botones de administración de desplegables
+                document.querySelectorAll('.manage-dropdown').forEach(button => {
+                    button.style.display = '';
+                });
+                
+                // Permitir edición del formulario
+                const formElements = document.querySelectorAll('#personal-form input, #personal-form select, #personal-form textarea');
+                formElements.forEach(element => {
+                    element.disabled = false;
+                });
+                
+                return;
+            }
+            
+            // Para usuarios normales:
+            
+            // 1. Ocultar botones de edición y eliminación en la lista
+            document.querySelectorAll('.edit-personal, .delete-personal').forEach(button => {
+                button.style.display = 'none';
+            });
+            
+            // 2. Ocultar botones de administración de desplegables
+            document.querySelectorAll('.manage-dropdown').forEach(button => {
+                button.style.display = 'none';
+            });
+            
+            // 3. Deshabilitar campos de edición en el formulario
+            const formElements = document.querySelectorAll('#personal-form input, #personal-form select, #personal-form textarea');
+            formElements.forEach(element => {
+                // Permitir editar solo campos básicos
+                if (element.id !== 'nombres' && 
+                    element.id !== 'apellidos' && 
+                    element.id !== 'cedula' && 
+                    element.id !== 'edad') {
+                    element.disabled = true;
+                }
+            });
+            
+            // 4. Modificar el texto del botón de guardar
+            const saveButton = document.querySelector('#personal-form button[type="submit"]');
+            if (saveButton) {
+                saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Registrar Nuevo Personal';
             }
         }
 
@@ -918,7 +968,7 @@
                 await ensureSession();
                 
                 // Obtener la sesión actual CORRECTAMENTE
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     // Intentar recuperar la sesión desde localStorage si existe
                     const rememberedEmail = getRememberedEmail();
@@ -927,6 +977,12 @@
                         throw new Error("La sesión ha expirado. Por favor, inicie sesión nuevamente.");
                     }
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // Verificar si el usuario tiene permisos para editar
+                const userRole = session.user.user_metadata?.role || 'user';
+                if (editingPersonalId && userRole !== 'admin') {
+                    throw new Error("No tiene permisos para editar registros. Contacte al administrador.");
                 }
 
                 const personal = {
@@ -1011,7 +1067,7 @@
                 `;
                 
                 // Obtener los registros de Supabase
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
@@ -1107,6 +1163,17 @@
                     throw new Error('Registro no encontrado');
                 }
                 
+                // Verificar si el usuario tiene permisos para editar
+                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                const userRole = session.user.user_metadata?.role || 'user';
+                if (userRole !== 'admin') {
+                    throw new Error("No tiene permisos para editar registros. Contacte al administrador.");
+                }
+                
                 // Rellenar el formulario con los datos
                 document.getElementById('nombres').value = data.nombres || '';
                 document.getElementById('apellidos').value = data.apellidos || '';
@@ -1154,11 +1221,22 @@
 
         // Función para eliminar un registro de personal
         async function deletePersonal(id) {
-            if (!confirm('¿Está seguro de que desea eliminar este registro de personal?')) {
-                return;
-            }
-            
             try {
+                // Verificar si el usuario tiene permisos para editar
+                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                const userRole = session.user.user_metadata?.role || 'user';
+                if (userRole !== 'admin') {
+                    throw new Error("No tiene permisos para eliminar registros. Contacte al administrador.");
+                }
+                
+                if (!confirm('¿Está seguro de que desea eliminar este registro de personal?')) {
+                    return;
+                }
+                
                 const { error } = await supabaseClient
                     .from('personal')
                     .delete()
@@ -1210,7 +1288,7 @@
         // Función para cargar las opciones de un desplegable
         async function loadDropdownOptions(field) {
             try {
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
@@ -1261,6 +1339,12 @@
 
         // Función para mostrar el modal de administración
         async function showManageDropdownModal(field) {
+            // Verificar si el usuario tiene permisos para administrar desplegables
+            if (currentUserRole !== 'admin') {
+                alert("No tiene permisos para administrar opciones. Contacte al administrador.");
+                return;
+            }
+            
             currentDropdownField = field;
             
             // Actualizar el título del modal
@@ -1277,7 +1361,7 @@
         // Función para cargar las opciones para el modal de administración
         async function loadDropdownOptionsForManagement(field) {
             try {
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
@@ -1358,7 +1442,7 @@
             }
             
             try {
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 const newOption = {
@@ -1462,12 +1546,24 @@
             try {
                 hideError();
                 
+                // Solo el administrador puede crear nuevos usuarios
+                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !session) {
+                    throw new Error("Debe iniciar sesión para crear nuevos usuarios");
+                }
+                
+                const userRole = session.user.user_metadata?.role || 'user';
+                if (userRole !== 'admin') {
+                    throw new Error("Solo el administrador puede crear nuevos usuarios");
+                }
+                
                 const { data, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password,
                     options: {
-                        data: {
-                            full_name: fullName
+                         {
+                            full_name: fullName,
+                            role: 'user'  // Todos los nuevos usuarios serán de rol "user"
                         }
                     }
                 });
@@ -1478,11 +1574,11 @@
                 
                 if (data.user) {
                     console.log('Registro exitoso', data);
-                    alert('¡Cuenta creada! Revisa tu correo para confirmar.');
+                    alert('¡Usuario creado exitosamente!');
                     showLoginForm();
                 } else {
                     console.log('Registro pendiente de confirmación', data);
-                    alert('¡Cuenta creada! Revisa tu correo para confirmar.');
+                    alert('¡Usuario creado exitosamente! Revisa el correo para confirmar.');
                     showLoginForm();
                 }
             } catch (error) {
