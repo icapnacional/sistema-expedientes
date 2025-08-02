@@ -347,9 +347,9 @@
     </style>
 </head>
 <body>
-<div class="header" id="main-title-section">
-    <h1 id="main-title">Sistema de Gestión de Expedientes</h1>
-    <p id="main-subtitle" class="text-muted">Registre y gestione expedientes de manera sencilla</p>
+<div class="header">
+    <h1 class="centered-title">SISTEMA DE GESTIÓN DE EXPEDIENTES</h1>
+    <p class="centered-subtitle">Registre y gestione expedientes de manera sencilla</p>
 </div>
     <!-- Pantalla de Login -->
     <div class="container login-container" id="login-screen">
@@ -607,40 +607,14 @@
         }
         
         // Función para verificar la sesión
-      async function checkSession() {
-    try {
-        const { data, error } = await supabaseClient.auth.getSession();
-        if (error) throw error;
-        
-        if (data.session) {
-            // Ocultar título y subtítulo
-            const mainTitle = document.getElementById('main-title');
-            const mainSubtitle = document.getElementById('main-subtitle');
-            if (mainTitle && mainSubtitle) {
-                mainTitle.style.display = 'none';
-                mainSubtitle.style.display = 'none';
-            }
-            
-            loginScreen.style.display = 'none';
-            mainPanel.style.display = 'block';
-        } else
-        
-        { // Mostrar título y subtítulo
-            const mainTitle = document.getElementById('main-title');
-            const mainSubtitle = document.getElementById('main-subtitle');
-            if (mainTitle && mainSubtitle) {
-                mainTitle.style.display = 'block';
-                mainSubtitle.style.display = 'block';
-            }
-            
-            loginScreen.style.display = 'block';
-            mainPanel.style.display = 'none';
-        }
-    } catch (error) {
-        console.error('Error al verificar sesión:', error);
-        alert('Error al verificar sesión');
-    }
-} {
+        async function checkSession() {
+            try {
+                const { data, error } = await supabaseClient.auth.getSession();
+                if (error) throw error;
+                
+                const session = data.session;
+                
+                if (session) {
                     // Usuario autenticado - muestra el panel principal
                     loginScreen.style.display = 'none';
                     mainPanel.style.display = 'block';
