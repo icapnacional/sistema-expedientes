@@ -373,167 +373,17 @@
         </form>
     </div>
 
-<!-- Panel Principal (oculto al inicio) -->
-<div class="container panel-container" id="main-panel" style="display: none;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Bienvenido, <span id="user-name" class="text-primary"></span></h2>
-        <button id="logout-btn" class="btn btn-outline-danger">
-            <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
-        </button>
-    </div>
-    
-    <!-- Panel de Registro de Personal -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white py-3">
-            <h5 class="mb-0">Registro de Personal</h5>
+    <!-- Panel Principal (oculto al inicio) -->
+    <div class="container panel-container" id="main-panel" style="display: none;">
+        <h2 class="text-center mb-4">Panel de Control</h2>
+        <div class="alert alert-success">
+            ¡Ha iniciado sesión correctamente!
         </div>
-        <div class="card-body">
-            <form id="personal-form">
-                <div class="row mb-4">
-                    <div class="col-md-4 text-center">
-                        <div class="profile-picture-container mb-3 position-relative">
-                            <img src="https://placehold.co/200x200/003366/white?text=Foto+Personal" 
-                                 alt="Foto del personal" 
-                                 class="img-fluid rounded-circle" 
-                                 id="profile-picture"
-                                 style="width: 180px; height: 180px; object-fit: cover;">
-                            <div class="upload-icon" style="position: absolute; bottom: 5px; right: 35px;">
-                                <label for="profile-picture-upload" class="btn btn-primary btn-sm rounded-circle p-2" 
-                                       style="cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                                    <i class="fas fa-camera"></i>
-                                </label>
-                                <input type="file" id="profile-picture-upload" class="d-none" accept="image/*">
-                            </div>
-                        </div>
-                        <p class="text-muted small">Haga clic en el ícono para subir una foto</p>
-                    </div>
-                    <div class="col-md-8">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="nombres" class="form-label">Nombres</label>
-                                <input type="text" class="form-control" id="nombres" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="apellidos" class="form-label">Apellidos</label>
-                                <input type="text" class="form-control" id="apellidos" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="cedula" class="form-label">Cédula de Identidad</label>
-                                <input type="text" class="form-control" id="cedula" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="edad" class="form-label">Edad</label>
-                                <input type="number" class="form-control" id="edad" min="18" max="70">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="rango" class="form-label">Rango</label>
-                        <div class="input-group">
-                            <select class="form-select" id="rango">
-                                <option value="">Seleccione...</option>
-                                <option value="Oficial">Oficial</option>
-                                <option value="Suboficial">Suboficial</option>
-                                <option value="Cabo">Cabo</option>
-                                <option value="Agente">Agente</option>
-                                <option value="General">General</option>
-                                <option value="Coronel">Coronel</option>
-                                <option value="Teniente Coronel">Teniente Coronel</option>
-                                <option value="Mayor">Mayor</option>
-                                <option value="Capitán">Capitán</option>
-                                <option value="Teniente">Teniente</option>
-                                <option value="Subteniente">Subteniente</option>
-                                <option value="Sargento Mayor">Sargento Mayor</option>
-                                <option value="Sargento Primero">Sargento Primero</option>
-                                <option value="Sargento">Sargento</option>
-                                <option value="Cabo Mayor">Cabo Mayor</option>
-                                <option value="Cabo Primero">Cabo Primero</option>
-                                <option value="Cabo Segundo">Cabo Segundo</option>
-                            </select>
-                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addRangoModal">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="sexo" class="form-label">Sexo</label>
-                        <select class="form-select" id="sexo">
-                            <option value="">Seleccione...</option>
-                            <option value="masculino">Masculino</option>
-                            <option value="femenino">Femenino</option>
-                            <option value="otro">Otro</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn btn-primary w-100 py-2">
-                    <i class="fas fa-save me-2"></i>Guardar Registro de Personal
-                </button>
-            </form>
+        <div class="text-center">
+            <button id="logout-btn" class="btn btn-outline-danger">Cerrar sesión</button>
         </div>
     </div>
 
-    <!-- Modal para agregar nuevos rangos -->
-    <div class="modal fade" id="addRangoModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Agregar Nuevo Rango</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="nuevo-rango" class="form-label">Nombre del nuevo rango</label>
-                        <input type="text" class="form-control" id="nuevo-rango" placeholder="Ej: General de División">
-                    </div>
-                    <div class="form-text">
-                        El nuevo rango se añadirá a la lista de opciones disponibles.
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="btn-agregar-rango">Agregar Rango</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Lista de Personal Registrado -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Personal Registrado</h5>
-            <div class="input-group w-auto" style="max-width: 300px;">
-                <span class="input-group-text bg-light">
-                    <i class="fas fa-search"></i>
-                </span>
-                <input type="text" class="form-control" id="search-personal" placeholder="Buscar...">
-            </div>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Foto</th>
-                            <th>Nombres</th>
-                            <th>Apellidos</th>
-                            <th>Cédula</th>
-                            <th>Rango</th>
-                            <th>Fecha Registro</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="personal-list">
-                        <!-- Los registros de personal se cargarán aquí dinámicamente -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
     <!-- Pie de página mejorado con texto en minúsculas -->
     <div class="footer">
         <div class="footer-line"></div>
@@ -592,54 +442,42 @@
             }
         }
         
-    // Función para verificar la sesión
-async function checkSession() {
-    try {
-        const { data, error } = await supabaseClient.auth.getSession();
-        if (error) throw error;
-        
-        const session = data.session;
-        
-        if (session) {
-            // Usuario autenticado - muestra el panel principal
-            loginScreen.style.display = 'none';
-            mainPanel.style.display = 'block';
-            
-            // Muestra el nombre del usuario
-            const user = session.user;
-            const userNameElement = document.getElementById('user-name');
-            if (userNameElement) {
-                userNameElement.textContent = user.user_metadata?.full_name || user.email;
-            }
-            // Función para formatear la fecha
-function formatDate(dateString) {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    });
-}
-            // Carga los registros de personal
-            await loadPersonal();
-        } else {
-            // Usuario no autenticado - muestra el login
-            loginScreen.style.display = 'block';
-            mainPanel.style.display = 'none';
-            
-            // Rellenar el correo si está guardado
-            const rememberedEmail = getRememberedEmail();
-            if (rememberedEmail) {
-                document.getElementById('email').value = rememberedEmail;
-                document.getElementById('remember-credentials').checked = true;
+        // Función para verificar la sesión
+        async function checkSession() {
+            try {
+                const { data, error } = await supabaseClient.auth.getSession();
+                if (error) throw error;
+                
+                const session = data.session;
+                
+                if (session) {
+                    // Usuario autenticado - muestra el panel principal
+                    loginScreen.style.display = 'none';
+                    mainPanel.style.display = 'block';
+                    
+                    // Rellenar el correo si está guardado
+                    const rememberedEmail = getRememberedEmail();
+                    if (rememberedEmail) {
+                        document.getElementById('email').value = rememberedEmail;
+                        document.getElementById('remember-credentials').checked = true;
+                    }
+                } else {
+                    // Usuario no autenticado - muestra el login
+                    loginScreen.style.display = 'block';
+                    mainPanel.style.display = 'none';
+                    
+                    // Rellenar el correo si está guardado
+                    const rememberedEmail = getRememberedEmail();
+                    if (rememberedEmail) {
+                        document.getElementById('email').value = rememberedEmail;
+                        document.getElementById('remember-credentials').checked = true;
+                    }
+                }
+            } catch (error) {
+                console.error('Error al verificar sesión:', error);
+                showError('Error al verificar sesión. Recarga la página.');
             }
         }
-    } catch (error) {
-        console.error('Error al verificar sesión:', error);
-        showError('Error al verificar sesión: ' + error.message);
-    }
-}
         
         // Función para iniciar sesión
         async function login(e) {
@@ -715,40 +553,6 @@ function formatDate(dateString) {
         document.addEventListener('DOMContentLoaded', () => {
             checkSession();
         });
-        // Obtener la sesión actual
-const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-if (sessionError || !session) {
-    throw new Error("No hay sesión activa");
-}
-
-const personal = {
-    id: editingPersonalId || Date.now().toString(),
-    nombres: document.getElementById('nombres').value,
-    apellidos: document.getElementById('apellidos').value,
-    edad: document.getElementById('edad').value,
-    rango: document.getElementById('rango').value,
-    sexo: document.getElementById('sexo').value,
-    cedula: document.getElementById('cedula').value,
-    fechaInicio: document.getElementById('fecha-inicio').value,
-    tipoExpediente: document.getElementById('tipo-expediente').value,
-    icap: document.getElementById('icap').value,
-    condicion: document.getElementById('condicion').value,
-    anio: document.getElementById('anio').value,
-    expedientePenal: document.getElementById('expediente-penal').value,
-    servicio: document.getElementById('servicio').value,
-    tipoFalta: document.getElementById('tipo-falta').value,
-    origenFalta: document.getElementById('origen-falta').value,
-    falta: document.getElementById('falta').value,
-    denunciante: document.getElementById('denunciante').value,
-    detenido: document.getElementById('detenido').value,
-    estatus: document.getElementById('estatus').value,
-    decision: document.getElementById('decision').value,
-    resena: document.getElementById('resena').value,
-    causa: document.getElementById('causa').value,
-    foto: document.getElementById('profile-picture').src,
-    user_id: session.user.id, // ¡CAMPO CRÍTICO AÑADIDO!
-    fechaRegistro: new Date().toISOString().split('T')[0] // Añadir fecha de registro
-};
     </script>
 </body>
 </html>
