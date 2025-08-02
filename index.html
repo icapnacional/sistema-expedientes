@@ -24,7 +24,7 @@
         
         .login-container {
             max-width: 450px;
-            margin: 20px auto 50px;
+            margin: 50px auto;
             background: white;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -36,7 +36,7 @@
             color: white;
             padding: 25px 20px;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 30px;
         }
         
         .centered-title {
@@ -282,7 +282,7 @@
     <img src="https://raw.githubusercontent.com/gamakingrock/sistema-expedientes/main/images/policia-nacional-bolivariana.png" 
      alt="Logo Policía Nacional Bolivariana" 
      class="img-fluid" 
-     style="max-height: 200px;">
+     style="max-height: 150px;">
 </div>
     <!-- Pantalla de Login -->
     <div class="container" id="login-screen">
@@ -1091,98 +1091,66 @@
             }
         }
 
-      // Función para guardar un registro de personal
-async function savePersonal() {
-    // Protección contra guardados duplicados
-    if (isSaving) {
-        console.log("Guardado ya en progreso, ignorando solicitud adicional");
-        return;
-    }
-    
-    try {
-        isSaving = true; // Activar el flag
-        
-        // Asegurar que hay una sesión válida
-        await ensureSession();
-        
-        // Obtener la sesión actual CORRECTAMENTE
-        const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError || !session) {
-            // Intentar recuperar la sesión desde localStorage si existe
-            const rememberedEmail = getRememberedEmail();
-            if (rememberedEmail && !sessionError) {
-                // Si hay un correo recordado pero no hay sesión, muestra mensaje específico
-                throw new Error("La sesión ha expirado. Por favor, inicie sesión nuevamente.");
+        // Función para editar un registro de personal
+        async function editPersonal(id) {
+            try {
+                // Obtener el registro de Supabase
+                const { data, error } = await supabaseClient
+                    .from('personal')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                    
+                if (error) throw error;
+                
+                if (!data) {
+                    throw new Error('Registro no encontrado');
+                }
+                
+                // Rellenar el formulario con los datos
+                document.getElementById('nombres').value = data.nombres || '';
+                document.getElementById('apellidos').value = data.apellidos || '';
+                document.getElementById('edad').value = data.edad || '';
+                document.getElementById('jerarquia').value = data.jerarquia || '';
+                document.getElementById('sexo').value = data.sexo || '';
+                document.getElementById('cedula').value = data.cedula || '';
+                document.getElementById('fecha-inicio').value = data.fecha_inicio || '';
+                document.getElementById('tipo-expediente').value = data.tipo_expediente || '';
+                document.getElementById('icap').value = data.icap || '';
+                document.getElementById('condicion').value = data.condicion || '';
+                document.getElementById('anio').value = data.anio || '';
+                document.getElementById('expediente-penal').value = data.expediente_penal || '';
+                document.getElementById('servicio').value = data.servicio || '';
+                document.getElementById('tipo-falta').value = data.tipo_falta || '';
+                document.getElementById('origen-falta').value = data.origen_falta || '';
+                document.getElementById('falta').value = data.falta || '';
+                document.getElementById('denunciante').value = data.denunciante || '';
+                document.getElementById('detenido').value = data.detenido || '';
+                document.getElementById('estatus').value = data.estatus || '';
+                document.getElementById('decision').value = data.decision || '';
+                document.getElementById('expediente-numero').value = data.expediente_numero || '';
+                document.getElementById('registrado-por').value = data.registrado_por || '';
+                document.getElementById('sustanciador').value = data.sustanciador || '';
+                document.getElementById('remision').value = data.remision || '';
+                document.getElementById('resena').value = data.resena || '';
+                document.getElementById('causa').value = data.causa || '';
+                
+                // Actualizar la foto
+                if (data.foto) {
+                    document.getElementById('profile-picture').src = data.foto;
+                }
+                
+                // Establecer el ID de edición
+                editingPersonalId = id;
+                
+                // Desplazar a la sección del formulario
+                document.getElementById('personal-form').scrollIntoView({ behavior: 'smooth' });
+                
+            } catch (error) {
+                console.error('Error al editar registro de personal:', error);
+                alert(`Error al editar: ${error.message}`);
             }
-            throw new Error("No hay sesión activa. Por favor, inicie sesión.");
         }
-        
-        // Verificar si el usuario tiene permisos para editar
-        const userRole = session.user.user_metadata?.role || 'user';
-        if (editingPersonalId && userRole !== 'admin') {
-            throw new Error("No tiene permisos para editar registros. Contacte al administrador.");
-        }
-
-        const personal = {
-            id: editingPersonalId || Date.now().toString(),
-            nombres: document.getElementById('nombres').value,
-            apellidos: document.getElementById('apellidos').value,
-            edad: document.getElementById('edad').value,
-            jerarquia: document.getElementById('jerarquia').value,
-            sexo: document.getElementById('sexo').value,
-            cedula: document.getElementById('cedula').value,
-            fecha_inicio: document.getElementById('fecha-inicio').value,
-            tipo_expediente: document.getElementById('tipo-expediente').value,
-            icap: document.getElementById('icap').value,
-            condicion: document.getElementById('condicion').value,
-            anio: document.getElementById('anio').value,
-            expediente_penal: document.getElementById('expediente-penal').value,
-            servicio: document.getElementById('servicio').value,
-            tipo_falta: document.getElementById('tipo-falta').value,
-            origen_falta: document.getElementById('origen-falta').value,
-            falta: document.getElementById('falta').value,
-            denunciante: document.getElementById('denunciante').value,
-            detenido: document.getElementById('detenido').value,
-            estatus: document.getElementById('estatus').value,
-            decision: document.getElementById('decision').value,
-            expediente_numero: document.getElementById('expediente-numero').value,
-            registrado_por: document.getElementById('registrado-por').value,
-            sustanciador: document.getElementById('sustanciador').value,
-            remision: document.getElementById('remision').value,
-            resena: document.getElementById('resena').value,
-            causa: document.getElementById('causa').value,
-            fecha_registro: new Date().toISOString().split('T')[0],
-            foto: document.getElementById('profile-picture').src,
-            user_id: session.user.id
-        };
-
-        // Validación básica
-        if (!personal.nombres || !personal.apellidos || !personal.cedula || !personal.jerarquia || !personal.sexo) {
-            throw new Error("Por favor, complete todos los campos obligatorios");
-        }
-
-        // Guardar en Supabase
-        const { error } = await supabaseClient
-            .from('personal')
-            .upsert([personal], { onConflict: 'id' });
-            
-        if (error) throw error;
-        
-        // Mostrar mensaje de éxito
-        alert('Registro de personal guardado exitosamente');
-        
-        // Limpiar el formulario
-        resetPersonalForm();
-        
-        // Recargar la lista
-        await loadPersonal();
-    } catch (error) {
-        console.error('Error al guardar registro de personal:', error);
-        alert(`Error al guardar: ${error.message}`);
-    } finally {
-        isSaving = false; // Desactivar el flag
-    }
-}
 
         // Función para eliminar un registro de personal
         async function deletePersonal(id) {
@@ -1484,57 +1452,46 @@ async function savePersonal() {
             }
         }
 
-      // Función para registrar un usuario
-async function register(e) {
-    e.preventDefault();
-    const email = document.getElementById('reg-email').value;
-    const password = document.getElementById('reg-password').value;
-    const fullName = document.getElementById('reg-name').value;
-    
-    try {
-        hideError();
-        
-        // Solo el administrador puede crear nuevos usuarios
-        const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError || !session) {
-            throw new Error("Debe iniciar sesión como administrador para crear nuevos usuarios");
-        }
-        
-        const userRole = session.user.user_metadata?.role || 'user';
-        if (userRole !== 'admin') {
-            throw new Error("Solo el administrador puede crear nuevos usuarios");
-        }
-        
-        const { data, error } = await supabaseClient.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-                 {
-                    full_name: fullName,
-                    role: 'user'  // Todos los nuevos usuarios serán de rol "user"
+        // Función para registrar un usuario
+        async function register(e) {
+            e.preventDefault();
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const fullName = document.getElementById('reg-name').value;
+            
+            try {
+                hideError();
+                
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: fullName
+                        }
+                    }
+                });
+                
+                if (error) {
+                    throw error;
                 }
+                
+                if (data.user) {
+                    console.log('Registro exitoso', data);
+                    alert('¡Cuenta creada! Revisa tu correo para confirmar.');
+                    showLoginForm();
+                } else {
+                    console.log('Registro pendiente de confirmación', data);
+                    alert('¡Cuenta creada! Revisa tu correo para confirmar.');
+                    showLoginForm();
+                }
+            } catch (error) {
+                console.error('Error al registrar:', error);
+                alert('Error: ' + error.message);
+                return;
             }
-        });
-        
-        if (error) {
-            throw error;
         }
-        
-        if (data.user) {
-            console.log('Registro exitoso', data);
-            alert('¡Usuario creado exitosamente!');
-            showLoginForm();
-        } else {
-            console.log('Registro pendiente de confirmación', data);
-            alert('¡Usuario creado exitosamente! Revisa el correo para confirmar.');
-            showLoginForm();
-        }
-    } catch (error) {
-        console.error('Error al registrar:', error);
-        alert('Error: ' + error.message);
-        return;
-    }
-}
+
         // Función para iniciar sesión
         async function login(e) {
             e.preventDefault();
@@ -1763,58 +1720,6 @@ async function register(e) {
                 alert('Error al inicializar el sistema: ' + error.message);
             }
         });
-        // Función para aplicar restricciones según el rol del usuario
-function applyRoleRestrictions(role) {
-    // Si es administrador, mostrar todos los elementos
-    if (role === 'admin') {
-        document.querySelectorAll('.edit-personal, .delete-personal').forEach(button => {
-            button.style.display = '';
-        });
-        
-        // Mostrar botones de administración de desplegables
-        document.querySelectorAll('.manage-dropdown').forEach(button => {
-            button.style.display = '';
-        });
-        
-        // Permitir edición del formulario
-        const formElements = document.querySelectorAll('#personal-form input, #personal-form select, #personal-form textarea');
-        formElements.forEach(element => {
-            element.disabled = false;
-        });
-        
-        return;
-    }
-    
-    // Para usuarios normales:
-    
-    // 1. Ocultar botones de edición y eliminación en la lista
-    document.querySelectorAll('.edit-personal, .delete-personal').forEach(button => {
-        button.style.display = 'none';
-    });
-    
-    // 2. Ocultar botones de administración de desplegables
-    document.querySelectorAll('.manage-dropdown').forEach(button => {
-        button.style.display = 'none';
-    });
-    
-    // 3. Deshabilitar campos de edición en el formulario
-    const formElements = document.querySelectorAll('#personal-form input, #personal-form select, #personal-form textarea');
-    formElements.forEach(element => {
-        // Permitir editar solo campos específicos si es necesario
-        if (element.id !== 'nombres' && 
-            element.id !== 'apellidos' && 
-            element.id !== 'cedula' && 
-            element.id !== 'edad') {
-            element.disabled = true;
-        }
-    });
-    
-    // 4. Modificar el texto del botón de guardar
-    const saveButton = document.querySelector('#personal-form button[type="submit"]');
-    if (saveButton) {
-        saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Registrar Nuevo Personal';
-    }
-}
     </script>
 </body>
 </html>
