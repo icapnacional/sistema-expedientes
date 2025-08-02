@@ -868,13 +868,6 @@
 </div>
 
 
-
-
-
-    
-
-    
-
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -1047,31 +1040,31 @@ function formatDate(dateString) {
 
 // Función para guardar un registro de personal
 async function savePersonal() {
-    const personal = {
-        id: editingPersonalId || Date.now().toString(),
-        nombres: document.getElementById('nombres').value,
-        apellidos: document.getElementById('apellidos').value,
-        edad: document.getElementById('edad').value,
-        rango: document.getElementById('rango').value,
-        sexo: document.getElementById('sexo').value,
-        cedula: document.getElementById('cedula').value,
-        fechaInicio: document.getElementById('fecha-inicio').value,
-        tipoExpediente: document.getElementById('tipo-expediente').value,
-        icap: document.getElementById('icap').value,
-        condicion: document.getElementById('condicion').value,
-        anio: document.getElementById('anio').value,
-        expedientePenal: document.getElementById('expediente-penal').value,
-        servicio: document.getElementById('servicio').value,
-        tipoFalta: document.getElementById('tipo-falta').value,
-        origenFalta: document.getElementById('origen-falta').value,
-        falta: document.getElementById('falta').value,
-        denunciante: document.getElementById('denunciante').value,
-        detenido: document.getElementById('detenido').value,
-        estatus: document.getElementById('estatus').value,
-        decision: document.getElementById('decision').value,
-        resena: document.getElementById('resena').value,
-        causa: document.getElementById('causa').value,
-        foto: document.getElementById('profile-picture').src
+  const personal = {
+    id: editingPersonalId || Date.now().toString(),
+    nombres: document.getElementById('nombres').value,
+    apellidos: document.getElementById('apellidos').value,
+    edad: document.getElementById('edad').value,
+    rango: document.getElementById('rango').value,
+    sexo: document.getElementById('sexo').value,
+    cedula: document.getElementById('cedula').value,
+    fechaInicio: document.getElementById('fecha-inicio').value,
+    tipoExpediente: document.getElementById('tipo-expediente').value,
+    icap: document.getElementById('icap').value,
+    condicion: document.getElementById('condicion').value,
+    anio: document.getElementById('anio').value,
+    expedientePenal: document.getElementById('expediente-penal').value,
+    servicio: document.getElementById('servicio').value,
+    tipoFalta: document.getElementById('tipo-falta').value,
+    origenFalta: document.getElementById('origen-falta').value,
+    falta: document.getElementById('falta').value,
+    denunciante: document.getElementById('denunciante').value,
+    detenido: document.getElementById('detenido').value,
+    estatus: document.getElementById('estatus').value,
+    decision: document.getElementById('decision').value,
+    resena: document.getElementById('resena').value,
+    causa: document.getElementById('causa').value,
+    foto: document.getElementById('profile-picture').src
     };
 
     try {
@@ -1116,10 +1109,10 @@ async function loadPersonal() {
         
         // Obtener los registros de Supabase
         const { data, error } = await supabaseClient
-            .from('personal')
-            .select('*')
-            .order('fechaRegistro', { ascending: false });
-            
+    .from('personal')
+    .select('*')
+    .order('created_at', { ascending: false });
+        
         if (error) throw error;
         
         // Si no hay registros
@@ -1140,24 +1133,23 @@ async function loadPersonal() {
         data.forEach(personal => {
             const row = document.createElement('tr');
             
-            row.innerHTML = `
-                <td><img src="${personal.foto || 'https://placehold.co/40x40/003366/white?text=FP'}" 
-                         class="rounded-circle" width="40"></td>
-                <td>${personal.nombres || 'N/A'}</td>
-                <td>${personal.apellidos || 'N/A'}</td>
-                <td>${personal.cedula || 'N/A'}</td>
-                <td>${personal.rango || 'N/A'}</td>
-                <td>${formatDate(personal.created_at)}</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary edit-personal" data-id="${personal.id}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger delete-personal ms-1" data-id="${personal.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            `;
-            
+  row.innerHTML = `
+    <td><img src="${personal.foto || 'https://placehold.co/40x40/003366/white?text=FP'}" 
+             class="rounded-circle" width="40"></td>
+    <td>${personal.nombres || 'N/A'}</td>
+    <td>${personal.apellidos || 'N/A'}</td>
+    <td>${personal.cedula || 'N/A'}</td>
+    <td>${personal.rango || 'N/A'}</td>
+    <td>${formatDate(personal.created_at)}</td> <!-- ¡CORREGIDO! Usa created_at -->
+    <td>
+        <button class="btn btn-sm btn-outline-primary edit-personal" data-id="${personal.id}">
+            <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-danger delete-personal ms-1" data-id="${personal.id}">
+            <i class="fas fa-trash"></i>
+        </button>
+    </td>
+`;
             personalList.appendChild(row);
         });
         
