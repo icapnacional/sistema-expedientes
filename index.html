@@ -1059,7 +1059,6 @@ async function savePersonal() {
         decision: document.getElementById('decision').value,
         resena: document.getElementById('resena').value,
         causa: document.getElementById('causa').value,
-        fechaRegistro: new Date().toISOString().split('T')[0],
         foto: document.getElementById('profile-picture').src
     };
 
@@ -1136,7 +1135,7 @@ async function loadPersonal() {
                 <td>${personal.apellidos || 'N/A'}</td>
                 <td>${personal.cedula || 'N/A'}</td>
                 <td>${personal.rango || 'N/A'}</td>
-                <td>${personal.fechaRegistro || 'N/A'}</td>
+               <td>${personal.created_at ? new Date(personal.created_at).toLocaleDateString() : 'N/A'}</td>
                 <td>
                     <button class="btn btn-sm btn-outline-primary edit-personal" data-id="${personal.id}">
                         <i class="fas fa-edit"></i>
