@@ -819,20 +819,45 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Configuración de Supabase
-        const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
+      // Configuración de Supabase
+const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
+
+// Inicialización CORRECTA de Supabase con configuración de autenticación
+const { createClient } = supabase;
+const supabaseClient = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+});
+        // Función para verificar si la sesión es válida
+async function isSessionValid() {
+    try {
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        return !!session;
+    } catch (error) {
+        console.error('Error al verificar validez de sesión:', error);
+        return false;
+    }
+}
+
+// Función para asegurar que hay una sesión válida
+async function ensureSession() {
+    const isValid = await isSessionValid();
+    if (!isValid) {
+        // Actualizar la interfaz
+        loginScreen.style.display = 'block';
+        mainPanel.style.display = 'none';
         
-        // Inicialización CORRECTA de Supabase
-        const { createClient } = supabase;
-        const supabaseClient = createClient(supabaseUrl, supabaseKey);
+        // Limpiar datos del formulario
+        resetPersonalForm();
         
-        // Elementos del DOM
-        const loginScreen = document.getElementById('login-screen');
-        const mainPanel = document.getElementById('main-panel');
-        const errorMessage = document.getElementById('error-message');
-        const logoutBtn = document.getElementById('logout-btn');
-        
+        throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+    }
+}
         // Funciones para manejar "Recordar mis credenciales"
         function saveRememberedEmail(email) {
             try {
@@ -860,42 +885,44 @@
         }
         
         // Función para verificar la sesión
-        async function checkSession() {
-            try {
-                const { data, error } = await supabaseClient.auth.getSession();
-                if (error) throw error;
-                
-                const session = data.session;
-                
-                if (session) {
-                    // Usuario autenticado - muestra el panel principal
-                    loginScreen.style.display = 'none';
-                    mainPanel.style.display = 'block';
-                    
-                    // Rellenar el correo si está guardado
-                    const rememberedEmail = getRememberedEmail();
-                    if (rememberedEmail) {
-                        document.getElementById('email').value = rememberedEmail;
-                        document.getElementById('remember-credentials').checked = true;
-                    }
-                } else {
-                    // Usuario no autenticado - muestra el login
-                    loginScreen.style.display = 'block';
-                    mainPanel.style.display = 'none';
-                    
-                    // Rellenar el correo si está guardado
-                    const rememberedEmail = getRememberedEmail();
-                    if (rememberedEmail) {
-                        document.getElementById('email').value = rememberedEmail;
-                        document.getElementById('remember-credentials').checked = true;
-                    }
-                }
-            } catch (error) {
-                console.error('Error al verificar sesión:', error);
-                showError('Error al verificar sesión. Recarga la página.');
+async function checkSession() {
+    try {
+        // Obtener la sesión CORRECTAMENTE
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        
+        if (sessionError) throw sessionError;
+        
+        if (session) {
+            // Usuario autenticado - muestra el panel principal
+            loginScreen.style.display = 'none';
+            mainPanel.style.display = 'block';
+            
+            // Muestra el nombre del usuario
+            const user = session.user;
+            const userNameElement = document.getElementById('user-name');
+            if (userNameElement) {
+                userNameElement.textContent = user.user_metadata?.full_name || user.email;
+            }
+            
+            // Carga los registros de personal
+            await loadPersonal();
+        } else {
+            // Usuario no autenticado - muestra el login
+            loginScreen.style.display = 'block';
+            mainPanel.style.display = 'none';
+            
+            // Rellenar el correo si está guardado
+            const rememberedEmail = getRememberedEmail();
+            if (rememberedEmail) {
+                document.getElementById('email').value = rememberedEmail;
+                document.getElementById('remember-credentials').checked = true;
             }
         }
-        
+    } catch (error) {
+        console.error('Error al verificar sesión:', error);
+        showError('Error al verificar sesión: ' + error.message);
+    }
+}
         // Función para iniciar sesión
         async function login(e) {
             e.preventDefault();
@@ -987,19 +1014,14 @@ function formatDate(dateString) {
 
 // Función para guardar un registro de personal
 async function savePersonal() {
-    // Protección contra guardados duplicados
-    if (isSaving) {
-        console.log("Guardado ya en progreso, ignorando solicitud adicional");
-        return;
-    }
-    
     try {
-        isSaving = true; // Activar el flag
+        // Asegurar que hay una sesión válida
+        await ensureSession();
         
-        // Obtener la sesión actual
+        // Obtener la sesión actual CORRECTAMENTE
         const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
         if (sessionError || !session) {
-            throw new Error("No hay sesión activa");
+            throw new Error("No hay sesión activa. Por favor, inicie sesión.");
         }
 
         const personal = {
@@ -1058,14 +1080,13 @@ async function savePersonal() {
     } catch (error) {
         console.error('Error al guardar registro de personal:', error);
         alert(`Error al guardar: ${error.message}`);
-    } finally {
-        isSaving = false; // Desactivar el flag
     }
-}
-
 // Función para cargar los registros de personal
 async function loadPersonal() {
     try {
+        // Asegurar que hay una sesión válida
+        await ensureSession();
+        
         // Mostrar loader
         const personalList = document.getElementById('personal-list');
         if (!personalList) return;
@@ -1081,8 +1102,10 @@ async function loadPersonal() {
         `;
         
         // Obtener los registros de Supabase
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) throw new Error("No hay sesión activa");
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !session) {
+            throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+        }
         
         const { data, error } = await supabaseClient
             .from('personal')
@@ -1158,7 +1181,6 @@ async function loadPersonal() {
         `;
     }
 }
-
 // Función para editar un registro de personal
 async function editPersonal(id) {
     try {
@@ -1276,21 +1298,74 @@ function resetPersonalForm() {
 }
 
 // Configurar eventos para el registro de personal
-document.addEventListener('DOMContentLoaded', () => {
-    // Configurar el evento de submit del formulario de forma segura
-    const personalForm = document.getElementById('personal-form');
-    
-    if (personalForm) {
-        // Verificar si ya existe un listener para evitar duplicados
-        const formClone = personalForm.cloneNode(true);
-        personalForm.parentNode.replaceChild(formClone, personalForm);
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Verificar la sesión inicial
+        await checkSession();
         
-        formClone.addEventListener('submit', (e) => {
-            e.preventDefault();
-            savePersonal();
-        });
+        // Configurar el evento de submit del formulario de forma segura
+        const personalForm = document.getElementById('personal-form');
+        
+        if (personalForm) {
+            // Verificar si ya existe un listener para evitar duplicados
+            const formClone = personalForm.cloneNode(true);
+            personalForm.parentNode.replaceChild(formClone, personalForm);
+            
+            formClone.addEventListener('submit', (e) => {
+                e.preventDefault();
+                savePersonal();
+            });
+        }
+        
+        // Configurar el evento de subida de foto
+        const profilePictureUpload = document.getElementById('profile-picture-upload');
+        if (profilePictureUpload) {
+            profilePictureUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        document.getElementById('profile-picture').src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        // Configurar búsqueda
+        const searchPersonal = document.getElementById('search-personal');
+        if (searchPersonal) {
+            searchPersonal.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#personal-list tr');
+                
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    let match = false;
+                    
+                    for (let i = 0; i < cells.length - 1; i++) { // Excluir la última celda (acciones)
+                        if (cells[i].textContent.toLowerCase().includes(searchTerm)) {
+                            match = true;
+                            break;
+                        }
+                    }
+                    
+                    row.style.display = match ? '' : 'none';
+                });
+            });
+        }
+        
+        // Cargar los registros de personal si el panel está visible
+        if (document.getElementById('personal-list') && mainPanel.style.display !== 'none') {
+            await loadPersonal();
+        }
+        
+        console.log('Sistema inicializado correctamente');
+    } catch (error) {
+        console.error('Error al inicializar el sistema:', error);
+        alert('Error al inicializar el sistema: ' + error.message);
     }
-    
+});
     // Configurar el evento de subida de foto
     const profilePictureUpload = document.getElementById('profile-picture-upload');
     if (profilePictureUpload) {
@@ -1597,9 +1672,17 @@ async function saveEditedOption() {
     }
     
     try {
-        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError || !session) throw new Error("No hay sesión activa");
-        
+        // Obtener la sesión actual CORRECTAMENTE
+const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+if (sessionError || !session) {
+    // Intentar recuperar la sesión desde localStorage si existe
+    const rememberedEmail = getRememberedEmail();
+    if (rememberedEmail && !sessionError) {
+        // Si hay un correo recordado pero no hay sesión, muestra mensaje específico
+        throw new Error("La sesión ha expirado. Por favor, inicie sesión nuevamente.");
+    }
+    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+}
         const updatedOption = {
             option_value: newValue,
             option_label: newLabel,
