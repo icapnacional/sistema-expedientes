@@ -24,7 +24,7 @@
         
         .login-container {
             max-width: 450px;
-            margin: 20px auto 50px; /* Reducido el margen superior para subir el formulario */
+            margin: 20px auto 50px;
             background: white;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -36,7 +36,7 @@
             color: white;
             padding: 25px 20px;
             text-align: center;
-            margin-bottom: 15px; /* Reducido de 30px a 15px para subir el formulario */
+            margin-bottom: 15px;
         }
         
         .centered-title {
@@ -830,7 +830,8 @@
         // Función para verificar si la sesión es válida
         async function isSessionValid() {
             try {
-                const {  { session }, error } = await supabaseClient.auth.getSession();
+                // Obtener la sesión CORRECTAMENTE (Supabase v2)
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
                 if (error) throw error;
                 return !!session;
             } catch (error) {
@@ -854,11 +855,11 @@
             }
         }
 
-        // Función para verificar la sesión
+        // Función CORREGIDA para verificar la sesión
         async function checkSession() {
             try {
-                // Obtener la sesión CORRECTAMENTE
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                // Obtener la sesión CORRECTAMENTE (Supabase v2)
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 
                 if (sessionError) throw sessionError;
                 
@@ -879,9 +880,12 @@
                         
                         userNameElement.textContent = fullName;
                         
-                        // Verificar el rol del usuario
+                        // Verificar el rol del usuario CORRECTAMENTE (Supabase v2)
                         const userRole = user.user_metadata?.role || 'user';
                         currentUserRole = userRole;
+                        
+                        console.log('ROL DEL USUARIO:', userRole);
+                        console.log('METADATOS COMPLETOS:', user.user_metadata);
                         
                         // Aplicar restricciones según el rol
                         applyRoleRestrictions(userRole);
@@ -907,10 +911,15 @@
             }
         }
 
-        // Función para aplicar restricciones según el rol del usuario
+        // Función CORREGIDA para aplicar restricciones según el rol del usuario
         function applyRoleRestrictions(role) {
+            console.log('Aplicando restricciones para rol:', role);
+            
             // Si es administrador, mostrar todos los elementos
             if (role === 'admin') {
+                console.log('Usuario es ADMINISTRADOR');
+                
+                // Mostrar botones de edición y eliminación
                 document.querySelectorAll('.edit-personal, .delete-personal').forEach(button => {
                     button.style.display = '';
                 });
@@ -920,16 +929,23 @@
                     button.style.display = '';
                 });
                 
-                // Permitir edición del formulario
+                // Permitir edición del formulario completo
                 const formElements = document.querySelectorAll('#personal-form input, #personal-form select, #personal-form textarea');
                 formElements.forEach(element => {
                     element.disabled = false;
                 });
                 
+                // Restaurar texto original del botón
+                const saveButton = document.querySelector('#personal-form button[type="submit"]');
+                if (saveButton) {
+                    saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Guardar Registro de Personal';
+                }
+                
                 return;
             }
             
             // Para usuarios normales:
+            console.log('Usuario es USUARIO NORMAL');
             
             // 1. Ocultar botones de edición y eliminación en la lista
             document.querySelectorAll('.edit-personal, .delete-personal').forEach(button => {
@@ -945,10 +961,12 @@
             const formElements = document.querySelectorAll('#personal-form input, #personal-form select, #personal-form textarea');
             formElements.forEach(element => {
                 // Permitir editar solo campos básicos
-                if (element.id !== 'nombres' && 
-                    element.id !== 'apellidos' && 
-                    element.id !== 'cedula' && 
-                    element.id !== 'edad') {
+                if (element.id === 'nombres' || 
+                    element.id === 'apellidos' || 
+                    element.id === 'cedula' || 
+                    element.id === 'edad') {
+                    element.disabled = false;
+                } else {
                     element.disabled = true;
                 }
             });
@@ -971,7 +989,7 @@
             });
         }
 
-        // Función para guardar un registro de personal
+        // Función CORREGIDA para guardar un registro de personal
         async function savePersonal() {
             // Protección contra guardados duplicados
             if (isSaving) {
@@ -985,8 +1003,8 @@
                 // Asegurar que hay una sesión válida
                 await ensureSession();
                 
-                // Obtener la sesión actual CORRECTAMENTE
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                // Obtener la sesión actual CORRECTAMENTE (Supabase v2)
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     // Intentar recuperar la sesión desde localStorage si existe
                     const rememberedEmail = getRememberedEmail();
@@ -999,6 +1017,7 @@
                 
                 // Verificar si el usuario tiene permisos para editar
                 const userRole = session.user.user_metadata?.role || 'user';
+                console.log('ROL EN savePersonal:', userRole);
                 if (editingPersonalId && userRole !== 'admin') {
                     throw new Error("No tiene permisos para editar registros. Contacte al administrador.");
                 }
@@ -1085,7 +1104,7 @@
                 `;
                 
                 // Obtener los registros de Supabase
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
@@ -1165,7 +1184,7 @@
             }
         }
 
-        // Función para editar un registro de personal
+        // Función CORREGIDA para editar un registro de personal
         async function editPersonal(id) {
             try {
                 // Obtener el registro de Supabase
@@ -1182,12 +1201,13 @@
                 }
                 
                 // Verificar si el usuario tiene permisos para editar
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
                 const userRole = session.user.user_metadata?.role || 'user';
+                console.log('ROL EN editPersonal:', userRole);
                 if (userRole !== 'admin') {
                     throw new Error("No tiene permisos para editar registros. Contacte al administrador.");
                 }
@@ -1237,16 +1257,17 @@
             }
         }
 
-        // Función para eliminar un registro de personal
+        // Función CORREGIDA para eliminar un registro de personal
         async function deletePersonal(id) {
             try {
                 // Verificar si el usuario tiene permisos para editar
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
                 const userRole = session.user.user_metadata?.role || 'user';
+                console.log('ROL EN deletePersonal:', userRole);
                 if (userRole !== 'admin') {
                     throw new Error("No tiene permisos para eliminar registros. Contacte al administrador.");
                 }
@@ -1306,7 +1327,7 @@
         // Función para cargar las opciones de un desplegable
         async function loadDropdownOptions(field) {
             try {
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
@@ -1355,10 +1376,17 @@
             }
         }
 
-        // Función para mostrar el modal de administración
+        // Función CORREGIDA para mostrar el modal de administración
         async function showManageDropdownModal(field) {
             // Verificar si el usuario tiene permisos para administrar desplegables
-            if (currentUserRole !== 'admin') {
+            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+            if (sessionError || !session) {
+                alert("No hay sesión activa. Por favor, inicie sesión.");
+                return;
+            }
+            
+            const userRole = session.user.user_metadata?.role || 'user';
+            if (userRole !== 'admin') {
                 alert("No tiene permisos para administrar opciones. Contacte al administrador.");
                 return;
             }
@@ -1379,7 +1407,7 @@
         // Función para cargar las opciones para el modal de administración
         async function loadDropdownOptionsForManagement(field) {
             try {
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
@@ -1460,7 +1488,7 @@
             }
             
             try {
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 const newOption = {
@@ -1565,7 +1593,7 @@
                 hideError();
                 
                 // Solo el administrador puede crear nuevos usuarios
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("Debe iniciar sesión para crear nuevos usuarios");
                 }
@@ -1579,7 +1607,7 @@
                     email: email,
                     password: password,
                     options: {
-                         {
+                        data: {
                             full_name: fullName,
                             role: 'user'  // Todos los nuevos usuarios serán de rol "user"
                         }
@@ -1606,7 +1634,7 @@
             }
         }
 
-        // Función para iniciar sesión
+        // Función CORREGIDA para iniciar sesión
         async function login(e) {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -1649,6 +1677,18 @@
                     saveRememberedEmail(email);
                 } else {
                     clearRememberedEmail();
+                }
+                
+                // VERIFICAR EL ROL INMEDIATAMENTE DESPUÉS DEL LOGIN
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                const userRole = session?.user?.user_metadata?.role || 'user';
+                console.log('ROL OBTENIDO DESPUÉS DEL LOGIN:', userRole);
+                
+                // Si es administrador, muestra mensaje de bienvenida especial
+                if (userRole === 'admin') {
+                    alert('¡Bienvenido Administrador! Tiene permisos completos.');
+                } else {
+                    alert('¡Bienvenido! Solo puede registrar nuevos registros.');
                 }
                 
                 // Si llegamos aquí, el inicio de sesión fue exitoso
