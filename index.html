@@ -782,6 +782,54 @@
         </div>
     </div>
 </div>
+        <!-- Modal de Administración de Desplegables -->
+<div class="modal fade" id="manageDropdownModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="manageDropdownModalLabel">Administrar Opciones: <span id="dropdown-field-name"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="new-option-value" class="form-label">Valor de la Opción</label>
+                    <input type="text" class="form-control" id="new-option-value" placeholder="Ej: cabo_mayor">
+                </div>
+                <div class="mb-3">
+                    <label for="new-option-label" class="form-label">Etiqueta de la Opción</label>
+                    <input type="text" class="form-control" id="new-option-label" placeholder="Ej: Cabo Mayor">
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="new-option-global" checked>
+                    <label class="form-check-label" for="new-option-global">Opción Global (visible para todos)</label>
+                </div>
+                <button type="button" class="btn btn-primary mb-4" id="btn-add-option">
+                    <i class="fas fa-plus me-2"></i>Agregar Nueva Opción
+                </button>
+                
+                <h6 class="mb-3">Opciones Existentes:</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Valor</th>
+                                <th>Etiqueta</th>
+                                <th>Tipo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="options-list">
+                            <!-- Las opciones se cargarán aquí dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -1299,6 +1347,359 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('personal-list')) {
         loadPersonal();
     }
+});
+        // Variables globales para la gestión de desplegables
+let currentDropdownField = null;
+let editingOptionId = null;
+
+// Función para cargar las opciones de un desplegable
+async function loadDropdownOptions(field) {
+    try {
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !session) throw new Error("No hay sesión activa");
+        
+        // Obtener opciones globales y del usuario
+        const { data, error } = await supabaseClient
+            .from('dropdown_options')
+            .select('*')
+            .or(`field_name.eq.${field},and(field_name.eq.${field},user_id.eq.${session.user.id})`)
+            .order('option_label', { ascending: true });
+            
+        if (error) throw error;
+        
+        // Actualizar el desplegable
+        const selectElement = document.getElementById(field.replace(/-/g, '_'));
+        if (selectElement) {
+            // Limpiar opciones excepto la primera
+            while (selectElement.options.length > 1) {
+                selectElement.remove(1);
+            }
+            
+            // Añadir opciones
+            data.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.option_value;
+                optionElement.textContent = option.option_label;
+                selectElement.appendChild(optionElement);
+            });
+        }
+        
+        return data;
+    } catch (error) {
+        console.error(`Error al cargar opciones para ${field}:`, error);
+        return [];
+    }
+}
+
+// Función para cargar todas las opciones de desplegables
+async function loadAllDropdownOptions() {
+    const fields = [
+        'jerarquia', 'sexo', 'tipo_expediente', 'icap', 'condicion', 
+        'anio', 'expediente_penal', 'servicio', 'tipo_falta', 'origen_falta',
+        'falta', 'denunciante', 'detenido', 'estatus', 'decision'
+    ];
+    
+    for (const field of fields) {
+        await loadDropdownOptions(field);
+    }
+}
+
+// Función para mostrar el modal de administración
+async function showManageDropdownModal(field) {
+    currentDropdownField = field;
+    
+    // Actualizar el título del modal
+    document.getElementById('dropdown-field-name').textContent = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    
+    // Cargar las opciones
+    const options = await loadDropdownOptionsForManagement(field);
+    
+    // Mostrar el modal
+    const manageModal = new bootstrap.Modal(document.getElementById('manageDropdownModal'));
+    manageModal.show();
+}
+
+// Función para cargar las opciones para el modal de administración
+async function loadDropdownOptionsForManagement(field) {
+    try {
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !session) throw new Error("No hay sesión activa");
+        
+        // Obtener opciones globales y del usuario
+        const { data, error } = await supabaseClient
+            .from('dropdown_options')
+            .select('*')
+            .eq('field_name', field)
+            .order('option_label', { ascending: true });
+            
+        if (error) throw error;
+        
+        // Mostrar opciones en la tabla
+        const optionsList = document.getElementById('options-list');
+        optionsList.innerHTML = '';
+        
+        if (data.length === 0) {
+            optionsList.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center py-3 text-muted">
+                        No hay opciones definidas para este campo
+                    </td>
+                </tr>
+            `;
+            return data;
+        }
+        
+        data.forEach(option => {
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>${option.option_value}</td>
+                <td>${option.option_label}</td>
+                <td>${option.is_global ? '<span class="badge bg-primary">Global</span>' : '<span class="badge bg-secondary">Personal</span>'}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary edit-option" data-id="${option.id}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger delete-option ms-1" data-id="${option.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            optionsList.appendChild(row);
+        });
+        
+        // Configurar eventos para los botones
+        document.querySelectorAll('.edit-option').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                editOption(id);
+            });
+        });
+        
+        document.querySelectorAll('.delete-option').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                deleteOption(id);
+            });
+        });
+        
+        return data;
+    } catch (error) {
+        console.error(`Error al cargar opciones para administración de ${field}:`, error);
+        return [];
+    }
+}
+
+// Función para agregar una nueva opción
+async function addOption() {
+    const newValue = document.getElementById('new-option-value').value.trim();
+    const newLabel = document.getElementById('new-option-label').value.trim();
+    const isGlobal = document.getElementById('new-option-global').checked;
+    
+    if (!newValue || !newLabel) {
+        alert('Por favor, complete ambos campos');
+        return;
+    }
+    
+    try {
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !session) throw new Error("No hay sesión activa");
+        
+        const newOption = {
+            field_name: currentDropdownField,
+            option_value: newValue,
+            option_label: newLabel,
+            user_id: isGlobal ? null : session.user.id,
+            is_global: isGlobal
+        };
+        
+        const { error } = await supabaseClient
+            .from('dropdown_options')
+            .insert([newOption]);
+            
+        if (error) throw error;
+        
+        // Limpiar campos
+        document.getElementById('new-option-value').value = '';
+        document.getElementById('new-option-label').value = '';
+        
+        // Recargar opciones
+        await loadDropdownOptionsForManagement(currentDropdownField);
+        
+        // Actualizar el desplegable principal
+        await loadDropdownOptions(currentDropdownField);
+        
+        alert('Opción agregada exitosamente');
+    } catch (error) {
+        console.error('Error al agregar opción:', error);
+        alert(`Error al agregar opción: ${error.message}`);
+    }
+}
+
+// Función para editar una opción
+async function editOption(id) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('dropdown_options')
+            .select('*')
+            .eq('id', id)
+            .single();
+            
+        if (error) throw error;
+        
+        if (!data) {
+            throw new Error('Opción no encontrada');
+        }
+        
+        // Rellenar el formulario de nueva opción con los datos de edición
+        document.getElementById('new-option-value').value = data.option_value;
+        document.getElementById('new-option-label').value = data.option_label;
+        document.getElementById('new-option-global').checked = data.is_global;
+        
+        // Establecer el ID de edición
+        editingOptionId = id;
+        
+        // Desplazar al formulario
+        document.getElementById('new-option-value').scrollIntoView({ behavior: 'smooth' });
+        
+        alert('Ahora edite los valores y haga clic en "Agregar Nueva Opción" para guardar los cambios');
+    } catch (error) {
+        console.error('Error al editar opción:', error);
+        alert(`Error al editar opción: ${error.message}`);
+    }
+}
+
+// Función para eliminar una opción
+async function deleteOption(id) {
+    if (!confirm('¿Está seguro de que desea eliminar esta opción?')) {
+        return;
+    }
+    
+    try {
+        const { error } = await supabaseClient
+            .from('dropdown_options')
+            .delete()
+            .eq('id', id);
+            
+        if (error) throw error;
+        
+        alert('Opción eliminada correctamente');
+        
+        // Recargar opciones
+        await loadDropdownOptionsForManagement(currentDropdownField);
+        
+        // Actualizar el desplegable principal
+        await loadDropdownOptions(currentDropdownField);
+    } catch (error) {
+        console.error('Error al eliminar opción:', error);
+        alert(`Error al eliminar opción: ${error.message}`);
+    }
+}
+
+// Función para guardar una opción editada
+async function saveEditedOption() {
+    if (!editingOptionId) return;
+    
+    const newValue = document.getElementById('new-option-value').value.trim();
+    const newLabel = document.getElementById('new-option-label').value.trim();
+    const isGlobal = document.getElementById('new-option-global').checked;
+    
+    if (!newValue || !newLabel) {
+        alert('Por favor, complete ambos campos');
+        return;
+    }
+    
+    try {
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !session) throw new Error("No hay sesión activa");
+        
+        const updatedOption = {
+            option_value: newValue,
+            option_label: newLabel,
+            user_id: isGlobal ? null : session.user.id,
+            is_global: isGlobal
+        };
+        
+        const { error } = await supabaseClient
+            .from('dropdown_options')
+            .update(updatedOption)
+            .eq('id', editingOptionId);
+            
+        if (error) throw error;
+        
+        // Limpiar campos
+        document.getElementById('new-option-value').value = '';
+        document.getElementById('new-option-label').value = '';
+        document.getElementById('new-option-global').checked = true;
+        editingOptionId = null;
+        
+        // Recargar opciones
+        await loadDropdownOptionsForManagement(currentDropdownField);
+        
+        // Actualizar el desplegable principal
+        await loadDropdownOptions(currentDropdownField);
+        
+        alert('Opción actualizada exitosamente');
+    } catch (error) {
+        console.error('Error al actualizar opción:', error);
+        alert(`Error al actualizar opción: ${error.message}`);
+    }
+}
+
+// Configurar eventos para la gestión de desplegables
+document.addEventListener('DOMContentLoaded', async () => {
+    // Cargar todas las opciones de desplegables
+    await loadAllDropdownOptions();
+    
+    // Configurar botones de administración de desplegables
+    document.querySelectorAll('.manage-dropdown').forEach(button => {
+        button.addEventListener('click', function() {
+            const field = this.getAttribute('data-field');
+            showManageDropdownModal(field);
+        });
+    });
+    
+    // Configurar botón para agregar opciones
+    document.getElementById('btn-add-option').addEventListener('click', function() {
+        if (editingOptionId) {
+            saveEditedOption();
+        } else {
+            addOption();
+        }
+    });
+    
+    // Permitir agregar opciones con Enter en el campo de texto
+    document.getElementById('new-option-value').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            if (editingOptionId) {
+                saveEditedOption();
+            } else {
+                addOption();
+            }
+        }
+    });
+    
+    document.getElementById('new-option-label').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            if (editingOptionId) {
+                saveEditedOption();
+            } else {
+                addOption();
+            }
+        }
+    });
+    
+    // Configurar el evento de ocultar el modal
+    document.getElementById('manageDropdownModal').addEventListener('hidden.bs.modal', function() {
+        // Limpiar campos al cerrar el modal
+        document.getElementById('new-option-value').value = '';
+        document.getElementById('new-option-label').value = '';
+        document.getElementById('new-option-global').checked = true;
+        editingOptionId = null;
+    });
+    
+    // Resto de tu configuración existente...
 });
     </script>
 </body>
