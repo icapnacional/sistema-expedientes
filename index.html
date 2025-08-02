@@ -344,6 +344,88 @@
     line-height: 1.5;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
+        /* Estilos para el panel de registro de personal */
+.profile-picture-container {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-picture-container img {
+    border: 3px solid #0066CC;
+    transition: all 0.3s ease;
+}
+
+.profile-picture-container:hover img {
+    transform: scale(1.03);
+}
+
+.upload-icon {
+    position: absolute;
+    bottom: 5px;
+    right: 35px;
+}
+
+/* Estilos para la lista de personal */
+#personal-list td {
+    vertical-align: middle;
+}
+
+#personal-list img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+}
+
+.table th {
+    font-weight: 600;
+}
+
+/* Efecto hover en filas de la tabla */
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Estilos para el formulario de personal */
+.form-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.form-control, .form-select {
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Estilos para el botón de guardar */
+.btn-primary {
+    background: linear-gradient(to right, #003366, #0066CC);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 0;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 51, 204, 0.2);
+    background: linear-gradient(to right, #002244, #0055AA);
+}
+
+/* Estilos para el modal de rangos */
+.modal-content {
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
     </style>
 </head>
 <body>
@@ -421,15 +503,189 @@
     </div>
 
     <!-- Panel Principal (oculto al inicio) -->
-    <div class="container panel-container" id="main-panel" style="display: none;">
-        <h2 class="text-center mb-4">Panel de Control</h2>
-        <div class="alert alert-success">
-            ¡Ha iniciado sesión correctamente!
-        </div>
-        <div class="text-center">
-            <button id="logout-btn" class="btn btn-outline-danger">Cerrar sesión</button>
+    <!-- Panel de Registro de Personal -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">Registro de Personal</h5>
+    </div>
+    <div class="card-body">
+        <form id="personal-form">
+            <div class="row mb-4">
+                <div class="col-md-4 text-center">
+                    <div class="profile-picture-container mb-3 position-relative">
+                        <img src="https://placehold.co/200x200/003366/white?text=Foto+Personal" 
+                             alt="Foto del personal" 
+                             class="img-fluid rounded-circle" 
+                             id="profile-picture"
+                             style="width: 180px; height: 180px; object-fit: cover;">
+                        <div class="upload-icon" style="position: absolute; bottom: 5px; right: 35px;">
+                            <label for="profile-picture-upload" class="btn btn-primary btn-sm rounded-circle p-2" 
+                                   style="cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                            <input type="file" id="profile-picture-upload" class="d-none" accept="image/*">
+                        </div>
+                    </div>
+                    <p class="text-muted small">Haga clic en el ícono para subir una foto</p>
+                </div>
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombres" class="form-label">Nombres</label>
+                            <input type="text" class="form-control" id="nombres" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="apellidos" class="form-label">Apellidos</label>
+                            <input type="text" class="form-control" id="apellidos" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="cedula" class="form-label">Cédula de Identidad</label>
+                            <input type="text" class="form-control" id="cedula" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edad" class="form-label">Edad</label>
+                            <input type="number" class="form-control" id="edad" min="18" max="70">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="rango" class="form-label">Rango</label>
+                    <div class="input-group">
+                        <select class="form-select" id="rango">
+                            <option value="">Seleccione...</option>
+                            <option value="Oficial">Oficial</option>
+                            <option value="Suboficial">Suboficial</option>
+                            <option value="Cabo">Cabo</option>
+                            <option value="Agente">Agente</option>
+                            <option value="General">General</option>
+                            <option value="Coronel">Coronel</option>
+                            <option value="Teniente Coronel">Teniente Coronel</option>
+                            <option value="Mayor">Mayor</option>
+                            <option value="Capitán">Capitán</option>
+                            <option value="Teniente">Teniente</option>
+                            <option value="Subteniente">Subteniente</option>
+                            <option value="Sargento Mayor">Sargento Mayor</option>
+                            <option value="Sargento Primero">Sargento Primero</option>
+                            <option value="Sargento">Sargento</option>
+                            <option value="Cabo Mayor">Cabo Mayor</option>
+                            <option value="Cabo Primero">Cabo Primero</option>
+                            <option value="Cabo Segundo">Cabo Segundo</option>
+                        </select>
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addRangoModal">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="sexo" class="form-label">Sexo</label>
+                    <select class="form-select" id="sexo">
+                        <option value="">Seleccione...</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="femenino">Femenino</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100 py-2">
+                <i class="fas fa-save me-2"></i>Guardar Registro de Personal
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para agregar nuevos rangos -->
+<div class="modal fade" id="addRangoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Nuevo Rango</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="nuevo-rango" class="form-label">Nombre del nuevo rango</label>
+                    <input type="text" class="form-control" id="nuevo-rango" placeholder="Ej: General de División">
+                </div>
+                <div class="form-text">
+                    El nuevo rango se añadirá a la lista de opciones disponibles.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btn-agregar-rango">Agregar Rango</button>
+            </div>
         </div>
     </div>
+</div>
+
+<!-- Lista de Personal Registrado -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Personal Registrado</h5>
+        <div class="input-group w-auto" style="max-width: 300px;">
+            <span class="input-group-text bg-light">
+                <i class="fas fa-search"></i>
+            </span>
+            <input type="text" class="form-control" id="search-personal" placeholder="Buscar...">
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Foto</th>
+                        <th>Nombres</th>
+                        <th>Apellidos</th>
+                        <th>Cédula</th>
+                        <th>Rango</th>
+                        <th>Fecha Registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="personal-list">
+                    <!-- Los registros de personal se cargarán aquí dinámicamente -->
+                    <tr>
+                        <td><img src="https://placehold.co/40x40/003366/white?text=FP" class="rounded-circle" width="40"></td>
+                        <td>Juan Carlos</td>
+                        <td>Pérez Gómez</td>
+                        <td>V-12.345.678</td>
+                        <td>Cabo</td>
+                        <td>2023-07-25</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger ms-1">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><img src="https://placehold.co/40x40/003366/white?text=FP" class="rounded-circle" width="40"></td>
+                        <td>María José</td>
+                        <td>Rodríguez Sánchez</td>
+                        <td>V-23.456.789</td>
+                        <td>Sargento</td>
+                        <td>2023-07-20</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger ms-1">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
     <!-- Pie de página mejorado con texto en minúsculas -->
     <div class="footer">
@@ -600,6 +856,152 @@
         document.addEventListener('DOMContentLoaded', () => {
             checkSession();
         });
+        // Función para guardar un rango adicional en localStorage
+function saveRangos(rangos) {
+    try {
+        localStorage.setItem('customRangos', JSON.stringify(rangos));
+    } catch (e) {
+        console.warn("No se pudo guardar los rangos personalizados");
+    }
+}
+
+// Función para obtener los rangos personalizados de localStorage
+function getCustomRangos() {
+    try {
+        const rangos = localStorage.getItem('customRangos');
+        return rangos ? JSON.parse(rangos) : [];
+    } catch (e) {
+        console.warn("No se pudo obtener los rangos personalizados");
+        return [];
+    }
+}
+
+// Función para cargar los rangos en el desplegable
+function loadRangos() {
+    const rangoSelect = document.getElementById('rango');
+    if (!rangoSelect) return;
+    
+    // Limpiar opciones excepto la primera
+    while (rangoSelect.options.length > 1) {
+        rangoSelect.remove(1);
+    }
+    
+    // Rangos predefinidos
+    const rangosPredefinidos = [
+        "Oficial", "Suboficial", "Cabo", "Agente", "General", "Coronel", 
+        "Teniente Coronel", "Mayor", "Capitán", "Teniente", "Subteniente",
+        "Sargento Mayor", "Sargento Primero", "Sargento", "Cabo Mayor", 
+        "Cabo Primero", "Cabo Segundo"
+    ];
+    
+    // Rangos personalizados
+    const rangosPersonalizados = getCustomRangos();
+    
+    // Añadir rangos predefinidos
+    rangosPredefinidos.forEach(rango => {
+        const option = document.createElement('option');
+        option.value = rango;
+        option.textContent = rango;
+        rangoSelect.appendChild(option);
+    });
+    
+    // Añadir separador si hay rangos personalizados
+    if (rangosPersonalizados.length > 0) {
+        const separator = document.createElement('option');
+        separator.disabled = true;
+        separator.textContent = '──────────';
+        rangoSelect.appendChild(separator);
+    }
+    
+    // Añadir rangos personalizados
+    rangosPersonalizados.forEach(rango => {
+        const option = document.createElement('option');
+        option.value = rango;
+        option.textContent = rango;
+        rangoSelect.appendChild(option);
+    });
+}
+
+// Función para agregar un nuevo rango
+function addRango() {
+    const nuevoRangoInput = document.getElementById('nuevo-rango');
+    const nuevoRango = nuevoRangoInput.value.trim();
+    
+    if (!nuevoRango) {
+        alert('Por favor, ingrese un nombre para el nuevo rango');
+        return;
+    }
+    
+    // Obtener rangos existentes
+    let rangos = getCustomRangos();
+    
+    // Verificar si el rango ya existe
+    if (rangos.includes(nuevoRango)) {
+        alert('Este rango ya existe en la lista');
+        return;
+    }
+    
+    // Añadir el nuevo rango
+    rangos.push(nuevoRango);
+    
+    // Guardar en localStorage
+    saveRangos(rangos);
+    
+    // Recargar los rangos en el desplegable
+    loadRangos();
+    
+    // Limpiar el campo y cerrar el modal
+    nuevoRangoInput.value = '';
+    const modal = bootstrap.Modal.getInstance(document.getElementById('addRangoModal'));
+    modal.hide();
+    
+    alert(`Rango "${nuevoRango}" agregado exitosamente`);
+}
+
+// Configurar eventos para el manejo de rangos
+document.addEventListener('DOMContentLoaded', () => {
+    // Cargar los rangos al iniciar
+    loadRangos();
+    
+    // Configurar el botón para agregar rangos
+    const btnAgregarRango = document.getElementById('btn-agregar-rango');
+    if (btnAgregarRango) {
+        btnAgregarRango.addEventListener('click', addRango);
+    }
+    
+    // Permitir agregar rangos con Enter en el campo de texto
+    const nuevoRangoInput = document.getElementById('nuevo-rango');
+    if (nuevoRangoInput) {
+        nuevoRangoInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addRango();
+            }
+        });
+    }
+    
+    // Configurar búsqueda
+    const searchPersonal = document.getElementById('search-personal');
+    if (searchPersonal) {
+        searchPersonal.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#personal-list tr');
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                let match = false;
+                
+                for (let i = 0; i < cells.length - 1; i++) { // Excluir la última celda (acciones)
+                    if (cells[i].textContent.toLowerCase().includes(searchTerm)) {
+                        match = true;
+                        break;
+                    }
+                }
+                
+                row.style.display = match ? '' : 'none';
+            });
+        });
+    }
+});
     </script>
 </body>
 </html>
