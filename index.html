@@ -858,12 +858,19 @@
         // Función CORREGIDA para verificar la sesión
         async function checkSession() {
             try {
+                console.log('Verificando sesión...');
+                
                 // Obtener la sesión CORRECTAMENTE (Supabase v2)
                 const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 
-                if (sessionError) throw sessionError;
+                if (sessionError) {
+                    console.error('Error al obtener sesión:', sessionError);
+                    throw sessionError;
+                }
                 
                 if (session) {
+                    console.log('Sesión encontrada:', session);
+                    
                     // Usuario autenticado - muestra el panel principal
                     loginScreen.style.display = 'none';
                     mainPanel.style.display = 'block';
@@ -894,6 +901,8 @@
                     // Carga los registros de personal
                     await loadPersonal();
                 } else {
+                    console.log('No hay sesión activa');
+                    
                     // Usuario no autenticado - muestra el login
                     loginScreen.style.display = 'block';
                     mainPanel.style.display = 'none';
