@@ -255,6 +255,22 @@
         .badge-secondary {
             background-color: #6c757d;
         }
+        /* Evitar superposición en móviles */
+@media (max-width: 768px) {
+    .form-floating > .input-group {
+        width: 100%;
+    }
+    
+    .form-floating > .input-group select {
+        flex: 1 1 auto;
+    }
+}
+
+/* Alinear etiquetas flotantes */
+.form-floating label {
+    transform: translateY(-20%);
+    left: 0;
+}
     </style>
 </head>
 <body>
@@ -418,23 +434,27 @@
                     </div>
                     
                     <!-- Nuevos campos como desplegables -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="fecha-inicio" class="form-label">Fecha de Inicio</label>
-                            <input type="date" class="form-control" id="fecha-inicio">
-                        </div>
-                       <div class="col-md-6">
-    <label for="tipo_expediente" class="form-label">Tipo de Expediente</label>
-    <div class="input-group">
-        <select class="form-select" id="tipo_expediente">
-            <option value="">Seleccione...</option>
-        </select>
-        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo_expediente">
-            <i class="fas fa-cog"></i>
-        </button>
+  <div class="row mb-3">
+    <div class="col-md-6">
+        <div class="form-floating">
+            <input type="date" class="form-control" id="fecha-inicio" placeholder="dd/mm/aaaa">
+            <label for="fecha-inicio">Fecha de Inicio</label>
+        </div>
     </div>
-</div>
-                                    <!-- Las opciones se cargarán dinámicamente -->
+    <div class="col-md-6">
+        <div class="form-floating">
+            <div class="input-group">
+                <select class="form-select" id="tipo-expediente">
+                    <option value="">Seleccione...</option>
+                </select>
+                <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo_expediente">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+            <label for="tipo-expediente">Tipo de Expediente</label>
+        </div>
+    </div>
+</div>                       <!-- Las opciones se cargarán dinámicamente -->
                                 </select>
                                 <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo_expediente">
                                     <i class="fas fa-cog"></i>
