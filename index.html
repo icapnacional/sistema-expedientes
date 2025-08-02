@@ -1262,11 +1262,16 @@ function resetPersonalForm() {
 }
 
 // Configurar eventos para el registro de personal
-document.addEventListener('DOMContentLoaded', async () => {
-    // Configurar el evento de submit del formulario
+document.addEventListener('DOMContentLoaded', () => {
+    // Configurar el evento de submit del formulario de forma segura
     const personalForm = document.getElementById('personal-form');
     if (personalForm) {
-        personalForm.addEventListener('submit', (e) => {
+        // Eliminar cualquier listener previo para evitar duplicados
+        const clonedForm = personalForm.cloneNode(true);
+        personalForm.parentNode.replaceChild(clonedForm, personalForm);
+        
+        // Configurar el nuevo evento
+        clonedForm.addEventListener('submit', (e) => {
             e.preventDefault();
             savePersonal();
         });
