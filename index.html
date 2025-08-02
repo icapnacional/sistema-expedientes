@@ -430,7 +430,7 @@
                                     <option value="">Seleccione...</option>
                                     <!-- Las opciones se cargarán dinámicamente -->
                                 </select>
-                                <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo-expediente">
+                                <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo_expediente">
                                     <i class="fas fa-cog"></i>
                                 </button>
                             </div>
@@ -484,7 +484,7 @@
                                     <option value="">Seleccione...</option>
                                     <!-- Las opciones se cargarán dinámicamente -->
                                 </select>
-                                <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="expediente-penal">
+                                <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="expediente_penal">
                                     <i class="fas fa-cog"></i>
                                 </button>
                             </div>
@@ -511,7 +511,7 @@
                                     <option value="">Seleccione...</option>
                                     <!-- Las opciones se cargarán dinámicamente -->
                                 </select>
-                                <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo-falta">
+                                <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo_falta">
                                     <i class="fas fa-cog"></i>
                                 </button>
                             </div>
@@ -526,7 +526,7 @@
                                     <option value="">Seleccione...</option>
                                     <!-- Las opciones se cargarán dinámicamente -->
                                 </select>
-                                <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="origen-falta">
+                                <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="origen_falta">
                                     <i class="fas fa-cog"></i>
                                 </button>
                             </div>
@@ -765,12 +765,6 @@
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
 
-        // Variables globales
-        let editingPersonalId = null;
-        let isSaving = false; // Flag para evitar guardados duplicados
-        let currentDropdownField = null;
-        let editingOptionId = null;
-
         // Función para mostrar mensajes de error
         function showError(message) {
             if (errorText && errorMessage) {
@@ -818,7 +812,7 @@
         // Función para verificar si la sesión es válida
         async function isSessionValid() {
             try {
-                const {  { session }, error } = await supabaseClient.auth.getSession();
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
                 if (error) throw error;
                 return !!session;
             } catch (error) {
@@ -1197,6 +1191,11 @@
             editingPersonalId = null;
         }
 
+        // Variables globales para la gestión de desplegables
+        let currentDropdownField = null;
+        let editingOptionId = null;
+        let isSaving = false; // Flag para evitar guardados duplicados
+
         // Función para cargar las opciones de un desplegable
         async function loadDropdownOptions(field) {
             try {
@@ -1213,7 +1212,7 @@
                 if (error) throw error;
                 
                 // Actualizar el desplegable
-                const selectElement = document.getElementById(field);
+                const selectElement = document.getElementById(field.replace(/-/g, '_'));
                 if (selectElement) {
                     // Limpiar opciones excepto la primera
                     while (selectElement.options.length > 1) {
@@ -1239,8 +1238,8 @@
         // Función para cargar todas las opciones de desplegables
         async function loadAllDropdownOptions() {
             const fields = [
-                'jerarquia', 'sexo', 'tipo-expediente', 'icap', 'condicion', 
-                'anio', 'expediente-penal', 'servicio', 'tipo-falta', 'origen-falta',
+                'jerarquia', 'sexo', 'tipo_expediente', 'icap', 'condicion', 
+                'anio', 'expediente_penal', 'servicio', 'tipo_falta', 'origen_falta',
                 'falta', 'denunciante', 'detenido', 'estatus', 'decision'
             ];
             
@@ -1254,7 +1253,7 @@
             currentDropdownField = field;
             
             // Actualizar el título del modal
-            document.getElementById('dropdown-field-name').textContent = field.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            document.getElementById('dropdown-field-name').textContent = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             
             // Cargar las opciones
             await loadDropdownOptionsForManagement(field);
@@ -1348,7 +1347,7 @@
             }
             
             try {
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 const newOption = {
@@ -1439,6 +1438,56 @@
             } catch (error) {
                 console.error('Error al eliminar opción:', error);
                 alert(`Error al eliminar opción: ${error.message}`);
+            }
+        }
+
+        // Función para guardar una opción editada
+        async function saveEditedOption() {
+            if (!editingOptionId) return;
+            
+            const newValue = document.getElementById('new-option-value').value.trim();
+            const newLabel = document.getElementById('new-option-label').value.trim();
+            const isGlobal = document.getElementById('new-option-global').checked;
+            
+            if (!newValue || !newLabel) {
+                alert('Por favor, complete ambos campos');
+                return;
+            }
+            
+            try {
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !session) throw new Error("No hay sesión activa");
+                
+                const updatedOption = {
+                    option_value: newValue,
+                    option_label: newLabel,
+                    user_id: isGlobal ? null : session.user.id,
+                    is_global: isGlobal
+                };
+                
+                const { error } = await supabaseClient
+                    .from('dropdown_options')
+                    .update(updatedOption)
+                    .eq('id', editingOptionId);
+                    
+                if (error) throw error;
+                
+                // Limpiar campos
+                document.getElementById('new-option-value').value = '';
+                document.getElementById('new-option-label').value = '';
+                document.getElementById('new-option-global').checked = true;
+                editingOptionId = null;
+                
+                // Recargar opciones
+                await loadDropdownOptionsForManagement(currentDropdownField);
+                
+                // Actualizar el desplegable principal
+                await loadDropdownOptions(currentDropdownField);
+                
+                alert('Opción actualizada exitosamente');
+            } catch (error) {
+                console.error('Error al actualizar opción:', error);
+                alert(`Error al actualizar opción: ${error.message}`);
             }
         }
 
