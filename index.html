@@ -477,10 +477,17 @@
                                 </button>
                             </div>
                         </div>
-                        <!-- CAMBIO REALIZADO: Expediente Penal como campo de texto -->
                         <div class="col-md-6">
                             <label for="expediente-penal" class="form-label">Expediente Penal</label>
-                            <input type="text" class="form-control" id="expediente-penal" placeholder="Ingrese el número de expediente penal">
+                            <div class="input-group">
+                                <select class="form-select" id="expediente-penal">
+                                    <option value="">Seleccione...</option>
+                                    <!-- Las opciones se cargarán dinámicamente -->
+                                </select>
+                                <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="expediente-penal">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
@@ -811,7 +818,7 @@
         // Función para verificar si la sesión es válida
         async function isSessionValid() {
             try {
-                const {  { session }, error } = await supabaseClient.auth.getSession();
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
                 if (error) throw error;
                 return !!session;
             } catch (error) {
@@ -839,7 +846,7 @@
         async function checkSession() {
             try {
                 // Obtener la sesión CORRECTAMENTE
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 
                 if (sessionError) throw sessionError;
                 
@@ -901,7 +908,7 @@
                 await ensureSession();
                 
                 // Obtener la sesión actual CORRECTAMENTE
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     // Intentar recuperar la sesión desde localStorage si existe
                     const rememberedEmail = getRememberedEmail();
@@ -994,7 +1001,7 @@
                 `;
                 
                 // Obtener los registros de Supabase
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
@@ -1193,7 +1200,7 @@
         // Función para cargar las opciones de un desplegable
         async function loadDropdownOptions(field) {
             try {
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
@@ -1233,7 +1240,7 @@
         async function loadAllDropdownOptions() {
             const fields = [
                 'jerarquia', 'sexo', 'tipo-expediente', 'icap', 'condicion', 
-                'anio', 'servicio', 'tipo-falta', 'origen-falta',
+                'anio', 'expediente-penal', 'servicio', 'tipo-falta', 'origen-falta',
                 'falta', 'denunciante', 'detenido', 'estatus', 'decision'
             ];
             
@@ -1260,7 +1267,7 @@
         // Función para cargar las opciones para el modal de administración
         async function loadDropdownOptionsForManagement(field) {
             try {
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
@@ -1341,7 +1348,7 @@
             }
             
             try {
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 const newOption = {
@@ -1449,7 +1456,7 @@
                     email: email,
                     password: password,
                     options: {
-                         {
+                        data: {
                             full_name: fullName
                         }
                     }
