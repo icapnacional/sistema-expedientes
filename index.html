@@ -441,8 +441,7 @@
             </div>
         </div>
     </div>
-
-   <!-- Panel de Registro de Personal -->
+<!-- Panel de Registro de Personal -->
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-white py-3">
         <h5 class="mb-0">Registro de Personal</h5>
@@ -758,7 +757,6 @@
         </div>
     </div>
 </div>
-
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -913,9 +911,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             checkSession();
         });
-// Variables globales
+   // Variables globales
 let editingPersonalId = null;
-let isSaving = false; // Flag para evitar guardados duplicados
 
 // Función para formatear la fecha
 function formatDate(dateString) {
@@ -930,17 +927,9 @@ function formatDate(dateString) {
 
 // Función para guardar un registro de personal
 async function savePersonal() {
-    // Protección contra guardados duplicados
-    if (isSaving) {
-        console.log("Guardado ya en progreso, ignorando solicitud adicional");
-        return;
-    }
-    
     try {
-        isSaving = true; // Activar el flag
-        
         // Obtener la sesión actual
-        const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
         if (sessionError || !session) {
             throw new Error("No hay sesión activa");
         }
@@ -997,8 +986,6 @@ async function savePersonal() {
     } catch (error) {
         console.error('Error al guardar registro de personal:', error);
         alert(`Error al guardar: ${error.message}`);
-    } finally {
-        isSaving = false; // Desactivar el flag
     }
 }
 
@@ -1020,7 +1007,7 @@ async function loadPersonal() {
         `;
         
         // Obtener los registros de Supabase
-        const {  { session } } = await supabaseClient.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) throw new Error("No hay sesión activa");
         
         const { data, error } = await supabaseClient
@@ -1206,16 +1193,11 @@ function resetPersonalForm() {
 }
 
 // Configurar eventos para el registro de personal
-document.addEventListener('DOMContentLoaded', () => {
-    // Configurar el evento de submit del formulario de forma segura
+document.addEventListener('DOMContentLoaded', async () => {
+    // Configurar el evento de submit del formulario
     const personalForm = document.getElementById('personal-form');
-    
     if (personalForm) {
-        // Verificar si ya existe un listener para evitar duplicados
-        const formClone = personalForm.cloneNode(true);
-        personalForm.parentNode.replaceChild(formClone, personalForm);
-        
-        formClone.addEventListener('submit', (e) => {
+        personalForm.addEventListener('submit', (e) => {
             e.preventDefault();
             savePersonal();
         });
@@ -1261,7 +1243,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Cargar los registros de personal
     if (document.getElementById('personal-list')) {
-        loadPersonal();
+        await loadPersonal();
     }
 });
     </script>
