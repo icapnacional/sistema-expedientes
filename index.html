@@ -255,22 +255,6 @@
         .badge-secondary {
             background-color: #6c757d;
         }
-        /* Evitar superposición en móviles */
-@media (max-width: 768px) {
-    .form-floating > .input-group {
-        width: 100%;
-    }
-    
-    .form-floating > .input-group select {
-        flex: 1 1 auto;
-    }
-}
-
-/* Alinear etiquetas flotantes */
-.form-floating label {
-    transform: translateY(-20%);
-    left: 0;
-}
     </style>
 </head>
 <body>
@@ -434,27 +418,17 @@
                     </div>
                     
                     <!-- Nuevos campos como desplegables -->
-  <div class="row mb-3">
-    <div class="col-md-6">
-        <div class="form-floating">
-            <input type="date" class="form-control" id="fecha-inicio" placeholder="dd/mm/aaaa">
-            <label for="fecha-inicio">Fecha de Inicio</label>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="form-floating">
-            <div class="input-group">
-                <select class="form-select" id="tipo-expediente">
-                    <option value="">Seleccione...</option>
-                </select>
-                <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo_expediente">
-                    <i class="fas fa-cog"></i>
-                </button>
-            </div>
-            <label for="tipo-expediente">Tipo de Expediente</label>
-        </div>
-    </div>
-</div>                       <!-- Las opciones se cargarán dinámicamente -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="fecha-inicio" class="form-label">Fecha de Inicio</label>
+                            <input type="date" class="form-control" id="fecha-inicio">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tipo-expediente" class="form-label">Tipo de Expediente</label>
+                            <div class="input-group">
+                                <select class="form-select" id="tipo-expediente">
+                                    <option value="">Seleccione...</option>
+                                    <!-- Las opciones se cargarán dinámicamente -->
                                 </select>
                                 <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo_expediente">
                                     <i class="fas fa-cog"></i>
@@ -866,7 +840,7 @@
         async function checkSession() {
             try {
                 // Obtener la sesión CORRECTAMENTE
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 
                 if (sessionError) throw sessionError;
                 
@@ -928,7 +902,7 @@
                 await ensureSession();
                 
                 // Obtener la sesión actual CORRECTAMENTE
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     // Intentar recuperar la sesión desde localStorage si existe
                     const rememberedEmail = getRememberedEmail();
@@ -948,7 +922,7 @@
                     sexo: document.getElementById('sexo').value,
                     cedula: document.getElementById('cedula').value,
                     fecha_inicio: document.getElementById('fecha-inicio').value,
-                   tipo_expediente: document.getElementById('tipo_expediente').value,
+                    tipo_expediente: document.getElementById('tipo-expediente').value,
                     icap: document.getElementById('icap').value,
                     condicion: document.getElementById('condicion').value,
                     anio: document.getElementById('anio').value,
@@ -1021,7 +995,7 @@
                 `;
                 
                 // Obtener los registros de Supabase
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
@@ -1193,7 +1167,7 @@
             document.getElementById('sexo').value = '';
             document.getElementById('cedula').value = '';
             document.getElementById('fecha-inicio').value = '';
-            document.getElementById('tipo_expediente').value = '';
+            document.getElementById('tipo-expediente').value = '';
             document.getElementById('icap').value = '';
             document.getElementById('condicion').value = '';
             document.getElementById('anio').value = '';
@@ -1225,7 +1199,7 @@
         // Función para cargar las opciones de un desplegable
         async function loadDropdownOptions(field) {
             try {
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
@@ -1292,7 +1266,7 @@
         // Función para cargar las opciones para el modal de administración
         async function loadDropdownOptionsForManagement(field) {
             try {
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
@@ -1531,7 +1505,7 @@
                     email: email,
                     password: password,
                     options: {
-                        data: {
+                         {
                             full_name: fullName
                         }
                     }
