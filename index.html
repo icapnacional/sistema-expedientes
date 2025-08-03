@@ -1405,32 +1405,38 @@
             const table = document.querySelector('.table');
             const tableClone = table.cloneNode(true);
             
-            // Eliminar la columna de acciones para la exportación
+            // Eliminar la columna de acciones y la columna de foto para la exportación
             const headerCells = tableClone.querySelectorAll('thead th');
             const bodyRows = tableClone.querySelectorAll('tbody tr');
             
-            // Encontrar el índice de la columna "Acciones"
-            let actionsIndex = -1;
+            // Encontrar los índices de las columnas a eliminar
+            let columnsToRemove = [];
+            
             for (let i = 0; i < headerCells.length; i++) {
                 if (headerCells[i].textContent.includes('Acciones')) {
-                    actionsIndex = i;
-                    break;
+                    columnsToRemove.push(i);
+                }
+                if (headerCells[i].textContent.includes('Foto')) {
+                    columnsToRemove.push(i);
                 }
             }
             
-            // Eliminar la columna de acciones si existe
-            if (actionsIndex >= 0) {
+            // Ordenar los índices de mayor a menor para eliminar de derecha a izquierda
+            columnsToRemove.sort((a, b) => b - a);
+            
+            // Eliminar las columnas
+            columnsToRemove.forEach(index => {
                 // Eliminar encabezado
-                headerCells[actionsIndex].remove();
+                headerCells[index].remove();
                 
                 // Eliminar celda en cada fila
                 bodyRows.forEach(row => {
                     const cells = row.querySelectorAll('td');
-                    if (cells[actionsIndex]) {
-                        cells[actionsIndex].remove();
+                    if (cells[index]) {
+                        cells[index].remove();
                     }
                 });
-            }
+            });
             
             // Preparar el contenido HTML para Excel
             const html = `
@@ -1616,7 +1622,7 @@
                     query = query.eq('user_id', data.session.user.id);
                 }
                 
-                const { data: personalData, error } = await query.order('fecha_registro', { ascending: false });
+                const {  personalData, error } = await query.order('fecha_registro', { ascending: false });
                 
                 if (error) throw error;
                 
@@ -1705,7 +1711,7 @@
                 }
                 
                 // Verificar si el usuario tiene permisos para editar
-                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                const {  sessionData, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !sessionData.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
@@ -1841,7 +1847,7 @@
                 if (sessionError || !data.session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
-                const { data: optionsData, error } = await supabaseClient
+                const {  optionsData, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
                     .or(`field_name.eq.${field},and(field_name.eq.${field},user_id.eq.${data.session.user.id})`)
@@ -1921,7 +1927,7 @@
                 if (sessionError || !data.session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
-                const { data: optionsData, error } = await supabaseClient
+                const {  optionsData, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
                     .eq('field_name', field)
@@ -2113,11 +2119,11 @@
                     throw new Error("Solo el administrador puede crear nuevos usuarios");
                 }
                 
-                const { data: signUpData, error } = await supabaseClient.auth.signUp({
+                const {  signUpData, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password,
                     options: {
-                         data: {
+                         {
                             full_name: fullName,
                             role: 'user'  // Todos los nuevos usuarios serán de rol "user"
                         }
