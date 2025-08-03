@@ -1103,7 +1103,7 @@
             updatePaginationControls();
         }
 
-        // Función CORREGIDA para exportar a Excel con plantilla personalizada
+        // Función para exportar a Excel en formato XLS con los campos solicitados
         function exportToExcel() {
             try {
                 // Mostrar loader
@@ -1116,144 +1116,27 @@
                     return;
                 }
                 
-                // Crear un nuevo libro de trabajo
-                const wb = XLSX.utils.book_new();
-                
-                // 1. Hoja de Resumen Ejecutivo
-                const summaryData = [
-                    ['REPORTE DE EXPEDIENTES DE PERSONAL', '', '', '', '', '', ''],
-                    ['Fecha de Generación:', new Date().toLocaleDateString('es-ES'), '', '', 'Total de Registros:', allPersonalData.length, ''],
-                    [''],
-                    ['RESUMEN POR JERARQUÍA', '', '', '', '', '', ''],
-                    ['Jerarquía', 'Cantidad', '', 'RESUMEN POR ESTATUS', '', 'Cantidad', ''],
+                // Definir los encabezados exactamente como se solicitaron
+                const headers = [
+                    "NOMBRES", "APELLIDOS", "EDAD", "RANGO", "SEXO", "CÉDULA DE IDENTIDAD", 
+                    "FECHA DE INICIO", "TIPO DE EXPEDIENTE", "ICAP (OFICINA)", "CONDICIÓN DEL FUNCIONARION EN EL CASO", 
+                    "AÑO", "EXPEDIENTE PENAL", "SERVICIO DONDE LABORA EL FUNCIONARIO", "TIPO DE FALTA", 
+                    "ORIGEN DE LA FALTA", "FALTA", "DENUNCIANTE", "FUNCIONARIO DETENIDO", "ESTATUS", "DECISIÓN",
+                    "RESEÑA DEL CASO", "CAUSA", "REGISTRADO POR", "SUSTANCIADOR", "REMISIÓN", "EXPEDIENTE NÚMERO"
                 ];
                 
-                // Calcular resumen por jerarquía
-                const jerarquiaCount = {};
+                // Crear el array de datos con los encabezados
+                const worksheetData = [headers];
+                
+                // Mapear los datos de allPersonalData a los campos solicitados
                 allPersonalData.forEach(personal => {
-                    const jerarquia = personal.jerarquia || 'Sin jerarquía';
-                    jerarquiaCount[jerarquia] = (jerarquiaCount[jerarquia] || 0) + 1;
-                });
-                
-                // Calcular resumen por estatus
-                const estatusCount = {};
-                allPersonalData.forEach(personal => {
-                    const estatus = personal.estatus || 'Sin estatus';
-                    estatusCount[estatus] = (estatusCount[estatus] || 0) + 1;
-                });
-                
-                // Añadir datos de jerarquía al resumen
-                Object.keys(jerarquiaCount).forEach(jerarquia => {
-                    summaryData.push([jerarquia, jerarquiaCount[jerarquia]]);
-                });
-                
-                // Añadir espacio entre secciones
-                summaryData.push(['', '', '', '']);
-                
-                // Añadir datos de estatus al resumen
-                Object.keys(estatusCount).forEach(estatus => {
-                    summaryData.push(['', '', '', estatus, '', estatusCount[estatus]]);
-                });
-                
-                // Añadir información institucional
-                summaryData.push(['', '', '', '', '', '', '']);
-                summaryData.push(['Institución:', 'Policía Nacional Bolivariana', '', '', 'Fecha:', new Date().toLocaleDateString('es-ES'), '']);
-                summaryData.push(['Unidad:', 'REDIP OCCIDENTAL - CCPE ZULIA', '', '', 'Generado por:', document.getElementById('user-name').textContent || 'Usuario', '']);
-                
-                // Crear la hoja de resumen
-                const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-                
-                // Aplicar estilos a la hoja de resumen
-                const summaryCellStyle = {
-                    font: { bold: true, color: { rgb: "000000" } },
-                    fill: { fgColor: { rgb: "D3D3D3" } },
-                    border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
-                };
-                
-                const summaryHeaderStyle = {
-                    font: { bold: true, color: { rgb: "FFFFFF" }, sz: 14 },
-                    fill: { fgColor: { rgb: "003366" } },
-                    alignment: { horizontal: "center" },
-                    border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
-                };
-                
-                // Aplicar estilos a celdas específicas
-                wsSummary['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 10 }, { wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 10 }];
-                
-                // Título principal
-                ['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1'].forEach(cell => {
-                    if (wsSummary[cell]) wsSummary[cell].s = {
-                        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 16 },
-                        fill: { fgColor: { rgb: "003366" } },
-                        alignment: { horizontal: "center" },
-                        border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
-                    };
-                });
-                
-                // Fechas y totales
-                ['B2', 'F2'].forEach(cell => {
-                    if (wsSummary[cell]) wsSummary[cell].s = {
-                        font: { bold: true, color: { rgb: "000000" } },
-                        fill: { fgColor: { rgb: "E6E6E6" } },
-                        border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
-                    };
-                });
-                
-                // Títulos de sección
-                ['A4', 'D4'].forEach(cell => {
-                    if (wsSummary[cell]) wsSummary[cell].s = {
-                        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 12 },
-                        fill: { fgColor: { rgb: "0066CC" } },
-                        border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
-                    };
-                });
-                
-                // Añadir la hoja de resumen al libro
-                XLSX.utils.book_append_sheet(wb, wsSummary, "Resumen Ejecutivo");
-                
-                // 2. Hoja de Datos Principales
-                const mainData = [
-                    [
-                        'NÚMERO DE EXPEDIENTE',
-                        'NOMBRES',
-                        'APELLIDOS',
-                        'CÉDULA',
-                        'EDAD',
-                        'JERARQUÍA',
-                        'SEXO',
-                        'FECHA INICIO',
-                        'TIPO DE EXPEDIENTE',
-                        'ICAP',
-                        'CONDICIÓN',
-                        'AÑO',
-                        'EXPEDIENTE PENAL',
-                        'SERVICIO',
-                        'TIPO DE FALTA',
-                        'ORIGEN DE FALTA',
-                        'FALTA',
-                        'DENUNCIANTE',
-                        'DETENIDO',
-                        'ESTATUS',
-                        'DECISIÓN',
-                        'REGISTRADO POR',
-                        'SUSTANCIADOR',
-                        'REMISIÓN',
-                        'RESEÑA',
-                        'CAUSA',
-                        'FECHA REGISTRO'
-                    ]
-                ];
-                
-                // Añadir los datos de personal
-                allPersonalData.forEach(personal => {
-                    mainData.push([
-                        personal.expediente_numero || '',
+                    worksheetData.push([
                         personal.nombres || '',
                         personal.apellidos || '',
-                        personal.cedula || '',
                         personal.edad || '',
                         personal.jerarquia || '',
                         personal.sexo || '',
+                        personal.cedula || '',
                         personal.fecha_inicio ? new Date(personal.fecha_inicio).toLocaleDateString('es-ES') : '',
                         personal.tipo_expediente || '',
                         personal.icap || '',
@@ -1268,115 +1151,103 @@
                         personal.detenido || '',
                         personal.estatus || '',
                         personal.decision || '',
+                        personal.resena || '',
+                        personal.causa || '',
                         personal.registrado_por || '',
                         personal.sustanciador || '',
                         personal.remision || '',
-                        personal.resena || '',
-                        personal.causa || '',
-                        personal.fecha_registro ? new Date(personal.fecha_registro).toLocaleDateString('es-ES') : ''
+                        personal.expediente_numero || ''
                     ]);
                 });
                 
-                // Crear la hoja de datos principales
-                const wsMain = XLSX.utils.aoa_to_sheet(mainData);
+                // Crear la hoja de trabajo
+                const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
                 
-                // Aplicar estilos a la hoja de datos principales
-                wsMain['!cols'] = [
-                    { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 5 },
-                    { wch: 20 }, { wch: 10 }, { wch: 15 }, { wch: 20 }, { wch: 15 },
-                    { wch: 15 }, { wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 15 },
-                    { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
-                    { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 30 },
-                    { wch: 30 }, { wch: 15 }
+                // Ajustar el ancho de las columnas
+                const columnWidths = [
+                    {wch: 20}, // NOMBRES
+                    {wch: 20}, // APELLIDOS
+                    {wch: 5},  // EDAD
+                    {wch: 20}, // RANGO
+                    {wch: 10}, // SEXO
+                    {wch: 15}, // CÉDULA DE IDENTIDAD
+                    {wch: 12}, // FECHA DE INICIO
+                    {wch: 20}, // TIPO DE EXPEDIENTE
+                    {wch: 20}, // ICAP (OFICINA)
+                    {wch: 30}, // CONDICIÓN DEL FUNCIONARION EN EL CASO
+                    {wch: 5},  // AÑO
+                    {wch: 20}, // EXPEDIENTE PENAL
+                    {wch: 30}, // SERVICIO DONDE LABORA EL FUNCIONARIO
+                    {wch: 15}, // TIPO DE FALTA
+                    {wch: 15}, // ORIGEN DE LA FALTA
+                    {wch: 30}, // FALTA
+                    {wch: 15}, // DENUNCIANTE
+                    {wch: 20}, // FUNCIONARIO DETENIDO
+                    {wch: 15}, // ESTATUS
+                    {wch: 15}, // DECISIÓN
+                    {wch: 40}, // RESEÑA DEL CASO
+                    {wch: 40}, // CAUSA
+                    {wch: 20}, // REGISTRADO POR
+                    {wch: 20}, // SUSTANCIADOR
+                    {wch: 20}, // REMISIÓN
+                    {wch: 15}  // EXPEDIENTE NÚMERO
                 ];
                 
-                // Estilo para el encabezado
+                worksheet['!cols'] = columnWidths;
+                
+                // Aplicar estilos a los encabezados
                 const headerStyle = {
                     font: { bold: true, color: { rgb: "FFFFFF" } },
                     fill: { fgColor: { rgb: "003366" } },
                     alignment: { horizontal: "center", wrapText: true },
-                    border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
+                    border: { 
+                        top: { style: "thin" }, 
+                        right: { style: "thin" }, 
+                        bottom: { style: "thin" }, 
+                        left: { style: "thin" } 
+                    }
                 };
                 
-                // Aplicar estilo al encabezado
-                for (let col = 0; col < mainData[0].length; col++) {
+                // Aplicar estilo a los encabezados
+                for (let col = 0; col < headers.length; col++) {
                     const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
-                    if (wsMain[cellRef]) {
-                        wsMain[cellRef].s = headerStyle;
+                    if (worksheet[cellRef]) {
+                        worksheet[cellRef].s = headerStyle;
                     }
                 }
                 
-                // Estilo para las celdas de datos
+                // Aplicar estilos a las celdas de datos
                 const dataCellStyle = {
-                    border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } },
+                    border: { 
+                        top: { style: "thin" }, 
+                        right: { style: "thin" }, 
+                        bottom: { style: "thin" }, 
+                        left: { style: "thin" } 
+                    },
                     alignment: { vertical: "top", wrapText: true }
                 };
                 
                 // Aplicar estilo a las celdas de datos
-                for (let row = 1; row < mainData.length; row++) {
-                    for (let col = 0; col < mainData[0].length; col++) {
+                for (let row = 1; row < worksheetData.length; row++) {
+                    for (let col = 0; col < headers.length; col++) {
                         const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
-                        if (wsMain[cellRef]) {
-                            wsMain[cellRef].s = dataCellStyle;
+                        if (worksheet[cellRef]) {
+                            worksheet[cellRef].s = dataCellStyle;
                         }
                     }
                 }
                 
-                // Añadir la hoja de datos principales al libro
-                XLSX.utils.book_append_sheet(wb, wsMain, "Datos Principales");
+                // Crear el libro de trabajo
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Personal Registrado");
                 
-                // 3. Hoja de Metadatos
-                const metadata = [
-                    ['METADATOS DEL REPORTE', '', '', ''],
-                    ['Fecha de Generación:', new Date().toLocaleDateString('es-ES'), '', ''],
-                    ['Hora de Generación:', new Date().toLocaleTimeString('es-ES'), '', ''],
-                    ['Total de Registros:', allPersonalData.length, '', ''],
-                    ['Generado por:', document.getElementById('user-name').textContent || 'Usuario', '', ''],
-                    ['Unidad:', 'REDIP OCCIDENTAL - CCPE ZULIA', '', ''],
-                    ['Sistema:', 'Sistema de Gestión de Expedientes', '', ''],
-                    ['Versión:', '1.0', '', ''],
-                    ['Fecha de Exportación:', new Date().toLocaleDateString('es-ES'), '', '']
-                ];
+                // Generar el nombre del archivo con fecha
+                const currentDate = new Date().toISOString().slice(0, 10);
+                const fileName = `Personal_Registrado_${currentDate}.xls`;
                 
-                const wsMetadata = XLSX.utils.aoa_to_sheet(metadata);
-                
-                // Aplicar estilos a la hoja de metadatos
-                wsMetadata['!cols'] = [{ wch: 25 }, { wch: 30 }, { wch: 10 }, { wch: 30 }];
-                
-                // Título
-                if (wsMetadata['A1']) wsMetadata['A1'].s = {
-                    font: { bold: true, color: { rgb: "FFFFFF" }, sz: 14 },
-                    fill: { fgColor: { rgb: "003366" } },
-                    border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
-                };
-                
-                // Etiquetas
-                for (let row = 1; row < 9; row++) {
-                    const cellRef = `A${row + 1}`;
-                    if (wsMetadata[cellRef]) wsMetadata[cellRef].s = {
-                        font: { bold: true, color: { rgb: "000000" } },
-                        fill: { fgColor: { rgb: "E6E6E6" } },
-                        border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
-                    };
-                }
-                
-                // Valores
-                for (let row = 1; row < 9; row++) {
-                    const cellRef = `B${row + 1}`;
-                    if (wsMetadata[cellRef]) wsMetadata[cellRef].s = {
-                        border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
-                    };
-                }
-                
-                // Añadir la hoja de metadatos al libro
-                XLSX.utils.book_append_sheet(wb, wsMetadata, "Metadatos");
-                
-                // Generar el archivo Excel
-                const fileName = `Expedientes_Personal_${new Date().toISOString().slice(0, 10)}.xlsx`;
-                
-                // Escribir el archivo y descargarlo
+                // Escribir y descargar el archivo
                 setTimeout(() => {
-                    XLSX.writeFile(wb, fileName);
+                    XLSX.writeFile(workbook, fileName, { bookType: 'xls' });
                     hideLoading();
                     alert(`Exportación completada. Archivo "${fileName}" descargado.`);
                 }, 500);
