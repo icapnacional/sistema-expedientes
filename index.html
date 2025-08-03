@@ -266,6 +266,57 @@
         .badge-secondary {
             background-color: #6c757d;
         }
+        
+        /* Estilos para la paginación */
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #eee;
+            border-radius: 0 0 12px 12px;
+        }
+        
+        .pagination-info {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .pagination-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .pagination-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background-color: white;
+            border: 1px solid #ced4da;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .pagination-btn:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+        }
+        
+        .pagination-btn.active {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -309,7 +360,10 @@
                             <input type="checkbox" class="form-check-input" id="remember-credentials">
                             <label class="form-check-label" for="remember-credentials">Recordar mis credenciales</label>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <span id="login-spinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
+                            <span id="login-text">Iniciar Sesión</span>
+                        </button>
                         <div class="mt-3 text-center">
                             <button type="button" class="btn btn-link" id="show-register">¿No tienes cuenta? Regístrate</button>
                         </div>
@@ -643,9 +697,17 @@
                         <textarea class="form-control" id="causa" rows="2" placeholder="Causa del caso..."></textarea>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary w-100 py-2">
-                        <i class="fas fa-save me-2"></i>Registrar Nuevo Personal
-                    </button>
+                    <div class="d-flex justify-content-between mb-4">
+                        <!-- Botón para exportar a Excel -->
+                        <button id="export-excel-btn" class="btn btn-success">
+                            <i class="fas fa-file-excel me-2"></i>Exportar a Excel
+                        </button>
+                        
+                        <!-- Botón para guardar -->
+                        <button type="submit" class="btn btn-primary py-2">
+                            <i class="fas fa-save me-2"></i>Registrar Nuevo Personal
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -703,11 +765,13 @@
         <div class="card shadow-sm">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Personal Registrado</h5>
-                <div class="input-group w-auto" style="max-width: 300px;">
-                    <span class="input-group-text bg-light">
-                        <i class="fas fa-search"></i>
-                    </span>
-                    <input type="text" class="form-control" id="search-personal" placeholder="Buscar...">
+                <div class="d-flex">
+                    <div class="input-group w-auto me-2" style="max-width: 300px;">
+                        <span class="input-group-text bg-light">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="search-personal" placeholder="Buscar...">
+                    </div>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -721,6 +785,7 @@
                                 <th>Apellidos</th>
                                 <th>Cédula</th>
                                 <th>Jerarquía</th>
+                                <th>Registrado por</th>
                                 <th>Fecha Registro</th>
                                 <th>Acciones</th>
                             </tr>
@@ -729,6 +794,28 @@
                             <!-- Los registros de personal se cargarán aquí dinámicamente -->
                         </tbody>
                     </table>
+                </div>
+                
+                <!-- Controles de paginación -->
+                <div class="pagination-controls">
+                    <div class="pagination-info" id="pagination-info">
+                        Mostrando 0 de 0 registros
+                    </div>
+                    <div class="pagination-buttons">
+                        <button id="first-page" class="pagination-btn" title="Primera página">
+                            <i class="fas fa-angle-double-left"></i>
+                        </button>
+                        <button id="prev-page" class="pagination-btn" title="Página anterior">
+                            <i class="fas fa-angle-left"></i>
+                        </button>
+                        <button id="current-page" class="pagination-btn active" disabled>1</button>
+                        <button id="next-page" class="pagination-btn" title="Página siguiente">
+                            <i class="fas fa-angle-right"></i>
+                        </button>
+                        <button id="last-page" class="pagination-btn" title="Última página">
+                            <i class="fas fa-angle-double-right"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -751,6 +838,21 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
+        // Variables de paginación
+        let currentPage = 1;
+        let itemsPerPage = 6;
+        let allPersonalData = [];
+        let filteredPersonalData = [];
+        
+        // Función auxiliar para obtener el valor de un select de forma segura
+        function getSelectValue(id) {
+            const selectElement = document.getElementById(id);
+            if (!selectElement || selectElement.selectedIndex < 0) {
+                return null;
+            }
+            return selectElement.options[selectElement.selectedIndex].text;
+        }
+
         // Configuración de Supabase
         const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
@@ -770,11 +872,23 @@
         const mainPanel = document.getElementById('main-panel');
         const errorMessage = document.getElementById('error-message');
         const errorText = document.getElementById('error-text');
+        const loginSpinner = document.getElementById('login-spinner');
+        const loginText = document.getElementById('login-text');
         const logoutBtn = document.getElementById('logout-btn');
         const showRegisterBtn = document.getElementById('show-register');
         const showLoginBtn = document.getElementById('show-login');
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
+        const exportExcelBtn = document.getElementById('export-excel-btn');
+        const searchPersonal = document.getElementById('search-personal');
+        
+        // Elementos de paginación
+        const paginationInfo = document.getElementById('pagination-info');
+        const firstPageBtn = document.getElementById('first-page');
+        const prevPageBtn = document.getElementById('prev-page');
+        const currentPageBtn = document.getElementById('current-page');
+        const nextPageBtn = document.getElementById('next-page');
+        const lastPageBtn = document.getElementById('last-page');
 
         // Variables globales
         let editingPersonalId = null;
@@ -827,20 +941,20 @@
             }
         }
 
-        // Función para verificar si la sesión es válida
+        // Función CORREGIDA para verificar si la sesión es válida
         async function isSessionValid() {
             try {
                 // Obtener la sesión CORRECTAMENTE (Supabase v2)
-                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                const { data, error } = await supabaseClient.auth.getSession();
                 if (error) throw error;
-                return !!session;
+                return !!data.session;
             } catch (error) {
                 console.error('Error al verificar validez de sesión:', error);
                 return false;
             }
         }
 
-        // Función para asegurar que hay una sesión válida
+        // Función CORREGIDA para asegurar que hay una sesión válida
         async function ensureSession() {
             const isValid = await isSessionValid();
             if (!isValid) {
@@ -861,22 +975,22 @@
                 console.log('Verificando sesión...');
                 
                 // Obtener la sesión CORRECTAMENTE (Supabase v2)
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data, error } = await supabaseClient.auth.getSession();
                 
-                if (sessionError) {
-                    console.error('Error al obtener sesión:', sessionError);
-                    throw sessionError;
+                if (error) {
+                    console.error('Error al obtener sesión:', error);
+                    throw error;
                 }
                 
-                if (session) {
-                    console.log('Sesión encontrada:', session);
+                if (data.session) {
+                    console.log('Sesión encontrada:', data.session);
                     
                     // Usuario autenticado - muestra el panel principal
                     loginScreen.style.display = 'none';
                     mainPanel.style.display = 'block';
                     
                     // Muestra el nombre del usuario
-                    const user = session.user;
+                    const user = data.session.user;
                     const userNameElement = document.getElementById('user-name');
                     if (userNameElement) {
                         // Obtener el nombre completo del usuario
@@ -990,6 +1104,192 @@
             });
         }
 
+        // Función para actualizar la interfaz de paginación
+        function updatePaginationControls() {
+            const totalPages = Math.ceil(filteredPersonalData.length / itemsPerPage);
+            
+            // Actualizar información de paginación
+            const startItem = (currentPage - 1) * itemsPerPage + 1;
+            const endItem = Math.min(currentPage * itemsPerPage, filteredPersonalData.length);
+            paginationInfo.textContent = `Mostrando ${startItem}-${endItem} de ${filteredPersonalData.length} registros`;
+            
+            // Actualizar estado de los botones
+            firstPageBtn.disabled = currentPage === 1;
+            prevPageBtn.disabled = currentPage === 1;
+            currentPageBtn.textContent = currentPage;
+            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+            lastPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        // Función para renderizar la página actual
+        function renderCurrentPage() {
+            const personalList = document.getElementById('personal-list');
+            if (!personalList) return;
+            
+            // Calcular índices para la paginación
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredPersonalData.length);
+            
+            // Limpiar la tabla
+            personalList.innerHTML = '';
+            
+            // Mostrar mensaje si no hay registros
+            if (filteredPersonalData.length === 0) {
+                personalList.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">
+                            <i class="fas fa-inbox me-2"></i>No hay registros de personal
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Agregar los registros de la página actual
+            for (let i = startIndex; i < endIndex; i++) {
+                const personal = filteredPersonalData[i];
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${personal.expediente_numero || 'N/A'}</td>
+                    <td><img src="${personal.foto || 'https://placehold.co/40x40/003366/white?text=FP'}" 
+                             class="rounded-circle" width="40"></td>
+                    <td>${personal.nombres || 'N/A'}</td>
+                    <td>${personal.apellidos || 'N/A'}</td>
+                    <td>${personal.cedula || 'N/A'}</td>
+                    <td>${personal.jerarquia || 'N/A'}</td>
+                    <td>${personal.registrado_por || 'N/A'}</td>
+                    <td>${formatDate(personal.fecha_registro)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary edit-personal" data-id="${personal.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger delete-personal ms-1" data-id="${personal.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                personalList.appendChild(row);
+            }
+            
+            // Configurar eventos para los botones de acción
+            document.querySelectorAll('.edit-personal').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    editPersonal(id);
+                });
+            });
+            
+            document.querySelectorAll('.delete-personal').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    deletePersonal(id);
+                });
+            });
+        }
+
+        // Función para ir a una página específica
+        function goToPage(page) {
+            const totalPages = Math.ceil(filteredPersonalData.length / itemsPerPage);
+            
+            // Validar que la página esté dentro del rango
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            renderCurrentPage();
+            updatePaginationControls();
+        }
+
+        // Función para exportar a Excel
+        function exportToExcel() {
+            // Crear una copia de la tabla actual
+            const table = document.querySelector('.table');
+            const tableClone = table.cloneNode(true);
+            
+            // Eliminar la columna de acciones y la columna de foto para la exportación
+            const headerCells = tableClone.querySelectorAll('thead th');
+            const bodyRows = tableClone.querySelectorAll('tbody tr');
+            
+            // Encontrar los índices de las columnas a eliminar
+            let columnsToRemove = [];
+            
+            for (let i = 0; i < headerCells.length; i++) {
+                if (headerCells[i].textContent.includes('Acciones')) {
+                    columnsToRemove.push(i);
+                }
+                if (headerCells[i].textContent.includes('Foto')) {
+                    columnsToRemove.push(i);
+                }
+            }
+            
+            // Ordenar los índices de mayor a menor para eliminar de derecha a izquierda
+            columnsToRemove.sort((a, b) => b - a);
+            
+            // Eliminar las columnas
+            columnsToRemove.forEach(index => {
+                // Eliminar encabezado
+                headerCells[index].remove();
+                
+                // Eliminar celda en cada fila
+                bodyRows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells[index]) {
+                        cells[index].remove();
+                    }
+                });
+            });
+            
+            // Preparar el contenido HTML para Excel
+            const html = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+                      xmlns:x='urn:schemas-microsoft-com:office:excel' 
+                      xmlns='http://www.w3.org/TR/REC-html40'>
+                <head>
+                    <meta charset='utf-8'>
+                    <!--[if gte mso 9]>
+                    <xml>
+                        <x:ExcelWorkbook>
+                            <x:ExcelWorksheets>
+                                <x:ExcelWorksheet>
+                                    <x:Name>Personal Registrado</x:Name>
+                                    <x:WorksheetOptions>
+                                        <x:DisplayGridlines/>
+                                    </x:WorksheetOptions>
+                                </x:ExcelWorksheet>
+                            </x:ExcelWorksheets>
+                        </x:ExcelWorkbook>
+                    </xml>
+                    <![endif]-->
+                    <style>
+                        table { border-collapse: collapse; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <h3>Personal Registrado - ${new Date().toLocaleDateString('es-ES')}</h3>
+                    ${tableClone.outerHTML}
+                </body>
+                </html>
+            `;
+            
+            // Crear un Blob con el contenido HTML
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            
+            // Crear un enlace de descarga
+            const downloadLink = document.createElement('a');
+            const fileName = `Personal_Registrado_${new Date().toISOString().slice(0, 10)}.xls`;
+            
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = fileName;
+            
+            // Simular clic en el enlace
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+
         // Función CORREGIDA para guardar un registro de personal
         async function savePersonal() {
             // Protección contra guardados duplicados
@@ -1005,8 +1305,8 @@
                 await ensureSession();
                 
                 // Obtener la sesión actual CORRECTAMENTE (Supabase v2)
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !session) {
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data.session) {
                     // Intentar recuperar la sesión desde localStorage si existe
                     const rememberedEmail = getRememberedEmail();
                     if (rememberedEmail && !sessionError) {
@@ -1017,7 +1317,7 @@
                 }
                 
                 // Verificar si el usuario tiene permisos para editar
-                const userRole = session.user.user_metadata?.role || 'user';
+                const userRole = data.session.user.user_metadata?.role || 'user';
                 console.log('ROL EN savePersonal:', userRole);
                 
                 // Si está intentando editar un registro y no es administrador, impedirlo
@@ -1055,7 +1355,7 @@
                     causa: document.getElementById('causa').value,
                     fecha_registro: new Date().toISOString().split('T')[0],
                     foto: document.getElementById('profile-picture').src,
-                    user_id: session.user.id
+                    user_id: data.session.user.id
                 };
 
                 // Validación básica
@@ -1086,7 +1386,7 @@
             }
         }
 
-        // Función para cargar los registros de personal
+        // Función CORREGIDA para cargar los registros de personal
         async function loadPersonal() {
             try {
                 // Asegurar que hay una sesión válida
@@ -1098,7 +1398,7 @@
                 
                 personalList.innerHTML = `
                     <tr>
-                        <td colspan="8" class="text-center py-4">
+                        <td colspan="9" class="text-center py-4">
                             <div class="spinner-border text-primary me-2" role="status">
                                 <span class="visually-hidden">Cargando...</span>
                             </div> Cargando registros...
@@ -1107,79 +1407,64 @@
                 `;
                 
                 // Obtener los registros de Supabase
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !session) {
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                const { data, error } = await supabaseClient
-                    .from('personal')
-                    .select('*')
-                    .eq('user_id', session.user.id)
-                    .order('fecha_registro', { ascending: false });
-                    
+                // Obtener el rol del usuario
+                const userRole = data.session.user.user_metadata?.role || 'user';
+                currentUserRole = userRole;
+                
+                // Si el usuario es administrador, obtiene TODOS los registros
+                // Si es usuario normal, solo obtiene sus propios registros
+                let query = supabaseClient.from('personal').select('*');
+                
+                if (userRole !== 'admin') {
+                    query = query.eq('user_id', data.session.user.id);
+                }
+                
+                const {  personalData, error } = await query.order('fecha_registro', { ascending: false });
+                
                 if (error) throw error;
                 
+                // Guardar los datos en la variable global
+                allPersonalData = personalData || [];
+                filteredPersonalData = [...allPersonalData];
+                
                 // Si no hay registros
-                if (!data || data.length === 0) {
+                if (filteredPersonalData.length === 0) {
                     personalList.innerHTML = `
                         <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">
+                            <td colspan="9" class="text-center py-4 text-muted">
                                 <i class="fas fa-inbox me-2"></i>No hay registros de personal
                             </td>
                         </tr>
                     `;
+                    
+                    // Actualizar información de paginación
+                    paginationInfo.textContent = 'Mostrando 0 de 0 registros';
+                    firstPageBtn.disabled = true;
+                    prevPageBtn.disabled = true;
+                    currentPageBtn.textContent = '1';
+                    nextPageBtn.disabled = true;
+                    lastPageBtn.disabled = true;
+                    
                     return;
                 }
                 
-                // Limpiar y llenar la tabla
-                personalList.innerHTML = '';
+                // Reiniciar a la primera página
+                currentPage = 1;
                 
-                data.forEach(personal => {
-                    const row = document.createElement('tr');
-                    
-                    row.innerHTML = `
-                        <td>${personal.expediente_numero || 'N/A'}</td>
-                        <td><img src="${personal.foto || 'https://placehold.co/40x40/003366/white?text=FP'}" 
-                                 class="rounded-circle" width="40"></td>
-                        <td>${personal.nombres || 'N/A'}</td>
-                        <td>${personal.apellidos || 'N/A'}</td>
-                        <td>${personal.cedula || 'N/A'}</td>
-                        <td>${personal.jerarquia || 'N/A'}</td>
-                        <td>${formatDate(personal.fecha_registro)}</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary edit-personal" data-id="${personal.id}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger delete-personal ms-1" data-id="${personal.id}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    
-                    personalList.appendChild(row);
-                });
-                
-                // Configurar eventos para los botones de acción
-                document.querySelectorAll('.edit-personal').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        editPersonal(id);
-                    });
-                });
-                
-                document.querySelectorAll('.delete-personal').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        deletePersonal(id);
-                    });
-                });
+                // Renderizar la primera página
+                renderCurrentPage();
+                updatePaginationControls();
                 
             } catch (error) {
                 console.error('Error al cargar registros de personal:', error);
                 document.getElementById('personal-list').innerHTML = `
                     <tr>
-                        <td colspan="8" class="text-center py-4 text-danger">
+                        <td colspan="9" class="text-center py-4 text-danger">
                             <i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}
                         </td>
                     </tr>
@@ -1204,12 +1489,12 @@
                 }
                 
                 // Verificar si el usuario tiene permisos para editar
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !session) {
+                const {  sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !sessionData.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                const userRole = session.user.user_metadata?.role || 'user';
+                const userRole = sessionData.session.user.user_metadata?.role || 'user';
                 console.log('ROL EN editPersonal:', userRole);
                 
                 // Si no es administrador, impedir la edición
@@ -1267,12 +1552,12 @@
         async function deletePersonal(id) {
             try {
                 // Verificar si el usuario tiene permisos para editar
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !session) {
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                const userRole = session.user.user_metadata?.role || 'user';
+                const userRole = data.session.user.user_metadata?.role || 'user';
                 console.log('ROL EN deletePersonal:', userRole);
                 
                 // Si no es administrador, impedir la eliminación
@@ -1336,14 +1621,14 @@
         // Función para cargar las opciones de un desplegable
         async function loadDropdownOptions(field) {
             try {
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !session) throw new Error("No hay sesión activa");
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data.session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
-                const { data, error } = await supabaseClient
+                const {  optionsData, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
-                    .or(`field_name.eq.${field},and(field_name.eq.${field},user_id.eq.${session.user.id})`)
+                    .or(`field_name.eq.${field},and(field_name.eq.${field},user_id.eq.${data.session.user.id})`)
                     .order('option_label', { ascending: true });
                     
                 if (error) throw error;
@@ -1357,7 +1642,7 @@
                     }
                     
                     // Añadir opciones
-                    data.forEach(option => {
+                    optionsData.forEach(option => {
                         const optionElement = document.createElement('option');
                         optionElement.value = option.option_value;
                         optionElement.textContent = option.option_label;
@@ -1365,7 +1650,7 @@
                     });
                 }
                 
-                return data;
+                return optionsData;
             } catch (error) {
                 console.error(`Error al cargar opciones para ${field}:`, error);
                 return [];
@@ -1388,13 +1673,13 @@
         // Función CORREGIDA para mostrar el modal de administración
         async function showManageDropdownModal(field) {
             // Verificar si el usuario tiene permisos para administrar desplegables
-            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-            if (sessionError || !session) {
+            const { data, error: sessionError } = await supabaseClient.auth.getSession();
+            if (sessionError || !data.session) {
                 alert("No hay sesión activa. Por favor, inicie sesión.");
                 return;
             }
             
-            const userRole = session.user.user_metadata?.role || 'user';
+            const userRole = data.session.user.user_metadata?.role || 'user';
             if (userRole !== 'admin') {
                 alert("No tiene permisos para administrar opciones. Solo los administradores pueden administrar desplegables.");
                 return;
@@ -1416,11 +1701,11 @@
         // Función para cargar las opciones para el modal de administración
         async function loadDropdownOptionsForManagement(field) {
             try {
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !session) throw new Error("No hay sesión activa");
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data.session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
-                const { data, error } = await supabaseClient
+                const {  optionsData, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
                     .eq('field_name', field)
@@ -1432,7 +1717,7 @@
                 const optionsList = document.getElementById('options-list');
                 optionsList.innerHTML = '';
                 
-                if (data.length === 0) {
+                if (optionsData.length === 0) {
                     optionsList.innerHTML = `
                         <tr>
                             <td colspan="4" class="text-center py-3 text-muted">
@@ -1440,10 +1725,10 @@
                             </td>
                         </tr>
                     `;
-                    return data;
+                    return optionsData;
                 }
                 
-                data.forEach(option => {
+                optionsData.forEach(option => {
                     const row = document.createElement('tr');
                     
                     row.innerHTML = `
@@ -1478,7 +1763,7 @@
                     });
                 });
                 
-                return data;
+                return optionsData;
             } catch (error) {
                 console.error(`Error al cargar opciones para administración de ${field}:`, error);
                 return [];
@@ -1497,14 +1782,14 @@
             }
             
             try {
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !session) throw new Error("No hay sesión activa");
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data.session) throw new Error("No hay sesión activa");
                 
                 const newOption = {
                     field_name: currentDropdownField,
                     option_value: newValue,
                     option_label: newLabel,
-                    user_id: isGlobal ? null : session.user.id,
+                    user_id: isGlobal ? null : data.session.user.id,
                     is_global: isGlobal
                 };
                 
@@ -1602,21 +1887,21 @@
                 hideError();
                 
                 // Solo el administrador puede crear nuevos usuarios
-                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !session) {
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data.session) {
                     throw new Error("Debe iniciar sesión para crear nuevos usuarios");
                 }
                 
-                const userRole = session.user.user_metadata?.role || 'user';
+                const userRole = data.session.user.user_metadata?.role || 'user';
                 if (userRole !== 'admin') {
                     throw new Error("Solo el administrador puede crear nuevos usuarios");
                 }
                 
-                const { data, error } = await supabaseClient.auth.signUp({
+                const {  signUpData, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password,
                     options: {
-                        data: {
+                         {
                             full_name: fullName,
                             role: 'user'  // Todos los nuevos usuarios serán de rol "user"
                         }
@@ -1627,12 +1912,12 @@
                     throw error;
                 }
                 
-                if (data.user) {
-                    console.log('Registro exitoso', data);
+                if (signUpData.user) {
+                    console.log('Registro exitoso', signUpData);
                     alert('¡Usuario creado exitosamente!');
                     showLoginForm();
                 } else {
-                    console.log('Registro pendiente de confirmación', data);
+                    console.log('Registro pendiente de confirmación', signUpData);
                     alert('¡Usuario creado exitosamente! Revisa el correo para confirmar.');
                     showLoginForm();
                 }
@@ -1652,6 +1937,10 @@
             
             try {
                 hideError();
+                
+                // Mostrar spinner de carga
+                loginSpinner.classList.remove('d-none');
+                loginText.textContent = 'Iniciando sesión...';
                 
                 console.log('Intentando iniciar sesión con:', email);
                 
@@ -1676,6 +1965,11 @@
                     }
                     
                     showError(errorMessageText);
+                    
+                    // Restaurar el estado del botón
+                    loginSpinner.classList.add('d-none');
+                    loginText.textContent = 'Iniciar Sesión';
+                    
                     return;
                 }
                 
@@ -1688,25 +1982,35 @@
                     clearRememberedEmail();
                 }
                 
-                // VERIFICAR EL ROL INMEDIATAMENTE DESPUÉS DEL LOGIN
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                const userRole = session?.user?.user_metadata?.role || 'user';
-                console.log('ROL OBTENIDO DESPUÉS DEL LOGIN:', userRole);
+                // Si llegamos aquí, el inicio de sesión fue exitoso
+                loginScreen.style.display = 'none';
+                mainPanel.style.display = 'block';
                 
-                // Si es administrador, muestra mensaje de bienvenida especial
-                if (userRole === 'admin') {
-                    alert('¡Bienvenido Administrador! Tiene permisos completos.');
-                } else {
-                    alert('¡Bienvenido! Solo puede registrar nuevos registros.');
+                // Carga los registros de personal
+                await loadPersonal();
+                
+                // Actualizar el nombre del usuario
+                const userNameElement = document.getElementById('user-name');
+                if (userNameElement) {
+                    const fullName = data.user.user_metadata?.full_name || 
+                                    data.user.user_metadata?.fullName || 
+                                    data.user.user_metadata?.name ||
+                                    data.user.email.split('@')[0];
+                    
+                    userNameElement.textContent = fullName;
                 }
                 
-                // ¡ESTE ES EL CAMBIO CLAVE!
-                // Forzar la verificación completa de sesión y actualización de interfaz
-                await checkSession();
+                // Restaurar el estado del botón
+                loginSpinner.classList.add('d-none');
+                loginText.textContent = 'Iniciar Sesión';
                 
             } catch (error) {
                 console.error('Error inesperado al iniciar sesión:', error);
                 showError('Error inesperado: ' + error.message);
+                
+                // Restaurar el estado del botón
+                loginSpinner.classList.add('d-none');
+                loginText.textContent = 'Iniciar Sesión';
             }
         }
 
@@ -1782,6 +2086,11 @@
                     });
                 });
                 
+                // Configurar botón para exportar a Excel
+                if (exportExcelBtn) {
+                    exportExcelBtn.addEventListener('click', exportToExcel);
+                }
+                
                 // Configurar botón para agregar opciones
                 document.getElementById('btn-add-option').addEventListener('click', function() {
                     if (editingOptionId) {
@@ -1836,29 +2145,6 @@
                     });
                 }
                 
-                // Configurar búsqueda
-                const searchPersonal = document.getElementById('search-personal');
-                if (searchPersonal) {
-                    searchPersonal.addEventListener('input', function() {
-                        const searchTerm = this.value.toLowerCase();
-                        const rows = document.querySelectorAll('#personal-list tr');
-                        
-                        rows.forEach(row => {
-                            const cells = row.querySelectorAll('td');
-                            let match = false;
-                            
-                            for (let i = 0; i < cells.length - 1; i++) { // Excluir la última celda (acciones)
-                                if (cells[i].textContent.toLowerCase().includes(searchTerm)) {
-                                    match = true;
-                                    break;
-                                }
-                            }
-                            
-                            row.style.display = match ? '' : 'none';
-                        });
-                    });
-                }
-                
                 // Configurar botones de navegación
                 if (showRegisterBtn) {
                     showRegisterBtn.addEventListener('click', showRegisterForm);
@@ -1870,6 +2156,54 @@
                 
                 if (logoutBtn) {
                     logoutBtn.addEventListener('click', logout);
+                }
+                
+                // Configurar controles de paginación
+                if (firstPageBtn) {
+                    firstPageBtn.addEventListener('click', () => goToPage(1));
+                }
+                
+                if (prevPageBtn) {
+                    prevPageBtn.addEventListener('click', () => goToPage(currentPage - 1));
+                }
+                
+                if (nextPageBtn) {
+                    nextPageBtn.addEventListener('click', () => goToPage(currentPage + 1));
+                }
+                
+                if (lastPageBtn) {
+                    lastPageBtn.addEventListener('click', () => {
+                        const totalPages = Math.ceil(filteredPersonalData.length / itemsPerPage);
+                        goToPage(totalPages);
+                    });
+                }
+                
+                // Configurar búsqueda
+                if (searchPersonal) {
+                    searchPersonal.addEventListener('input', function() {
+                        const searchTerm = this.value.toLowerCase();
+                        
+                        if (!searchTerm) {
+                            // Si no hay término de búsqueda, mostrar todos los registros
+                            filteredPersonalData = [...allPersonalData];
+                        } else {
+                            // Filtrar los registros
+                            filteredPersonalData = allPersonalData.filter(personal => {
+                                // Convertir todos los campos a string y buscar en ellos
+                                return Object.values(personal).some(value => {
+                                    if (value === null || value === undefined) return false;
+                                    return value.toString().toLowerCase().includes(searchTerm);
+                                });
+                            });
+                        }
+                        
+                        // Reiniciar a la primera página
+                        currentPage = 1;
+                        
+                        // Renderizar la primera página
+                        renderCurrentPage();
+                        updatePaginationControls();
+                    });
                 }
                 
                 // Cargar todas las opciones de desplegables
