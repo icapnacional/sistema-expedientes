@@ -745,55 +745,6 @@
             </div>
         </div>
 
-        <!-- Modal de Administración de Desplegables -->
-        <div class="modal fade" id="manageDropdownModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="manageDropdownModalLabel">Administrar Opciones: <span id="dropdown-field-name"></span></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="new-option-value" class="form-label">Valor de la Opción</label>
-                            <input type="text" class="form-control" id="new-option-value" placeholder="Ej: cabo_mayor">
-                        </div>
-                        <div class="mb-3">
-                            <label for="new-option-label" class="form-label">Etiqueta de la Opción</label>
-                            <input type="text" class="form-control" id="new-option-label" placeholder="Ej: Cabo Mayor">
-                        </div>
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="new-option-global" checked>
-                            <label class="form-check-label" for="new-option-global">Opción Global (visible para todos)</label>
-                        </div>
-                        <button type="button" class="btn btn-primary mb-4" id="btn-add-option">
-                            <i class="fas fa-plus me-2"></i>Agregar Nueva Opción
-                        </button>
-                        
-                        <h6 class="mb-3">Opciones Existentes:</h6>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Valor</th>
-                                        <th>Etiqueta</th>
-                                        <th>Tipo</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="options-list">
-                                    <!-- Las opciones se cargarán aquí dinámicamente -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Lista de Personal Registrado -->
         <div class="card shadow-sm">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -870,6 +821,9 @@
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
+    <!-- SheetJS (xlsx) para exportación a Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <script>
         // Variables de paginación
         let currentPage = 1;
@@ -919,10 +873,7 @@
         // Variables globales
         let editingPersonalId = null;
         let isSaving = false; // Flag para evitar guardados duplicados
-        let currentDropdownField = null;
-        let editingOptionId = null;
         let currentUserRole = 'user'; // Por defecto es usuario normal
-        let sessionCheckInterval = null;
 
         // Función para mostrar mensajes de error
         function showError(message) {
@@ -992,10 +943,9 @@
             }
         }
 
-        // Función para verificar si la sesión es válida
+        // Función CORREGIDA para verificar si la sesión es válida
         async function isSessionValid() {
             try {
-                // Manejo seguro de la sesión
                 const { data, error } = await supabaseClient.auth.getSession();
                 if (error) {
                     console.error('Error al obtener sesión:', error);
@@ -1008,12 +958,10 @@
             }
         }
 
-        // Función para verificar la sesión
+        // Función CORREGIDA para verificar la sesión
         async function checkSession() {
             try {
-                console.log('Verificando sesión...');
-                
-                // Manejo seguro de la sesión
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error } = await supabaseClient.auth.getSession();
                 
                 if (error) {
@@ -1022,8 +970,6 @@
                 }
                 
                 if (data?.session) {
-                    console.log('Sesión encontrada:', data.session);
-                    
                     // Usuario autenticado - muestra el panel principal
                     loginScreen.style.display = 'none';
                     mainPanel.style.display = 'block';
@@ -1032,7 +978,7 @@
                     const user = data.session.user;
                     const userNameElement = document.getElementById('user-name');
                     if (userNameElement) {
-                        // Manejo seguro de user_metadata
+                        // CORRECCIÓN AQUÍ - Manejo seguro de user_metadata
                         const fullName = user.user_metadata?.full_name || 
                                         user.user_metadata?.fullName || 
                                         user.user_metadata?.name ||
@@ -1044,18 +990,10 @@
                         const userRole = user.user_metadata?.role || 'user';
                         currentUserRole = userRole;
                         
-                        console.log('ROL DEL USUARIO:', userRole);
-                        console.log('METADATOS COMPLETOS:', user.user_metadata);
-                        
-                        // Aplicar restricciones según el rol
-                        applyRoleRestrictions(userRole);
+                        // Carga los registros de personal
+                        await loadPersonal();
                     }
-                    
-                    // Carga los registros de personal
-                    await loadPersonal();
                 } else {
-                    console.log('No hay sesión activa');
-                    
                     // Usuario no autenticado - muestra el login
                     loginScreen.style.display = 'block';
                     mainPanel.style.display = 'none';
@@ -1070,65 +1008,6 @@
             } catch (error) {
                 console.error('Error al verificar sesión:', error);
                 showError('Error al verificar sesión: ' + error.message);
-            }
-        }
-
-        // Función para aplicar restricciones según el rol del usuario
-        function applyRoleRestrictions(role) {
-            console.log('Aplicando restricciones para rol:', role);
-            
-            // Si es administrador, mostrar todos los elementos
-            if (role === 'admin') {
-                console.log('Usuario es ADMINISTRADOR');
-                
-                // Mostrar botones de edición y eliminación
-                document.querySelectorAll('.edit-personal, .delete-personal').forEach(button => {
-                    button.style.display = '';
-                });
-                
-                // Mostrar botones de administración de desplegables
-                document.querySelectorAll('.manage-dropdown').forEach(button => {
-                    button.style.display = '';
-                });
-                
-                // Permitir edición del formulario completo
-                const formElements = document.querySelectorAll('#personal-form input, #personal-form select, #personal-form textarea');
-                formElements.forEach(element => {
-                    element.disabled = false;
-                });
-                
-                // Restaurar texto original del botón
-                const saveButton = document.querySelector('#personal-form button[type="submit"]');
-                if (saveButton) {
-                    saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Guardar Registro de Personal';
-                }
-                
-                return;
-            }
-            
-            // Para usuarios normales:
-            console.log('Usuario es USUARIO NORMAL');
-            
-            // 1. Ocultar botones de edición y eliminación en la lista
-            document.querySelectorAll('.edit-personal, .delete-personal').forEach(button => {
-                button.style.display = 'none';
-            });
-            
-            // 2. Ocultar botones de administración de desplegables
-            document.querySelectorAll('.manage-dropdown').forEach(button => {
-                button.style.display = 'none';
-            });
-            
-            // 3. Permitir edición del formulario completo (solo para nuevos registros)
-            const formElements = document.querySelectorAll('#personal-form input, #personal-form select, #personal-form textarea');
-            formElements.forEach(element => {
-                element.disabled = false;
-            });
-            
-            // 4. Modificar el texto del botón de guardar
-            const saveButton = document.querySelector('#personal-form button[type="submit"]');
-            if (saveButton) {
-                saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Registrar Nuevo Personal';
             }
         }
 
@@ -1240,96 +1119,292 @@
             updatePaginationControls();
         }
 
-        // Función para exportar a Excel
+        // Función CORREGIDA para exportar a Excel con plantilla personalizada
         function exportToExcel() {
-            // Crear una copia de la tabla actual
-            const table = document.querySelector('.table');
-            const tableClone = table.cloneNode(true);
-            
-            // Eliminar la columna de acciones y la columna de foto para la exportación
-            const headerCells = tableClone.querySelectorAll('thead th');
-            const bodyRows = tableClone.querySelectorAll('tbody tr');
-            
-            // Encontrar los índices de las columnas a eliminar
-            let columnsToRemove = [];
-            
-            for (let i = 0; i < headerCells.length; i++) {
-                if (headerCells[i].textContent.includes('Acciones')) {
-                    columnsToRemove.push(i);
-                }
-                if (headerCells[i].textContent.includes('Foto')) {
-                    columnsToRemove.push(i);
-                }
-            }
-            
-            // Ordenar los índices de mayor a menor para eliminar de derecha a izquierda
-            columnsToRemove.sort((a, b) => b - a);
-            
-            // Eliminar las columnas
-            columnsToRemove.forEach(index => {
-                // Eliminar encabezado
-                headerCells[index].remove();
+            try {
+                // Mostrar loader
+                showLoading();
                 
-                // Eliminar celda en cada fila
-                bodyRows.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    if (cells[index]) {
-                        cells[index].remove();
-                    }
+                // Verificar que hay datos para exportar
+                if (allPersonalData.length === 0) {
+                    alert('No hay datos para exportar');
+                    hideLoading();
+                    return;
+                }
+                
+                // Crear un nuevo libro de trabajo
+                const wb = XLSX.utils.book_new();
+                
+                // 1. Hoja de Resumen Ejecutivo
+                const summaryData = [
+                    ['REPORTE DE EXPEDIENTES DE PERSONAL', '', '', '', '', '', ''],
+                    ['Fecha de Generación:', new Date().toLocaleDateString('es-ES'), '', '', 'Total de Registros:', allPersonalData.length, ''],
+                    [''],
+                    ['RESUMEN POR JERARQUÍA', '', '', '', '', '', ''],
+                    ['Jerarquía', 'Cantidad', '', 'RESUMEN POR ESTATUS', '', 'Cantidad', ''],
+                ];
+                
+                // Calcular resumen por jerarquía
+                const jerarquiaCount = {};
+                allPersonalData.forEach(personal => {
+                    const jerarquia = personal.jerarquia || 'Sin jerarquía';
+                    jerarquiaCount[jerarquia] = (jerarquiaCount[jerarquia] || 0) + 1;
                 });
-            });
-            
-            // Preparar el contenido HTML para Excel
-            const html = `
-                <html xmlns:o='urn:schemas-microsoft-com:office:office' 
-                      xmlns:x='urn:schemas-microsoft-com:office:excel' 
-                      xmlns='http://www.w3.org/TR/REC-html40'>
-                <head>
-                    <meta charset='utf-8'>
-                    <!--[if gte mso 9]>
-                    <xml>
-                        <x:ExcelWorkbook>
-                            <x:ExcelWorksheets>
-                                <x:ExcelWorksheet>
-                                    <x:Name>Personal Registrado</x:Name>
-                                    <x:WorksheetOptions>
-                                        <x:DisplayGridlines/>
-                                    </x:WorksheetOptions>
-                                </x:ExcelWorksheet>
-                            </x:ExcelWorksheets>
-                        </x:ExcelWorkbook>
-                    </xml>
-                    <![endif]-->
-                    <style>
-                        table { border-collapse: collapse; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                        th { background-color: #f2f2f2; font-weight: bold; }
-                    </style>
-                </head>
-                <body>
-                    <h3>Personal Registrado - ${new Date().toLocaleDateString('es-ES')}</h3>
-                    ${tableClone.outerHTML}
-                </body>
-                </html>
-            `;
-            
-            // Crear un Blob con el contenido HTML
-            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
-            
-            // Crear un enlace de descarga
-            const downloadLink = document.createElement('a');
-            const fileName = `Personal_Registrado_${new Date().toISOString().slice(0, 10)}.xls`;
-            
-            downloadLink.href = URL.createObjectURL(blob);
-            downloadLink.download = fileName;
-            
-            // Simular clic en el enlace
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
+                
+                // Calcular resumen por estatus
+                const estatusCount = {};
+                allPersonalData.forEach(personal => {
+                    const estatus = personal.estatus || 'Sin estatus';
+                    estatusCount[estatus] = (estatusCount[estatus] || 0) + 1;
+                });
+                
+                // Añadir datos de jerarquía al resumen
+                Object.keys(jerarquiaCount).forEach(jerarquia => {
+                    summaryData.push([jerarquia, jerarquiaCount[jerarquia]]);
+                });
+                
+                // Añadir espacio entre secciones
+                summaryData.push(['', '', '', '']);
+                
+                // Añadir datos de estatus al resumen
+                Object.keys(estatusCount).forEach(estatus => {
+                    summaryData.push(['', '', '', estatus, '', estatusCount[estatus]]);
+                });
+                
+                // Añadir información institucional
+                summaryData.push(['', '', '', '', '', '', '']);
+                summaryData.push(['Institución:', 'Policía Nacional Bolivariana', '', '', 'Fecha:', new Date().toLocaleDateString('es-ES'), '']);
+                summaryData.push(['Unidad:', 'REDIP OCCIDENTAL - CCPE ZULIA', '', '', 'Generado por:', document.getElementById('user-name').textContent || 'Usuario', '']);
+                
+                // Crear la hoja de resumen
+                const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+                
+                // Aplicar estilos a la hoja de resumen
+                const summaryCellStyle = {
+                    font: { bold: true, color: { rgb: "000000" } },
+                    fill: { fgColor: { rgb: "D3D3D3" } },
+                    border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
+                };
+                
+                const summaryHeaderStyle = {
+                    font: { bold: true, color: { rgb: "FFFFFF" }, sz: 14 },
+                    fill: { fgColor: { rgb: "003366" } },
+                    alignment: { horizontal: "center" },
+                    border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
+                };
+                
+                // Aplicar estilos a celdas específicas
+                wsSummary['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 10 }, { wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 10 }];
+                
+                // Título principal
+                ['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1'].forEach(cell => {
+                    if (wsSummary[cell]) wsSummary[cell].s = {
+                        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 16 },
+                        fill: { fgColor: { rgb: "003366" } },
+                        alignment: { horizontal: "center" },
+                        border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
+                    };
+                });
+                
+                // Fechas y totales
+                ['B2', 'F2'].forEach(cell => {
+                    if (wsSummary[cell]) wsSummary[cell].s = {
+                        font: { bold: true, color: { rgb: "000000" } },
+                        fill: { fgColor: { rgb: "E6E6E6" } },
+                        border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
+                    };
+                });
+                
+                // Títulos de sección
+                ['A4', 'D4'].forEach(cell => {
+                    if (wsSummary[cell]) wsSummary[cell].s = {
+                        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 12 },
+                        fill: { fgColor: { rgb: "0066CC" } },
+                        border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
+                    };
+                });
+                
+                // Añadir la hoja de resumen al libro
+                XLSX.utils.book_append_sheet(wb, wsSummary, "Resumen Ejecutivo");
+                
+                // 2. Hoja de Datos Principales
+                const mainData = [
+                    [
+                        'NÚMERO DE EXPEDIENTE',
+                        'NOMBRES',
+                        'APELLIDOS',
+                        'CÉDULA',
+                        'EDAD',
+                        'JERARQUÍA',
+                        'SEXO',
+                        'FECHA INICIO',
+                        'TIPO DE EXPEDIENTE',
+                        'ICAP',
+                        'CONDICIÓN',
+                        'AÑO',
+                        'EXPEDIENTE PENAL',
+                        'SERVICIO',
+                        'TIPO DE FALTA',
+                        'ORIGEN DE FALTA',
+                        'FALTA',
+                        'DENUNCIANTE',
+                        'DETENIDO',
+                        'ESTATUS',
+                        'DECISIÓN',
+                        'REGISTRADO POR',
+                        'SUSTANCIADOR',
+                        'REMISIÓN',
+                        'RESEÑA',
+                        'CAUSA',
+                        'FECHA REGISTRO'
+                    ]
+                ];
+                
+                // Añadir los datos de personal
+                allPersonalData.forEach(personal => {
+                    mainData.push([
+                        personal.expediente_numero || '',
+                        personal.nombres || '',
+                        personal.apellidos || '',
+                        personal.cedula || '',
+                        personal.edad || '',
+                        personal.jerarquia || '',
+                        personal.sexo || '',
+                        personal.fecha_inicio ? new Date(personal.fecha_inicio).toLocaleDateString('es-ES') : '',
+                        personal.tipo_expediente || '',
+                        personal.icap || '',
+                        personal.condicion || '',
+                        personal.anio || '',
+                        personal.expediente_penal || '',
+                        personal.servicio || '',
+                        personal.tipo_falta || '',
+                        personal.origen_falta || '',
+                        personal.falta || '',
+                        personal.denunciante || '',
+                        personal.detenido || '',
+                        personal.estatus || '',
+                        personal.decision || '',
+                        personal.registrado_por || '',
+                        personal.sustanciador || '',
+                        personal.remision || '',
+                        personal.resena || '',
+                        personal.causa || '',
+                        personal.fecha_registro ? new Date(personal.fecha_registro).toLocaleDateString('es-ES') : ''
+                    ]);
+                });
+                
+                // Crear la hoja de datos principales
+                const wsMain = XLSX.utils.aoa_to_sheet(mainData);
+                
+                // Aplicar estilos a la hoja de datos principales
+                wsMain['!cols'] = [
+                    { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 5 },
+                    { wch: 20 }, { wch: 10 }, { wch: 15 }, { wch: 20 }, { wch: 15 },
+                    { wch: 15 }, { wch: 5 }, { wch: 20 }, { wch: 20 }, { wch: 15 },
+                    { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                    { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 30 },
+                    { wch: 30 }, { wch: 15 }
+                ];
+                
+                // Estilo para el encabezado
+                const headerStyle = {
+                    font: { bold: true, color: { rgb: "FFFFFF" } },
+                    fill: { fgColor: { rgb: "003366" } },
+                    alignment: { horizontal: "center", wrapText: true },
+                    border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
+                };
+                
+                // Aplicar estilo al encabezado
+                for (let col = 0; col < mainData[0].length; col++) {
+                    const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
+                    if (wsMain[cellRef]) {
+                        wsMain[cellRef].s = headerStyle;
+                    }
+                }
+                
+                // Estilo para las celdas de datos
+                const dataCellStyle = {
+                    border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } },
+                    alignment: { vertical: "top", wrapText: true }
+                };
+                
+                // Aplicar estilo a las celdas de datos
+                for (let row = 1; row < mainData.length; row++) {
+                    for (let col = 0; col < mainData[0].length; col++) {
+                        const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
+                        if (wsMain[cellRef]) {
+                            wsMain[cellRef].s = dataCellStyle;
+                        }
+                    }
+                }
+                
+                // Añadir la hoja de datos principales al libro
+                XLSX.utils.book_append_sheet(wb, wsMain, "Datos Principales");
+                
+                // 3. Hoja de Metadatos
+                const metadata = [
+                    ['METADATOS DEL REPORTE', '', '', ''],
+                    ['Fecha de Generación:', new Date().toLocaleDateString('es-ES'), '', ''],
+                    ['Hora de Generación:', new Date().toLocaleTimeString('es-ES'), '', ''],
+                    ['Total de Registros:', allPersonalData.length, '', ''],
+                    ['Generado por:', document.getElementById('user-name').textContent || 'Usuario', '', ''],
+                    ['Unidad:', 'REDIP OCCIDENTAL - CCPE ZULIA', '', ''],
+                    ['Sistema:', 'Sistema de Gestión de Expedientes', '', ''],
+                    ['Versión:', '1.0', '', ''],
+                    ['Fecha de Exportación:', new Date().toLocaleDateString('es-ES'), '', '']
+                ];
+                
+                const wsMetadata = XLSX.utils.aoa_to_sheet(metadata);
+                
+                // Aplicar estilos a la hoja de metadatos
+                wsMetadata['!cols'] = [{ wch: 25 }, { wch: 30 }, { wch: 10 }, { wch: 30 }];
+                
+                // Título
+                if (wsMetadata['A1']) wsMetadata['A1'].s = {
+                    font: { bold: true, color: { rgb: "FFFFFF" }, sz: 14 },
+                    fill: { fgColor: { rgb: "003366" } },
+                    border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
+                };
+                
+                // Etiquetas
+                for (let row = 1; row < 9; row++) {
+                    const cellRef = `A${row + 1}`;
+                    if (wsMetadata[cellRef]) wsMetadata[cellRef].s = {
+                        font: { bold: true, color: { rgb: "000000" } },
+                        fill: { fgColor: { rgb: "E6E6E6" } },
+                        border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
+                    };
+                }
+                
+                // Valores
+                for (let row = 1; row < 9; row++) {
+                    const cellRef = `B${row + 1}`;
+                    if (wsMetadata[cellRef]) wsMetadata[cellRef].s = {
+                        border: { top: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" } }
+                    };
+                }
+                
+                // Añadir la hoja de metadatos al libro
+                XLSX.utils.book_append_sheet(wb, wsMetadata, "Metadatos");
+                
+                // Generar el archivo Excel
+                const fileName = `Expedientes_Personal_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                
+                // Escribir el archivo y descargarlo
+                setTimeout(() => {
+                    XLSX.writeFile(wb, fileName);
+                    hideLoading();
+                    alert(`Exportación completada. Archivo "${fileName}" descargado.`);
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error al exportar a Excel:', error);
+                hideLoading();
+                alert(`Error al exportar a Excel: ${error.message}`);
+            }
         }
 
-        // Función para guardar un registro de personal
+        // Función CORREGIDA para guardar un registro de personal
         async function savePersonal() {
             // Protección contra guardados duplicados
             if (isSaving) {
@@ -1346,21 +1421,12 @@
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // Manejo seguro de la sesión
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // Verificar si el usuario tiene permisos para editar
-                const userRole = data.session.user.user_metadata?.role || 'user';
-                console.log('ROL EN savePersonal:', userRole);
-                
-                // Si está intentando editar un registro y no es administrador, impedirlo
-                if (editingPersonalId && userRole !== 'admin') {
-                    throw new Error("No tiene permisos para editar registros. Contacte al administrador.");
-                }
-
                 const personal = {
                     id: editingPersonalId || Date.now().toString(),
                     nombres: document.getElementById('nombres').value,
@@ -1422,7 +1488,7 @@
             }
         }
 
-        // Función para cargar los registros de personal
+        // Función CORREGIDA para cargar los registros de personal
         async function loadPersonal() {
             try {
                 // Mostrar loader
@@ -1434,7 +1500,7 @@
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // Manejo seguro de la sesión
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
@@ -1452,18 +1518,7 @@
                     query = query.eq('user_id', data.session.user.id);
                 }
                 
-                // Agregar límite para mejorar rendimiento
-                query = query.limit(100);
-                
-                // Realizar la consulta con timeout
-                const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error("Tiempo de espera agotado. Por favor, intente de nuevo.")), 10000)
-                );
-                
-                const { data: personalData, error } = await Promise.race([
-                    query.order('fecha_registro', { ascending: false }),
-                    timeoutPromise
-                ]);
+                const {  personalData, error } = await query.order('fecha_registro', { ascending: false });
                 
                 if (error) throw error;
                 
@@ -1515,7 +1570,7 @@
             }
         }
 
-        // Función para editar un registro de personal
+        // Función CORREGIDA para editar un registro de personal
         async function editPersonal(id) {
             try {
                 // Obtener el registro de Supabase
@@ -1531,19 +1586,10 @@
                     throw new Error('Registro no encontrado');
                 }
                 
-                // Manejo seguro de la sesión
-                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
+                const {  sessionData, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !sessionData?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
-                }
-                
-                const userRole = sessionData.session.user.user_metadata?.role || 'user';
-                console.log('ROL EN editPersonal:', userRole);
-                
-                // Si no es administrador, impedir la edición
-                if (userRole !== 'admin') {
-                    alert("No tiene permisos para editar registros. Solo los administradores pueden editar.");
-                    return;
                 }
                 
                 // Rellenar el formulario con los datos
@@ -1591,22 +1637,13 @@
             }
         }
 
-        // Función para eliminar un registro de personal
+        // Función CORREGIDA para eliminar un registro de personal
         async function deletePersonal(id) {
             try {
-                // Manejo seguro de la sesión
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
-                }
-                
-                const userRole = data.session.user.user_metadata?.role || 'user';
-                console.log('ROL EN deletePersonal:', userRole);
-                
-                // Si no es administrador, impedir la eliminación
-                if (userRole !== 'admin') {
-                    alert("No tiene permisos para eliminar registros. Solo los administradores pueden eliminar.");
-                    return;
                 }
                 
                 if (!confirm('¿Está seguro de que desea eliminar este registro de personal?')) {
@@ -1661,322 +1698,7 @@
             editingPersonalId = null;
         }
 
-        // Función para cargar las opciones de un desplegable
-        async function loadDropdownOptions(field) {
-            try {
-                // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) throw new Error("No hay sesión activa");
-                
-                // Obtener opciones globales y del usuario
-                const { data: optionsData, error } = await supabaseClient
-                    .from('dropdown_options')
-                    .select('*')
-                    .or(`field_name.eq.${field},and(field_name.eq.${field},user_id.eq.${data.session.user.id})`)
-                    .order('option_label', { ascending: true });
-                    
-                if (error) throw error;
-                
-                // Actualizar el desplegable
-                const selectElement = document.getElementById(field);
-                if (selectElement) {
-                    // Limpiar opciones excepto la primera
-                    while (selectElement.options.length > 1) {
-                        selectElement.remove(1);
-                    }
-                    
-                    // Añadir opciones
-                    optionsData.forEach(option => {
-                        const optionElement = document.createElement('option');
-                        optionElement.value = option.option_value;
-                        optionElement.textContent = option.option_label;
-                        selectElement.appendChild(optionElement);
-                    });
-                }
-                
-                return optionsData;
-            } catch (error) {
-                console.error(`Error al cargar opciones para ${field}:`, error);
-                return [];
-            }
-        }
-
-        // Función para cargar todas las opciones de desplegables
-        async function loadAllDropdownOptions() {
-            const fields = [
-                'jerarquia', 'sexo', 'tipo-expediente', 'icap', 'condicion', 
-                'anio', 'servicio', 'tipo-falta', 'origen-falta',
-                'falta', 'denunciante', 'detenido', 'estatus', 'decision'
-            ];
-            
-            for (const field of fields) {
-                await loadDropdownOptions(field);
-            }
-        }
-
-        // Función para mostrar el modal de administración
-        async function showManageDropdownModal(field) {
-            // Verificar si el usuario tiene permisos para administrar desplegables
-            // Manejo seguro de la sesión
-            const { data, error: sessionError } = await supabaseClient.auth.getSession();
-            if (sessionError || !data?.session) {
-                alert("No hay sesión activa. Por favor, inicie sesión.");
-                return;
-            }
-            
-            const userRole = data.session.user.user_metadata?.role || 'user';
-            if (userRole !== 'admin') {
-                alert("No tiene permisos para administrar opciones. Solo los administradores pueden administrar desplegables.");
-                return;
-            }
-            
-            currentDropdownField = field;
-            
-            // Actualizar el título del modal
-            document.getElementById('dropdown-field-name').textContent = field.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            
-            // Cargar las opciones
-            await loadDropdownOptionsForManagement(field);
-            
-            // Mostrar el modal
-            const manageModal = new bootstrap.Modal(document.getElementById('manageDropdownModal'));
-            manageModal.show();
-        }
-
-        // Función para cargar las opciones para el modal de administración
-        async function loadDropdownOptionsForManagement(field) {
-            try {
-                // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) throw new Error("No hay sesión activa");
-                
-                // Obtener opciones globales y del usuario
-                const { data: optionsData, error } = await supabaseClient
-                    .from('dropdown_options')
-                    .select('*')
-                    .eq('field_name', field)
-                    .order('option_label', { ascending: true });
-                    
-                if (error) throw error;
-                
-                // Mostrar opciones en la tabla
-                const optionsList = document.getElementById('options-list');
-                optionsList.innerHTML = '';
-                
-                if (optionsData.length === 0) {
-                    optionsList.innerHTML = `
-                        <tr>
-                            <td colspan="4" class="text-center py-3 text-muted">
-                                No hay opciones definidas para este campo
-                            </td>
-                        </tr>
-                    `;
-                    return optionsData;
-                }
-                
-                optionsData.forEach(option => {
-                    const row = document.createElement('tr');
-                    
-                    row.innerHTML = `
-                        <td>${option.option_value}</td>
-                        <td>${option.option_label}</td>
-                        <td>${option.is_global ? '<span class="badge bg-primary">Global</span>' : '<span class="badge bg-secondary">Personal</span>'}</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary edit-option" data-id="${option.id}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger delete-option ms-1" data-id="${option.id}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    
-                    optionsList.appendChild(row);
-                });
-                
-                // Configurar eventos para los botones
-                document.querySelectorAll('.edit-option').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        editOption(id);
-                    });
-                });
-                
-                document.querySelectorAll('.delete-option').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        deleteOption(id);
-                    });
-                });
-                
-                return optionsData;
-            } catch (error) {
-                console.error(`Error al cargar opciones para administración de ${field}:`, error);
-                return [];
-            }
-        }
-
-        // Función para agregar una nueva opción
-        async function addOption() {
-            const newValue = document.getElementById('new-option-value').value.trim();
-            const newLabel = document.getElementById('new-option-label').value.trim();
-            const isGlobal = document.getElementById('new-option-global').checked;
-            
-            if (!newValue || !newLabel) {
-                alert('Por favor, complete ambos campos');
-                return;
-            }
-            
-            try {
-                // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) throw new Error("No hay sesión activa");
-                
-                const newOption = {
-                    field_name: currentDropdownField,
-                    option_value: newValue,
-                    option_label: newLabel,
-                    user_id: isGlobal ? null : data.session.user.id,
-                    is_global: isGlobal
-                };
-                
-                const { error } = await supabaseClient
-                    .from('dropdown_options')
-                    .insert([newOption]);
-                    
-                if (error) throw error;
-                
-                // Limpiar campos
-                document.getElementById('new-option-value').value = '';
-                document.getElementById('new-option-label').value = '';
-                
-                // Recargar opciones
-                await loadDropdownOptionsForManagement(currentDropdownField);
-                
-                // Actualizar el desplegable principal
-                await loadDropdownOptions(currentDropdownField);
-                
-                alert('Opción agregada exitosamente');
-            } catch (error) {
-                console.error('Error al agregar opción:', error);
-                alert(`Error al agregar opción: ${error.message}`);
-            }
-        }
-
-        // Función para editar una opción
-        async function editOption(id) {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('dropdown_options')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-                    
-                if (error) throw error;
-                
-                if (!data) {
-                    throw new Error('Opción no encontrada');
-                }
-                
-                // Rellenar el formulario de nueva opción con los datos de edición
-                document.getElementById('new-option-value').value = data.option_value;
-                document.getElementById('new-option-label').value = data.option_label;
-                document.getElementById('new-option-global').checked = data.is_global;
-                
-                // Establecer el ID de edición
-                editingOptionId = id;
-                
-                // Desplazar al formulario
-                document.getElementById('new-option-value').scrollIntoView({ behavior: 'smooth' });
-                
-                alert('Ahora edite los valores y haga clic en "Agregar Nueva Opción" para guardar los cambios');
-            } catch (error) {
-                console.error('Error al editar opción:', error);
-                alert(`Error al editar opción: ${error.message}`);
-            }
-        }
-
-        // Función para eliminar una opción
-        async function deleteOption(id) {
-            if (!confirm('¿Está seguro de que desea eliminar esta opción?')) {
-                return;
-            }
-            
-            try {
-                const { error } = await supabaseClient
-                    .from('dropdown_options')
-                    .delete()
-                    .eq('id', id);
-                    
-                if (error) throw error;
-                
-                alert('Opción eliminada correctamente');
-                
-                // Recargar opciones
-                await loadDropdownOptionsForManagement(currentDropdownField);
-                
-                // Actualizar el desplegable principal
-                await loadDropdownOptions(currentDropdownField);
-            } catch (error) {
-                console.error('Error al eliminar opción:', error);
-                alert(`Error al eliminar opción: ${error.message}`);
-            }
-        }
-
-        // Función para registrar un usuario
-        async function register(e) {
-            e.preventDefault();
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            const fullName = document.getElementById('reg-name').value;
-            
-            try {
-                hideError();
-                
-                // Solo el administrador puede crear nuevos usuarios
-                // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) {
-                    throw new Error("Debe iniciar sesión para crear nuevos usuarios");
-                }
-                
-                const userRole = data.session.user.user_metadata?.role || 'user';
-                if (userRole !== 'admin') {
-                    throw new Error("Solo el administrador puede crear nuevos usuarios");
-                }
-                
-                const { data: signUpData, error } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: {
-                            full_name: fullName,
-                            role: 'user'  // Todos los nuevos usuarios serán de rol "user"
-                        }
-                    }
-                });
-                
-                if (error) {
-                    throw error;
-                }
-                
-                if (signUpData?.user) {
-                    console.log('Registro exitoso', signUpData);
-                    alert('¡Usuario creado exitosamente!');
-                    showLoginForm();
-                } else {
-                    console.log('Registro pendiente de confirmación', signUpData);
-                    alert('¡Usuario creado exitosamente! Revisa el correo para confirmar.');
-                    showLoginForm();
-                }
-            } catch (error) {
-                console.error('Error al registrar:', error);
-                alert('Error: ' + error.message);
-                return;
-            }
-        }
-
-        // Función para iniciar sesión
+        // Función CORREGIDA para iniciar sesión
         async function login(e) {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -1989,8 +1711,6 @@
                 // Mostrar spinner de carga
                 loginSpinner.classList.remove('d-none');
                 loginText.textContent = 'Iniciando sesión...';
-                
-                console.log('Intentando iniciar sesión con:', email);
                 
                 // Intenta iniciar sesión
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -2020,8 +1740,6 @@
                     
                     return;
                 }
-                
-                console.log('Inicio de sesión exitoso', data);
                 
                 // Si el usuario quiere recordar sus credenciales, guarda el correo
                 if (rememberCredentials) {
@@ -2080,12 +1798,6 @@
                 document.getElementById('email').value = '';
                 document.getElementById('password').value = '';
                 document.getElementById('remember-credentials').checked = false;
-                
-                // Limpiar datos de personal
-                allPersonalData = [];
-                filteredPersonalData = [];
-                document.getElementById('personal-list').innerHTML = '';
-                document.getElementById('user-name').textContent = '';
             } catch (error) {
                 console.error('Error al cerrar sesión:', error);
                 alert('Error al cerrar sesión: ' + error.message);
@@ -2127,11 +1839,6 @@
                     loginForm.addEventListener('submit', login);
                 }
                 
-                // Configurar el evento de submit del formulario de registro
-                if (registerForm) {
-                    registerForm.addEventListener('submit', register);
-                }
-                
                 // Configurar el evento de submit del formulario de personal
                 const personalForm = document.getElementById('personal-form');
                 
@@ -2146,71 +1853,9 @@
                     });
                 }
                 
-                // Configurar botones de administración de desplegables
-                document.querySelectorAll('.manage-dropdown').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const field = this.getAttribute('data-field');
-                        showManageDropdownModal(field);
-                    });
-                });
-                
                 // Configurar botón para exportar a Excel
                 if (exportExcelBtn) {
                     exportExcelBtn.addEventListener('click', exportToExcel);
-                }
-                
-                // Configurar botón para agregar opciones
-                document.getElementById('btn-add-option').addEventListener('click', function() {
-                    if (editingOptionId) {
-                        saveEditedOption();
-                    } else {
-                        addOption();
-                    }
-                });
-                
-                // Permitir agregar opciones con Enter en el campo de texto
-                document.getElementById('new-option-value').addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        if (editingOptionId) {
-                            saveEditedOption();
-                        } else {
-                            addOption();
-                        }
-                    }
-                });
-                
-                document.getElementById('new-option-label').addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        if (editingOptionId) {
-                            saveEditedOption();
-                        } else {
-                            addOption();
-                        }
-                    }
-                });
-                
-                // Configurar el evento de ocultar el modal
-                document.getElementById('manageDropdownModal').addEventListener('hidden.bs.modal', function() {
-                    // Limpiar campos al cerrar el modal
-                    document.getElementById('new-option-value').value = '';
-                    document.getElementById('new-option-label').value = '';
-                    document.getElementById('new-option-global').checked = true;
-                    editingOptionId = null;
-                });
-                
-                // Configurar el evento de subida de foto
-                const profilePictureUpload = document.getElementById('profile-picture-upload');
-                if (profilePictureUpload) {
-                    profilePictureUpload.addEventListener('change', function(e) {
-                        const file = e.target.files[0];
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = function(event) {
-                                document.getElementById('profile-picture').src = event.target.result;
-                            };
-                            reader.readAsDataURL(file);
-                        }
-                    });
                 }
                 
                 // Configurar botones de navegación
@@ -2273,9 +1918,6 @@
                         updatePaginationControls();
                     });
                 }
-                
-                // Cargar todas las opciones de desplegables
-                await loadAllDropdownOptions();
                 
                 console.log('Sistema inicializado correctamente');
             } catch (error) {
