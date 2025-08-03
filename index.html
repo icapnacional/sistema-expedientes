@@ -935,10 +935,13 @@
         // Función CORREGIDA para verificar si la sesión es válida
         async function isSessionValid() {
             try {
-                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error } = await supabaseClient.auth.getSession();
-                if (error) throw error;
-                return !!data.session;
+                if (error) {
+                    console.error('Error al obtener sesión:', error);
+                    return false;
+                }
+                return !!data?.session;
             } catch (error) {
                 console.error('Error al verificar validez de sesión:', error);
                 return false;
@@ -950,7 +953,7 @@
             try {
                 console.log('Verificando sesión...');
                 
-                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error } = await supabaseClient.auth.getSession();
                 
                 if (error) {
@@ -958,7 +961,7 @@
                     throw error;
                 }
                 
-                if (data.session) {
+                if (data?.session) {
                     console.log('Sesión encontrada:', data.session);
                     
                     // Usuario autenticado - muestra el panel principal
@@ -969,15 +972,15 @@
                     const user = data.session.user;
                     const userNameElement = document.getElementById('user-name');
                     if (userNameElement) {
-                        // Obtener el nombre completo del usuario
+                        // CORRECCIÓN AQUÍ - Manejo seguro de user_metadata
                         const fullName = user.user_metadata?.full_name || 
                                         user.user_metadata?.fullName || 
                                         user.user_metadata?.name ||
-                                        user.email.split('@')[0];
+                                        user.email?.split('@')[0] || 'Usuario';
                         
                         userNameElement.textContent = fullName;
                         
-                        // Verificar el rol del usuario CORRECTAMENTE (Supabase v2)
+                        // Verificar el rol del usuario
                         const userRole = user.user_metadata?.role || 'user';
                         currentUserRole = userRole;
                         
@@ -1283,9 +1286,9 @@
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data.session) {
+                if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
@@ -1382,9 +1385,9 @@
                     </tr>
                 `;
                 
-                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data.session) {
+                if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
@@ -1400,7 +1403,7 @@
                     query = query.eq('user_id', data.session.user.id);
                 }
                 
-                const {  personalData, error } = await query.order('fecha_registro', { ascending: false });
+                const { data: personalData, error } = await query.order('fecha_registro', { ascending: false });
                 
                 if (error) throw error;
                 
@@ -1464,9 +1467,9 @@
                     throw new Error('Registro no encontrado');
                 }
                 
-                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !sessionData.session) {
+                if (sessionError || !sessionData?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
@@ -1527,9 +1530,9 @@
         // Función CORREGIDA para eliminar un registro de personal
         async function deletePersonal(id) {
             try {
-                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data.session) {
+                if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
@@ -1597,12 +1600,12 @@
         // Función para cargar las opciones de un desplegable
         async function loadDropdownOptions(field) {
             try {
-                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data.session) throw new Error("No hay sesión activa");
+                if (sessionError || !data?.session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
-                const {  optionsData, error } = await supabaseClient
+                const { data: optionsData, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
                     .or(`field_name.eq.${field},and(field_name.eq.${field},user_id.eq.${data.session.user.id})`)
@@ -1650,9 +1653,9 @@
         // Función CORREGIDA para mostrar el modal de administración
         async function showManageDropdownModal(field) {
             // Verificar si el usuario tiene permisos para administrar desplegables
-            // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
+            // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
             const { data, error: sessionError } = await supabaseClient.auth.getSession();
-            if (sessionError || !data.session) {
+            if (sessionError || !data?.session) {
                 alert("No hay sesión activa. Por favor, inicie sesión.");
                 return;
             }
@@ -1679,12 +1682,12 @@
         // Función para cargar las opciones para el modal de administración
         async function loadDropdownOptionsForManagement(field) {
             try {
-                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data.session) throw new Error("No hay sesión activa");
+                if (sessionError || !data?.session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
-                const {  optionsData, error } = await supabaseClient
+                const { data: optionsData, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
                     .eq('field_name', field)
@@ -1761,9 +1764,9 @@
             }
             
             try {
-                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data.session) throw new Error("No hay sesión activa");
+                if (sessionError || !data?.session) throw new Error("No hay sesión activa");
                 
                 const newOption = {
                     field_name: currentDropdownField,
@@ -1867,9 +1870,9 @@
                 hideError();
                 
                 // Solo el administrador puede crear nuevos usuarios
-                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data.session) {
+                if (sessionError || !data?.session) {
                     throw new Error("Debe iniciar sesión para crear nuevos usuarios");
                 }
                 
@@ -1878,11 +1881,11 @@
                     throw new Error("Solo el administrador puede crear nuevos usuarios");
                 }
                 
-                const {  signUpData, error } = await supabaseClient.auth.signUp({
+                const { data: signUpData, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password,
                     options: {
-                         {
+                        data: {
                             full_name: fullName,
                             role: 'user'  // Todos los nuevos usuarios serán de rol "user"
                         }
@@ -1893,7 +1896,7 @@
                     throw error;
                 }
                 
-                if (signUpData.user) {
+                if (signUpData?.user) {
                     console.log('Registro exitoso', signUpData);
                     alert('¡Usuario creado exitosamente!');
                     showLoginForm();
@@ -1973,10 +1976,11 @@
                 // Actualizar el nombre del usuario
                 const userNameElement = document.getElementById('user-name');
                 if (userNameElement) {
+                    // CORRECCIÓN AQUÍ - Manejo seguro de user_metadata
                     const fullName = data.user.user_metadata?.full_name || 
                                     data.user.user_metadata?.fullName || 
                                     data.user.user_metadata?.name ||
-                                    data.user.email.split('@')[0];
+                                    data.user.email?.split('@')[0] || 'Usuario';
                     
                     userNameElement.textContent = fullName;
                 }
