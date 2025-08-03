@@ -452,4 +452,127 @@
             
             <!-- Información de seguridad -->
             <div class="security-info">
-                <i class="
+                <i class="fas fa-shield-alt security-icon"></i>
+                Su información está protegida con encriptación de extremo a extremo
+            </div>
+        </div>
+    </div>
+    
+    <!-- Panel Principal (oculto al inicio) -->
+    <div class="container panel-container" id="main-panel" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Bienvenido, <span id="user-name" class="text-primary"></span></h2>
+            <button id="logout-btn" class="btn btn-outline-danger">
+                <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+            </button>
+        </div>
+        
+        <!-- Navegación entre pestañas -->
+        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="registro-tab" data-bs-toggle="tab" data-bs-target="#registro" type="button" role="tab">Registro de Personal</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="historial-tab" data-bs-toggle="tab" data-bs-target="#historial" type="button" role="tab">Historial por Fecha</button>
+            </li>
+        </ul>
+        
+        <!-- Contenido de las pestañas -->
+        <div class="tab-content" id="myTabContent">
+            <!-- Pestaña de Registro de Personal -->
+            <div class="tab-pane fade show active" id="registro" role="tabpanel">
+                <!-- Panel de Registro de Personal -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">Registro de Personal</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="personal-form">
+                            <div class="row mb-4">
+                                <div class="col-md-4 text-center">
+                                    <div class="profile-picture-container mb-3 position-relative">
+                                        <img src="https://placehold.co/200x200/003366/white?text=Foto+Personal" 
+                                             alt="Foto del personal" 
+                                             class="img-fluid rounded-circle" 
+                                             id="profile-picture"
+                                             style="width: 180px; height: 180px; object-fit: cover;">
+                                        <div class="upload-icon" style="position: absolute; bottom: 5px; right: 35px;">
+                                            <label for="profile-picture-upload" class="btn btn-primary btn-sm rounded-circle p-2" 
+                                                   style="cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                                                <i class="fas fa-camera"></i>
+                                            </label>
+                                            <input type="file" id="profile-picture-upload" class="d-none" accept="image/*">
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small">Haga clic en el ícono para subir una foto</p>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="nombres" class="form-label">Nombres</label>
+                                            <input type="text" class="form-control" id="nombres" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="apellidos" class="form-label">Apellidos</label>
+                                            <input type="text" class="form-control" id="apellidos" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="cedula" class="form-label">Cédula de Identidad</label>
+                                            <input type="text" class="form-control" id="cedula" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edad" class="form-label">Edad</label>
+                                            <input type="number" class="form-control" id="edad" min="18" max="70">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="jerarquia" class="form-label">Jerarquía</label>
+                                    <select class="form-select" id="jerarquia" required>
+                                        <option value="">Seleccione...</option>
+                                        <option value="general">General</option>
+                                        <option value="coronel">Coronel</option>
+                                        <option value="teniente-coronel">Teniente Coronel</option>
+                                        <option value="mayor">Mayor</option>
+                                        <option value="capitan">Capitán</option>
+                                        <option value="teniente">Teniente</option>
+                                        <option value="subteniente">Subteniente</option>
+                                        <option value="sargento-mayor">Sargento Mayor</option>
+                                        <option value="sargento">Sargento</option>
+                                        <option value="cabo">Cabo</option>
+                                        <option value="soldado">Soldado</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="sexo" class="form-label">Sexo</label>
+                                    <select class="form-select" id="sexo" required>
+                                        <option value="">Seleccione...</option>
+                                        <option value="masculino">Masculino</option>
+                                        <option value="femenino">Femenino</option>
+                                        <option value="otro">Otro</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Nuevos campos como desplegables -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="fecha-inicio" class="form-label">Fecha de Inicio</label>
+                                    <input type="date" class="form-control" id="fecha-inicio">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="tipo-expediente" class="form-label">Tipo de Expediente</label>
+                                    <select class="form-select" id="tipo-expediente">
+                                        <option value="">Seleccione...</option>
+                                        <option value="administrativo">Administrativo</option>
+                                        <option value="disciplinario">Disciplinario</option>
+                                        <option value="penal">Penal</option>
+                                        <option value="otro">Otro</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class
