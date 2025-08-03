@@ -951,7 +951,7 @@
             }
         });
 
-        // Elementos del DOM
+        // Elementos del DOM - CORRECCIÓN: Verificar que todos los elementos existan
         const loginScreen = document.getElementById('login-screen');
         const mainPanel = document.getElementById('main-panel');
         const errorMessage = document.getElementById('error-message');
@@ -973,7 +973,7 @@
         const historyList = document.getElementById('history-list');
         const historyPaginationInfo = document.getElementById('history-pagination-info');
         
-        // Elementos de paginación para historial
+        // Elementos de paginación para historial - CORRECCIÓN: Asegurar que existan
         const firstHistoryPageBtn = document.getElementById('first-history-page');
         const prevHistoryPageBtn = document.getElementById('prev-history-page');
         const currentHistoryPageBtn = document.getElementById('current-history-page');
@@ -1138,17 +1138,31 @@
 
         // Función para actualizar la interfaz de paginación
         function updatePaginationControls() {
+            // Verificar que el elemento exista antes de usarlo
+            const paginationInfo = document.getElementById('pagination-info');
+            if (!paginationInfo) {
+                console.error('Elemento pagination-info no encontrado');
+                return;
+            }
+            
             const totalPages = Math.ceil(filteredPersonalData.length / itemsPerPage);
             
             const startItem = (currentPage - 1) * itemsPerPage + 1;
             const endItem = Math.min(currentPage * itemsPerPage, filteredPersonalData.length);
             paginationInfo.textContent = `Mostrando ${startItem}-${endItem} de ${filteredPersonalData.length} registros`;
             
-            firstPageBtn.disabled = currentPage === 1;
-            prevPageBtn.disabled = currentPage === 1;
-            currentPageBtn.textContent = currentPage;
-            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
-            lastPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+            // Verificar que los elementos de paginación existan
+            const firstPageBtn = document.getElementById('first-page');
+            const prevPageBtn = document.getElementById('prev-page');
+            const currentPageBtn = document.getElementById('current-page');
+            const nextPageBtn = document.getElementById('next-page');
+            const lastPageBtn = document.getElementById('last-page');
+            
+            if (firstPageBtn) firstPageBtn.disabled = currentPage === 1;
+            if (prevPageBtn) prevPageBtn.disabled = currentPage === 1;
+            if (currentPageBtn) currentPageBtn.textContent = currentPage;
+            if (nextPageBtn) nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+            if (lastPageBtn) lastPageBtn.disabled = currentPage === totalPages || totalPages === 0;
         }
 
         // Función para renderizar la página actual
@@ -1474,12 +1488,23 @@
                         </tr>
                     `;
                     
-                    paginationInfo.textContent = 'Mostrando 0 de 0 registros';
-                    firstPageBtn.disabled = true;
-                    prevPageBtn.disabled = true;
-                    currentPageBtn.textContent = '1';
-                    nextPageBtn.disabled = true;
-                    lastPageBtn.disabled = true;
+                    // Verificar que el elemento exista antes de usarlo
+                    const paginationInfo = document.getElementById('pagination-info');
+                    if (paginationInfo) {
+                        paginationInfo.textContent = 'Mostrando 0 de 0 registros';
+                    }
+                    
+                    const firstPageBtn = document.getElementById('first-page');
+                    const prevPageBtn = document.getElementById('prev-page');
+                    const currentPageBtn = document.getElementById('current-page');
+                    const nextPageBtn = document.getElementById('next-page');
+                    const lastPageBtn = document.getElementById('last-page');
+                    
+                    if (firstPageBtn) firstPageBtn.disabled = true;
+                    if (prevPageBtn) prevPageBtn.disabled = true;
+                    if (currentPageBtn) currentPageBtn.textContent = '1';
+                    if (nextPageBtn) nextPageBtn.disabled = true;
+                    if (lastPageBtn) lastPageBtn.disabled = true;
                     
                     hideLoading();
                     return;
@@ -1761,19 +1786,27 @@
                 
             } catch (error) {
                 console.error('Error al cargar historial:', error);
-                historyList.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="text-center py-4 text-danger">
-                            <i class="fas fa-exclamation-circle me-2"></i>Error al cargar historial: ${error.message}
-                        </td>
-                    </tr>
-                `;
+                if (historyList) {
+                    historyList.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>Error al cargar historial: ${error.message}
+                            </td>
+                        </tr>
+                    `;
+                }
                 hideLoading();
             }
         }
 
         // ✅ NUEVA FUNCIÓN PARA RENDERIZAR LA PÁGINA DEL HISTORIAL
         function renderHistoryPage() {
+            // Verificar que los elementos existan
+            if (!historyList) {
+                console.error('Elemento historyList no encontrado');
+                return;
+            }
+            
             const startIndex = (currentHistoryPage - 1) * historyItemsPerPage;
             const endIndex = Math.min(startIndex + historyItemsPerPage, filteredHistoryData.length);
             
@@ -1787,7 +1820,9 @@
                         </td>
                     </tr>
                 `;
-                historyPaginationInfo.textContent = 'Mostrando 0 de 0 registros';
+                if (historyPaginationInfo) {
+                    historyPaginationInfo.textContent = 'Mostrando 0 de 0 registros';
+                }
                 return;
             }
             
@@ -1823,15 +1858,19 @@
             const totalItems = filteredHistoryData.length;
             const startItem = startIndex + 1;
             const endItem = Math.min(endIndex, totalItems);
-            historyPaginationInfo.textContent = `Mostrando ${startItem}-${endItem} de ${totalItems} registros`;
+            
+            if (historyPaginationInfo) {
+                historyPaginationInfo.textContent = `Mostrando ${startItem}-${endItem} de ${totalItems} registros`;
+            }
             
             // Actualizar botones de paginación
             const totalPages = Math.ceil(totalItems / historyItemsPerPage);
-            firstHistoryPageBtn.disabled = currentHistoryPage === 1;
-            prevHistoryPageBtn.disabled = currentHistoryPage === 1;
-            currentHistoryPageBtn.textContent = currentHistoryPage;
-            nextHistoryPageBtn.disabled = currentHistoryPage === totalPages || totalPages === 0;
-            lastHistoryPageBtn.disabled = currentHistoryPage === totalPages || totalPages === 0;
+            
+            if (firstHistoryPageBtn) firstHistoryPageBtn.disabled = currentHistoryPage === 1;
+            if (prevHistoryPageBtn) prevHistoryPageBtn.disabled = currentHistoryPage === 1;
+            if (currentHistoryPageBtn) currentHistoryPageBtn.textContent = currentHistoryPage;
+            if (nextHistoryPageBtn) nextHistoryPageBtn.disabled = currentHistoryPage === totalPages || totalPages === 0;
+            if (lastHistoryPageBtn) lastHistoryPageBtn.disabled = currentHistoryPage === totalPages || totalPages === 0;
         }
 
         // ✅ NUEVA FUNCIÓN PARA FILTRAR POR FECHA
@@ -1935,20 +1974,20 @@
                 }
                 
                 // Configurar eventos de paginación
-                if (firstPageBtn) {
-                    firstPageBtn.addEventListener('click', () => goToPage(1));
+                if (document.getElementById('first-page')) {
+                    document.getElementById('first-page').addEventListener('click', () => goToPage(1));
                 }
                 
-                if (prevPageBtn) {
-                    prevPageBtn.addEventListener('click', () => goToPage(currentPage - 1));
+                if (document.getElementById('prev-page')) {
+                    document.getElementById('prev-page').addEventListener('click', () => goToPage(currentPage - 1));
                 }
                 
-                if (nextPageBtn) {
-                    nextPageBtn.addEventListener('click', () => goToPage(currentPage + 1));
+                if (document.getElementById('next-page')) {
+                    document.getElementById('next-page').addEventListener('click', () => goToPage(currentPage + 1));
                 }
                 
-                if (lastPageBtn) {
-                    lastPageBtn.addEventListener('click', () => {
+                if (document.getElementById('last-page')) {
+                    document.getElementById('last-page').addEventListener('click', () => {
                         const totalPages = Math.ceil(filteredPersonalData.length / itemsPerPage);
                         goToPage(totalPages);
                     });
