@@ -840,11 +840,11 @@
             }
         }
 
-        // Función para verificar si la sesión es válida
+        // Función CORREGIDA para verificar si la sesión es válida
         async function isSessionValid() {
             try {
                 // Obtener la sesión CORRECTAMENTE (Supabase v2)
-                const {  { session }, error } = await supabaseClient.auth.getSession();
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
                 if (error) throw error;
                 return !!session;
             } catch (error) {
@@ -853,7 +853,7 @@
             }
         }
 
-        // Función para asegurar que hay una sesión válida
+        // Función CORREGIDA para asegurar que hay una sesión válida
         async function ensureSession() {
             const isValid = await isSessionValid();
             if (!isValid) {
@@ -874,7 +874,7 @@
                 console.log('Verificando sesión...');
                 
                 // Obtener la sesión CORRECTAMENTE (Supabase v2)
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 
                 if (sessionError) {
                     console.error('Error al obtener sesión:', sessionError);
@@ -1324,7 +1324,7 @@
                 await ensureSession();
                 
                 // Obtener la sesión actual CORRECTAMENTE (Supabase v2)
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     // Intentar recuperar la sesión desde localStorage si existe
                     const rememberedEmail = getRememberedEmail();
@@ -1426,7 +1426,7 @@
                 `;
                 
                 // Obtener los registros de Supabase
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
@@ -1532,7 +1532,7 @@
                 }
                 
                 // Verificar si el usuario tiene permisos para editar
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
@@ -1595,7 +1595,7 @@
         async function deletePersonal(id) {
             try {
                 // Verificar si el usuario tiene permisos para editar
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
@@ -1664,7 +1664,7 @@
         // Función para cargar las opciones de un desplegable
         async function loadDropdownOptions(field) {
             try {
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
@@ -1716,7 +1716,7 @@
         // Función CORREGIDA para mostrar el modal de administración
         async function showManageDropdownModal(field) {
             // Verificar si el usuario tiene permisos para administrar desplegables
-            const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
             if (sessionError || !session) {
                 alert("No hay sesión activa. Por favor, inicie sesión.");
                 return;
@@ -1744,7 +1744,7 @@
         // Función para cargar las opciones para el modal de administración
         async function loadDropdownOptionsForManagement(field) {
             try {
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
@@ -1825,7 +1825,7 @@
             }
             
             try {
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 const newOption = {
@@ -1930,7 +1930,7 @@
                 hideError();
                 
                 // Solo el administrador puede crear nuevos usuarios
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("Debe iniciar sesión para crear nuevos usuarios");
                 }
@@ -2014,18 +2014,6 @@
                     saveRememberedEmail(email);
                 } else {
                     clearRememberedEmail();
-                }
-                
-                // VERIFICAR EL ROL INMEDIATAMENTE DESPUÉS DEL LOGIN
-                const {  { session } } = await supabaseClient.auth.getSession();
-                const userRole = session?.user?.user_metadata?.role || 'user';
-                console.log('ROL OBTENIDO DESPUÉS DEL LOGIN:', userRole);
-                
-                // Si es administrador, muestra mensaje de bienvenida especial
-                if (userRole === 'admin') {
-                    alert('¡Bienvenido Administrador! Tiene permisos completos.');
-                } else {
-                    alert('¡Bienvenido! Solo puede registrar nuevos registros.');
                 }
                 
                 // ¡ESTE ES EL CAMBIO CLAVE!
