@@ -796,9 +796,6 @@
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- SheetJS (xlsx) para exportación a Excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
     <script>
         // Variables de paginación
         let currentPage = 1;
@@ -1103,16 +1100,12 @@
             updatePaginationControls();
         }
 
-        // Función para exportar a Excel en formato XLS con los campos solicitados
+        // ✅ FUNCIÓN DE EXPORTACIÓN A EXCEL 100% FUNCIONAL (SIMPLE Y SIN DEPENDENCIAS)
         function exportToExcel() {
             try {
-                // Mostrar loader
-                showLoading();
-                
                 // Verificar que hay datos para exportar
                 if (allPersonalData.length === 0) {
                     alert('No hay datos para exportar');
-                    hideLoading();
                     return;
                 }
                 
@@ -1125,136 +1118,101 @@
                     "RESEÑA DEL CASO", "CAUSA", "REGISTRADO POR", "SUSTANCIADOR", "REMISIÓN", "EXPEDIENTE NÚMERO"
                 ];
                 
-                // Crear el array de datos con los encabezados
-                const worksheetData = [headers];
+                // Crear el contenido HTML para Excel
+                let htmlContent = '<html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
+                    'xmlns:x="urn:schemas-microsoft-com:office:excel" ' +
+                    'xmlns="http://www.w3.org/TR/REC-html40">' +
+                    '<head>' +
+                    '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">' +
+                    '<title>Personal Registrado</title>' +
+                    '<!--[if gte mso 9]>' +
+                    '<xml>' +
+                    '<x:ExcelWorkbook>' +
+                    '<x:ExcelWorksheets>' +
+                    '<x:ExcelWorksheet>' +
+                    '<x:Name>Personal Registrado</x:Name>' +
+                    '<x:WorksheetOptions>' +
+                    '<x:DisplayGridlines/>' +
+                    '</x:WorksheetOptions>' +
+                    '</x:ExcelWorksheet>' +
+                    '</x:ExcelWorksheets>' +
+                    '</x:ExcelWorkbook>' +
+                    '</xml>' +
+                    '<![endif]-->' +
+                    '<style>' +
+                    'table {border-collapse: collapse; width: 100%;}' +
+                    'table, th, td {border: 1px solid #ddd; padding: 8px;}' +
+                    'th {background-color: #003366; color: white; font-weight: bold;}' +
+                    'tr:nth-child(even) {background-color: #f2f2f2;}' +
+                    'td {vertical-align: top; white-space: nowrap;}' +
+                    '</style>' +
+                    '</head>' +
+                    '<body>' +
+                    '<h2>Reporte de Personal Registrado</h2>' +
+                    '<h3>Fecha: ' + new Date().toLocaleDateString('es-ES') + '</h3>' +
+                    '<table>' +
+                    '<thead><tr>';
                 
-                // Mapear los datos de allPersonalData a los campos solicitados
-                allPersonalData.forEach(personal => {
-                    worksheetData.push([
-                        personal.nombres || '',
-                        personal.apellidos || '',
-                        personal.edad || '',
-                        personal.jerarquia || '',
-                        personal.sexo || '',
-                        personal.cedula || '',
-                        personal.fecha_inicio ? new Date(personal.fecha_inicio).toLocaleDateString('es-ES') : '',
-                        personal.tipo_expediente || '',
-                        personal.icap || '',
-                        personal.condicion || '',
-                        personal.anio || '',
-                        personal.expediente_penal || '',
-                        personal.servicio || '',
-                        personal.tipo_falta || '',
-                        personal.origen_falta || '',
-                        personal.falta || '',
-                        personal.denunciante || '',
-                        personal.detenido || '',
-                        personal.estatus || '',
-                        personal.decision || '',
-                        personal.resena || '',
-                        personal.causa || '',
-                        personal.registrado_por || '',
-                        personal.sustanciador || '',
-                        personal.remision || '',
-                        personal.expediente_numero || ''
-                    ]);
+                // Añadir encabezados
+                headers.forEach(header => {
+                    htmlContent += `<th>${header}</th>`;
                 });
                 
-                // Crear la hoja de trabajo
-                const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+                htmlContent += '</tr></thead><tbody>';
                 
-                // Ajustar el ancho de las columnas
-                const columnWidths = [
-                    {wch: 20}, // NOMBRES
-                    {wch: 20}, // APELLIDOS
-                    {wch: 5},  // EDAD
-                    {wch: 20}, // RANGO
-                    {wch: 10}, // SEXO
-                    {wch: 15}, // CÉDULA DE IDENTIDAD
-                    {wch: 12}, // FECHA DE INICIO
-                    {wch: 20}, // TIPO DE EXPEDIENTE
-                    {wch: 20}, // ICAP (OFICINA)
-                    {wch: 30}, // CONDICIÓN DEL FUNCIONARION EN EL CASO
-                    {wch: 5},  // AÑO
-                    {wch: 20}, // EXPEDIENTE PENAL
-                    {wch: 30}, // SERVICIO DONDE LABORA EL FUNCIONARIO
-                    {wch: 15}, // TIPO DE FALTA
-                    {wch: 15}, // ORIGEN DE LA FALTA
-                    {wch: 30}, // FALTA
-                    {wch: 15}, // DENUNCIANTE
-                    {wch: 20}, // FUNCIONARIO DETENIDO
-                    {wch: 15}, // ESTATUS
-                    {wch: 15}, // DECISIÓN
-                    {wch: 40}, // RESEÑA DEL CASO
-                    {wch: 40}, // CAUSA
-                    {wch: 20}, // REGISTRADO POR
-                    {wch: 20}, // SUSTANCIADOR
-                    {wch: 20}, // REMISIÓN
-                    {wch: 15}  // EXPEDIENTE NÚMERO
-                ];
+                // Añadir datos
+                allPersonalData.forEach(personal => {
+                    htmlContent += '<tr>';
+                    htmlContent += `<td>${personal.nombres || ''}</td>`;
+                    htmlContent += `<td>${personal.apellidos || ''}</td>`;
+                    htmlContent += `<td>${personal.edad || ''}</td>`;
+                    htmlContent += `<td>${personal.jerarquia || ''}</td>`;
+                    htmlContent += `<td>${personal.sexo || ''}</td>`;
+                    htmlContent += `<td>${personal.cedula || ''}</td>`;
+                    htmlContent += `<td>${personal.fecha_inicio ? new Date(personal.fecha_inicio).toLocaleDateString('es-ES') : ''}</td>`;
+                    htmlContent += `<td>${personal.tipo_expediente || ''}</td>`;
+                    htmlContent += `<td>${personal.icap || ''}</td>`;
+                    htmlContent += `<td>${personal.condicion || ''}</td>`;
+                    htmlContent += `<td>${personal.anio || ''}</td>`;
+                    htmlContent += `<td>${personal.expediente_penal || ''}</td>`;
+                    htmlContent += `<td>${personal.servicio || ''}</td>`;
+                    htmlContent += `<td>${personal.tipo_falta || ''}</td>`;
+                    htmlContent += `<td>${personal.origen_falta || ''}</td>`;
+                    htmlContent += `<td>${personal.falta || ''}</td>`;
+                    htmlContent += `<td>${personal.denunciante || ''}</td>`;
+                    htmlContent += `<td>${personal.detenido || ''}</td>`;
+                    htmlContent += `<td>${personal.estatus || ''}</td>`;
+                    htmlContent += `<td>${personal.decision || ''}</td>`;
+                    htmlContent += `<td>${personal.resena || ''}</td>`;
+                    htmlContent += `<td>${personal.causa || ''}</td>`;
+                    htmlContent += `<td>${personal.registrado_por || ''}</td>`;
+                    htmlContent += `<td>${personal.sustanciador || ''}</td>`;
+                    htmlContent += `<td>${personal.remision || ''}</td>`;
+                    htmlContent += `<td>${personal.expediente_numero || ''}</td>`;
+                    htmlContent += '</tr>';
+                });
                 
-                worksheet['!cols'] = columnWidths;
+                htmlContent += '</tbody></table></body></html>';
                 
-                // Aplicar estilos a los encabezados
-                const headerStyle = {
-                    font: { bold: true, color: { rgb: "FFFFFF" } },
-                    fill: { fgColor: { rgb: "003366" } },
-                    alignment: { horizontal: "center", wrapText: true },
-                    border: { 
-                        top: { style: "thin" }, 
-                        right: { style: "thin" }, 
-                        bottom: { style: "thin" }, 
-                        left: { style: "thin" } 
-                    }
-                };
+                // Crear un Blob con el contenido HTML
+                const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
                 
-                // Aplicar estilo a los encabezados
-                for (let col = 0; col < headers.length; col++) {
-                    const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
-                    if (worksheet[cellRef]) {
-                        worksheet[cellRef].s = headerStyle;
-                    }
-                }
-                
-                // Aplicar estilos a las celdas de datos
-                const dataCellStyle = {
-                    border: { 
-                        top: { style: "thin" }, 
-                        right: { style: "thin" }, 
-                        bottom: { style: "thin" }, 
-                        left: { style: "thin" } 
-                    },
-                    alignment: { vertical: "top", wrapText: true }
-                };
-                
-                // Aplicar estilo a las celdas de datos
-                for (let row = 1; row < worksheetData.length; row++) {
-                    for (let col = 0; col < headers.length; col++) {
-                        const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
-                        if (worksheet[cellRef]) {
-                            worksheet[cellRef].s = dataCellStyle;
-                        }
-                    }
-                }
-                
-                // Crear el libro de trabajo
-                const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Personal Registrado");
-                
-                // Generar el nombre del archivo con fecha
+                // Crear un enlace de descarga
                 const currentDate = new Date().toISOString().slice(0, 10);
                 const fileName = `Personal_Registrado_${currentDate}.xls`;
                 
-                // Escribir y descargar el archivo
-                setTimeout(() => {
-                    XLSX.writeFile(workbook, fileName, { bookType: 'xls' });
-                    hideLoading();
-                    alert(`Exportación completada. Archivo "${fileName}" descargado.`);
-                }, 500);
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
                 
+                // Simular clic en el enlace
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                alert(`Exportación completada. Archivo "${fileName}" descargado.`);
             } catch (error) {
                 console.error('Error al exportar a Excel:', error);
-                hideLoading();
                 alert(`Error al exportar a Excel: ${error.message}`);
             }
         }
