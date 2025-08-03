@@ -799,7 +799,7 @@
     <script>
         // Variables de paginación
         let currentPage = 1;
-        let itemsPerPage = 10; // Aumentado de 6 a 10 para mejor rendimiento
+        let itemsPerPage = 10;
         let allPersonalData = [];
         let filteredPersonalData = [];
         let loadingTimer = null;
@@ -844,8 +844,8 @@
 
         // Variables globales
         let editingPersonalId = null;
-        let isSaving = false; // Flag para evitar guardados duplicados
-        let currentUserRole = 'user'; // Por defecto es usuario normal
+        let isSaving = false;
+        let currentUserRole = 'user';
 
         // Función para mostrar mensajes de error
         function showError(message) {
@@ -865,12 +865,10 @@
 
         // Función para mostrar el overlay de carga
         function showLoading() {
-            // Limpia cualquier temporizador anterior
             if (loadingTimer) {
                 clearTimeout(loadingTimer);
             }
             
-            // Muestra el overlay después de 300ms (para evitar parpadeos)
             loadingTimer = setTimeout(() => {
                 loadingOverlay.style.display = 'flex';
             }, 300);
@@ -878,7 +876,6 @@
 
         // Función para ocultar el overlay de carga
         function hideLoading() {
-            // Cancela el temporizador si existe
             if (loadingTimer) {
                 clearTimeout(loadingTimer);
                 loadingTimer = null;
@@ -918,7 +915,6 @@
         // Función CORREGIDA para verificar si la sesión es válida
         async function isSessionValid() {
             try {
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error } = await supabaseClient.auth.getSession();
                 if (error) {
                     console.error('Error al obtener sesión:', error);
@@ -934,9 +930,6 @@
         // Función CORREGIDA para verificar la sesión
         async function checkSession() {
             try {
-                console.log('Verificando sesión...');
-                
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error } = await supabaseClient.auth.getSession();
                 
                 if (error) {
@@ -945,17 +938,12 @@
                 }
                 
                 if (data?.session) {
-                    console.log('Sesión encontrada:', data.session);
-                    
-                    // Usuario autenticado - muestra el panel principal
                     loginScreen.style.display = 'none';
                     mainPanel.style.display = 'block';
                     
-                    // Muestra el nombre del usuario
                     const user = data.session.user;
                     const userNameElement = document.getElementById('user-name');
                     if (userNameElement) {
-                        // CORRECCIÓN AQUÍ - Manejo seguro de user_metadata
                         const fullName = user.user_metadata?.full_name || 
                                         user.user_metadata?.fullName || 
                                         user.user_metadata?.name ||
@@ -963,23 +951,15 @@
                         
                         userNameElement.textContent = fullName;
                         
-                        // Verificar el rol del usuario
                         const userRole = user.user_metadata?.role || 'user';
                         currentUserRole = userRole;
                         
-                        console.log('ROL DEL USUARIO:', userRole);
-                        
-                        // Carga los registros de personal
                         await loadPersonal();
                     }
                 } else {
-                    console.log('No hay sesión activa');
-                    
-                    // Usuario no autenticado - muestra el login
                     loginScreen.style.display = 'block';
                     mainPanel.style.display = 'none';
                     
-                    // Rellenar el correo si está guardado
                     const rememberedEmail = getRememberedEmail();
                     if (rememberedEmail) {
                         document.getElementById('email').value = rememberedEmail;
@@ -1007,12 +987,10 @@
         function updatePaginationControls() {
             const totalPages = Math.ceil(filteredPersonalData.length / itemsPerPage);
             
-            // Actualizar información de paginación
             const startItem = (currentPage - 1) * itemsPerPage + 1;
             const endItem = Math.min(currentPage * itemsPerPage, filteredPersonalData.length);
             paginationInfo.textContent = `Mostrando ${startItem}-${endItem} de ${filteredPersonalData.length} registros`;
             
-            // Actualizar estado de los botones
             firstPageBtn.disabled = currentPage === 1;
             prevPageBtn.disabled = currentPage === 1;
             currentPageBtn.textContent = currentPage;
@@ -1025,14 +1003,11 @@
             const personalList = document.getElementById('personal-list');
             if (!personalList) return;
             
-            // Calcular índices para la paginación
             const startIndex = (currentPage - 1) * itemsPerPage;
             const endIndex = Math.min(startIndex + itemsPerPage, filteredPersonalData.length);
             
-            // Limpiar la tabla
             personalList.innerHTML = '';
             
-            // Mostrar mensaje si no hay registros
             if (filteredPersonalData.length === 0) {
                 personalList.innerHTML = `
                     <tr>
@@ -1044,7 +1019,6 @@
                 return;
             }
             
-            // Agregar los registros de la página actual
             for (let i = startIndex; i < endIndex; i++) {
                 const personal = filteredPersonalData[i];
                 const row = document.createElement('tr');
@@ -1072,7 +1046,6 @@
                 personalList.appendChild(row);
             }
             
-            // Configurar eventos para los botones de acción
             document.querySelectorAll('.edit-personal').forEach(button => {
                 button.addEventListener('click', function() {
                     const id = this.getAttribute('data-id');
@@ -1092,7 +1065,6 @@
         function goToPage(page) {
             const totalPages = Math.ceil(filteredPersonalData.length / itemsPerPage);
             
-            // Validar que la página esté dentro del rango
             if (page < 1 || page > totalPages) return;
             
             currentPage = page;
@@ -1100,12 +1072,14 @@
             updatePaginationControls();
         }
 
-        // ✅ FUNCIÓN DE EXPORTACIÓN A EXCEL 100% FUNCIONAL (SIMPLE Y SIN DEPENDENCIAS)
+        // ✅ FUNCIÓN DE EXPORTACIÓN A EXCEL CORREGIDA (100% FUNCIONAL)
         function exportToExcel() {
             try {
-                // Verificar que hay datos para exportar
+                showLoading();
+                
                 if (allPersonalData.length === 0) {
                     alert('No hay datos para exportar');
+                    hideLoading();
                     return;
                 }
                 
@@ -1194,47 +1168,53 @@
                 
                 htmlContent += '</tbody></table></body></html>';
                 
-                // Crear un Blob con el contenido HTML
+                // ✅ CORRECCIÓN CLAVE: Crear Blob con el tipo MIME correcto
                 const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
                 
-                // Crear un enlace de descarga
+                // ✅ CORRECCIÓN CLAVE: Usar createObjectURL en lugar de URL directo
+                const url = URL.createObjectURL(blob);
+                
+                // ✅ CORRECCIÓN CLAVE: Crear enlace y hacer clic inmediatamente
                 const currentDate = new Date().toISOString().slice(0, 10);
                 const fileName = `Personal_Registrado_${currentDate}.xls`;
                 
                 const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
+                link.href = url;
                 link.download = fileName;
                 
-                // Simular clic en el enlace
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 
-                alert(`Exportación completada. Archivo "${fileName}" descargado.`);
+                // ✅ CORRECCIÓN CLAVE: Liberar el objeto URL
+                setTimeout(() => {
+                    URL.revokeObjectURL(url);
+                    hideLoading();
+                    alert(`Exportación completada. Archivo "${fileName}" descargado.`);
+                }, 100);
+                
             } catch (error) {
                 console.error('Error al exportar a Excel:', error);
+                hideLoading();
                 alert(`Error al exportar a Excel: ${error.message}`);
             }
         }
 
         // Función CORREGIDA para guardar un registro de personal
         async function savePersonal() {
-            // Protección contra guardados duplicados
             if (isSaving) {
                 console.log("Guardado ya en progreso, ignorando solicitud adicional");
                 return;
             }
             
             try {
-                isSaving = true; // Activar el flag
+                isSaving = true;
                 
-                // Asegurar que hay una sesión válida
                 const isValid = await isSessionValid();
                 if (!isValid) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
@@ -1273,58 +1253,52 @@
                     user_id: data.session.user.id
                 };
 
-                // Validación básica
                 if (!personal.nombres || !personal.apellidos || !personal.cedula || !personal.jerarquia || !personal.sexo) {
                     throw new Error("Por favor, complete todos los campos obligatorios");
                 }
 
-                // Guardar en Supabase
+                // ✅ CORRECCIÓN CLAVE: Recargar datos INMEDIATAMENTE después de guardar
                 const { error } = await supabaseClient
                     .from('personal')
                     .upsert([personal], { onConflict: 'id' });
                     
                 if (error) throw error;
                 
-                // Mostrar mensaje de éxito
                 alert('Registro de personal guardado exitosamente');
                 
-                // Limpiar el formulario
                 resetPersonalForm();
                 
-                // Recargar la lista
+                // ✅ CORRECCIÓN CLAVE: Recargar datos y reiniciar paginación
                 await loadPersonal();
+                currentPage = 1;
+                renderCurrentPage();
+                updatePaginationControls();
             } catch (error) {
                 console.error('Error al guardar registro de personal:', error);
                 alert(`Error al guardar: ${error.message}`);
             } finally {
-                isSaving = false; // Desactivar el flag
+                isSaving = false;
             }
         }
 
         // Función CORREGIDA para cargar los registros de personal
         async function loadPersonal() {
             try {
-                // Mostrar loader
                 showLoading();
                 
-                // Asegurar que hay una sesión válida
                 const isValid = await isSessionValid();
                 if (!isValid) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // Obtener el rol del usuario
                 const userRole = data.session.user.user_metadata?.role || 'user';
                 currentUserRole = userRole;
                 
-                // Si el usuario es administrador, obtiene TODOS los registros
-                // Si es usuario normal, solo obtiene sus propios registros
                 let query = supabaseClient.from('personal').select('*');
                 
                 if (userRole !== 'admin') {
@@ -1335,11 +1309,9 @@
                 
                 if (error) throw error;
                 
-                // Guardar los datos en la variable global
                 allPersonalData = personalData || [];
                 filteredPersonalData = [...allPersonalData];
                 
-                // Si no hay registros
                 if (filteredPersonalData.length === 0) {
                     document.getElementById('personal-list').innerHTML = `
                         <tr>
@@ -1349,7 +1321,6 @@
                         </tr>
                     `;
                     
-                    // Actualizar información de paginación
                     paginationInfo.textContent = 'Mostrando 0 de 0 registros';
                     firstPageBtn.disabled = true;
                     prevPageBtn.disabled = true;
@@ -1361,10 +1332,7 @@
                     return;
                 }
                 
-                // Reiniciar a la primera página
                 currentPage = 1;
-                
-                // Renderizar la primera página
                 renderCurrentPage();
                 updatePaginationControls();
                 
@@ -1386,7 +1354,6 @@
         // Función CORREGIDA para editar un registro de personal
         async function editPersonal(id) {
             try {
-                // Obtener el registro de Supabase
                 const { data, error } = await supabaseClient
                     .from('personal')
                     .select('*')
@@ -1399,13 +1366,11 @@
                     throw new Error('Registro no encontrado');
                 }
                 
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const {  sessionData, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !sessionData?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // Rellenar el formulario con los datos
                 document.getElementById('nombres').value = data.nombres || '';
                 document.getElementById('apellidos').value = data.apellidos || '';
                 document.getElementById('edad').value = data.edad || '';
@@ -1433,15 +1398,12 @@
                 document.getElementById('resena').value = data.resena || '';
                 document.getElementById('causa').value = data.causa || '';
                 
-                // Actualizar la foto
                 if (data.foto) {
                     document.getElementById('profile-picture').src = data.foto;
                 }
                 
-                // Establecer el ID de edición
                 editingPersonalId = id;
                 
-                // Desplazar a la sección del formulario
                 document.getElementById('personal-form').scrollIntoView({ behavior: 'smooth' });
                 
             } catch (error) {
@@ -1453,7 +1415,6 @@
         // Función CORREGIDA para eliminar un registro de personal
         async function deletePersonal(id) {
             try {
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
@@ -1471,7 +1432,12 @@
                 if (error) throw error;
                 
                 alert('Registro de personal eliminado correctamente');
+                
+                // ✅ CORRECCIÓN CLAVE: Recargar datos y reiniciar paginación
                 await loadPersonal();
+                currentPage = 1;
+                renderCurrentPage();
+                updatePaginationControls();
             } catch (error) {
                 console.error('Error al eliminar registro de personal:', error);
                 alert(`Error al eliminar: ${error.message}`);
@@ -1521,13 +1487,9 @@
             try {
                 hideError();
                 
-                // Mostrar spinner de carga
                 loginSpinner.classList.remove('d-none');
                 loginText.textContent = 'Iniciando sesión...';
                 
-                console.log('Intentando iniciar sesión con:', email);
-                
-                // Intenta iniciar sesión
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password
@@ -1536,7 +1498,6 @@
                 if (error) {
                     console.error('Error de autenticación:', error);
                     
-                    // Manejo específico de errores
                     let errorMessageText = 'Error: ' + error.message;
                     
                     if (error.message.includes('Invalid login credentials')) {
@@ -1549,33 +1510,23 @@
                     
                     showError(errorMessageText);
                     
-                    // Restaurar el estado del botón
                     loginSpinner.classList.add('d-none');
                     loginText.textContent = 'Iniciar Sesión';
                     
                     return;
                 }
                 
-                console.log('Inicio de sesión exitoso', data);
-                
-                // Si el usuario quiere recordar sus credenciales, guarda el correo
                 if (rememberCredentials) {
                     saveRememberedEmail(email);
                 } else {
                     clearRememberedEmail();
                 }
                 
-                // Si llegamos aquí, el inicio de sesión fue exitoso
                 loginScreen.style.display = 'none';
                 mainPanel.style.display = 'block';
                 
-                // Carga los registros de personal
-                await loadPersonal();
-                
-                // Actualizar el nombre del usuario
                 const userNameElement = document.getElementById('user-name');
                 if (userNameElement) {
-                    // Manejo seguro de user_metadata
                     const fullName = data.user.user_metadata?.full_name || 
                                     data.user.user_metadata?.fullName || 
                                     data.user.user_metadata?.name ||
@@ -1584,7 +1535,6 @@
                     userNameElement.textContent = fullName;
                 }
                 
-                // Restaurar el estado del botón
                 loginSpinner.classList.add('d-none');
                 loginText.textContent = 'Iniciar Sesión';
                 
@@ -1592,7 +1542,6 @@
                 console.error('Error inesperado al iniciar sesión:', error);
                 showError('Error inesperado: ' + error.message);
                 
-                // Restaurar el estado del botón
                 loginSpinner.classList.add('d-none');
                 loginText.textContent = 'Iniciar Sesión';
             }
@@ -1604,14 +1553,11 @@
                 const { error } = await supabaseClient.auth.signOut();
                 if (error) throw error;
                 
-                // Limpiar el correo recordado
                 clearRememberedEmail();
                 
-                // Mostrar pantalla de login
                 loginScreen.style.display = 'block';
                 mainPanel.style.display = 'none';
                 
-                // Limpiar el formulario de login
                 document.getElementById('email').value = '';
                 document.getElementById('password').value = '';
                 document.getElementById('remember-credentials').checked = false;
@@ -1635,32 +1581,24 @@
         // Configurar eventos para el registro de personal
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                // Verificar la sesión inicial
                 await checkSession();
                 
-                // Agregar listener para cambios de autenticación
                 supabaseClient.auth.onAuthStateChange((event, session) => {
                     console.log('Cambio de estado de autenticación:', event);
                     if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-                        // Reiniciar variables globales
                         allPersonalData = [];
                         filteredPersonalData = [];
-                        
-                        // Verificar la sesión nuevamente
                         checkSession();
                     }
                 });
                 
-                // Configurar el evento de submit del formulario de login
                 if (loginForm) {
                     loginForm.addEventListener('submit', login);
                 }
                 
-                // Configurar el evento de submit del formulario de personal
                 const personalForm = document.getElementById('personal-form');
                 
                 if (personalForm) {
-                    // Verificar si ya existe un listener para evitar duplicados
                     const formClone = personalForm.cloneNode(true);
                     personalForm.parentNode.replaceChild(formClone, personalForm);
                     
@@ -1670,12 +1608,10 @@
                     });
                 }
                 
-                // Configurar botón para exportar a Excel
                 if (exportExcelBtn) {
                     exportExcelBtn.addEventListener('click', exportToExcel);
                 }
                 
-                // Configurar botones de navegación
                 if (showRegisterBtn) {
                     showRegisterBtn.addEventListener('click', showRegisterForm);
                 }
@@ -1688,7 +1624,6 @@
                     logoutBtn.addEventListener('click', logout);
                 }
                 
-                // Configurar controles de paginación
                 if (firstPageBtn) {
                     firstPageBtn.addEventListener('click', () => goToPage(1));
                 }
@@ -1708,18 +1643,14 @@
                     });
                 }
                 
-                // Configurar búsqueda
                 if (searchPersonal) {
                     searchPersonal.addEventListener('input', function() {
                         const searchTerm = this.value.toLowerCase();
                         
                         if (!searchTerm) {
-                            // Si no hay término de búsqueda, mostrar todos los registros
                             filteredPersonalData = [...allPersonalData];
                         } else {
-                            // Filtrar los registros
                             filteredPersonalData = allPersonalData.filter(personal => {
-                                // Convertir todos los campos a string y buscar en ellos
                                 return Object.values(personal).some(value => {
                                     if (value === null || value === undefined) return false;
                                     return value.toString().toLowerCase().includes(searchTerm);
@@ -1727,10 +1658,7 @@
                             });
                         }
                         
-                        // Reiniciar a la primera página
                         currentPage = 1;
-                        
-                        // Renderizar la primera página
                         renderCurrentPage();
                         updatePaginationControls();
                     });
