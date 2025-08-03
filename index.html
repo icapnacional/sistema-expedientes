@@ -266,126 +266,6 @@
         .badge-secondary {
             background-color: #6c757d;
         }
-        
-        /* Estilos específicos para impresión */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            
-            #planilla-imprimir, #planilla-imprimir * {
-                visibility: visible;
-            }
-            
-            #planilla-imprimir {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                padding: 20px;
-            }
-            
-            .no-print {
-                display: none !important;
-            }
-            
-            .print-only {
-                display: block !important;
-            }
-            
-            /* Ajustes específicos para impresión */
-            .planilla-container {
-                border: none !important;
-                box-shadow: none !important;
-                background: white !important;
-            }
-            
-            .planilla-header img {
-                max-height: 80px !important;
-            }
-            
-            .signature-line {
-                border-top: 1px solid #000 !important;
-                width: 300px !important;
-                margin-top: 20px !important;
-                text-align: center !important;
-            }
-        }
-        
-        /* Estilos para la planilla imprimible */
-        .planilla-container {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            padding: 30px;
-            margin-bottom: 20px;
-            max-width: 800px;
-        }
-        
-        .planilla-header {
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #003366;
-            padding-bottom: 20px;
-        }
-        
-        .planilla-header img {
-            max-height: 100px;
-            margin-bottom: 10px;
-        }
-        
-        .planilla-title {
-            color: #003366;
-            font-size: 24px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        
-        .planilla-subtitle {
-            color: #0066CC;
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-        
-        .planilla-section {
-            margin-bottom: 20px;
-        }
-        
-        .planilla-section-title {
-            background-color: #003366;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        
-        .planilla-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-        }
-        
-        .info-item {
-            margin-bottom: 8px;
-        }
-        
-        .info-label {
-            font-weight: bold;
-            color: #003366;
-            display: inline-block;
-            min-width: 150px;
-        }
-        
-        .signature-section {
-            margin-top: 40px;
-        }
-        
-        .signature-line {
-            border-top: 1px solid #000;
-            width: 300px;
-            margin-top: 20px;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
@@ -767,9 +647,9 @@
                     </div>
                     
                     <div class="d-flex justify-content-between mb-4">
-                        <!-- Botón para imprimir planilla -->
-                        <button type="button" class="btn btn-outline-secondary" id="print-planilla-btn">
-                            <i class="fas fa-print me-2"></i>Imprimir Planilla
+                        <!-- Botón para exportar a Excel -->
+                        <button id="export-excel-btn" class="btn btn-success">
+                            <i class="fas fa-file-excel me-2"></i>Exportar a Excel
                         </button>
                         
                         <!-- Botón para guardar -->
@@ -841,10 +721,6 @@
                         </span>
                         <input type="text" class="form-control" id="search-personal" placeholder="Buscar...">
                     </div>
-                    <!-- Botón para exportar a Excel -->
-                    <button id="export-excel-btn" class="btn btn-success">
-                        <i class="fas fa-file-excel me-2"></i>Exportar a Excel
-                    </button>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -867,162 +743,6 @@
                             <!-- Los registros de personal se cargarán aquí dinámicamente -->
                         </tbody>
                     </table>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Contenedor oculto para la planilla imprimible -->
-    <div id="planilla-imprimir" style="display: none;">
-        <div class="planilla-container">
-            <div class="planilla-header">
-                <img src="https://raw.githubusercontent.com/gamakingrock/sistema-expedientes/main/images/policia-nacional-bolivariana.png" 
-                     alt="Logo Policía Nacional Bolivariana">
-                <div class="planilla-title">REPÚBLICA BOLIVARIANA DE VENEZUELA</div>
-                <div class="planilla-title">POLICÍA NACIONAL BOLIVARIANA</div>
-                <div class="planilla-title">DIRECCIÓN DE INVESTIGACIONES POLICIALES</div>
-                <div class="planilla-title">REDIP OCCIDENTAL - CCPE ZULIA</div>
-                <div class="planilla-subtitle">PLANILLA DE EXPEDIENTE</div>
-            </div>
-            
-            <div class="planilla-section">
-                <div class="planilla-section-title">INFORMACIÓN DEL EXPEDIENTE</div>
-                <div class="planilla-info">
-                    <div class="info-item">
-                        <span class="info-label">NÚMERO DE EXPEDIENTE:</span> 
-                        <span id="print-expediente-numero">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">FECHA DE REGISTRO:</span> 
-                        <span id="print-fecha-registro">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">REGISTRADO POR:</span> 
-                        <span id="print-registrado-por">N/A</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="planilla-section">
-                <div class="planilla-section-title">INFORMACIÓN DEL PERSONAL</div>
-                <div class="planilla-info">
-                    <div class="info-item">
-                        <span class="info-label">NOMBRES:</span> 
-                        <span id="print-nombres">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">APELLIDOS:</span> 
-                        <span id="print-apellidos">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">CÉDULA DE IDENTIDAD:</span> 
-                        <span id="print-cedula">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">EDAD:</span> 
-                        <span id="print-edad">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">SEXO:</span> 
-                        <span id="print-sexo">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">JERARQUÍA:</span> 
-                        <span id="print-jerarquia">N/A</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="planilla-section">
-                <div class="planilla-section-title">INFORMACIÓN DEL EXPEDIENTE</div>
-                <div class="planilla-info">
-                    <div class="info-item">
-                        <span class="info-label">TIPO DE EXPEDIENTE:</span> 
-                        <span id="print-tipo-expediente">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">FECHA DE INICIO:</span> 
-                        <span id="print-fecha-inicio">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">ICAP (OFICINA):</span> 
-                        <span id="print-icap">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">CONDICIÓN DEL FUNCIONARIO:</span> 
-                        <span id="print-condicion">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">AÑO:</span> 
-                        <span id="print-anio">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">EXPEDIENTE PENAL:</span> 
-                        <span id="print-expediente-penal">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">SERVICIO:</span> 
-                        <span id="print-servicio">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">TIPO DE FALTA:</span> 
-                        <span id="print-tipo-falta">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">ORIGEN DE LA FALTA:</span> 
-                        <span id="print-origen-falta">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">FALTA:</span> 
-                        <span id="print-falta">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">DENUNCIANTE:</span> 
-                        <span id="print-denunciante">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">FUNCIONARIO DETENIDO:</span> 
-                        <span id="print-detenido">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">ESTATUS:</span> 
-                        <span id="print-estatus">N/A</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">DECISIÓN:</span> 
-                        <span id="print-decision">N/A</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="planilla-section">
-                <div class="planilla-section-title">INFORMACIÓN ADICIONAL</div>
-                <div class="planilla-info">
-                    <div class="info-item" style="grid-column: 1 / -1;">
-                        <span class="info-label">SUSTANCIADOR:</span> 
-                        <span id="print-sustanciador">N/A</span>
-                    </div>
-                    <div class="info-item" style="grid-column: 1 / -1;">
-                        <span class="info-label">REMISIÓN:</span> 
-                        <span id="print-remision">N/A</span>
-                    </div>
-                    <div class="info-item" style="grid-column: 1 / -1;">
-                        <span class="info-label">RESEÑA:</span> 
-                        <span id="print-resena">N/A</span>
-                    </div>
-                    <div class="info-item" style="grid-column: 1 / -1;">
-                        <span class="info-label">CAUSA:</span> 
-                        <span id="print-causa">N/A</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="signature-section">
-                <div class="signature-line">
-                    <div>Firma del Registrador</div>
-                </div>
-                <div class="signature-line" style="margin-left: 50%;">
-                    <div>Fecha</div>
                 </div>
             </div>
         </div>
@@ -1080,9 +800,7 @@
         const showLoginBtn = document.getElementById('show-login');
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
-        const printPlanillaBtn = document.getElementById('print-planilla-btn');
         const exportExcelBtn = document.getElementById('export-excel-btn');
-        const searchPersonal = document.getElementById('search-personal');
 
         // Variables globales
         let editingPersonalId = null;
@@ -1296,107 +1014,6 @@
                 month: '2-digit',
                 day: '2-digit'
             });
-        }
-
-        // Función para formatear la fecha en formato para impresión
-        function formatDateForPrint(dateString) {
-            if (!dateString) return 'N/A';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('es-ES', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        }
-
-        // Función para imprimir la planilla
-        function imprimirPlanilla() {
-            // Verificar que el formulario esté completo
-            if (!document.getElementById('nombres').value || 
-                !document.getElementById('apellidos').value || 
-                !document.getElementById('cedula').value) {
-                alert('Por favor, complete al menos los campos de nombres, apellidos y cédula para imprimir la planilla.');
-                return;
-            }
-            
-            // Obtener los datos del formulario
-            const personal = {
-                nombres: document.getElementById('nombres').value,
-                apellidos: document.getElementById('apellidos').value,
-                cedula: document.getElementById('cedula').value,
-                edad: document.getElementById('edad').value || 'N/A',
-                jerarquia: getSelectValue('jerarquia') || 'N/A',
-                sexo: getSelectValue('sexo') || 'N/A',
-                fecha_inicio: document.getElementById('fecha-inicio').value ? formatDateForPrint(document.getElementById('fecha-inicio').value) : 'N/A',
-                tipo_expediente: getSelectValue('tipo-expediente') || 'N/A',
-                icap: getSelectValue('icap') || 'N/A',
-                condicion: getSelectValue('condicion') || 'N/A',
-                anio: getSelectValue('anio') || 'N/A',
-                expediente_penal: document.getElementById('expediente-penal').value || 'N/A',
-                servicio: getSelectValue('servicio') || 'N/A',
-                tipo_falta: getSelectValue('tipo-falta') || 'N/A',
-                origen_falta: getSelectValue('origen-falta') || 'N/A',
-                falta: getSelectValue('falta') || 'N/A',
-                denunciante: getSelectValue('denunciante') || 'N/A',
-                detenido: getSelectValue('detenido') || 'N/A',
-                estatus: getSelectValue('estatus') || 'N/A',
-                decision: getSelectValue('decision') || 'N/A',
-                expediente_numero: document.getElementById('expediente-numero').value || 'N/A',
-                registrado_por: document.getElementById('registrado-por').value || 'N/A',
-                sustanciador: document.getElementById('sustanciador').value || 'N/A',
-                remision: document.getElementById('remision').value || 'N/A',
-                resena: document.getElementById('resena').value || 'N/A',
-                causa: document.getElementById('causa').value || 'N/A',
-                fecha_registro: formatDateForPrint(new Date().toISOString().split('T')[0])
-            };
-            
-            // Llenar la planilla imprimible con los datos
-            document.getElementById('print-nombres').textContent = personal.nombres;
-            document.getElementById('print-apellidos').textContent = personal.apellidos;
-            document.getElementById('print-cedula').textContent = personal.cedula;
-            document.getElementById('print-edad').textContent = personal.edad;
-            document.getElementById('print-sexo').textContent = personal.sexo;
-            document.getElementById('print-jerarquia').textContent = personal.jerarquia;
-            document.getElementById('print-tipo-expediente').textContent = personal.tipo_expediente;
-            document.getElementById('print-fecha-inicio').textContent = personal.fecha_inicio;
-            document.getElementById('print-icap').textContent = personal.icap;
-            document.getElementById('print-condicion').textContent = personal.condicion;
-            document.getElementById('print-anio').textContent = personal.anio;
-            document.getElementById('print-expediente-penal').textContent = personal.expediente_penal;
-            document.getElementById('print-servicio').textContent = personal.servicio;
-            document.getElementById('print-tipo-falta').textContent = personal.tipo_falta;
-            document.getElementById('print-origen-falta').textContent = personal.origen_falta;
-            document.getElementById('print-falta').textContent = personal.falta;
-            document.getElementById('print-denunciante').textContent = personal.denunciante;
-            document.getElementById('print-detenido').textContent = personal.detenido;
-            document.getElementById('print-estatus').textContent = personal.estatus;
-            document.getElementById('print-decision').textContent = personal.decision;
-            document.getElementById('print-expediente-numero').textContent = personal.expediente_numero;
-            document.getElementById('print-registrado-por').textContent = personal.registrado_por;
-            document.getElementById('print-sustanciador').textContent = personal.sustanciador;
-            document.getElementById('print-remision').textContent = personal.remision;
-            document.getElementById('print-resena').textContent = personal.resena;
-            document.getElementById('print-causa').textContent = personal.causa;
-            document.getElementById('print-fecha-registro').textContent = personal.fecha_registro;
-            
-            // Mostrar la planilla imprimible y ocultar otros elementos
-            const originalDisplay = document.body.style.display;
-            document.body.style.display = 'none';
-            
-            // Mostrar el contenedor de impresión
-            const printContainer = document.getElementById('planilla-imprimir');
-            printContainer.style.display = 'block';
-            
-            // Esperar a que se renderice antes de imprimir
-            setTimeout(() => {
-                window.print();
-                
-                // Restaurar la vista original después de imprimir
-                setTimeout(() => {
-                    printContainer.style.display = 'none';
-                    document.body.style.display = originalDisplay;
-                }, 100);
-            }, 100);
         }
 
         // Función para exportar a Excel
@@ -2308,11 +1925,6 @@
                     });
                 });
                 
-                // Configurar botón para imprimir planilla
-                if (printPlanillaBtn) {
-                    printPlanillaBtn.addEventListener('click', imprimirPlanilla);
-                }
-                
                 // Configurar botón para exportar a Excel
                 if (exportExcelBtn) {
                     exportExcelBtn.addEventListener('click', exportToExcel);
@@ -2369,28 +1981,6 @@
                             };
                             reader.readAsDataURL(file);
                         }
-                    });
-                }
-                
-                // Configurar búsqueda
-                if (searchPersonal) {
-                    searchPersonal.addEventListener('input', function() {
-                        const searchTerm = this.value.toLowerCase();
-                        const rows = document.querySelectorAll('#personal-list tr');
-                        
-                        rows.forEach(row => {
-                            const cells = row.querySelectorAll('td');
-                            let match = false;
-                            
-                            for (let i = 0; i < cells.length - 1; i++) { // Excluir la última celda (acciones)
-                                if (cells[i].textContent.toLowerCase().includes(searchTerm)) {
-                                    match = true;
-                                    break;
-                                }
-                            }
-                            
-                            row.style.display = match ? '' : 'none';
-                        });
                     });
                 }
                 
