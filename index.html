@@ -345,36 +345,9 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        
-        .session-timeout-notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: #ffc107;
-            color: #212529;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 10000;
-            display: none;
-            max-width: 350px;
-        }
-        
-        .session-timeout-notification button {
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
-    <!-- Notificación de cierre de sesión por inactividad -->
-    <div class="session-timeout-notification" id="session-timeout-notification">
-        <h5><i class="fas fa-clock me-2"></i>Sesión a punto de expirar</h5>
-        <p>Su sesión se cerrará automáticamente en 2 minutos debido a inactividad.</p>
-        <button class="btn btn-primary w-100" id="keep-session-btn">
-            <i class="fas fa-sync-alt me-2"></i>Mantener sesión activa
-        </button>
-    </div>
-    
     <!-- Capa de carga -->
     <div class="loading-overlay" id="loading-overlay">
         <div class="loading-spinner"></div>
@@ -772,55 +745,6 @@
             </div>
         </div>
 
-        <!-- Modal de Administración de Desplegables -->
-        <div class="modal fade" id="manageDropdownModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="manageDropdownModalLabel">Administrar Opciones: <span id="dropdown-field-name"></span></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="new-option-value" class="form-label">Valor de la Opción</label>
-                            <input type="text" class="form-control" id="new-option-value" placeholder="Ej: cabo_mayor">
-                        </div>
-                        <div class="mb-3">
-                            <label for="new-option-label" class="form-label">Etiqueta de la Opción</label>
-                            <input type="text" class="form-control" id="new-option-label" placeholder="Ej: Cabo Mayor">
-                        </div>
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="new-option-global" checked>
-                            <label class="form-check-label" for="new-option-global">Opción Global (visible para todos)</label>
-                        </div>
-                        <button type="button" class="btn btn-primary mb-4" id="btn-add-option">
-                            <i class="fas fa-plus me-2"></i>Agregar Nueva Opción
-                        </button>
-                        
-                        <h6 class="mb-3">Opciones Existentes:</h6>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Valor</th>
-                                        <th>Etiqueta</th>
-                                        <th>Tipo</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="options-list">
-                                    <!-- Las opciones se cargarán aquí dinámicamente -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Lista de Personal Registrado -->
         <div class="card shadow-sm">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -905,14 +829,6 @@
         let filteredPersonalData = [];
         let loadingTimer = null;
         
-        // Variables para manejo de sesión
-        let lastActivityTime = Date.now();
-        let sessionTimeout = 15 * 60 * 1000; // 15 minutos
-        let sessionWarningTimeout = sessionTimeout - 2 * 60 * 1000; // 13 minutos
-        let sessionWarningShown = false;
-        let isClosingPage = false;
-        let heartbeatInterval = null;
-        
         // Configuración de Supabase
         const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
@@ -942,8 +858,6 @@
         const exportExcelBtn = document.getElementById('export-excel-btn');
         const searchPersonal = document.getElementById('search-personal');
         const loadingOverlay = document.getElementById('loading-overlay');
-        const sessionTimeoutNotification = document.getElementById('session-timeout-notification');
-        const keepSessionBtn = document.getElementById('keep-session-btn');
         
         // Elementos de paginación
         const paginationInfo = document.getElementById('pagination-info');
@@ -956,10 +870,7 @@
         // Variables globales
         let editingPersonalId = null;
         let isSaving = false; // Flag para evitar guardados duplicados
-        let currentDropdownField = null;
-        let editingOptionId = null;
         let currentUserRole = 'user'; // Por defecto es usuario normal
-        let sessionCheckInterval = null;
 
         // Función para mostrar mensajes de error
         function showError(message) {
@@ -1001,69 +912,21 @@
             loadingOverlay.style.display = 'none';
         }
 
-        // Función para actualizar el tiempo de última actividad
-        function updateLastActivity() {
-            lastActivityTime = Date.now();
-            
-            // Actualizar en localStorage para que otras pestañas puedan ver la actividad
-            try {
-                localStorage.setItem('lastActivityTime', lastActivityTime);
-            } catch (e) {
-                console.warn("No se pudo actualizar lastActivityTime en localStorage");
-            }
-            
-            // Ocultar notificación de tiempo de sesión si está visible
-            if (sessionTimeoutNotification.style.display === 'block') {
-                sessionTimeoutNotification.style.display = 'none';
-                sessionWarningShown = false;
-            }
-        }
-
-        // Función para verificar actividad del usuario
-        function checkUserActivity() {
-            const currentTime = Date.now();
-            const timeSinceLastActivity = currentTime - lastActivityTime;
-            
-            // Mostrar advertencia antes de cerrar la sesión
-            if (timeSinceLastActivity > sessionWarningTimeout && !sessionWarningShown) {
-                sessionTimeoutNotification.style.display = 'block';
-                sessionWarningShown = true;
-            }
-            
-            // Cerrar sesión si ha pasado el tiempo límite
-            if (timeSinceLastActivity > sessionTimeout) {
-                if (!isClosingPage) {
-                    logout();
-                }
-            }
-        }
-
         // Función para guardar el correo recordado
         function saveRememberedEmail(email) {
             try {
-                // Solo guardar si se selecciona "Recordar mis credenciales"
-                if (document.getElementById('remember-credentials').checked) {
-                    localStorage.setItem('rememberedEmail', email);
-                } else {
-                    sessionStorage.setItem('tempRememberedEmail', email);
-                }
+                localStorage.setItem('rememberedEmail', email);
             } catch (e) {
-                console.warn("No se pudo guardar el correo en almacenamiento");
+                console.warn("No se pudo guardar el correo en localStorage");
             }
         }
 
         // Función para obtener el correo recordado
         function getRememberedEmail() {
             try {
-                // Primero intentar con localStorage (recordar credenciales)
-                if (localStorage.getItem('rememberedEmail')) {
-                    return localStorage.getItem('rememberedEmail');
-                }
-                
-                // Luego intentar con sessionStorage (solo para esta sesión)
-                return sessionStorage.getItem('tempRememberedEmail') || '';
+                return localStorage.getItem('rememberedEmail') || '';
             } catch (e) {
-                console.warn("No se pudo obtener el correo de almacenamiento");
+                console.warn("No se pudo obtener el correo de localStorage");
                 return '';
             }
         }
@@ -1072,16 +935,15 @@
         function clearRememberedEmail() {
             try {
                 localStorage.removeItem('rememberedEmail');
-                sessionStorage.removeItem('tempRememberedEmail');
             } catch (e) {
-                console.warn("No se pudo limpiar el correo de almacenamiento");
+                console.warn("No se pudo limpiar el correo de localStorage");
             }
         }
 
-        // Función para verificar si la sesión es válida
+        // Función CORREGIDA para verificar si la sesión es válida
         async function isSessionValid() {
             try {
-                // Manejo seguro de la sesión
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error } = await supabaseClient.auth.getSession();
                 if (error) {
                     console.error('Error al obtener sesión:', error);
@@ -1094,12 +956,12 @@
             }
         }
 
-        // Función para verificar la sesión
+        // Función CORREGIDA para verificar la sesión
         async function checkSession() {
             try {
                 console.log('Verificando sesión...');
                 
-                // Manejo seguro de la sesión
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error } = await supabaseClient.auth.getSession();
                 
                 if (error) {
@@ -1110,21 +972,6 @@
                 if (data?.session) {
                     console.log('Sesión encontrada:', data.session);
                     
-                    // Verificar si hay actividad reciente en otras pestañas
-                    try {
-                        const lastActivity = localStorage.getItem('lastActivityTime');
-                        if (lastActivity) {
-                            const timeSinceLastActivity = Date.now() - parseInt(lastActivity);
-                            if (timeSinceLastActivity > sessionTimeout) {
-                                // Forzar cierre de sesión si ha expirado
-                                await supabaseClient.auth.signOut();
-                                throw new Error("Sesión expirada por inactividad");
-                            }
-                        }
-                    } catch (e) {
-                        console.warn("No se pudo verificar actividad en localStorage", e);
-                    }
-                    
                     // Usuario autenticado - muestra el panel principal
                     loginScreen.style.display = 'none';
                     mainPanel.style.display = 'block';
@@ -1133,7 +980,7 @@
                     const user = data.session.user;
                     const userNameElement = document.getElementById('user-name');
                     if (userNameElement) {
-                        // Manejo seguro de user_metadata
+                        // CORRECCIÓN AQUÍ - Manejo seguro de user_metadata
                         const fullName = user.user_metadata?.full_name || 
                                         user.user_metadata?.fullName || 
                                         user.user_metadata?.name ||
@@ -1146,14 +993,10 @@
                         currentUserRole = userRole;
                         
                         console.log('ROL DEL USUARIO:', userRole);
-                        console.log('METADATOS COMPLETOS:', user.user_metadata);
                         
-                        // Aplicar restricciones según el rol
-                        applyRoleRestrictions(userRole);
+                        // Carga los registros de personal
+                        await loadPersonal();
                     }
-                    
-                    // Carga los registros de personal
-                    await loadPersonal();
                 } else {
                     console.log('No hay sesión activa');
                     
@@ -1165,71 +1008,12 @@
                     const rememberedEmail = getRememberedEmail();
                     if (rememberedEmail) {
                         document.getElementById('email').value = rememberedEmail;
-                        document.getElementById('remember-credentials').checked = !!localStorage.getItem('rememberedEmail');
+                        document.getElementById('remember-credentials').checked = true;
                     }
                 }
             } catch (error) {
                 console.error('Error al verificar sesión:', error);
                 showError('Error al verificar sesión: ' + error.message);
-            }
-        }
-
-        // Función para aplicar restricciones según el rol del usuario
-        function applyRoleRestrictions(role) {
-            console.log('Aplicando restricciones para rol:', role);
-            
-            // Si es administrador, mostrar todos los elementos
-            if (role === 'admin') {
-                console.log('Usuario es ADMINISTRADOR');
-                
-                // Mostrar botones de edición y eliminación
-                document.querySelectorAll('.edit-personal, .delete-personal').forEach(button => {
-                    button.style.display = '';
-                });
-                
-                // Mostrar botones de administración de desplegables
-                document.querySelectorAll('.manage-dropdown').forEach(button => {
-                    button.style.display = '';
-                });
-                
-                // Permitir edición del formulario completo
-                const formElements = document.querySelectorAll('#personal-form input, #personal-form select, #personal-form textarea');
-                formElements.forEach(element => {
-                    element.disabled = false;
-                });
-                
-                // Restaurar texto original del botón
-                const saveButton = document.querySelector('#personal-form button[type="submit"]');
-                if (saveButton) {
-                    saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Guardar Registro de Personal';
-                }
-                
-                return;
-            }
-            
-            // Para usuarios normales:
-            console.log('Usuario es USUARIO NORMAL');
-            
-            // 1. Ocultar botones de edición y eliminación en la lista
-            document.querySelectorAll('.edit-personal, .delete-personal').forEach(button => {
-                button.style.display = 'none';
-            });
-            
-            // 2. Ocultar botones de administración de desplegables
-            document.querySelectorAll('.manage-dropdown').forEach(button => {
-                button.style.display = 'none';
-            });
-            
-            // 3. Permitir edición del formulario completo (solo para nuevos registros)
-            const formElements = document.querySelectorAll('#personal-form input, #personal-form select, #personal-form textarea');
-            formElements.forEach(element => {
-                element.disabled = false;
-            });
-            
-            // 4. Modificar el texto del botón de guardar
-            const saveButton = document.querySelector('#personal-form button[type="submit"]');
-            if (saveButton) {
-                saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Registrar Nuevo Personal';
             }
         }
 
@@ -1430,7 +1214,7 @@
             document.body.removeChild(downloadLink);
         }
 
-        // Función para guardar un registro de personal
+        // Función CORREGIDA para guardar un registro de personal
         async function savePersonal() {
             // Protección contra guardados duplicados
             if (isSaving) {
@@ -1447,21 +1231,12 @@
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // Manejo seguro de la sesión
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // Verificar si el usuario tiene permisos para editar
-                const userRole = data.session.user.user_metadata?.role || 'user';
-                console.log('ROL EN savePersonal:', userRole);
-                
-                // Si está intentando editar un registro y no es administrador, impedirlo
-                if (editingPersonalId && userRole !== 'admin') {
-                    throw new Error("No tiene permisos para editar registros. Contacte al administrador.");
-                }
-
                 const personal = {
                     id: editingPersonalId || Date.now().toString(),
                     nombres: document.getElementById('nombres').value,
@@ -1523,7 +1298,7 @@
             }
         }
 
-        // Función para cargar los registros de personal
+        // Función CORREGIDA para cargar los registros de personal
         async function loadPersonal() {
             try {
                 // Mostrar loader
@@ -1535,7 +1310,7 @@
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // Manejo seguro de la sesión
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
@@ -1553,18 +1328,7 @@
                     query = query.eq('user_id', data.session.user.id);
                 }
                 
-                // Agregar límite para mejorar rendimiento
-                query = query.limit(100);
-                
-                // Realizar la consulta con timeout
-                const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error("Tiempo de espera agotado. Por favor, intente de nuevo.")), 10000)
-                );
-                
-                const {  personalData, error } = await Promise.race([
-                    query.order('fecha_registro', { ascending: false }),
-                    timeoutPromise
-                ]);
+                const {  personalData, error } = await query.order('fecha_registro', { ascending: false });
                 
                 if (error) throw error;
                 
@@ -1616,7 +1380,7 @@
             }
         }
 
-        // Función para editar un registro de personal
+        // Función CORREGIDA para editar un registro de personal
         async function editPersonal(id) {
             try {
                 // Obtener el registro de Supabase
@@ -1632,19 +1396,10 @@
                     throw new Error('Registro no encontrado');
                 }
                 
-                // Manejo seguro de la sesión
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const {  sessionData, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !sessionData?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
-                }
-                
-                const userRole = sessionData.session.user.user_metadata?.role || 'user';
-                console.log('ROL EN editPersonal:', userRole);
-                
-                // Si no es administrador, impedir la edición
-                if (userRole !== 'admin') {
-                    alert("No tiene permisos para editar registros. Solo los administradores pueden editar.");
-                    return;
                 }
                 
                 // Rellenar el formulario con los datos
@@ -1692,22 +1447,13 @@
             }
         }
 
-        // Función para eliminar un registro de personal
+        // Función CORREGIDA para eliminar un registro de personal
         async function deletePersonal(id) {
             try {
-                // Manejo seguro de la sesión
+                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
-                }
-                
-                const userRole = data.session.user.user_metadata?.role || 'user';
-                console.log('ROL EN deletePersonal:', userRole);
-                
-                // Si no es administrador, impedir la eliminación
-                if (userRole !== 'admin') {
-                    alert("No tiene permisos para eliminar registros. Solo los administradores pueden eliminar.");
-                    return;
                 }
                 
                 if (!confirm('¿Está seguro de que desea eliminar este registro de personal?')) {
@@ -1762,322 +1508,7 @@
             editingPersonalId = null;
         }
 
-        // Función para cargar las opciones de un desplegable
-        async function loadDropdownOptions(field) {
-            try {
-                // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) throw new Error("No hay sesión activa");
-                
-                // Obtener opciones globales y del usuario
-                const {  optionsData, error } = await supabaseClient
-                    .from('dropdown_options')
-                    .select('*')
-                    .or(`field_name.eq.${field},and(field_name.eq.${field},user_id.eq.${data.session.user.id})`)
-                    .order('option_label', { ascending: true });
-                    
-                if (error) throw error;
-                
-                // Actualizar el desplegable
-                const selectElement = document.getElementById(field);
-                if (selectElement) {
-                    // Limpiar opciones excepto la primera
-                    while (selectElement.options.length > 1) {
-                        selectElement.remove(1);
-                    }
-                    
-                    // Añadir opciones
-                    optionsData.forEach(option => {
-                        const optionElement = document.createElement('option');
-                        optionElement.value = option.option_value;
-                        optionElement.textContent = option.option_label;
-                        selectElement.appendChild(optionElement);
-                    });
-                }
-                
-                return optionsData;
-            } catch (error) {
-                console.error(`Error al cargar opciones para ${field}:`, error);
-                return [];
-            }
-        }
-
-        // Función para cargar todas las opciones de desplegables
-        async function loadAllDropdownOptions() {
-            const fields = [
-                'jerarquia', 'sexo', 'tipo-expediente', 'icap', 'condicion', 
-                'anio', 'servicio', 'tipo-falta', 'origen-falta',
-                'falta', 'denunciante', 'detenido', 'estatus', 'decision'
-            ];
-            
-            for (const field of fields) {
-                await loadDropdownOptions(field);
-            }
-        }
-
-        // Función para mostrar el modal de administración
-        async function showManageDropdownModal(field) {
-            // Verificar si el usuario tiene permisos para administrar desplegables
-            // Manejo seguro de la sesión
-            const { data, error: sessionError } = await supabaseClient.auth.getSession();
-            if (sessionError || !data?.session) {
-                alert("No hay sesión activa. Por favor, inicie sesión.");
-                return;
-            }
-            
-            const userRole = data.session.user.user_metadata?.role || 'user';
-            if (userRole !== 'admin') {
-                alert("No tiene permisos para administrar opciones. Solo los administradores pueden administrar desplegables.");
-                return;
-            }
-            
-            currentDropdownField = field;
-            
-            // Actualizar el título del modal
-            document.getElementById('dropdown-field-name').textContent = field.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            
-            // Cargar las opciones
-            await loadDropdownOptionsForManagement(field);
-            
-            // Mostrar el modal
-            const manageModal = new bootstrap.Modal(document.getElementById('manageDropdownModal'));
-            manageModal.show();
-        }
-
-        // Función para cargar las opciones para el modal de administración
-        async function loadDropdownOptionsForManagement(field) {
-            try {
-                // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) throw new Error("No hay sesión activa");
-                
-                // Obtener opciones globales y del usuario
-                const {  optionsData, error } = await supabaseClient
-                    .from('dropdown_options')
-                    .select('*')
-                    .eq('field_name', field)
-                    .order('option_label', { ascending: true });
-                    
-                if (error) throw error;
-                
-                // Mostrar opciones en la tabla
-                const optionsList = document.getElementById('options-list');
-                optionsList.innerHTML = '';
-                
-                if (optionsData.length === 0) {
-                    optionsList.innerHTML = `
-                        <tr>
-                            <td colspan="4" class="text-center py-3 text-muted">
-                                No hay opciones definidas para este campo
-                            </td>
-                        </tr>
-                    `;
-                    return optionsData;
-                }
-                
-                optionsData.forEach(option => {
-                    const row = document.createElement('tr');
-                    
-                    row.innerHTML = `
-                        <td>${option.option_value}</td>
-                        <td>${option.option_label}</td>
-                        <td>${option.is_global ? '<span class="badge bg-primary">Global</span>' : '<span class="badge bg-secondary">Personal</span>'}</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary edit-option" data-id="${option.id}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger delete-option ms-1" data-id="${option.id}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    
-                    optionsList.appendChild(row);
-                });
-                
-                // Configurar eventos para los botones
-                document.querySelectorAll('.edit-option').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        editOption(id);
-                    });
-                });
-                
-                document.querySelectorAll('.delete-option').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        deleteOption(id);
-                    });
-                });
-                
-                return optionsData;
-            } catch (error) {
-                console.error(`Error al cargar opciones para administración de ${field}:`, error);
-                return [];
-            }
-        }
-
-        // Función para agregar una nueva opción
-        async function addOption() {
-            const newValue = document.getElementById('new-option-value').value.trim();
-            const newLabel = document.getElementById('new-option-label').value.trim();
-            const isGlobal = document.getElementById('new-option-global').checked;
-            
-            if (!newValue || !newLabel) {
-                alert('Por favor, complete ambos campos');
-                return;
-            }
-            
-            try {
-                // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) throw new Error("No hay sesión activa");
-                
-                const newOption = {
-                    field_name: currentDropdownField,
-                    option_value: newValue,
-                    option_label: newLabel,
-                    user_id: isGlobal ? null : data.session.user.id,
-                    is_global: isGlobal
-                };
-                
-                const { error } = await supabaseClient
-                    .from('dropdown_options')
-                    .insert([newOption]);
-                    
-                if (error) throw error;
-                
-                // Limpiar campos
-                document.getElementById('new-option-value').value = '';
-                document.getElementById('new-option-label').value = '';
-                
-                // Recargar opciones
-                await loadDropdownOptionsForManagement(currentDropdownField);
-                
-                // Actualizar el desplegable principal
-                await loadDropdownOptions(currentDropdownField);
-                
-                alert('Opción agregada exitosamente');
-            } catch (error) {
-                console.error('Error al agregar opción:', error);
-                alert(`Error al agregar opción: ${error.message}`);
-            }
-        }
-
-        // Función para editar una opción
-        async function editOption(id) {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('dropdown_options')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-                    
-                if (error) throw error;
-                
-                if (!data) {
-                    throw new Error('Opción no encontrada');
-                }
-                
-                // Rellenar el formulario de nueva opción con los datos de edición
-                document.getElementById('new-option-value').value = data.option_value;
-                document.getElementById('new-option-label').value = data.option_label;
-                document.getElementById('new-option-global').checked = data.is_global;
-                
-                // Establecer el ID de edición
-                editingOptionId = id;
-                
-                // Desplazar al formulario
-                document.getElementById('new-option-value').scrollIntoView({ behavior: 'smooth' });
-                
-                alert('Ahora edite los valores y haga clic en "Agregar Nueva Opción" para guardar los cambios');
-            } catch (error) {
-                console.error('Error al editar opción:', error);
-                alert(`Error al editar opción: ${error.message}`);
-            }
-        }
-
-        // Función para eliminar una opción
-        async function deleteOption(id) {
-            if (!confirm('¿Está seguro de que desea eliminar esta opción?')) {
-                return;
-            }
-            
-            try {
-                const { error } = await supabaseClient
-                    .from('dropdown_options')
-                    .delete()
-                    .eq('id', id);
-                    
-                if (error) throw error;
-                
-                alert('Opción eliminada correctamente');
-                
-                // Recargar opciones
-                await loadDropdownOptionsForManagement(currentDropdownField);
-                
-                // Actualizar el desplegable principal
-                await loadDropdownOptions(currentDropdownField);
-            } catch (error) {
-                console.error('Error al eliminar opción:', error);
-                alert(`Error al eliminar opción: ${error.message}`);
-            }
-        }
-
-        // Función para registrar un usuario
-        async function register(e) {
-            e.preventDefault();
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            const fullName = document.getElementById('reg-name').value;
-            
-            try {
-                hideError();
-                
-                // Solo el administrador puede crear nuevos usuarios
-                // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) {
-                    throw new Error("Debe iniciar sesión para crear nuevos usuarios");
-                }
-                
-                const userRole = data.session.user.user_metadata?.role || 'user';
-                if (userRole !== 'admin') {
-                    throw new Error("Solo el administrador puede crear nuevos usuarios");
-                }
-                
-                const {  signUpData, error } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                         {
-                            full_name: fullName,
-                            role: 'user'  // Todos los nuevos usuarios serán de rol "user"
-                        }
-                    }
-                });
-                
-                if (error) {
-                    throw error;
-                }
-                
-                if (signUpData?.user) {
-                    console.log('Registro exitoso', signUpData);
-                    alert('¡Usuario creado exitosamente!');
-                    showLoginForm();
-                } else {
-                    console.log('Registro pendiente de confirmación', signUpData);
-                    alert('¡Usuario creado exitosamente! Revisa el correo para confirmar.');
-                    showLoginForm();
-                }
-            } catch (error) {
-                console.error('Error al registrar:', error);
-                alert('Error: ' + error.message);
-                return;
-            }
-        }
-
-        // Función para iniciar sesión
+        // Función CORREGIDA para iniciar sesión
         async function login(e) {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -2131,9 +1562,6 @@
                     clearRememberedEmail();
                 }
                 
-                // Actualizar tiempo de última actividad
-                updateLastActivity();
-                
                 // Si llegamos aquí, el inicio de sesión fue exitoso
                 loginScreen.style.display = 'none';
                 mainPanel.style.display = 'block';
@@ -2170,10 +1598,6 @@
         // Función para cerrar sesión
         async function logout() {
             try {
-                // Establecer flag para indicar que estamos cerrando sesión
-                isClosingPage = true;
-                
-                // Cerrar sesión en Supabase
                 const { error } = await supabaseClient.auth.signOut();
                 if (error) throw error;
                 
@@ -2188,23 +1612,9 @@
                 document.getElementById('email').value = '';
                 document.getElementById('password').value = '';
                 document.getElementById('remember-credentials').checked = false;
-                
-                // Limpiar datos de personal
-                allPersonalData = [];
-                filteredPersonalData = [];
-                document.getElementById('personal-list').innerHTML = '';
-                document.getElementById('user-name').textContent = '';
-                
-                // Ocultar notificación de tiempo de sesión
-                sessionTimeoutNotification.style.display = 'none';
-                sessionWarningShown = false;
-                
             } catch (error) {
                 console.error('Error al cerrar sesión:', error);
                 alert('Error al cerrar sesión: ' + error.message);
-            } finally {
-                // Restablecer flag
-                isClosingPage = false;
             }
         }
 
@@ -2243,11 +1653,6 @@
                     loginForm.addEventListener('submit', login);
                 }
                 
-                // Configurar el evento de submit del formulario de registro
-                if (registerForm) {
-                    registerForm.addEventListener('submit', register);
-                }
-                
                 // Configurar el evento de submit del formulario de personal
                 const personalForm = document.getElementById('personal-form');
                 
@@ -2259,73 +1664,6 @@
                     formClone.addEventListener('submit', (e) => {
                         e.preventDefault();
                         savePersonal();
-                    });
-                }
-                
-                // Configurar botones de administración de desplegables
-                document.querySelectorAll('.manage-dropdown').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const field = this.getAttribute('data-field');
-                        showManageDropdownModal(field);
-                    });
-                });
-                
-                // Configurar botón para exportar a Excel
-                if (exportExcelBtn) {
-                    exportExcelBtn.addEventListener('click', exportToExcel);
-                }
-                
-                // Configurar botón para agregar opciones
-                document.getElementById('btn-add-option').addEventListener('click', function() {
-                    if (editingOptionId) {
-                        saveEditedOption();
-                    } else {
-                        addOption();
-                    }
-                });
-                
-                // Permitir agregar opciones con Enter en el campo de texto
-                document.getElementById('new-option-value').addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        if (editingOptionId) {
-                            saveEditedOption();
-                        } else {
-                            addOption();
-                        }
-                    }
-                });
-                
-                document.getElementById('new-option-label').addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        if (editingOptionId) {
-                            saveEditedOption();
-                        } else {
-                            addOption();
-                        }
-                    }
-                });
-                
-                // Configurar el evento de ocultar el modal
-                document.getElementById('manageDropdownModal').addEventListener('hidden.bs.modal', function() {
-                    // Limpiar campos al cerrar el modal
-                    document.getElementById('new-option-value').value = '';
-                    document.getElementById('new-option-label').value = '';
-                    document.getElementById('new-option-global').checked = true;
-                    editingOptionId = null;
-                });
-                
-                // Configurar el evento de subida de foto
-                const profilePictureUpload = document.getElementById('profile-picture-upload');
-                if (profilePictureUpload) {
-                    profilePictureUpload.addEventListener('change', function(e) {
-                        const file = e.target.files[0];
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = function(event) {
-                                document.getElementById('profile-picture').src = event.target.result;
-                            };
-                            reader.readAsDataURL(file);
-                        }
                     });
                 }
                 
@@ -2390,63 +1728,10 @@
                     });
                 }
                 
-                // Configurar eventos de actividad del usuario
-                document.addEventListener('mousemove', updateLastActivity);
-                document.addEventListener('keypress', updateLastActivity);
-                document.addEventListener('click', updateLastActivity);
-                document.addEventListener('scroll', updateLastActivity);
-                
-                // Configurar botón para mantener sesión activa
-                if (keepSessionBtn) {
-                    keepSessionBtn.addEventListener('click', function() {
-                        updateLastActivity();
-                        sessionTimeoutNotification.style.display = 'none';
-                        sessionWarningShown = false;
-                    });
-                }
-                
-                // Configurar verificación de actividad periódica
-                setInterval(checkUserActivity, 30000); // Verificar cada 30 segundos
-                
-                // Agregar listener para cambios de visibilidad
-                document.addEventListener('visibilitychange', () => {
-                    if (document.visibilityState === 'visible') {
-                        updateLastActivity();
-                    }
-                });
-                
-                // Configurar heartbeat para indicar actividad
-                heartbeatInterval = setInterval(() => {
-                    try {
-                        localStorage.setItem('lastActivityTime', Date.now());
-                    } catch (e) {
-                        console.warn("No se pudo actualizar heartbeat en localStorage");
-                    }
-                }, 30000); // Actualizar cada 30 segundos
-                
-                // Cargar todas las opciones de desplegables
-                await loadAllDropdownOptions();
-                
                 console.log('Sistema inicializado correctamente');
             } catch (error) {
                 console.error('Error al inicializar el sistema:', error);
                 alert('Error al inicializar el sistema: ' + error.message);
-            }
-        });
-        
-        // Agregar listener para cierre de pestaña/navegador
-        window.addEventListener('beforeunload', async (event) => {
-            try {
-                // Intentar actualizar el tiempo de última actividad
-                // Esto ayuda a que otras pestañas se den cuenta de que esta se está cerrando
-                localStorage.setItem('lastActivityTime', Date.now() - sessionTimeout - 1000);
-                
-                // No podemos hacer una solicitud de cierre de sesión aquí porque los navegadores
-                // no garantizan que se complete, pero al marcar la actividad como antigua,
-                // otras pestañas cerrarán la sesión automáticamente
-            } catch (error) {
-                console.error('Error al manejar beforeunload:', error);
-                // No mostramos alertas en beforeunload
             }
         });
     </script>
