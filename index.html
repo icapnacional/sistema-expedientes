@@ -766,6 +766,15 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
+        // Función auxiliar para obtener el valor de un select de forma segura
+        function getSelectValue(id) {
+            const selectElement = document.getElementById(id);
+            if (!selectElement || selectElement.selectedIndex < 0) {
+                return null;
+            }
+            return selectElement.options[selectElement.selectedIndex].text;
+        }
+
         // Configuración de Supabase
         const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
@@ -1019,7 +1028,7 @@
             });
         }
 
-        // Función para generar el PDF con los datos del formulario
+        // Función CORREGIDA para generar el PDF con los datos del formulario
         function generatePDF() {
             try {
                 // Verificar que el formulario esté completo
@@ -1036,22 +1045,22 @@
                     apellidos: document.getElementById('apellidos').value,
                     cedula: document.getElementById('cedula').value,
                     edad: document.getElementById('edad').value || 'N/A',
-                    jerarquia: document.getElementById('jerarquia').options[document.getElementById('jerarquia').selectedIndex]?.text || 'N/A',
-                    sexo: document.getElementById('sexo').options[document.getElementById('sexo').selectedIndex]?.text || 'N/A',
+                    jerarquia: getSelectValue('jerarquia') || 'N/A',
+                    sexo: getSelectValue('sexo') || 'N/A',
                     fecha_inicio: document.getElementById('fecha-inicio').value ? formatDateForPDF(document.getElementById('fecha-inicio').value) : 'N/A',
-                    tipo_expediente: document.getElementById('tipo-expediente').options[document.getElementById('tipo-expediente').selectedIndex]?.text || 'N/A',
-                    icap: document.getElementById('icap').options[document.getElementById('icap').selectedIndex]?.text || 'N/A',
-                    condicion: document.getElementById('condicion').options[document.getElementById('condicion').selectedIndex]?.text || 'N/A',
-                    anio: document.getElementById('anio').options[document.getElementById('anio').selectedIndex]?.text || 'N/A',
+                    tipo_expediente: getSelectValue('tipo-expediente') || 'N/A',
+                    icap: getSelectValue('icap') || 'N/A',
+                    condicion: getSelectValue('condicion') || 'N/A',
+                    anio: getSelectValue('anio') || 'N/A',
                     expediente_penal: document.getElementById('expediente-penal').value || 'N/A',
-                    servicio: document.getElementById('servicio').options[document.getElementById('servicio').selectedIndex]?.text || 'N/A',
-                    tipo_falta: document.getElementById('tipo-falta').options[document.getElementById('tipo-falta').selectedIndex]?.text || 'N/A',
-                    origen_falta: document.getElementById('origen-falta').options[document.getElementById('origen-falta').selectedIndex]?.text || 'N/A',
-                    falta: document.getElementById('falta').options[document.getElementById('falta').selectedIndex]?.text || 'N/A',
-                    denunciante: document.getElementById('denunciante').options[document.getElementById('denunciante').selectedIndex]?.text || 'N/A',
-                    detenido: document.getElementById('detenido').options[document.getElementById('detenido').selectedIndex]?.text || 'N/A',
-                    estatus: document.getElementById('estatus').options[document.getElementById('estatus').selectedIndex]?.text || 'N/A',
-                    decision: document.getElementById('decision').options[document.getElementById('decision').selectedIndex]?.text || 'N/A',
+                    servicio: getSelectValue('servicio') || 'N/A',
+                    tipo_falta: getSelectValue('tipo-falta') || 'N/A',
+                    origen_falta: getSelectValue('origen-falta') || 'N/A',
+                    falta: getSelectValue('falta') || 'N/A',
+                    denunciante: getSelectValue('denunciante') || 'N/A',
+                    detenido: getSelectValue('detenido') || 'N/A',
+                    estatus: getSelectValue('estatus') || 'N/A',
+                    decision: getSelectValue('decision') || 'N/A',
                     expediente_numero: document.getElementById('expediente-numero').value || 'N/A',
                     registrado_por: document.getElementById('registrado-por').value || 'N/A',
                     sustanciador: document.getElementById('sustanciador').value || 'N/A',
@@ -1061,8 +1070,7 @@
                     fecha_registro: formatDateForPDF(new Date().toISOString().split('T')[0])
                 };
                 
-                // Crear el documento PDF
-                const { jsPDF } = window.jspdf;
+                // Crear el documento PDF - CORRECTO
                 const doc = new jsPDF({
                     orientation: 'portrait',
                     unit: 'mm',
@@ -1269,6 +1277,15 @@
                     
                     // Si la imagen no se carga, continuar sin logo
                     logoImg.onerror = () => {
+                        console.warn('No se pudo cargar el logo, continuando sin logo');
+                        resolve();
+                    };
+                });
+                
+                // Esperar a que se cargue la imagen y luego guardar el PDF
+                logoPromise.then(() => {
+                    // Si la imagen no se cargó, generar el PDF sin logo
+                    if (!logoImg.complete) {
                         // Título sin logo
                         doc.setFontSize(16);
                         doc.setFont('helvetica', 'bold');
@@ -1298,14 +1315,9 @@
                         
                         // Continuar con el resto del documento...
                         
-                        resolve();
-                    };
-                });
-                
-                // Esperar a que se cargue la imagen y luego guardar el PDF
-                logoPromise.then(() => {
-                    // Si ya se agregó el logo y otros elementos, no es necesario repetir
-                    // El PDF ya se está generando en el callback del logo
+                        // Guardar el PDF
+                        doc.save(`expediente_${personal.expediente_numero || 'PNB'}.pdf`);
+                    }
                 });
                 
             } catch (error) {
