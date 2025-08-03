@@ -317,9 +317,42 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 99, 204, 0.3);
+            border-radius: 50%;
+            border-top-color: #0066CC;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
+    <!-- Capa de carga -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+    
     <!-- Header con título centrado -->
     <div class="header" id="main-title-section">
         <h1 class="centered-title">SISTEMA DE GESTIÓN DE EXPEDIENTES</h1>
@@ -840,9 +873,10 @@
     <script>
         // Variables de paginación
         let currentPage = 1;
-        let itemsPerPage = 6;
+        let itemsPerPage = 10; // Aumentado de 6 a 10 para mejor rendimiento
         let allPersonalData = [];
         let filteredPersonalData = [];
+        let loadingTimer = null;
         
         // Configuración de Supabase
         const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
@@ -872,6 +906,7 @@
         const registerForm = document.getElementById('register-form');
         const exportExcelBtn = document.getElementById('export-excel-btn');
         const searchPersonal = document.getElementById('search-personal');
+        const loadingOverlay = document.getElementById('loading-overlay');
         
         // Elementos de paginación
         const paginationInfo = document.getElementById('pagination-info');
@@ -887,6 +922,7 @@
         let currentDropdownField = null;
         let editingOptionId = null;
         let currentUserRole = 'user'; // Por defecto es usuario normal
+        let sessionCheckInterval = null;
 
         // Función para mostrar mensajes de error
         function showError(message) {
@@ -902,6 +938,30 @@
             if (errorMessage) {
                 errorMessage.style.display = 'none';
             }
+        }
+
+        // Función para mostrar el overlay de carga
+        function showLoading() {
+            // Limpia cualquier temporizador anterior
+            if (loadingTimer) {
+                clearTimeout(loadingTimer);
+            }
+            
+            // Muestra el overlay después de 300ms (para evitar parpadeos)
+            loadingTimer = setTimeout(() => {
+                loadingOverlay.style.display = 'flex';
+            }, 300);
+        }
+
+        // Función para ocultar el overlay de carga
+        function hideLoading() {
+            // Cancela el temporizador si existe
+            if (loadingTimer) {
+                clearTimeout(loadingTimer);
+                loadingTimer = null;
+            }
+            
+            loadingOverlay.style.display = 'none';
         }
 
         // Función para guardar el correo recordado
@@ -932,10 +992,10 @@
             }
         }
 
-        // Función CORREGIDA para verificar si la sesión es válida
+        // Función para verificar si la sesión es válida
         async function isSessionValid() {
             try {
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
+                // Manejo seguro de la sesión
                 const { data, error } = await supabaseClient.auth.getSession();
                 if (error) {
                     console.error('Error al obtener sesión:', error);
@@ -948,12 +1008,12 @@
             }
         }
 
-        // Función CORREGIDA para verificar la sesión
+        // Función para verificar la sesión
         async function checkSession() {
             try {
                 console.log('Verificando sesión...');
                 
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
+                // Manejo seguro de la sesión
                 const { data, error } = await supabaseClient.auth.getSession();
                 
                 if (error) {
@@ -972,7 +1032,7 @@
                     const user = data.session.user;
                     const userNameElement = document.getElementById('user-name');
                     if (userNameElement) {
-                        // CORRECCIÓN AQUÍ - Manejo seguro de user_metadata
+                        // Manejo seguro de user_metadata
                         const fullName = user.user_metadata?.full_name || 
                                         user.user_metadata?.fullName || 
                                         user.user_metadata?.name ||
@@ -1013,7 +1073,7 @@
             }
         }
 
-        // Función CORREGIDA para aplicar restricciones según el rol del usuario
+        // Función para aplicar restricciones según el rol del usuario
         function applyRoleRestrictions(role) {
             console.log('Aplicando restricciones para rol:', role);
             
@@ -1269,7 +1329,7 @@
             document.body.removeChild(downloadLink);
         }
 
-        // Función CORREGIDA para guardar un registro de personal
+        // Función para guardar un registro de personal
         async function savePersonal() {
             // Protección contra guardados duplicados
             if (isSaving) {
@@ -1286,7 +1346,7 @@
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
+                // Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
@@ -1362,30 +1422,19 @@
             }
         }
 
-        // Función CORREGIDA para cargar los registros de personal
+        // Función para cargar los registros de personal
         async function loadPersonal() {
             try {
+                // Mostrar loader
+                showLoading();
+                
                 // Asegurar que hay una sesión válida
                 const isValid = await isSessionValid();
                 if (!isValid) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // Mostrar loader
-                const personalList = document.getElementById('personal-list');
-                if (!personalList) return;
-                
-                personalList.innerHTML = `
-                    <tr>
-                        <td colspan="9" class="text-center py-4">
-                            <div class="spinner-border text-primary me-2" role="status">
-                                <span class="visually-hidden">Cargando...</span>
-                            </div> Cargando registros...
-                        </td>
-                    </tr>
-                `;
-                
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
+                // Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
@@ -1403,7 +1452,18 @@
                     query = query.eq('user_id', data.session.user.id);
                 }
                 
-                const { data: personalData, error } = await query.order('fecha_registro', { ascending: false });
+                // Agregar límite para mejorar rendimiento
+                query = query.limit(100);
+                
+                // Realizar la consulta con timeout
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Tiempo de espera agotado. Por favor, intente de nuevo.")), 10000)
+                );
+                
+                const { data: personalData, error } = await Promise.race([
+                    query.order('fecha_registro', { ascending: false }),
+                    timeoutPromise
+                ]);
                 
                 if (error) throw error;
                 
@@ -1413,7 +1473,7 @@
                 
                 // Si no hay registros
                 if (filteredPersonalData.length === 0) {
-                    personalList.innerHTML = `
+                    document.getElementById('personal-list').innerHTML = `
                         <tr>
                             <td colspan="9" class="text-center py-4 text-muted">
                                 <i class="fas fa-inbox me-2"></i>No hay registros de personal
@@ -1429,6 +1489,7 @@
                     nextPageBtn.disabled = true;
                     lastPageBtn.disabled = true;
                     
+                    hideLoading();
                     return;
                 }
                 
@@ -1439,6 +1500,8 @@
                 renderCurrentPage();
                 updatePaginationControls();
                 
+                hideLoading();
+                
             } catch (error) {
                 console.error('Error al cargar registros de personal:', error);
                 document.getElementById('personal-list').innerHTML = `
@@ -1448,10 +1511,11 @@
                         </td>
                     </tr>
                 `;
+                hideLoading();
             }
         }
 
-        // Función CORREGIDA para editar un registro de personal
+        // Función para editar un registro de personal
         async function editPersonal(id) {
             try {
                 // Obtener el registro de Supabase
@@ -1467,7 +1531,7 @@
                     throw new Error('Registro no encontrado');
                 }
                 
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
+                // Manejo seguro de la sesión
                 const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !sessionData?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
@@ -1527,10 +1591,10 @@
             }
         }
 
-        // Función CORREGIDA para eliminar un registro de personal
+        // Función para eliminar un registro de personal
         async function deletePersonal(id) {
             try {
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
+                // Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
@@ -1600,7 +1664,7 @@
         // Función para cargar las opciones de un desplegable
         async function loadDropdownOptions(field) {
             try {
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
+                // Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) throw new Error("No hay sesión activa");
                 
@@ -1650,10 +1714,10 @@
             }
         }
 
-        // Función CORREGIDA para mostrar el modal de administración
+        // Función para mostrar el modal de administración
         async function showManageDropdownModal(field) {
             // Verificar si el usuario tiene permisos para administrar desplegables
-            // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
+            // Manejo seguro de la sesión
             const { data, error: sessionError } = await supabaseClient.auth.getSession();
             if (sessionError || !data?.session) {
                 alert("No hay sesión activa. Por favor, inicie sesión.");
@@ -1682,7 +1746,7 @@
         // Función para cargar las opciones para el modal de administración
         async function loadDropdownOptionsForManagement(field) {
             try {
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
+                // Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) throw new Error("No hay sesión activa");
                 
@@ -1764,7 +1828,7 @@
             }
             
             try {
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
+                // Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) throw new Error("No hay sesión activa");
                 
@@ -1870,7 +1934,7 @@
                 hideError();
                 
                 // Solo el administrador puede crear nuevos usuarios
-                // CORRECCIÓN AQUÍ - Manejo seguro de la sesión
+                // Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("Debe iniciar sesión para crear nuevos usuarios");
@@ -1912,7 +1976,7 @@
             }
         }
 
-        // Función CORREGIDA para iniciar sesión
+        // Función para iniciar sesión
         async function login(e) {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -1976,7 +2040,7 @@
                 // Actualizar el nombre del usuario
                 const userNameElement = document.getElementById('user-name');
                 if (userNameElement) {
-                    // CORRECCIÓN AQUÍ - Manejo seguro de user_metadata
+                    // Manejo seguro de user_metadata
                     const fullName = data.user.user_metadata?.full_name || 
                                     data.user.user_metadata?.fullName || 
                                     data.user.user_metadata?.name ||
@@ -2016,6 +2080,12 @@
                 document.getElementById('email').value = '';
                 document.getElementById('password').value = '';
                 document.getElementById('remember-credentials').checked = false;
+                
+                // Limpiar datos de personal
+                allPersonalData = [];
+                filteredPersonalData = [];
+                document.getElementById('personal-list').innerHTML = '';
+                document.getElementById('user-name').textContent = '';
             } catch (error) {
                 console.error('Error al cerrar sesión:', error);
                 alert('Error al cerrar sesión: ' + error.message);
@@ -2038,6 +2108,19 @@
             try {
                 // Verificar la sesión inicial
                 await checkSession();
+                
+                // Agregar listener para cambios de autenticación
+                supabaseClient.auth.onAuthStateChange((event, session) => {
+                    console.log('Cambio de estado de autenticación:', event);
+                    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+                        // Reiniciar variables globales
+                        allPersonalData = [];
+                        filteredPersonalData = [];
+                        
+                        // Verificar la sesión nuevamente
+                        checkSession();
+                    }
+                });
                 
                 // Configurar el evento de submit del formulario de login
                 if (loginForm) {
