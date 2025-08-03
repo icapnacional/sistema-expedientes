@@ -386,14 +386,6 @@
             margin-top: 20px;
             text-align: center;
         }
-        
-        .print-instructions {
-            background-color: #e9ecef;
-            border-left: 4px solid #0066CC;
-            padding: 15px;
-            border-radius: 0 4px 4px 0;
-            margin: 20px 0;
-        }
     </style>
 </head>
 <body>
@@ -842,11 +834,17 @@
         <div class="card shadow-sm">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Personal Registrado</h5>
-                <div class="input-group w-auto" style="max-width: 300px;">
-                    <span class="input-group-text bg-light">
-                        <i class="fas fa-search"></i>
-                    </span>
-                    <input type="text" class="form-control" id="search-personal" placeholder="Buscar...">
+                <div class="d-flex">
+                    <div class="input-group w-auto me-2" style="max-width: 300px;">
+                        <span class="input-group-text bg-light">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="search-personal" placeholder="Buscar...">
+                    </div>
+                    <!-- Botón para exportar a Excel -->
+                    <button id="export-excel-btn" class="btn btn-success">
+                        <i class="fas fa-file-excel me-2"></i>Exportar a Excel
+                    </button>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -1028,12 +1026,6 @@
                 </div>
             </div>
         </div>
-        
-        <div class="print-instructions">
-            <i class="fas fa-info-circle me-2"></i>
-            <strong>Instrucciones para guardar como PDF:</strong> Presione Ctrl+P (Windows) o Cmd+P (Mac) para abrir el diálogo de impresión. 
-            En la opción "Destino", seleccione "Guardar como PDF". Ajuste los márgenes a "Ninguno" para mejor calidad y haga clic en "Guardar".
-        </div>
     </div>
     
     <!-- Pie de página mejorado con texto en minúsculas -->
@@ -1089,6 +1081,8 @@
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const printPlanillaBtn = document.getElementById('print-planilla-btn');
+        const exportExcelBtn = document.getElementById('export-excel-btn');
+        const searchPersonal = document.getElementById('search-personal');
 
         // Variables globales
         let editingPersonalId = null;
@@ -1405,6 +1399,89 @@
             }, 100);
         }
 
+        // Función para exportar a Excel
+        function exportToExcel() {
+            // Crear una copia de la tabla actual
+            const table = document.querySelector('.table');
+            const tableClone = table.cloneNode(true);
+            
+            // Eliminar la columna de acciones para la exportación
+            const headerCells = tableClone.querySelectorAll('thead th');
+            const bodyRows = tableClone.querySelectorAll('tbody tr');
+            
+            // Encontrar el índice de la columna "Acciones"
+            let actionsIndex = -1;
+            for (let i = 0; i < headerCells.length; i++) {
+                if (headerCells[i].textContent.includes('Acciones')) {
+                    actionsIndex = i;
+                    break;
+                }
+            }
+            
+            // Eliminar la columna de acciones si existe
+            if (actionsIndex >= 0) {
+                // Eliminar encabezado
+                headerCells[actionsIndex].remove();
+                
+                // Eliminar celda en cada fila
+                bodyRows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells[actionsIndex]) {
+                        cells[actionsIndex].remove();
+                    }
+                });
+            }
+            
+            // Preparar el contenido HTML para Excel
+            const html = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+                      xmlns:x='urn:schemas-microsoft-com:office:excel' 
+                      xmlns='http://www.w3.org/TR/REC-html40'>
+                <head>
+                    <meta charset='utf-8'>
+                    <!--[if gte mso 9]>
+                    <xml>
+                        <x:ExcelWorkbook>
+                            <x:ExcelWorksheets>
+                                <x:ExcelWorksheet>
+                                    <x:Name>Personal Registrado</x:Name>
+                                    <x:WorksheetOptions>
+                                        <x:DisplayGridlines/>
+                                    </x:WorksheetOptions>
+                                </x:ExcelWorksheet>
+                            </x:ExcelWorksheets>
+                        </x:ExcelWorkbook>
+                    </xml>
+                    <![endif]-->
+                    <style>
+                        table { border-collapse: collapse; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <h3>Personal Registrado - ${new Date().toLocaleDateString('es-ES')}</h3>
+                    ${tableClone.outerHTML}
+                </body>
+                </html>
+            `;
+            
+            // Crear un Blob con el contenido HTML
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            
+            // Crear un enlace de descarga
+            const downloadLink = document.createElement('a');
+            const fileName = `Personal_Registrado_${new Date().toISOString().slice(0, 10)}.xls`;
+            
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = fileName;
+            
+            // Simular clic en el enlace
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+
         // Función CORREGIDA para guardar un registro de personal
         async function savePersonal() {
             // Protección contra guardados duplicados
@@ -1513,7 +1590,7 @@
                 
                 personalList.innerHTML = `
                     <tr>
-                        <td colspan="9" class="text-center py-4">
+                        <td colspan="8" class="text-center py-4">
                             <div class="spinner-border text-primary me-2" role="status">
                                 <span class="visually-hidden">Cargando...</span>
                             </div> Cargando registros...
@@ -1547,7 +1624,7 @@
                 if (!personalData || personalData.length === 0) {
                     personalList.innerHTML = `
                         <tr>
-                            <td colspan="9" class="text-center py-4 text-muted">
+                            <td colspan="8" class="text-center py-4 text-muted">
                                 <i class="fas fa-inbox me-2"></i>No hay registros de personal
                             </td>
                         </tr>
@@ -1603,7 +1680,7 @@
                 console.error('Error al cargar registros de personal:', error);
                 document.getElementById('personal-list').innerHTML = `
                     <tr>
-                        <td colspan="9" class="text-center py-4 text-danger">
+                        <td colspan="8" class="text-center py-4 text-danger">
                             <i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}
                         </td>
                     </tr>
@@ -2040,7 +2117,7 @@
                     email: email,
                     password: password,
                     options: {
-                        data: {
+                         data: {
                             full_name: fullName,
                             role: 'user'  // Todos los nuevos usuarios serán de rol "user"
                         }
@@ -2230,6 +2307,11 @@
                     printPlanillaBtn.addEventListener('click', imprimirPlanilla);
                 }
                 
+                // Configurar botón para exportar a Excel
+                if (exportExcelBtn) {
+                    exportExcelBtn.addEventListener('click', exportToExcel);
+                }
+                
                 // Configurar botón para agregar opciones
                 document.getElementById('btn-add-option').addEventListener('click', function() {
                     if (editingOptionId) {
@@ -2285,7 +2367,6 @@
                 }
                 
                 // Configurar búsqueda
-                const searchPersonal = document.getElementById('search-personal');
                 if (searchPersonal) {
                     searchPersonal.addEventListener('input', function() {
                         const searchTerm = this.value.toLowerCase();
