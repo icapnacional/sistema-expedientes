@@ -858,7 +858,7 @@
         async function isSessionValid() {
             try {
                 // Obtener la sesión CORRECTAMENTE (Supabase v2)
-                const {  { session }, error } = await supabaseClient.auth.getSession();
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
                 if (error) throw error;
                 return !!session;
             } catch (error) {
@@ -888,7 +888,7 @@
                 console.log('Verificando sesión...');
                 
                 // Obtener la sesión CORRECTAMENTE (Supabase v2)
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 
                 if (sessionError) {
                     console.error('Error al obtener sesión:', sessionError);
@@ -1028,7 +1028,7 @@
             });
         }
 
-        // Función CORREGIDA 100% para generar el PDF con los datos del formulario
+        // Función CORREGIDA para generar el PDF con los datos del formulario
         function generatePDF() {
             try {
                 // Verificar que el formulario esté completo
@@ -1314,7 +1314,7 @@
                 await ensureSession();
                 
                 // Obtener la sesión actual CORRECTAMENTE (Supabase v2)
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     // Intentar recuperar la sesión desde localStorage si existe
                     const rememberedEmail = getRememberedEmail();
@@ -1416,7 +1416,7 @@
                 `;
                 
                 // Obtener los registros de Supabase
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
@@ -1522,7 +1522,7 @@
                 }
                 
                 // Verificar si el usuario tiene permisos para editar
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
@@ -1585,7 +1585,7 @@
         async function deletePersonal(id) {
             try {
                 // Verificar si el usuario tiene permisos para editar
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
@@ -1654,7 +1654,7 @@
         // Función para cargar las opciones de un desplegable
         async function loadDropdownOptions(field) {
             try {
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
@@ -1706,7 +1706,7 @@
         // Función CORREGIDA para mostrar el modal de administración
         async function showManageDropdownModal(field) {
             // Verificar si el usuario tiene permisos para administrar desplegables
-            const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
             if (sessionError || !session) {
                 alert("No hay sesión activa. Por favor, inicie sesión.");
                 return;
@@ -1734,7 +1734,7 @@
         // Función para cargar las opciones para el modal de administración
         async function loadDropdownOptionsForManagement(field) {
             try {
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
@@ -1815,7 +1815,7 @@
             }
             
             try {
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) throw new Error("No hay sesión activa");
                 
                 const newOption = {
@@ -1920,7 +1920,7 @@
                 hideError();
                 
                 // Solo el administrador puede crear nuevos usuarios
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !session) {
                     throw new Error("Debe iniciar sesión para crear nuevos usuarios");
                 }
@@ -1934,7 +1934,7 @@
                     email: email,
                     password: password,
                     options: {
-                         {
+                        data: {
                             full_name: fullName,
                             role: 'user'  // Todos los nuevos usuarios serán de rol "user"
                         }
