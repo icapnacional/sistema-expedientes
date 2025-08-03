@@ -345,9 +345,36 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        
+        .session-timeout-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #ffc107;
+            color: #212529;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            display: none;
+            max-width: 350px;
+        }
+        
+        .session-timeout-notification button {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
+    <!-- Notificación de cierre de sesión por inactividad -->
+    <div class="session-timeout-notification" id="session-timeout-notification">
+        <h5><i class="fas fa-clock me-2"></i>Sesión a punto de expirar</h5>
+        <p>Su sesión se cerrará automáticamente en 2 minutos debido a inactividad.</p>
+        <button class="btn btn-primary w-100" id="keep-session-btn">
+            <i class="fas fa-sync-alt me-2"></i>Mantener sesión activa
+        </button>
+    </div>
+    
     <!-- Capa de carga -->
     <div class="loading-overlay" id="loading-overlay">
         <div class="loading-spinner"></div>
@@ -878,6 +905,13 @@
         let filteredPersonalData = [];
         let loadingTimer = null;
         
+        // Variables para manejo de sesión
+        let lastActivityTime = Date.now();
+        let sessionTimeout = 15 * 60 * 1000; // 15 minutos
+        let sessionWarningTimeout = sessionTimeout - 2 * 60 * 1000; // 13 minutos
+        let sessionWarningShown = false;
+        let isClosingPage = false;
+        
         // Configuración de Supabase
         const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
@@ -907,6 +941,8 @@
         const exportExcelBtn = document.getElementById('export-excel-btn');
         const searchPersonal = document.getElementById('search-personal');
         const loadingOverlay = document.getElementById('loading-overlay');
+        const sessionTimeoutNotification = document.getElementById('session-timeout-notification');
+        const keepSessionBtn = document.getElementById('keep-session-btn');
         
         // Elementos de paginación
         const paginationInfo = document.getElementById('pagination-info');
@@ -964,21 +1000,62 @@
             loadingOverlay.style.display = 'none';
         }
 
+        // Función para actualizar el tiempo de última actividad
+        function updateLastActivity() {
+            lastActivityTime = Date.now();
+            
+            // Ocultar notificación de tiempo de sesión si está visible
+            if (sessionTimeoutNotification.style.display === 'block') {
+                sessionTimeoutNotification.style.display = 'none';
+                sessionWarningShown = false;
+            }
+        }
+
+        // Función para verificar actividad del usuario
+        function checkUserActivity() {
+            const currentTime = Date.now();
+            const timeSinceLastActivity = currentTime - lastActivityTime;
+            
+            // Mostrar advertencia antes de cerrar la sesión
+            if (timeSinceLastActivity > sessionWarningTimeout && !sessionWarningShown) {
+                sessionTimeoutNotification.style.display = 'block';
+                sessionWarningShown = true;
+            }
+            
+            // Cerrar sesión si ha pasado el tiempo límite
+            if (timeSinceLastActivity > sessionTimeout) {
+                if (!isClosingPage) {
+                    logout();
+                }
+            }
+        }
+
         // Función para guardar el correo recordado
         function saveRememberedEmail(email) {
             try {
-                localStorage.setItem('rememberedEmail', email);
+                // Solo guardar si se selecciona "Recordar mis credenciales"
+                if (document.getElementById('remember-credentials').checked) {
+                    localStorage.setItem('rememberedEmail', email);
+                } else {
+                    sessionStorage.setItem('tempRememberedEmail', email);
+                }
             } catch (e) {
-                console.warn("No se pudo guardar el correo en localStorage");
+                console.warn("No se pudo guardar el correo en almacenamiento");
             }
         }
 
         // Función para obtener el correo recordado
         function getRememberedEmail() {
             try {
-                return localStorage.getItem('rememberedEmail') || '';
+                // Primero intentar con localStorage (recordar credenciales)
+                if (localStorage.getItem('rememberedEmail')) {
+                    return localStorage.getItem('rememberedEmail');
+                }
+                
+                // Luego intentar con sessionStorage (solo para esta sesión)
+                return sessionStorage.getItem('tempRememberedEmail') || '';
             } catch (e) {
-                console.warn("No se pudo obtener el correo de localStorage");
+                console.warn("No se pudo obtener el correo de almacenamiento");
                 return '';
             }
         }
@@ -987,8 +1064,9 @@
         function clearRememberedEmail() {
             try {
                 localStorage.removeItem('rememberedEmail');
+                sessionStorage.removeItem('tempRememberedEmail');
             } catch (e) {
-                console.warn("No se pudo limpiar el correo de localStorage");
+                console.warn("No se pudo limpiar el correo de almacenamiento");
             }
         }
 
@@ -1064,7 +1142,7 @@
                     const rememberedEmail = getRememberedEmail();
                     if (rememberedEmail) {
                         document.getElementById('email').value = rememberedEmail;
-                        document.getElementById('remember-credentials').checked = true;
+                        document.getElementById('remember-credentials').checked = !!localStorage.getItem('rememberedEmail');
                     }
                 }
             } catch (error) {
@@ -1460,7 +1538,7 @@
                     setTimeout(() => reject(new Error("Tiempo de espera agotado. Por favor, intente de nuevo.")), 10000)
                 );
                 
-                const { data: personalData, error } = await Promise.race([
+                const {  personalData, error } = await Promise.race([
                     query.order('fecha_registro', { ascending: false }),
                     timeoutPromise
                 ]);
@@ -1532,7 +1610,7 @@
                 }
                 
                 // Manejo seguro de la sesión
-                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                const {  sessionData, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !sessionData?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
@@ -1669,7 +1747,7 @@
                 if (sessionError || !data?.session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
-                const { data: optionsData, error } = await supabaseClient
+                const {  optionsData, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
                     .or(`field_name.eq.${field},and(field_name.eq.${field},user_id.eq.${data.session.user.id})`)
@@ -1751,7 +1829,7 @@
                 if (sessionError || !data?.session) throw new Error("No hay sesión activa");
                 
                 // Obtener opciones globales y del usuario
-                const { data: optionsData, error } = await supabaseClient
+                const {  optionsData, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
                     .eq('field_name', field)
@@ -1945,11 +2023,11 @@
                     throw new Error("Solo el administrador puede crear nuevos usuarios");
                 }
                 
-                const { data: signUpData, error } = await supabaseClient.auth.signUp({
+                const {  signUpData, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password,
                     options: {
-                        data: {
+                         {
                             full_name: fullName,
                             role: 'user'  // Todos los nuevos usuarios serán de rol "user"
                         }
@@ -2049,6 +2127,9 @@
                     userNameElement.textContent = fullName;
                 }
                 
+                // Actualizar tiempo de última actividad
+                updateLastActivity();
+                
                 // Restaurar el estado del botón
                 loginSpinner.classList.add('d-none');
                 loginText.textContent = 'Iniciar Sesión';
@@ -2066,6 +2147,10 @@
         // Función para cerrar sesión
         async function logout() {
             try {
+                // Establecer flag para indicar que estamos cerrando sesión
+                isClosingPage = true;
+                
+                // Cerrar sesión en Supabase
                 const { error } = await supabaseClient.auth.signOut();
                 if (error) throw error;
                 
@@ -2086,9 +2171,17 @@
                 filteredPersonalData = [];
                 document.getElementById('personal-list').innerHTML = '';
                 document.getElementById('user-name').textContent = '';
+                
+                // Ocultar notificación de tiempo de sesión
+                sessionTimeoutNotification.style.display = 'none';
+                sessionWarningShown = false;
+                
             } catch (error) {
                 console.error('Error al cerrar sesión:', error);
                 alert('Error al cerrar sesión: ' + error.message);
+            } finally {
+                // Restablecer flag
+                isClosingPage = false;
             }
         }
 
@@ -2273,6 +2366,43 @@
                         updatePaginationControls();
                     });
                 }
+                
+                // Configurar eventos de actividad del usuario
+                document.addEventListener('mousemove', updateLastActivity);
+                document.addEventListener('keypress', updateLastActivity);
+                document.addEventListener('click', updateLastActivity);
+                document.addEventListener('scroll', updateLastActivity);
+                
+                // Configurar botón para mantener sesión activa
+                if (keepSessionBtn) {
+                    keepSessionBtn.addEventListener('click', function() {
+                        updateLastActivity();
+                        sessionTimeoutNotification.style.display = 'none';
+                        sessionWarningShown = false;
+                    });
+                }
+                
+                // Configurar verificación de actividad periódica
+                setInterval(checkUserActivity, 30000); // Verificar cada 30 segundos
+                
+                // Agregar listener para cierre de pestaña/navegador
+                window.addEventListener('beforeunload', async (event) => {
+                    // Intentar cerrar sesión antes de cerrar la pestaña
+                    try {
+                        // Establecer flag para indicar que estamos cerrando la página
+                        isClosingPage = true;
+                        
+                        // Intentar cerrar sesión
+                        await supabaseClient.auth.signOut();
+                        
+                        // Limpiar datos locales
+                        clearRememberedEmail();
+                        
+                    } catch (error) {
+                        console.error('Error al cerrar sesión en beforeunload:', error);
+                        // No hacemos nada, ya que no podemos mostrar alertas en beforeunload
+                    }
+                });
                 
                 // Cargar todas las opciones de desplegables
                 await loadAllDropdownOptions();
