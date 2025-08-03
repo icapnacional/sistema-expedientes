@@ -935,7 +935,7 @@
         // Función CORREGIDA para verificar si la sesión es válida
         async function isSessionValid() {
             try {
-                // Obtener la sesión CORRECTAMENTE (Supabase v2)
+                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
                 const { data, error } = await supabaseClient.auth.getSession();
                 if (error) throw error;
                 return !!data.session;
@@ -950,7 +950,7 @@
             try {
                 console.log('Verificando sesión...');
                 
-                // Obtener la sesión CORRECTAMENTE (Supabase v2)
+                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
                 const { data, error } = await supabaseClient.auth.getSession();
                 
                 if (error) {
@@ -1283,7 +1283,7 @@
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // Obtener la sesión actual CORRECTAMENTE (Supabase v2)
+                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
@@ -1382,7 +1382,7 @@
                     </tr>
                 `;
                 
-                // Obtener los registros de Supabase
+                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
@@ -1464,8 +1464,8 @@
                     throw new Error('Registro no encontrado');
                 }
                 
-                // Verificar si el usuario tiene permisos para editar
-                const {  sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
+                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !sessionData.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
@@ -1527,7 +1527,7 @@
         // Función CORREGIDA para eliminar un registro de personal
         async function deletePersonal(id) {
             try {
-                // Verificar si el usuario tiene permisos para editar
+                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
@@ -1597,6 +1597,7 @@
         // Función para cargar las opciones de un desplegable
         async function loadDropdownOptions(field) {
             try {
+                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data.session) throw new Error("No hay sesión activa");
                 
@@ -1649,6 +1650,7 @@
         // Función CORREGIDA para mostrar el modal de administración
         async function showManageDropdownModal(field) {
             // Verificar si el usuario tiene permisos para administrar desplegables
+            // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
             const { data, error: sessionError } = await supabaseClient.auth.getSession();
             if (sessionError || !data.session) {
                 alert("No hay sesión activa. Por favor, inicie sesión.");
@@ -1677,6 +1679,7 @@
         // Función para cargar las opciones para el modal de administración
         async function loadDropdownOptionsForManagement(field) {
             try {
+                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data.session) throw new Error("No hay sesión activa");
                 
@@ -1758,6 +1761,7 @@
             }
             
             try {
+                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data.session) throw new Error("No hay sesión activa");
                 
@@ -1863,6 +1867,7 @@
                 hideError();
                 
                 // Solo el administrador puede crear nuevos usuarios
+                // CORRECCIÓN AQUÍ - Estructura correcta para Supabase v2
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data.session) {
                     throw new Error("Debe iniciar sesión para crear nuevos usuarios");
