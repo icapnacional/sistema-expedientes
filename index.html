@@ -721,6 +721,7 @@
                                 <th>Apellidos</th>
                                 <th>Cédula</th>
                                 <th>Jerarquía</th>
+                                <th>Registrado por</th>
                                 <th>Fecha Registro</th>
                                 <th>Acciones</th>
                             </tr>
@@ -1086,7 +1087,7 @@
             }
         }
 
-        // Función para cargar los registros de personal
+        // Función CORREGIDA para cargar los registros de personal
         async function loadPersonal() {
             try {
                 // Asegurar que hay una sesión válida
@@ -1098,7 +1099,7 @@
                 
                 personalList.innerHTML = `
                     <tr>
-                        <td colspan="8" class="text-center py-4">
+                        <td colspan="9" class="text-center py-4">
                             <div class="spinner-border text-primary me-2" role="status">
                                 <span class="visually-hidden">Cargando...</span>
                             </div> Cargando registros...
@@ -1112,19 +1113,27 @@
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                const { data, error } = await supabaseClient
-                    .from('personal')
-                    .select('*')
-                    .eq('user_id', session.user.id)
-                    .order('fecha_registro', { ascending: false });
-                    
+                // Obtener el rol del usuario
+                const userRole = session.user.user_metadata?.role || 'user';
+                currentUserRole = userRole;
+                
+                // Si el usuario es administrador, obtiene TODOS los registros
+                // Si es usuario normal, solo obtiene sus propios registros
+                let query = supabaseClient.from('personal').select('*');
+                
+                if (userRole !== 'admin') {
+                    query = query.eq('user_id', session.user.id);
+                }
+                
+                const { data, error } = await query.order('fecha_registro', { ascending: false });
+                
                 if (error) throw error;
                 
                 // Si no hay registros
                 if (!data || data.length === 0) {
                     personalList.innerHTML = `
                         <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">
+                            <td colspan="9" class="text-center py-4 text-muted">
                                 <i class="fas fa-inbox me-2"></i>No hay registros de personal
                             </td>
                         </tr>
@@ -1146,6 +1155,7 @@
                         <td>${personal.apellidos || 'N/A'}</td>
                         <td>${personal.cedula || 'N/A'}</td>
                         <td>${personal.jerarquia || 'N/A'}</td>
+                        <td>${personal.registrado_por || 'N/A'}</td>
                         <td>${formatDate(personal.fecha_registro)}</td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary edit-personal" data-id="${personal.id}">
@@ -1179,7 +1189,7 @@
                 console.error('Error al cargar registros de personal:', error);
                 document.getElementById('personal-list').innerHTML = `
                     <tr>
-                        <td colspan="8" class="text-center py-4 text-danger">
+                        <td colspan="9" class="text-center py-4 text-danger">
                             <i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}
                         </td>
                     </tr>
@@ -1616,7 +1626,7 @@
                     email: email,
                     password: password,
                     options: {
-                        data: {
+                         {
                             full_name: fullName,
                             role: 'user'  // Todos los nuevos usuarios serán de rol "user"
                         }
