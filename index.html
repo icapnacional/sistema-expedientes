@@ -367,6 +367,110 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        
+        /* Estilos para la tabla de registros */
+        .personal-list-container {
+            margin-top: 20px;
+        }
+        
+        .personal-list-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .personal-list-body {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .personal-item {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            padding: 15px;
+            background-color: white;
+        }
+        
+        .personal-item-header {
+            font-weight: 600;
+            color: #0066CC;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 5px;
+        }
+        
+        .personal-item-info {
+            font-size: 0.9rem;
+            color: #495057;
+        }
+        
+        .personal-item-label {
+            font-weight: 600;
+            margin-right: 5px;
+        }
+        
+        .personal-item-actions {
+            margin-top: 10px;
+            text-align: right;
+        }
+        
+        .personal-item-actions .btn {
+            margin-left: 5px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
+        /* Estilos para el modal de administración */
+        .modal-dialog {
+            max-width: 800px;
+        }
+        
+        .dropdown-option-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .dropdown-option-row input {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        
+        .dropdown-option-row .btn {
+            margin-left: 5px;
+        }
+        
+        .option-list-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .option-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .option-item .btn {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+        }
+        
+        .option-item input {
+            flex-grow: 1;
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
@@ -536,29 +640,25 @@
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="rango" class="form-label">RANGO</label>
-                                    <select class="form-select" id="rango" required>
-                                        <option value="">Seleccione...</option>
-                                        <option value="general">General</option>
-                                        <option value="coronel">Coronel</option>
-                                        <option value="teniente-coronel">Teniente Coronel</option>
-                                        <option value="mayor">Mayor</option>
-                                        <option value="capitan">Capitán</option>
-                                        <option value="teniente">Teniente</option>
-                                        <option value="subteniente">Subteniente</option>
-                                        <option value="sargento-mayor">Sargento Mayor</option>
-                                        <option value="sargento">Sargento</option>
-                                        <option value="cabo">Cabo</option>
-                                        <option value="soldado">Soldado</option>
-                                    </select>
+                                    <div class="input-group">
+                                        <select class="form-select" id="rango" required>
+                                            <option value="">Seleccione...</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="rango">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="sexo" class="form-label">SEXO</label>
-                                    <select class="form-select" id="sexo" required>
-                                        <option value="">Seleccione...</option>
-                                        <option value="masculino">Masculino</option>
-                                        <option value="femenino">Femenino</option>
-                                        <option value="otro">Otro</option>
-                                    </select>
+                                    <div class="input-group">
+                                        <select class="form-select" id="sexo" required>
+                                            <option value="">Seleccione...</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="sexo">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -569,14 +669,14 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label for="estatus-funcionario" class="form-label">ESTATUS DEL FUNCIONARIO</label>
-                                    <select class="form-select" id="estatus-funcionario">
-                                        <option value="">Seleccione...</option>
-                                        <option value="activo">Activo</option>
-                                        <option value="inactivo">Inactivo</option>
-                                        <option value="licencia">En Licencia</option>
-                                        <option value="jubilado">Jubilado</option>
-                                        <option value="retirado">Retirado</option>
-                                    </select>
+                                    <div class="input-group">
+                                        <select class="form-select" id="estatus-funcionario">
+                                            <option value="">Seleccione...</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="estatus-funcionario">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -586,10 +686,6 @@
                                     <div class="input-group">
                                         <select class="form-select" id="tipo-expediente">
                                             <option value="">Seleccione...</option>
-                                            <option value="administrativo">Administrativo</option>
-                                            <option value="disciplinario">Disciplinario</option>
-                                            <option value="penal">Penal</option>
-                                            <option value="civil">Civil</option>
                                         </select>
                                         <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo-expediente">
                                             <i class="fas fa-cog"></i>
@@ -601,11 +697,6 @@
                                     <div class="input-group">
                                         <select class="form-select" id="icap">
                                             <option value="">Seleccione...</option>
-                                            <option value="zulia">Zulia</option>
-                                            <option value="caracas">Caracas</option>
-                                            <option value="miranda">Miranda</option>
-                                            <option value="aragua">Aragua</option>
-                                            <option value="otro">Otro</option>
                                         </select>
                                         <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="icap">
                                             <i class="fas fa-cog"></i>
@@ -620,11 +711,6 @@
                                     <div class="input-group">
                                         <select class="form-select" id="condicion">
                                             <option value="">Seleccione...</option>
-                                            <option value="investigado">Investigado</option>
-                                            <option value="imputado">Imputado</option>
-                                            <option value="acusado">Acusado</option>
-                                            <option value="condenado">Condenado</option>
-                                            <option value="absuelto">Absuelto</option>
                                         </select>
                                         <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="condicion">
                                             <i class="fas fa-cog"></i>
@@ -636,13 +722,6 @@
                                     <div class="input-group">
                                         <select class="form-select" id="anio">
                                             <option value="">Seleccione...</option>
-                                            <option value="2020">2020</option>
-                                            <option value="2021">2021</option>
-                                            <option value="2022">2022</option>
-                                            <option value="2023">2023</option>
-                                            <option value="2024">2024</option>
-                                            <option value="2025">2025</option>
-                                            <option value="otro">Otro</option>
                                         </select>
                                         <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="anio">
                                             <i class="fas fa-cog"></i>
@@ -657,11 +736,6 @@
                                     <div class="input-group">
                                         <select class="form-select" id="servicio">
                                             <option value="">Seleccione...</option>
-                                            <option value="patrullaje">Patrullaje</option>
-                                            <option value="investigacion">Investigación</option>
-                                            <option value="transito">Tránsito</option>
-                                            <option value="seguridad-ciudadana">Seguridad Ciudadana</option>
-                                            <option value="otro">Otro</option>
                                         </select>
                                         <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="servicio">
                                             <i class="fas fa-cog"></i>
@@ -673,9 +747,6 @@
                                     <div class="input-group">
                                         <select class="form-select" id="tipo-falta">
                                             <option value="">Seleccione...</option>
-                                            <option value="leve">Leve</option>
-                                            <option value="grave">Grave</option>
-                                            <option value="muy-grave">Muy Grave</option>
                                         </select>
                                         <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo-falta">
                                             <i class="fas fa-cog"></i>
@@ -690,10 +761,6 @@
                                     <div class="input-group">
                                         <select class="form-select" id="origen-falta">
                                             <option value="">Seleccione...</option>
-                                            <option value="interna">Interna</option>
-                                            <option value="externa">Externa</option>
-                                            <option value="ciudadano">Denuncia Ciudadana</option>
-                                            <option value="fiscalia">Fiscalía</option>
                                         </select>
                                         <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="origen-falta">
                                             <i class="fas fa-cog"></i>
@@ -705,11 +772,6 @@
                                     <div class="input-group">
                                         <select class="form-select" id="falta">
                                             <option value="">Seleccione...</option>
-                                            <option value="abandono-servicio">Abandono de Servicio</option>
-                                            <option value="desobediencia">Desobediencia</option>
-                                            <option value="malversacion">Malversación</option>
-                                            <option value="abuso-autoridad">Abuso de Autoridad</option>
-                                            <option value="corrupcion">Corrupción</option>
                                         </select>
                                         <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="falta">
                                             <i class="fas fa-cog"></i>
@@ -724,12 +786,6 @@
                                     <div class="input-group">
                                         <select class="form-select" id="denunciante">
                                             <option value="">Seleccione...</option>
-                                            <option value="ciudadano">Ciudadano</option>
-                                            <option value="funcionario">Funcionario</option>
-                                            <option value="fiscal">Fiscal</option>
-                                            <option value="juez">Juez</option>
-                                            <option value="familia">Familia</option>
-                                            <option value="otro">Otro</option>
                                         </select>
                                         <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="denunciante">
                                             <i class="fas fa-cog"></i>
@@ -741,10 +797,6 @@
                                     <div class="input-group">
                                         <select class="form-select" id="detenido">
                                             <option value="">Seleccione...</option>
-                                            <option value="si">Sí</option>
-                                            <option value="no">No</option>
-                                            <option value="proceso">En Proceso de Detención</option>
-                                            <option value="libertad">En Libertad</option>
                                         </select>
                                         <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="detenido">
                                             <i class="fas fa-cog"></i>
@@ -759,12 +811,6 @@
                                     <div class="input-group">
                                         <select class="form-select" id="estatus">
                                             <option value="">Seleccione...</option>
-                                            <option value="abierto">Abierto</option>
-                                            <option value="en-proceso">En Proceso</option>
-                                            <option value="cerrado">Cerrado</option>
-                                            <option value="archivado">Archivado</option>
-                                            <option value="en-juicio">En Juicio</option>
-                                            <option value="sentencia">Sentencia</option>
                                         </select>
                                         <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="estatus">
                                             <i class="fas fa-cog"></i>
@@ -776,11 +822,6 @@
                                     <div class="input-group">
                                         <select class="form-select" id="decision">
                                             <option value="">Seleccione...</option>
-                                            <option value="sancion">Sanción</option>
-                                            <option value="archivado">Archivado</option>
-                                            <option value="absuelto">Absuelto</option>
-                                            <option value="proceso">En Proceso</option>
-                                            <option value="otro">Otro</option>
                                         </select>
                                         <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="decision">
                                             <i class="fas fa-cog"></i>
@@ -835,6 +876,29 @@
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+                
+                <!-- Lista de registros existentes -->
+                <div class="card shadow-sm personal-list-container">
+                    <div class="card-header bg-white py-3 personal-list-header">
+                        <h5 class="mb-0">Registros Existentes</h5>
+                    </div>
+                    <div class="card-body personal-list-body">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" class="form-control" id="search-personal" placeholder="Buscar registros...">
+                        </div>
+                        
+                        <div id="personal-list">
+                            <!-- Los registros se cargarán aquí dinámicamente -->
+                            <div class="text-center py-4">
+                                <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
+                                <p class="text-muted">No hay registros almacenados. Registre un nuevo personal para verlo aquí.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1050,18 +1114,20 @@
                             <button type="button" class="btn btn-primary" id="add-option-btn">Agregar</button>
                         </div>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Opción</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="options-list">
-                                <!-- Las opciones se cargarán dinámicamente -->
-                            </tbody>
-                        </table>
+                    
+                    <div class="option-list-container">
+                        <div id="options-list">
+                            <!-- Las opciones se cargarán aquí dinámicamente -->
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="alert alert-info d-flex align-items-center" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <div>
+                                <strong>Nota:</strong> Las opciones que agregues se guardarán permanentemente y estarán disponibles para todos los usuarios.
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -1131,8 +1197,15 @@
         const noResults = document.getElementById('no-results');
         const resultContent = document.getElementById('result-content');
 
-        // Variable para almacenar el campo actual del desplegable
+        // Elementos para la lista de registros
+        const personalList = document.getElementById('personal-list');
+        const searchPersonalInput = document.getElementById('search-personal');
+
+        // Variables globales
         let currentDropdownField = null;
+        let editingPersonalId = null;
+        let personalData = {};
+        let allDropdownOptions = {};
 
         // Función para mostrar mensajes de error
         function showError(message) {
@@ -1317,11 +1390,13 @@
             loginForm.classList.remove('d-none');
         }
 
-        // Función para cargar opciones de desplegables
-        async function loadDropdownOptions(field) {
-            // Para esta versión, usaremos opciones predeterminadas
-            // En una versión más avanzada, estas opciones se cargarían desde una base de datos
+        // Función para cargar opciones de desplegables desde el almacenamiento local
+        function loadDropdownOptions(field) {
+            // Opciones predeterminadas para cada campo
             const defaultOptions = {
+                'rango': ['General', 'Coronel', 'Teniente Coronel', 'Mayor', 'Capitán', 'Teniente', 'Subteniente', 'Sargento Mayor', 'Sargento', 'Cabo', 'Soldado'],
+                'sexo': ['Masculino', 'Femenino', 'Otro'],
+                'estatus-funcionario': ['Activo', 'Inactivo', 'En Licencia', 'Jubilado', 'Retirado'],
                 'tipo-expediente': ['Administrativo', 'Disciplinario', 'Penal', 'Civil'],
                 'icap': ['Zulia', 'Caracas', 'Miranda', 'Aragua', 'Otro'],
                 'condicion': ['Investigado', 'Imputado', 'Acusado', 'Condenado', 'Absuelto'],
@@ -1333,25 +1408,47 @@
                 'denunciante': ['Ciudadano', 'Funcionario', 'Fiscal', 'Juez', 'Familia', 'Otro'],
                 'detenido': ['Sí', 'No', 'En Proceso de Detención', 'En Libertad'],
                 'estatus': ['Abierto', 'En Proceso', 'Cerrado', 'Archivado', 'En Juicio', 'Sentencia'],
-                'decision': ['Sanción', 'Archivado', 'Absuelto', 'En Proceso', 'Otro'],
-                'estatus-funcionario': ['Activo', 'Inactivo', 'En Licencia', 'Jubilado', 'Retirado']
+                'decision': ['Sanción', 'Archivado', 'Absuelto', 'En Proceso', 'Otro']
             };
 
-            const options = defaultOptions[field] || [];
-            const selectElement = document.getElementById(field);
+            // Obtener opciones del almacenamiento local o usar las predeterminadas
+            const storedOptions = JSON.parse(localStorage.getItem(`dropdown_options_${field}`)) || [];
+            const allOptions = [...new Set([...defaultOptions[field] || [], ...storedOptions])];
             
+            // Actualizar el desplegable
+            const selectElement = document.getElementById(field);
             if (selectElement) {
                 // Limpiar opciones actuales (excepto la opción predeterminada)
                 selectElement.innerHTML = '<option value="">Seleccione...</option>';
                 
                 // Añadir opciones
-                options.forEach(option => {
+                allOptions.forEach(option => {
                     const optionElement = document.createElement('option');
                     optionElement.value = option.toLowerCase().replace(/\s+/g, '-');
                     optionElement.textContent = option;
                     selectElement.appendChild(optionElement);
                 });
             }
+            
+            // Guardar en el objeto global
+            allDropdownOptions[field] = allOptions;
+            return allOptions;
+        }
+
+        // Función para guardar una nueva opción en el almacenamiento local
+        function saveDropdownOption(field, option) {
+            const currentOptions = JSON.parse(localStorage.getItem(`dropdown_options_${field}`)) || [];
+            if (!currentOptions.includes(option)) {
+                currentOptions.push(option);
+                localStorage.setItem(`dropdown_options_${field}`, JSON.stringify(currentOptions));
+            }
+        }
+
+        // Función para eliminar una opción del almacenamiento local
+        function removeDropdownOption(field, option) {
+            const currentOptions = JSON.parse(localStorage.getItem(`dropdown_options_${field}`)) || [];
+            const updatedOptions = currentOptions.filter(opt => opt !== option);
+            localStorage.setItem(`dropdown_options_${field}`, JSON.stringify(updatedOptions));
         }
 
         // Función para abrir el modal de administración de desplegables
@@ -1362,7 +1459,7 @@
             ).join(' ');
             
             // Cargar opciones actuales
-            loadDropdownOptions(field);
+            const options = loadDropdownOptions(field);
             
             // Mostrar el modal
             const modal = new bootstrap.Modal(manageDropdownModal);
@@ -1374,43 +1471,81 @@
 
         // Función para actualizar la lista de opciones en el modal
         function updateOptionsList(field) {
-            const defaultOptions = {
-                'tipo-expediente': ['Administrativo', 'Disciplinario', 'Penal', 'Civil'],
-                'icap': ['Zulia', 'Caracas', 'Miranda', 'Aragua', 'Otro'],
-                'condicion': ['Investigado', 'Imputado', 'Acusado', 'Condenado', 'Absuelto'],
-                'anio': ['2020', '2021', '2022', '2023', '2024', '2025', 'Otro'],
-                'servicio': ['Patrullaje', 'Investigación', 'Tránsito', 'Seguridad Ciudadana', 'Otro'],
-                'tipo-falta': ['Leve', 'Grave', 'Muy Grave'],
-                'origen-falta': ['Interna', 'Externa', 'Denuncia Ciudadana', 'Fiscalía'],
-                'falta': ['Abandono de Servicio', 'Desobediencia', 'Malversación', 'Abuso de Autoridad', 'Corrupción'],
-                'denunciante': ['Ciudadano', 'Funcionario', 'Fiscal', 'Juez', 'Familia', 'Otro'],
-                'detenido': ['Sí', 'No', 'En Proceso de Detención', 'En Libertad'],
-                'estatus': ['Abierto', 'En Proceso', 'Cerrado', 'Archivado', 'En Juicio', 'Sentencia'],
-                'decision': ['Sanción', 'Archivado', 'Absuelto', 'En Proceso', 'Otro'],
-                'estatus-funcionario': ['Activo', 'Inactivo', 'En Licencia', 'Jubilado', 'Retirado']
-            };
-
-            const options = defaultOptions[field] || [];
+            const options = loadDropdownOptions(field);
             optionsList.innerHTML = '';
             
             options.forEach((option, index) => {
-                const row = document.createElement('tr');
+                // No mostrar la opción vacía
+                if (option === '') return;
+                
+                const row = document.createElement('div');
+                row.className = 'option-item';
                 row.innerHTML = `
-                    <td>${option}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-danger delete-option" data-index="${index}">
+                    <div class="dropdown-option-row">
+                        <input type="text" class="form-control" value="${option}" data-option="${option}">
+                        <button class="btn btn-sm btn-outline-warning edit-option" data-option="${option}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger delete-option" data-option="${option}">
                             <i class="fas fa-trash"></i>
                         </button>
-                    </td>
+                    </div>
                 `;
                 optionsList.appendChild(row);
             });
             
-            // Configurar eventos para los botones de eliminación
+            // Configurar eventos para los botones de edición y eliminación
+            document.querySelectorAll('.edit-option').forEach(button => {
+                button.addEventListener('click', function() {
+                    const option = this.getAttribute('data-option');
+                    const input = this.parentElement.querySelector('input');
+                    input.removeAttribute('readonly');
+                    input.focus();
+                    input.select();
+                    
+                    // Cambiar el botón a guardar
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                    this.classList.replace('btn-outline-warning', 'btn-outline-success');
+                    this.classList.replace('edit-option', 'save-option');
+                });
+            });
+            
+            document.querySelectorAll('.save-option').forEach(button => {
+                button.addEventListener('click', function() {
+                    const option = this.getAttribute('data-option');
+                    const input = this.parentElement.querySelector('input');
+                    const newOption = input.value.trim();
+                    
+                    if (!newOption) {
+                        alert('Por favor, ingrese una opción válida');
+                        return;
+                    }
+                    
+                    // Actualizar la opción
+                    removeDropdownOption(currentDropdownField, option);
+                    saveDropdownOption(currentDropdownField, newOption);
+                    
+                    // Recargar opciones
+                    updateOptionsList(currentDropdownField);
+                    loadDropdownOptions(currentDropdownField);
+                    
+                    // Cambiar el botón a editar
+                    this.innerHTML = '<i class="fas fa-edit"></i>';
+                    this.classList.replace('btn-outline-success', 'btn-outline-warning');
+                    this.classList.replace('save-option', 'edit-option');
+                });
+            });
+            
             document.querySelectorAll('.delete-option').forEach(button => {
                 button.addEventListener('click', function() {
-                    const index = this.getAttribute('data-index');
-                    removeOption(field, index);
+                    const option = this.getAttribute('data-option');
+                    if (confirm('¿Está seguro de que desea eliminar esta opción?')) {
+                        removeDropdownOption(currentDropdownField, option);
+                        
+                        // Recargar opciones
+                        updateOptionsList(currentDropdownField);
+                        loadDropdownOptions(currentDropdownField);
+                    }
                 });
             });
         }
@@ -1422,8 +1557,8 @@
                 return;
             }
             
-            // En una versión más avanzada, esto se guardaría en la base de datos
-            alert(`Opción "${option}" añadida exitosamente`);
+            // Guardar la opción
+            saveDropdownOption(field, option);
             
             // Recargar opciones
             updateOptionsList(field);
@@ -1431,17 +1566,6 @@
             
             // Limpiar el campo de entrada
             newOptionInput.value = '';
-        }
-
-        // Función para eliminar una opción
-        function removeOption(field, index) {
-            if (confirm('¿Está seguro de que desea eliminar esta opción?')) {
-                alert('Opción eliminada exitosamente');
-                
-                // Recargar opciones
-                updateOptionsList(field);
-                loadDropdownOptions(field);
-            }
         }
 
         // Función para formatear la fecha
@@ -1469,29 +1593,10 @@
                     return;
                 }
                 
-                // Obtener la sesión actual
-                const {  { session }, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError) throw sessionError;
-                if (!session) throw new Error('No hay sesión activa');
-                
-                // Buscar en la base de datos
-                const { data, error } = await supabaseClient
-                    .from('personal')
-                    .select('*')
-                    .eq('cedula', cedula)
-                    .eq('user_id', session.user.id)
-                    .single();
-                
-                if (error) {
-                    if (error.code === 'PGRST116') {
-                        // No se encontró el registro
-                        resultSection.style.display = 'block';
-                        noResults.style.display = 'block';
-                        resultContent.style.display = 'none';
-                    } else {
-                        throw error;
-                    }
-                } else {
+                // Simular búsqueda en los datos almacenados
+                if (personalData[cedula]) {
+                    const data = personalData[cedula];
+                    
                     // Mostrar los resultados
                     resultSection.style.display = 'block';
                     noResults.style.display = 'none';
@@ -1534,6 +1639,11 @@
                     } else {
                         fotoElement.src = 'https://placehold.co/150x150/003366/white?text=Foto+No+Disponible';
                     }
+                } else {
+                    // No se encontró el registro
+                    resultSection.style.display = 'block';
+                    noResults.style.display = 'block';
+                    resultContent.style.display = 'none';
                 }
             } catch (error) {
                 console.error('Error al buscar por cédula:', error);
@@ -1545,6 +1655,365 @@
             } finally {
                 // Ocultar capa de carga
                 document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
+
+        // Función para guardar los datos del personal
+        async function savePersonal(e) {
+            e.preventDefault();
+            
+            try {
+                // Mostrar capa de carga
+                document.getElementById('loading-overlay').style.display = 'flex';
+                
+                // Obtener los valores del formulario
+                const nombres = document.getElementById('nombres').value;
+                const apellidos = document.getElementById('apellidos').value;
+                const cedula = document.getElementById('cedula').value;
+                const fecha_nacimiento = document.getElementById('fecha-nacimiento').value;
+                const rango = document.getElementById('rango').value;
+                const sexo = document.getElementById('sexo').value;
+                const fecha_inicio = document.getElementById('fecha-inicio').value;
+                const estatus_funcionario = document.getElementById('estatus-funcionario').value;
+                const tipo_expediente = document.getElementById('tipo-expediente').value;
+                const icap = document.getElementById('icap').value;
+                const condicion = document.getElementById('condicion').value;
+                const anio = document.getElementById('anio').value;
+                const servicio = document.getElementById('servicio').value;
+                const tipo_falta = document.getElementById('tipo-falta').value;
+                const origen_falta = document.getElementById('origen-falta').value;
+                const falta = document.getElementById('falta').value;
+                const denunciante = document.getElementById('denunciante').value;
+                const detenido = document.getElementById('detenido').value;
+                const estatus = document.getElementById('estatus').value;
+                const decision = document.getElementById('decision').value;
+                const expediente_numero = document.getElementById('expediente-numero').value;
+                const expediente_penal = document.getElementById('expediente-penal').value;
+                const registrado_por = document.getElementById('registrado-por').value;
+                const sustanciador = document.getElementById('sustanciador').value;
+                const remision = document.getElementById('remision').value;
+                const resena = document.getElementById('resena').value;
+                const causa = document.getElementById('causa').value;
+                const foto = document.getElementById('profile-picture').src;
+                
+                // Validar campos obligatorios
+                if (!nombres || !apellidos || !cedula || !rango || !sexo) {
+                    alert('Por favor, complete los campos obligatorios');
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    return;
+                }
+                
+                // Crear objeto con los datos
+                const personalData = {
+                    nombres,
+                    apellidos,
+                    cedula,
+                    fecha_nacimiento,
+                    rango,
+                    sexo,
+                    fecha_inicio,
+                    estatus_funcionario,
+                    tipo_expediente,
+                    icap,
+                    condicion,
+                    anio,
+                    servicio,
+                    tipo_falta,
+                    origen_falta,
+                    falta,
+                    denunciante,
+                    detenido,
+                    estatus,
+                    decision,
+                    expediente_numero,
+                    expediente_penal,
+                    registrado_por,
+                    sustanciador,
+                    remision,
+                    resena,
+                    causa,
+                    foto,
+                    fecha_registro: new Date().toISOString()
+                };
+                
+                // Guardar en el almacenamiento local
+                const storedData = JSON.parse(localStorage.getItem('personal_data') || '{}');
+                storedData[cedula] = personalData;
+                localStorage.setItem('personal_data', JSON.stringify(storedData));
+                
+                // Actualizar el objeto global
+                personalData[cedula] = personalData;
+                
+                // Mostrar mensaje de éxito
+                alert('Datos guardados correctamente');
+                
+                // Resetear el formulario
+                document.getElementById('personal-form').reset();
+                document.getElementById('profile-picture').src = 'https://placehold.co/200x200/003366/white?text=Foto+Personal';
+                
+                // Recargar la lista de registros
+                loadPersonalRecords();
+                
+                // Limpiar el ID de edición
+                editingPersonalId = null;
+                
+            } catch (error) {
+                console.error('Error al guardar los datos:', error);
+                alert(`Error al guardar: ${error.message}`);
+            } finally {
+                // Ocultar capa de carga
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
+
+        // Función para cargar los registros de personal
+        function loadPersonalRecords() {
+            try {
+                // Mostrar capa de carga
+                document.getElementById('loading-overlay').style.display = 'flex';
+                
+                // Obtener datos del almacenamiento local
+                const storedData = JSON.parse(localStorage.getItem('personal_data') || '{}');
+                personalData = storedData;
+                
+                // Limpiar la lista actual
+                personalList.innerHTML = '';
+                
+                // Verificar si hay registros
+                const records = Object.values(storedData);
+                if (records.length === 0) {
+                    personalList.innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
+                            <p class="text-muted">No hay registros almacenados. Registre un nuevo personal para verlo aquí.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Ordenar por fecha de registro (más reciente primero)
+                records.sort((a, b) => new Date(b.fecha_registro) - new Date(a.fecha_registro));
+                
+                // Crear elementos para cada registro
+                records.forEach(data => {
+                    const personalItem = document.createElement('div');
+                    personalItem.className = 'personal-item';
+                    personalItem.innerHTML = `
+                        <div class="personal-item-header">
+                            ${data.nombres} ${data.apellidos}
+                        </div>
+                        <div class="personal-item-info">
+                            <span class="personal-item-label">Cédula:</span> ${data.cedula} |
+                            <span class="personal-item-label">Rango:</span> ${data.rango} |
+                            <span class="personal-item-label">Fecha:</span> ${formatDate(data.fecha_registro)}
+                        </div>
+                        <div class="personal-item-actions">
+                            <button class="btn btn-sm btn-outline-primary view-record" data-cedula="${data.cedula}">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning edit-record" data-cedula="${data.cedula}">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-record" data-cedula="${data.cedula}">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    `;
+                    personalList.appendChild(personalItem);
+                });
+                
+                // Configurar eventos para los botones de acción
+                document.querySelectorAll('.view-record').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const cedula = this.getAttribute('data-cedula');
+                        viewRecord(cedula);
+                    });
+                });
+                
+                document.querySelectorAll('.edit-record').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const cedula = this.getAttribute('data-cedula');
+                        editRecord(cedula);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-record').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const cedula = this.getAttribute('data-cedula');
+                        deleteRecord(cedula);
+                    });
+                });
+                
+                // Configurar búsqueda en la lista
+                if (searchPersonalInput) {
+                    searchPersonalInput.addEventListener('input', function() {
+                        const searchTerm = this.value.toLowerCase();
+                        const rows = document.querySelectorAll('.personal-item');
+                        
+                        rows.forEach(row => {
+                            const cells = row.querySelectorAll('.personal-item-info, .personal-item-header');
+                            let match = false;
+                            
+                            for (let i = 0; i < cells.length; i++) {
+                                if (cells[i].textContent.toLowerCase().includes(searchTerm)) {
+                                    match = true;
+                                    break;
+                                }
+                            }
+                            
+                            row.style.display = match ? '' : 'none';
+                        });
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error al cargar los registros:', error);
+                personalList.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-2x text-danger mb-3"></i>
+                        <p class="text-danger">Error al cargar los registros: ${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                // Ocultar capa de carga
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
+
+        // Función para ver un registro
+        function viewRecord(cedula) {
+            if (personalData[cedula]) {
+                const data = personalData[cedula];
+                
+                // Mostrar los resultados
+                resultSection.style.display = 'block';
+                noResults.style.display = 'none';
+                resultContent.style.display = 'block';
+                
+                // Rellenar los campos con los datos encontrados
+                document.getElementById('result-nombres').textContent = data.nombres || 'N/A';
+                document.getElementById('result-apellidos').textContent = data.apellidos || 'N/A';
+                document.getElementById('result-cedula').textContent = data.cedula || 'N/A';
+                document.getElementById('result-fecha-nacimiento').textContent = formatDate(data.fecha_nacimiento);
+                document.getElementById('result-rango').textContent = data.rango || 'N/A';
+                document.getElementById('result-sexo').textContent = data.sexo || 'N/A';
+                document.getElementById('result-fecha-inicio').textContent = formatDate(data.fecha_inicio);
+                document.getElementById('result-estatus-funcionario').textContent = data.estatus_funcionario || 'N/A';
+                document.getElementById('result-tipo-expediente').textContent = data.tipo_expediente || 'N/A';
+                document.getElementById('result-icap').textContent = data.icap || 'N/A';
+                document.getElementById('result-condicion').textContent = data.condicion || 'N/A';
+                document.getElementById('result-anio').textContent = data.anio || 'N/A';
+                document.getElementById('result-servicio').textContent = data.servicio || 'N/A';
+                document.getElementById('result-tipo-falta').textContent = data.tipo_falta || 'N/A';
+                document.getElementById('result-origen-falta').textContent = data.origen_falta || 'N/A';
+                document.getElementById('result-falta').textContent = data.falta || 'N/A';
+                document.getElementById('result-denunciante').textContent = data.denunciante || 'N/A';
+                document.getElementById('result-detenido').textContent = data.detenido || 'N/A';
+                document.getElementById('result-estatus').textContent = data.estatus || 'N/A';
+                document.getElementById('result-decision').textContent = data.decision || 'N/A';
+                document.getElementById('result-expediente-numero').textContent = data.expediente_numero || 'N/A';
+                document.getElementById('result-expediente-penal').textContent = data.expediente_penal || 'N/A';
+                document.getElementById('result-registrado-por').textContent = data.registrado_por || 'N/A';
+                document.getElementById('result-sustanciador').textContent = data.sustanciador || 'N/A';
+                document.getElementById('result-remision').textContent = data.remision || 'N/A';
+                document.getElementById('result-resena').textContent = data.resena || 'N/A';
+                document.getElementById('result-causa').textContent = data.causa || 'N/A';
+                document.getElementById('result-fecha-registro').textContent = formatDate(data.fecha_registro);
+                
+                // Establecer la foto
+                const fotoElement = document.getElementById('result-foto');
+                if (data.foto && data.foto.startsWith('http')) {
+                    fotoElement.src = data.foto;
+                } else {
+                    fotoElement.src = 'https://placehold.co/150x150/003366/white?text=Foto+No+Disponible';
+                }
+                
+                // Cambiar a la pestaña de consultas
+                const consultasTab = document.getElementById('consultas-tab');
+                const consultasTabInstance = bootstrap.Tab.getOrCreateInstance(consultasTab);
+                consultasTabInstance.show();
+            }
+        }
+
+        // Función para editar un registro
+        function editRecord(cedula) {
+            if (personalData[cedula]) {
+                const data = personalData[cedula];
+                
+                // Rellenar el formulario con los datos
+                document.getElementById('nombres').value = data.nombres || '';
+                document.getElementById('apellidos').value = data.apellidos || '';
+                document.getElementById('cedula').value = data.cedula || '';
+                document.getElementById('fecha-nacimiento').value = data.fecha_nacimiento || '';
+                document.getElementById('rango').value = data.rango || '';
+                document.getElementById('sexo').value = data.sexo || '';
+                document.getElementById('fecha-inicio').value = data.fecha_inicio || '';
+                document.getElementById('estatus-funcionario').value = data.estatus_funcionario || '';
+                document.getElementById('tipo-expediente').value = data.tipo_expediente || '';
+                document.getElementById('icap').value = data.icap || '';
+                document.getElementById('condicion').value = data.condicion || '';
+                document.getElementById('anio').value = data.anio || '';
+                document.getElementById('servicio').value = data.servicio || '';
+                document.getElementById('tipo-falta').value = data.tipo_falta || '';
+                document.getElementById('origen-falta').value = data.origen_falta || '';
+                document.getElementById('falta').value = data.falta || '';
+                document.getElementById('denunciante').value = data.denunciante || '';
+                document.getElementById('detenido').value = data.detenido || '';
+                document.getElementById('estatus').value = data.estatus || '';
+                document.getElementById('decision').value = data.decision || '';
+                document.getElementById('expediente-numero').value = data.expediente_numero || '';
+                document.getElementById('expediente-penal').value = data.expediente_penal || '';
+                document.getElementById('registrado-por').value = data.registrado_por || '';
+                document.getElementById('sustanciador').value = data.sustanciador || '';
+                document.getElementById('remision').value = data.remision || '';
+                document.getElementById('resena').value = data.resena || '';
+                document.getElementById('causa').value = data.causa || '';
+                
+                // Establecer la foto
+                if (data.foto && data.foto.startsWith('http')) {
+                    document.getElementById('profile-picture').src = data.foto;
+                }
+                
+                // Establecer el ID de edición
+                editingPersonalId = cedula;
+                
+                // Cambiar a la pestaña de registro
+                const registroTab = document.getElementById('registro-tab');
+                const registroTabInstance = bootstrap.Tab.getOrCreateInstance(registroTab);
+                registroTabInstance.show();
+                
+                // Desplazar a la sección del formulario
+                document.getElementById('personal-form').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Función para eliminar un registro
+        function deleteRecord(cedula) {
+            if (confirm('¿Está seguro de que desea eliminar este registro?')) {
+                try {
+                    // Mostrar capa de carga
+                    document.getElementById('loading-overlay').style.display = 'flex';
+                    
+                    // Eliminar del objeto global
+                    delete personalData[cedula];
+                    
+                    // Eliminar del almacenamiento local
+                    const storedData = JSON.parse(localStorage.getItem('personal_data') || '{}');
+                    delete storedData[cedula];
+                    localStorage.setItem('personal_data', JSON.stringify(storedData));
+                    
+                    // Recargar la lista de registros
+                    loadPersonalRecords();
+                    
+                    alert('Registro eliminado correctamente');
+                    
+                } catch (error) {
+                    console.error('Error al eliminar el registro:', error);
+                    alert(`Error al eliminar el registro: ${error.message}`);
+                } finally {
+                    // Ocultar capa de carga
+                    document.getElementById('loading-overlay').style.display = 'none';
+                }
             }
         }
 
@@ -1622,6 +2091,35 @@
                         }
                     });
                 }
+                
+                // Configurar el formulario de registro de personal
+                const personalForm = document.getElementById('personal-form');
+                if (personalForm) {
+                    // Eliminar cualquier listener existente
+                    const formClone = personalForm.cloneNode(true);
+                    personalForm.parentNode.replaceChild(formClone, personalForm);
+                    
+                    // Añadir el nuevo listener
+                    formClone.addEventListener('submit', savePersonal);
+                }
+                
+                // Cargar todas las opciones de desplegables
+                const dropdownFields = [
+                    'rango', 'sexo', 'estatus-funcionario', 'tipo-expediente', 'icap', 
+                    'condicion', 'anio', 'servicio', 'tipo-falta', 'origen-falta', 
+                    'falta', 'denunciante', 'detenido', 'estatus', 'decision'
+                ];
+                
+                dropdownFields.forEach(field => {
+                    loadDropdownOptions(field);
+                });
+                
+                // Cargar datos almacenados
+                const storedData = JSON.parse(localStorage.getItem('personal_data') || '{}');
+                personalData = storedData;
+                
+                // Cargar la lista de registros
+                loadPersonalRecords();
                 
                 // Configurar búsqueda por cédula
                 if (searchBtn) {
