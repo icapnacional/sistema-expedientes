@@ -3,756 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión de Expedientes</title>
+    <title>Administración de Desplegables</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --primary-color: #003366;
-            --secondary-color: #0066CC;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-        }
-        
-        body {
-            background-color: #f5f7fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-        }
-        
-        .login-container {
-            max-width: 450px;
-            margin: 20px auto 50px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 25px 20px;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        
-        .centered-title {
-            color: white;
-            font-size: 2.5rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-            position: relative;
-            display: inline-block;
-            padding: 0 20px;
-        }
-        
-        .centered-title:after {
-            content: "";
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 3px;
-            background: linear-gradient(to right, white, rgba(255, 255, 255, 0.5));
-            border-radius: 1.5px;
-        }
-        
-        .centered-subtitle {
-            color: rgba(255, 255, 255, 0.92);
-            font-size: 1.25rem;
-            font-weight: 400;
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 0 15px;
-            opacity: 0.9;
-            letter-spacing: 0.3px;
-            line-height: 1.5;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-        }
-        
-        .logo-container {
-            padding: 15px 0;
-            text-align: center;
-        }
-        
-        .logo-container img {
-            max-width: 200px;
-            height: auto;
-            max-height: 80px;
-        }
-        
-        .form-floating > label {
-            padding: 1rem 0.75rem;
-        }
-        
-        .form-floating > .form-control,
-        .form-floating > .form-select {
-            padding: 1rem 0.75rem;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-            border: none;
-            padding: 0.75rem 0;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 51, 102, 0.2);
-            background: linear-gradient(to right, #002244, #0055AA);
-        }
-        
-        .error-message {
-            background-color: #fff5f5;
-            border-left: 4px solid #dc3545;
-            padding: 10px 15px;
-            margin-bottom: 20px;
-            border-radius: 0 4px 4px 0;
-            display: none;
-        }
-        
-        .panel-container {
-            max-width: 1200px;
-            margin: 30px auto;
-        }
-        
-        .card {
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            margin-bottom: 25px;
-            border: none;
-            overflow: hidden;
-        }
-        
-        .card-header {
-            background: white;
-            border-bottom: 1px solid #eee;
-            padding: 15px 20px;
-            font-weight: 600;
-        }
-        
-        .profile-picture-container {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .profile-picture-container img {
-            border: 3px solid var(--secondary-color);
-            transition: all 0.3s ease;
-        }
-        
-        .profile-picture-container:hover img {
-            transform: scale(1.03);
-        }
-        
-        .upload-icon {
-            position: absolute;
-            bottom: 5px;
-            right: 35px;
-        }
-        
-        #personal-list td {
-            vertical-align: middle;
-        }
-        
-        #personal-list img {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-        }
-        
-        .table th {
-            font-weight: 600;
-            background-color: #f8f9fa;
-        }
-        
-        .table-hover tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .form-label {
-            font-weight: 500;
-            color: #495057;
-        }
-        
-        .form-control, .form-select {
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 20px 0;
-            color: #6c757d;
-            font-size: 14px;
-            margin-top: 40px;
-            border-top: 1px solid #eee;
-        }
-        
-        .footer-line {
-            height: 1px;
-            background: linear-gradient(to right, transparent, #ced4da, transparent);
-            margin-bottom: 15px;
-        }
-        
-        .security-info {
-            background: rgba(0, 51, 102, 0.05);
-            border-left: 3px solid var(--secondary-color);
-            padding: 15px;
-            border-radius: 0 8px 8px 0;
-            margin-top: 20px;
-            font-size: 14px;
-        }
-        
-        .security-icon {
-            color: var(--secondary-color);
-            margin-right: 8px;
-        }
-        
-        @media (max-width: 576px) {
-            .login-container {
-                padding: 30px 20px;
-                margin: 20px;
-            }
-            
-            .footer {
-                font-size: 16px;
-                padding: 20px 0;
-            }
-        }
-        
-        /* Estilos para "Recordar mis credenciales" */
-        .form-check-input {
-            margin-top: 6px;
-            cursor: pointer;
-        }
-        
-        .form-check-label {
-            cursor: pointer;
-            color: #6c757d;
-            transition: all 0.2s;
-        }
-        
-        .form-check-input:focus {
-            box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.25);
-        }
-        
-        /* Estilos para los controles de desplegables */
-        .input-group {
+        .option-item {
             display: flex;
+            justify-content: space-between;
             align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
         }
         
-        .input-group .form-select {
-            flex-grow: 1;
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
-        }
-        
-        .manage-dropdown {
-            height: calc(2.5em + 2px);
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-            border-left: none;
+        .delete-option {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <!-- Header con título centrado -->
-    <div class="header" id="main-title-section">
-        <h1 class="centered-title">SISTEMA DE GESTIÓN DE EXPEDIENTES</h1>
-        <p class="centered-subtitle">Registre y gestione expedientes de manera sencilla</p>
-    </div>
-    
-    <!-- Pantalla de Login -->
-    <div class="container" id="login-screen">
-        <div class="login-container">
-            <div class="card border-0">
-                <div class="card-body p-4">
-                    <!-- Contenedor del logo -->
-                    <div class="logo-container text-center mb-4">
-                        <img src="https://raw.githubusercontent.com/gamakingrock/sistema-expedientes/main/images/policia-nacional-bolivariana.png" 
-                             alt="Logo Policía Nacional Bolivariana" 
-                             class="img-fluid">
-                    </div>
-                    
-                    <h2 class="card-title text-center mb-4">Iniciar Sesión</h2>
-                    <div id="error-message" class="error-message">
-                        <i class="fas fa-exclamation-circle me-2"></i><span id="error-text"></span>
-                    </div>
-                    <form id="login-form">
-                        <div class="mb-3">
-                            <div class="form-floating">
-                                <input type="email" class="form-control" id="email" required>
-                                <label for="email"><i class="fas fa-envelope me-2"></i>Correo electrónico</label>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-floating">
-                                <input type="password" class="form-control" id="password" required>
-                                <label for="password"><i class="fas fa-lock me-2"></i>Contraseña</label>
-                            </div>
-                        </div>
-                        <!-- Checkbox para "Recordar mis credenciales" -->
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="remember-credentials">
-                            <label class="form-check-label" for="remember-credentials">Recordar mis credenciales</label>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <span id="login-spinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
-                            <span id="login-text">Iniciar Sesión</span>
-                        </button>
-                        <div class="mt-3 text-center">
-                            <button type="button" class="btn btn-link" id="show-register">¿No tienes cuenta? Regístrate</button>
-                        </div>
-                    </form>
-                    
-                    <!-- Formulario de Registro -->
-                    <form id="register-form" class="d-none mt-4">
-                        <h3 class="text-center mb-3">Crear Cuenta</h3>
-                        <div class="mb-3">
-                            <div class="form-floating">
-                                <input type="email" class="form-control" id="reg-email" required>
-                                <label for="reg-email"><i class="fas fa-envelope me-2"></i>Correo electrónico</label>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-floating">
-                                <input type="password" class="form-control" id="reg-password" required>
-                                <label for="reg-password"><i class="fas fa-lock me-2"></i>Contraseña</label>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-floating">
-                                <input type="text" class="form-control" id="reg-name" required>
-                                <label for="reg-name"><i class="fas fa-user me-2"></i>Nombre completo</label>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Crear Cuenta</button>
-                        <div class="mt-3 text-center">
-                            <button type="button" class="btn btn-link" id="show-login">¿Ya tienes cuenta? Inicia sesión</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Información de seguridad -->
-            <div class="security-info">
-                <i class="fas fa-shield-alt security-icon"></i>
-                Su información está protegida con encriptación de extremo a extremo
-            </div>
-        </div>
-    </div>
-    
-    <!-- Panel Principal (oculto al inicio) -->
-    <div class="container panel-container" id="main-panel" style="display: none;">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Bienvenido, <span id="user-name" class="text-primary"></span></h2>
-            <button id="logout-btn" class="btn btn-outline-danger">
-                <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
-            </button>
-        </div>
-        
-        <!-- Navegación entre pestañas -->
-        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="registro-tab" data-bs-toggle="tab" data-bs-target="#registro" type="button" role="tab">Registrar Personal</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="panel-tab" data-bs-toggle="tab" data-bs-target="#panel" type="button" role="tab">Panel de Control</button>
-            </li>
-        </ul>
-        
-        <!-- Contenido de las pestañas -->
-        <div class="tab-content" id="myTabContent">
-            <!-- Pestaña de Registro de Personal -->
-            <div class="tab-pane fade show active" id="registro" role="tabpanel">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="mb-0">Registrar Personal</h5>
-                    </div>
-                    <div class="card-body">
-                        <form id="personal-form">
-                            <div class="row mb-4">
-                                <div class="col-md-4 text-center">
-                                    <div class="profile-picture-container mb-3 position-relative">
-                                        <img src="https://placehold.co/200x200/003366/white?text=Foto+Personal" 
-                                             alt="Foto del personal" 
-                                             class="img-fluid rounded-circle" 
-                                             id="profile-picture"
-                                             style="width: 180px; height: 180px; object-fit: cover;">
-                                        <div class="upload-icon" style="position: absolute; bottom: 5px; right: 35px;">
-                                            <label for="profile-picture-upload" class="btn btn-primary btn-sm rounded-circle p-2" 
-                                                   style="cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                                                <i class="fas fa-camera"></i>
-                                            </label>
-                                            <input type="file" id="profile-picture-upload" class="d-none" accept="image/*">
-                                        </div>
-                                    </div>
-                                    <p class="text-muted small">Haga clic en el ícono para subir una foto</p>
-                                </div>
-                                <div class="col-md-8">
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="nombres" class="form-label">NOMBRES</label>
-                                            <input type="text" class="form-control" id="nombres" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="apellidos" class="form-label">APELLIDOS</label>
-                                            <input type="text" class="form-control" id="apellidos" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="cedula" class="form-label">CÉDULA DE IDENTIDAD</label>
-                                            <input type="text" class="form-control" id="cedula" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="fecha-nacimiento" class="form-label">FECHA DE NACIMIENTO</label>
-                                            <input type="date" class="form-control" id="fecha-nacimiento">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="rango" class="form-label">RANGO</label>
-                                    <select class="form-select" id="rango" required>
-                                        <option value="">Seleccione...</option>
-                                        <option value="general">General</option>
-                                        <option value="coronel">Coronel</option>
-                                        <option value="teniente-coronel">Teniente Coronel</option>
-                                        <option value="mayor">Mayor</option>
-                                        <option value="capitan">Capitán</option>
-                                        <option value="teniente">Teniente</option>
-                                        <option value="subteniente">Subteniente</option>
-                                        <option value="sargento-mayor">Sargento Mayor</option>
-                                        <option value="sargento">Sargento</option>
-                                        <option value="cabo">Cabo</option>
-                                        <option value="soldado">Soldado</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="sexo" class="form-label">SEXO</label>
-                                    <select class="form-select" id="sexo" required>
-                                        <option value="">Seleccione...</option>
-                                        <option value="masculino">Masculino</option>
-                                        <option value="femenino">Femenino</option>
-                                        <option value="otro">Otro</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="fecha-inicio" class="form-label">FECHA DE INICIO</label>
-                                    <input type="date" class="form-control" id="fecha-inicio">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="estatus-funcionario" class="form-label">ESTATUS DEL FUNCIONARIO</label>
-                                    <select class="form-select" id="estatus-funcionario">
-                                        <option value="">Seleccione...</option>
-                                        <option value="activo">Activo</option>
-                                        <option value="inactivo">Inactivo</option>
-                                        <option value="licencia">En Licencia</option>
-                                        <option value="jubilado">Jubilado</option>
-                                        <option value="retirado">Retirado</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="tipo-expediente" class="form-label">TIPO DE EXPEDIENTE</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="tipo-expediente">
-                                            <option value="">Seleccione...</option>
-                                            <option value="administrativo">Administrativo</option>
-                                            <option value="disciplinario">Disciplinario</option>
-                                            <option value="penal">Penal</option>
-                                            <option value="civil">Civil</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo-expediente">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="icap" class="form-label">ICAP (OFICINA)</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="icap">
-                                            <option value="">Seleccione...</option>
-                                            <option value="zulia">Zulia</option>
-                                            <option value="caracas">Caracas</option>
-                                            <option value="miranda">Miranda</option>
-                                            <option value="aragua">Aragua</option>
-                                            <option value="otro">Otro</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="icap">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="condicion" class="form-label">CONDICIÓN DEL FUNCIONARION EN EL CASO</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="condicion">
-                                            <option value="">Seleccione...</option>
-                                            <option value="investigado">Investigado</option>
-                                            <option value="imputado">Imputado</option>
-                                            <option value="acusado">Acusado</option>
-                                            <option value="condenado">Condenado</option>
-                                            <option value="absuelto">Absuelto</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="condicion">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="anio" class="form-label">AÑO</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="anio">
-                                            <option value="">Seleccione...</option>
-                                            <option value="2020">2020</option>
-                                            <option value="2021">2021</option>
-                                            <option value="2022">2022</option>
-                                            <option value="2023">2023</option>
-                                            <option value="2024">2024</option>
-                                            <option value="2025">2025</option>
-                                            <option value="otro">Otro</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="anio">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="servicio" class="form-label">SERVICIO DONDE LABORA EL FUNCIONARIO</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="servicio">
-                                            <option value="">Seleccione...</option>
-                                            <option value="patrullaje">Patrullaje</option>
-                                            <option value="investigacion">Investigación</option>
-                                            <option value="transito">Tránsito</option>
-                                            <option value="seguridad-ciudadana">Seguridad Ciudadana</option>
-                                            <option value="otro">Otro</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="servicio">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="tipo-falta" class="form-label">TIPO DE FALTA</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="tipo-falta">
-                                            <option value="">Seleccione...</option>
-                                            <option value="leve">Leve</option>
-                                            <option value="grave">Grave</option>
-                                            <option value="muy-grave">Muy Grave</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo-falta">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="origen-falta" class="form-label">ORIGEN DE LA FALTA</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="origen-falta">
-                                            <option value="">Seleccione...</option>
-                                            <option value="interna">Interna</option>
-                                            <option value="externa">Externa</option>
-                                            <option value="ciudadano">Denuncia Ciudadana</option>
-                                            <option value="fiscalia">Fiscalía</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="origen-falta">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="falta" class="form-label">FALTA</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="falta">
-                                            <option value="">Seleccione...</option>
-                                            <option value="abandono-servicio">Abandono de Servicio</option>
-                                            <option value="desobediencia">Desobediencia</option>
-                                            <option value="malversacion">Malversación</option>
-                                            <option value="abuso-autoridad">Abuso de Autoridad</option>
-                                            <option value="corrupcion">Corrupción</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="falta">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="denunciante" class="form-label">DENUNCIANTE</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="denunciante">
-                                            <option value="">Seleccione...</option>
-                                            <option value="ciudadano">Ciudadano</option>
-                                            <option value="funcionario">Funcionario</option>
-                                            <option value="fiscal">Fiscal</option>
-                                            <option value="juez">Juez</option>
-                                            <option value="familia">Familia</option>
-                                            <option value="otro">Otro</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="denunciante">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="detenido" class="form-label">FUNCIONARIO DETENIDO</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="detenido">
-                                            <option value="">Seleccione...</option>
-                                            <option value="si">Sí</option>
-                                            <option value="no">No</option>
-                                            <option value="proceso">En Proceso de Detención</option>
-                                            <option value="libertad">En Libertad</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="detenido">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="estatus" class="form-label">ESTATUS</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="estatus">
-                                            <option value="">Seleccione...</option>
-                                            <option value="abierto">Abierto</option>
-                                            <option value="en-proceso">En Proceso</option>
-                                            <option value="cerrado">Cerrado</option>
-                                            <option value="archivado">Archivado</option>
-                                            <option value="en-juicio">En Juicio</option>
-                                            <option value="sentencia">Sentencia</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="estatus">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="decision" class="form-label">DECISIÓN</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="decision">
-                                            <option value="">Seleccione...</option>
-                                            <option value="sancion">Sanción</option>
-                                            <option value="archivado">Archivado</option>
-                                            <option value="absuelto">Absuelto</option>
-                                            <option value="proceso">En Proceso</option>
-                                            <option value="otro">Otro</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="decision">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Nuevos campos solicitados -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="expediente-numero" class="form-label">EXPEDIENTE NÚMERO</label>
-                                    <input type="text" class="form-control" id="expediente-numero" placeholder="Ej: ZUL-2023-001">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="expediente-penal" class="form-label">EXPEDIENTE PENAL</label>
-                                    <input type="text" class="form-control" id="expediente-penal" placeholder="Ingrese el número de expediente penal">
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="registrado-por" class="form-label">REGISTRADO POR</label>
-                                    <input type="text" class="form-control" id="registrado-por" placeholder="Nombre del registrador">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="sustanciador" class="form-label">SUSTANCIADOR</label>
-                                    <input type="text" class="form-control" id="sustanciador" placeholder="Nombre del sustanciador">
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="remision" class="form-label">REMISIÓN</label>
-                                    <input type="text" class="form-control" id="remision" placeholder="Remisión del caso">
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="resena" class="form-label">RESEÑA DEL CASO</label>
-                                <textarea class="form-control" id="resena" rows="3" placeholder="Reseña del caso..."></textarea>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="causa" class="form-label">CAUSA</label>
-                                <textarea class="form-control" id="causa" rows="3" placeholder="Causa del caso..."></textarea>
-                            </div>
-                            
-                            <div class="d-flex justify-content-end mt-4">
-                                <button type="submit" class="btn btn-primary py-2">
-                                    <i class="fas fa-save me-2"></i>Registrar Personal
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Pestaña de Panel de Control -->
-            <div class="tab-pane fade" id="panel" role="tabpanel">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="mb-0">Panel de Control</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="text-center py-5">
-                            <i class="fas fa-home fa-3x text-muted mb-3"></i>
-                            <h4>Bienvenido al sistema</h4>
-                            <p class="text-muted">Este es su panel de control. Aquí se mostrarán las funciones disponibles.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal de Administración de Desplegables -->
     <div class="modal fade" id="manageDropdownModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -763,25 +37,29 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="new-option" class="form-label">Nueva opción</label>
+                        <label for="new-option-value" class="form-label">Nueva opción</label>
                         <div class="input-group">
-                            <input type="text" class="form-control" id="new-option" placeholder="Ingrese nueva opción">
-                            <button type="button" class="btn btn-primary" id="add-option-btn">Agregar</button>
+                            <input type="text" class="form-control" id="new-option-value" placeholder="Ingresar valor de la opción">
+                            <input type="text" class="form-control" id="new-option-label" placeholder="Ingresar etiqueta de la opción">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="new-option-global">
+                                <label class="form-check-label" for="new-option-global">Global</label>
+                            </div>
+                            <button id="btn-add-option" class="btn btn-primary">Agregar</button>
                         </div>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Opción</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="options-list">
-                                <!-- Las opciones se cargarán dinámicamente -->
-                            </tbody>
-                        </table>
-                    </div>
+                    
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Opción</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="options-list">
+                            <!-- Las opciones se cargarán aquí dinámicamente -->
+                        </tbody>
+                    </table>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -790,452 +68,140 @@
         </div>
     </div>
 
-    <!-- Pie de página mejorado con texto en minúsculas y centrado -->
-    <div class="footer">
-        <div class="footer-line"></div>
-        <div class="footer-content">
-            <div class="footer-text">
-                sistema de gestión de expedientes - todos los derechos reservados © 2025 / REDIP OCCIDENTAL - CCPE ZULIA - OTIC ZULIA
-            </div>
-        </div>
-    </div>
-
-    <!-- Bootstrap JS Bundle with Popper -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script>
         // Configuración de Supabase
-        const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
-
-        // Inicialización CORRECTA de Supabase
+        const supabaseUrl = 'TU_URL_SUPABASE';
+        const supabaseKey = 'TU_CLAVE_SUPABASE';
         const { createClient } = supabase;
-        const supabaseClient = createClient(supabaseUrl, supabaseKey, {
-            auth: {
-                autoRefreshToken: true,
-                persistSession: true,
-                detectSessionInUrl: true
-            }
-        });
+        const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-        // Elementos del DOM
-        const loginScreen = document.getElementById('login-screen');
-        const mainPanel = document.getElementById('main-panel');
-        const errorMessage = document.getElementById('error-message');
-        const errorText = document.getElementById('error-text');
-        const loginSpinner = document.getElementById('login-spinner');
-        const loginText = document.getElementById('login-text');
-        const logoutBtn = document.getElementById('logout-btn');
-        const showRegisterBtn = document.getElementById('show-register');
-        const showLoginBtn = document.getElementById('show-login');
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const userNameElement = document.getElementById('user-name');
-
-        // Elementos del modal de administración de desplegables
-        const manageDropdownModal = document.getElementById('manageDropdownModal');
-        const manageDropdownModalLabel = document.getElementById('manageDropdownModalLabel');
-        const dropdownFieldName = document.getElementById('dropdown-field-name');
-        const newOptionInput = document.getElementById('new-option');
-        const addOptionBtn = document.getElementById('add-option-btn');
-        const optionsList = document.getElementById('options-list');
-
-        // Variable para almacenar el campo actual del desplegable
+        // Variables globales
         let currentDropdownField = null;
 
-        // Función para mostrar mensajes de error
-        function showError(message) {
-            if (errorText && errorMessage) {
-                errorText.textContent = message;
-                errorMessage.style.display = 'block';
-            }
-            console.error('Error:', message);
-        }
-
-        // Función para ocultar mensajes de error
-        function hideError() {
-            if (errorMessage) {
-                errorMessage.style.display = 'none';
-            }
-        }
-
-        // Función para guardar el correo recordado
-        function saveRememberedEmail(email) {
-            try {
-                localStorage.setItem('rememberedEmail', email);
-            } catch (e) {
-                console.warn("No se pudo guardar el correo en localStorage");
-            }
-        }
-
-        // Función para obtener el correo recordado
-        function getRememberedEmail() {
-            try {
-                return localStorage.getItem('rememberedEmail') || '';
-            } catch (e) {
-                console.warn("No se pudo obtener el correo de localStorage");
-                return '';
-            }
-        }
-
-        // Función para limpiar el correo recordado
-        function clearRememberedEmail() {
-            try {
-                localStorage.removeItem('rememberedEmail');
-            } catch (e) {
-                console.warn("No se pudo limpiar el correo de localStorage");
-            }
-        }
-
-        // Función para verificar la sesión
-        async function checkSession() {
-            try {
-                const { data, error } = await supabaseClient.auth.getSession();
-                
-                if (error) {
-                    console.error('Error al obtener sesión:', error);
-                    throw error;
-                }
-                
-                if (data?.session) {
-                    loginScreen.style.display = 'none';
-                    mainPanel.style.display = 'block';
-                    
-                    const user = data.session.user;
-                    if (userNameElement) {
-                        const fullName = user.user_metadata?.full_name || 
-                                        user.user_metadata?.fullName || 
-                                        user.user_metadata?.name ||
-                                        user.email?.split('@')[0] || 'Usuario';
-                        
-                        userNameElement.textContent = fullName;
-                    }
-                } else {
-                    loginScreen.style.display = 'block';
-                    mainPanel.style.display = 'none';
-                    
-                    const rememberedEmail = getRememberedEmail();
-                    if (rememberedEmail) {
-                        document.getElementById('email').value = rememberedEmail;
-                        document.getElementById('remember-credentials').checked = true;
-                    }
-                }
-            } catch (error) {
-                console.error('Error al verificar sesión:', error);
-                showError('Error al verificar sesión: ' + error.message);
-            }
-        }
-
-        // Función para iniciar sesión
-        async function login(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const rememberCredentials = document.getElementById('remember-credentials').checked;
-            
-            try {
-                hideError();
-                
-                loginSpinner.classList.remove('d-none');
-                loginText.textContent = 'Iniciando sesión...';
-                
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-                
-                if (error) {
-                    console.error('Error de autenticación:', error);
-                    
-                    let errorMessageText = 'Error: ' + error.message;
-                    
-                    if (error.message.includes('Invalid login credentials')) {
-                        errorMessageText = 'Credenciales inválidas. Verifique su correo y contraseña.';
-                    } else if (error.message.includes('Email not confirmed')) {
-                        errorMessageText = 'Correo no confirmado. Por favor, revise su bandeja de entrada y confirme su cuenta.';
-                    } else if (error.message.includes('Email rate limit exceeded')) {
-                        errorMessageText = 'Demasiados intentos. Por favor, intente más tarde.';
-                    }
-                    
-                    showError(errorMessageText);
-                    
-                    loginSpinner.classList.add('d-none');
-                    loginText.textContent = 'Iniciar Sesión';
-                    
-                    return;
-                }
-                
-                if (rememberCredentials) {
-                    saveRememberedEmail(email);
-                } else {
-                    clearRememberedEmail();
-                }
-                
-                loginScreen.style.display = 'none';
-                mainPanel.style.display = 'block';
-                
-                if (userNameElement) {
-                    const fullName = data.user.user_metadata?.full_name || 
-                                    data.user.user_metadata?.fullName || 
-                                    data.user.user_metadata?.name ||
-                                    data.user.email?.split('@')[0] || 'Usuario';
-                    
-                    userNameElement.textContent = fullName;
-                }
-                
-                loginSpinner.classList.add('d-none');
-                loginText.textContent = 'Iniciar Sesión';
-                
-            } catch (error) {
-                console.error('Error inesperado al iniciar sesión:', error);
-                showError('Error inesperado: ' + error.message);
-                
-                loginSpinner.classList.add('d-none');
-                loginText.textContent = 'Iniciar Sesión';
-            }
-        }
-
-        // Función para cerrar sesión
-        async function logout() {
-            try {
-                const { error } = await supabaseClient.auth.signOut();
-                if (error) throw error;
-                
-                clearRememberedEmail();
-                
-                loginScreen.style.display = 'block';
-                mainPanel.style.display = 'none';
-                
-                document.getElementById('email').value = '';
-                document.getElementById('password').value = '';
-                document.getElementById('remember-credentials').checked = false;
-            } catch (error) {
-                console.error('Error al cerrar sesión:', error);
-                alert('Error al cerrar sesión: ' + error.message);
-            }
-        }
-
-        // Funciones para mostrar/ocultar formularios
-        function showRegisterForm() {
-            loginForm.classList.add('d-none');
-            registerForm.classList.remove('d-none');
-        }
-
-        function showLoginForm() {
-            registerForm.classList.add('d-none');
-            loginForm.classList.remove('d-none');
-        }
-
-        // Función para cargar opciones de desplegables
-        async function loadDropdownOptions(field) {
-            // Para esta versión, usaremos opciones predeterminadas
-            // En una versión más avanzada, estas opciones se cargarían desde una base de datos
-            const defaultOptions = {
-                'tipo-expediente': ['Administrativo', 'Disciplinario', 'Penal', 'Civil'],
-                'icap': ['Zulia', 'Caracas', 'Miranda', 'Aragua', 'Otro'],
-                'condicion': ['Investigado', 'Imputado', 'Acusado', 'Condenado', 'Absuelto'],
-                'anio': ['2020', '2021', '2022', '2023', '2024', '2025', 'Otro'],
-                'servicio': ['Patrullaje', 'Investigación', 'Tránsito', 'Seguridad Ciudadana', 'Otro'],
-                'tipo-falta': ['Leve', 'Grave', 'Muy Grave'],
-                'origen-falta': ['Interna', 'Externa', 'Denuncia Ciudadana', 'Fiscalía'],
-                'falta': ['Abandono de Servicio', 'Desobediencia', 'Malversación', 'Abuso de Autoridad', 'Corrupción'],
-                'denunciante': ['Ciudadano', 'Funcionario', 'Fiscal', 'Juez', 'Familia', 'Otro'],
-                'detenido': ['Sí', 'No', 'En Proceso de Detención', 'En Libertad'],
-                'estatus': ['Abierto', 'En Proceso', 'Cerrado', 'Archivado', 'En Juicio', 'Sentencia'],
-                'decision': ['Sanción', 'Archivado', 'Absuelto', 'En Proceso', 'Otro'],
-                'estatus-funcionario': ['Activo', 'Inactivo', 'En Licencia', 'Jubilado', 'Retirado']
-            };
-
-            const options = defaultOptions[field] || [];
-            const selectElement = document.getElementById(field);
-            
-            if (selectElement) {
-                // Limpiar opciones actuales (excepto la opción predeterminada)
-                selectElement.innerHTML = '<option value="">Seleccione...</option>';
-                
-                // Añadir opciones
-                options.forEach(option => {
-                    const optionElement = document.createElement('option');
-                    optionElement.value = option.toLowerCase().replace(/\s+/g, '-');
-                    optionElement.textContent = option;
-                    selectElement.appendChild(optionElement);
-                });
-            }
-        }
-
-        // Función para abrir el modal de administración de desplegables
+        // Función para abrir el modal de administración
         function openManageDropdownModal(field) {
             currentDropdownField = field;
             dropdownFieldName.textContent = field.split('-').map(word => 
                 word.charAt(0).toUpperCase() + word.slice(1)
             ).join(' ');
-            
+
             // Cargar opciones actuales
             loadDropdownOptions(field);
-            
+
             // Mostrar el modal
-            const modal = new bootstrap.Modal(manageDropdownModal);
+            const modal = new bootstrap.Modal(document.getElementById('manageDropdownModal'));
             modal.show();
-            
-            // Cargar opciones en la lista del modal
-            updateOptionsList(field);
         }
 
-        // Función para actualizar la lista de opciones en el modal
-        function updateOptionsList(field) {
-            const defaultOptions = {
-                'tipo-expediente': ['Administrativo', 'Disciplinario', 'Penal', 'Civil'],
-                'icap': ['Zulia', 'Caracas', 'Miranda', 'Aragua', 'Otro'],
-                'condicion': ['Investigado', 'Imputado', 'Acusado', 'Condenado', 'Absuelto'],
-                'anio': ['2020', '2021', '2022', '2023', '2024', '2025', 'Otro'],
-                'servicio': ['Patrullaje', 'Investigación', 'Tránsito', 'Seguridad Ciudadana', 'Otro'],
-                'tipo-falta': ['Leve', 'Grave', 'Muy Grave'],
-                'origen-falta': ['Interna', 'Externa', 'Denuncia Ciudadana', 'Fiscalía'],
-                'falta': ['Abandono de Servicio', 'Desobediencia', 'Malversación', 'Abuso de Autoridad', 'Corrupción'],
-                'denunciante': ['Ciudadano', 'Funcionario', 'Fiscal', 'Juez', 'Familia', 'Otro'],
-                'detenido': ['Sí', 'No', 'En Proceso de Detención', 'En Libertad'],
-                'estatus': ['Abierto', 'En Proceso', 'Cerrado', 'Archivado', 'En Juicio', 'Sentencia'],
-                'decision': ['Sanción', 'Archivado', 'Absuelto', 'En Proceso', 'Otro'],
-                'estatus-funcionario': ['Activo', 'Inactivo', 'En Licencia', 'Jubilado', 'Retirado']
-            };
+        // Función para cargar opciones desde la base de datos
+        async function loadDropdownOptions(field) {
+            try {
+                const { data, error } = await supabaseClient.from('dropdown_options').select('*').eq('field_name', field);
+                if (error) throw error;
 
-            const options = defaultOptions[field] || [];
-            optionsList.innerHTML = '';
-            
-            options.forEach((option, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${option}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-danger delete-option" data-index="${index}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                optionsList.appendChild(row);
-            });
-            
-            // Configurar eventos para los botones de eliminación
-            document.querySelectorAll('.delete-option').forEach(button => {
-                button.addEventListener('click', function() {
-                    const index = this.getAttribute('data-index');
-                    removeOption(field, index);
+                const optionsList = document.getElementById('options-list');
+                optionsList.innerHTML = '';
+
+                data.forEach(option => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${option.option_label}</td>
+                        <td>
+                            <button class="btn btn-danger delete-option" data-id="${option.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    optionsList.appendChild(row);
                 });
-            });
+
+                // Configurar eventos para los botones de eliminación
+                document.querySelectorAll('.delete-option').forEach(button => {
+                    button.addEventListener('click', function () {
+                        const id = this.getAttribute('data-id');
+                        deleteOption(id);
+                    });
+                });
+            } catch (error) {
+                console.error(`Error al cargar opciones para ${field}:`, error);
+            }
         }
 
-        // Función para añadir una nueva opción
-        function addOption(field, option) {
-            if (!option.trim()) {
-                alert('Por favor, ingrese una opción válida');
+        // Función para agregar una nueva opción
+        async function addOption() {
+            const newValue = document.getElementById('new-option-value').value.trim();
+            const newLabel = document.getElementById('new-option-label').value.trim();
+            const isGlobal = document.getElementById('new-option-global').checked;
+
+            if (!newValue || !newLabel) {
+                alert('Por favor, complete ambos campos');
                 return;
             }
-            
-            // En una versión más avanzada, esto se guardaría en la base de datos
-            alert(`Opción "${option}" añadida exitosamente`);
-            
-            // Recargar opciones
-            updateOptionsList(field);
-            loadDropdownOptions(field);
-            
-            // Limpiar el campo de entrada
-            newOptionInput.value = '';
+
+            try {
+                // Manejo seguro de la sesión
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !session) throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+
+                const newOption = {
+                    field_name: currentDropdownField,
+                    option_value: newValue,
+                    option_label: newLabel,
+                    user_id: isGlobal ? null : session.user.id,
+                    is_global: isGlobal
+                };
+
+                const { error } = await supabaseClient.from('dropdown_options').insert([newOption]);
+                if (error) throw error;
+
+                // Limpiar campos
+                document.getElementById('new-option-value').value = '';
+                document.getElementById('new-option-label').value = '';
+                document.getElementById('new-option-global').checked = false;
+
+                // Recargar opciones
+                loadDropdownOptions(currentDropdownField);
+
+                alert('Opción agregada exitosamente');
+            } catch (error) {
+                console.error('Error al agregar opción:', error);
+                alert(`Error al agregar opción: ${error.message}`);
+            }
         }
 
         // Función para eliminar una opción
-        function removeOption(field, index) {
-            if (confirm('¿Está seguro de que desea eliminar esta opción?')) {
-                alert('Opción eliminada exitosamente');
-                
+        async function deleteOption(id) {
+            try {
+                const { error } = await supabaseClient.from('dropdown_options').delete().eq('id', id);
+                if (error) throw error;
+
                 // Recargar opciones
-                updateOptionsList(field);
-                loadDropdownOptions(field);
+                loadDropdownOptions(currentDropdownField);
+
+                alert('Opción eliminada exitosamente');
+            } catch (error) {
+                console.error('Error al eliminar opción:', error);
+                alert(`Error al eliminar opción: ${error.message}`);
             }
         }
 
         // Configurar eventos
+        document.getElementById('btn-add-option').addEventListener('click', function () {
+            addOption();
+        });
+
+        // Inicializar el sistema
         document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                await checkSession();
-                
-                supabaseClient.auth.onAuthStateChange((event, session) => {
-                    console.log('Cambio de estado de autenticación:', event);
-                    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-                        checkSession();
-                    }
+            // Abrir modal de administración cuando se hace clic en el icono de configuración
+            document.querySelectorAll('.manage-dropdown').forEach(button => {
+                button.addEventListener('click', function () {
+                    const field = this.getAttribute('data-field');
+                    openManageDropdownModal(field);
                 });
-                
-                if (loginForm) {
-                    loginForm.addEventListener('submit', login);
-                }
-                
-                if (logoutBtn) {
-                    logoutBtn.addEventListener('click', logout);
-                }
-                
-                if (showRegisterBtn) {
-                    showRegisterBtn.addEventListener('click', showRegisterForm);
-                }
-                
-                if (showLoginBtn) {
-                    showLoginBtn.addEventListener('click', showLoginForm);
-                }
-                
-                // Configurar la carga de imagen
-                const profilePictureUpload = document.getElementById('profile-picture-upload');
-                const profilePicture = document.getElementById('profile-picture');
-                
-                if (profilePictureUpload && profilePicture) {
-                    profilePictureUpload.addEventListener('change', function(e) {
-                        const file = e.target.files[0];
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = function(e) {
-                                profilePicture.src = e.target.result;
-                            }
-                            reader.readAsDataURL(file);
-                        }
-                    });
-                }
-                
-                // Configurar botones de administración de desplegables
-                document.querySelectorAll('.manage-dropdown').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const field = this.getAttribute('data-field');
-                        openManageDropdownModal(field);
-                    });
-                });
-                
-                // Configurar botón de añadir opción
-                if (addOptionBtn) {
-                    addOptionBtn.addEventListener('click', function() {
-                        const newOption = newOptionInput.value.trim();
-                        if (newOption && currentDropdownField) {
-                            addOption(currentDropdownField, newOption);
-                        }
-                    });
-                }
-                
-                // Permitir añadir opción con Enter
-                if (newOptionInput) {
-                    newOptionInput.addEventListener('keypress', function(e) {
-                        if (e.key === 'Enter') {
-                            const newOption = this.value.trim();
-                            if (newOption && currentDropdownField) {
-                                addOption(currentDropdownField, newOption);
-                            }
-                        }
-                    });
-                }
-                
-                console.log('Sistema inicializado correctamente');
-            } catch (error) {
-                console.error('Error al inicializar el sistema:', error);
-                alert('Error al inicializar el sistema: ' + error.message);
-            }
+            });
         });
     </script>
 </body>
