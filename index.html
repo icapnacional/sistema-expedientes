@@ -119,19 +119,24 @@
             display: none;
         }
         
-        .footer {
-            text-align: center;
-            padding: 20px 0;
-            color: #6c757d;
-            font-size: 14px;
-            margin-top: 40px;
-            border-top: 1px solid #eee;
+        .panel-container {
+            max-width: 1200px;
+            margin: 30px auto;
         }
         
-        .footer-line {
-            height: 1px;
-            background: linear-gradient(to right, transparent, #ced4da, transparent);
-            margin-bottom: 15px;
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+            border: none;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: white;
+            border-bottom: 1px solid #eee;
+            padding: 15px 20px;
+            font-weight: 600;
         }
         
         .security-info {
@@ -146,6 +151,13 @@
         .security-icon {
             color: var(--secondary-color);
             margin-right: 8px;
+        }
+        
+        @media (max-width: 576px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
         }
     </style>
 </head>
@@ -236,6 +248,30 @@
         </div>
     </div>
     
+    <!-- Panel Principal (oculto al inicio) -->
+    <div class="container panel-container" id="main-panel" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Bienvenido, <span id="user-name" class="text-primary"></span></h2>
+            <button id="logout-btn" class="btn btn-outline-danger">
+                <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+            </button>
+        </div>
+        
+        <!-- Panel vacío para agregar contenido posteriormente -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">Panel de Control</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center py-5">
+                    <i class="fas fa-home fa-3x text-muted mb-3"></i>
+                    <h4>Bienvenido al sistema</h4>
+                    <p class="text-muted">Este es su panel de control. Aquí se mostrarán las funciones disponibles.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Pie de página mejorado con texto en minúsculas -->
     <div class="footer">
         <div class="footer-line"></div>
@@ -269,14 +305,17 @@
 
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
+        const mainPanel = document.getElementById('main-panel');
         const errorMessage = document.getElementById('error-message');
         const errorText = document.getElementById('error-text');
         const loginSpinner = document.getElementById('login-spinner');
         const loginText = document.getElementById('login-text');
+        const logoutBtn = document.getElementById('logout-btn');
         const showRegisterBtn = document.getElementById('show-register');
         const showLoginBtn = document.getElementById('show-login');
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
+        const userNameElement = document.getElementById('user-name');
 
         // Función para mostrar mensajes de error
         function showError(message) {
@@ -333,13 +372,22 @@
                 }
                 
                 if (data?.session) {
-                    // Si hay sesión activa, redirigir al panel principal
-                    window.location.href = 'panel.html'; // Redirige a la página principal
-                } else {
-                    // Mostrar pantalla de login
-                    loginScreen.style.display = 'block';
+                    loginScreen.style.display = 'none';
+                    mainPanel.style.display = 'block';
                     
-                    // Cargar correo recordado si existe
+                    const user = data.session.user;
+                    if (userNameElement) {
+                        const fullName = user.user_metadata?.full_name || 
+                                        user.user_metadata?.fullName || 
+                                        user.user_metadata?.name ||
+                                        user.email?.split('@')[0] || 'Usuario';
+                        
+                        userNameElement.textContent = fullName;
+                    }
+                } else {
+                    loginScreen.style.display = 'block';
+                    mainPanel.style.display = 'none';
+                    
                     const rememberedEmail = getRememberedEmail();
                     if (rememberedEmail) {
                         document.getElementById('email').value = rememberedEmail;
@@ -397,8 +445,20 @@
                     clearRememberedEmail();
                 }
                 
-                // Redirigir al panel principal
-                window.location.href = 'panel.html';
+                loginScreen.style.display = 'none';
+                mainPanel.style.display = 'block';
+                
+                if (userNameElement) {
+                    const fullName = data.user.user_metadata?.full_name || 
+                                    data.user.user_metadata?.fullName || 
+                                    data.user.user_metadata?.name ||
+                                    data.user.email?.split('@')[0] || 'Usuario';
+                    
+                    userNameElement.textContent = fullName;
+                }
+                
+                loginSpinner.classList.add('d-none');
+                loginText.textContent = 'Iniciar Sesión';
                 
             } catch (error) {
                 console.error('Error inesperado al iniciar sesión:', error);
@@ -406,6 +466,26 @@
                 
                 loginSpinner.classList.add('d-none');
                 loginText.textContent = 'Iniciar Sesión';
+            }
+        }
+
+        // Función para cerrar sesión
+        async function logout() {
+            try {
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) throw error;
+                
+                clearRememberedEmail();
+                
+                loginScreen.style.display = 'block';
+                mainPanel.style.display = 'none';
+                
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
+                document.getElementById('remember-credentials').checked = false;
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+                alert('Error al cerrar sesión: ' + error.message);
             }
         }
 
@@ -425,8 +505,19 @@
             try {
                 await checkSession();
                 
+                supabaseClient.auth.onAuthStateChange((event, session) => {
+                    console.log('Cambio de estado de autenticación:', event);
+                    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+                        checkSession();
+                    }
+                });
+                
                 if (loginForm) {
                     loginForm.addEventListener('submit', login);
+                }
+                
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', logout);
                 }
                 
                 if (showRegisterBtn) {
@@ -437,10 +528,10 @@
                     showLoginBtn.addEventListener('click', showLoginForm);
                 }
                 
-                console.log('Pantalla de login inicializada correctamente');
+                console.log('Sistema inicializado correctamente');
             } catch (error) {
-                console.error('Error al inicializar la pantalla de login:', error);
-                showError('Error al inicializar: ' + error.message);
+                console.error('Error al inicializar el sistema:', error);
+                alert('Error al inicializar el sistema: ' + error.message);
             }
         });
     </script>
