@@ -1,2145 +1,317 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión de Expedientes</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #003366;
-            --secondary-color: #0066CC;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-        }
-        
-        body {
-            background-color: #f5f7fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-        }
-        
-        .login-container {
-            max-width: 450px;
-            margin: 20px auto 50px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 25px 20px;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        
-        .centered-title {
-            color: white;
-            font-size: 2.5rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-            position: relative;
-            display: inline-block;
-            padding: 0 20px;
-        }
-        
-        .centered-title:after {
-            content: "";
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 3px;
-            background: linear-gradient(to right, white, rgba(255, 255, 255, 0.5));
-            border-radius: 1.5px;
-        }
-        
-        .centered-subtitle {
-            color: rgba(255, 255, 255, 0.92);
-            font-size: 1.25rem;
-            font-weight: 400;
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 0 15px;
-            opacity: 0.9;
-            letter-spacing: 0.3px;
-            line-height: 1.5;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-        }
-        
-        .logo-container {
-            padding: 15px 0;
-            text-align: center;
-        }
-        
-        .logo-container img {
-            max-width: 200px;
-            height: auto;
-            max-height: 80px;
-        }
-        
-        .form-floating > label {
-            padding: 1rem 0.75rem;
-        }
-        
-        .form-floating > .form-control,
-        .form-floating > .form-select {
-            padding: 1rem 0.75rem;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-            border: none;
-            padding: 0.75rem 0;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 51, 102, 0.2);
-            background: linear-gradient(to right, #002244, #0055AA);
-        }
-        
-        .error-message {
-            background-color: #fff5f5;
-            border-left: 4px solid #dc3545;
-            padding: 10px 15px;
-            margin-bottom: 20px;
-            border-radius: 0 4px 4px 0;
-            display: none;
-        }
-        
-        .panel-container {
-            max-width: 1200px;
-            margin: 30px auto;
-        }
-        
-        .card {
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            margin-bottom: 25px;
-            border: none;
-            overflow: hidden;
-        }
-        
-        .card-header {
-            background: white;
-            border-bottom: 1px solid #eee;
-            padding: 15px 20px;
-            font-weight: 600;
-        }
-        
-        .profile-picture-container {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .profile-picture-container img {
-            border: 3px solid var(--secondary-color);
-            transition: all 0.3s ease;
-        }
-        
-        .profile-picture-container:hover img {
-            transform: scale(1.03);
-        }
-        
-        .upload-icon {
-            position: absolute;
-            bottom: 5px;
-            right: 35px;
-        }
-        
-        #personal-list td {
-            vertical-align: middle;
-        }
-        
-        #personal-list img {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-        }
-        
-        .table th {
-            font-weight: 600;
-            background-color: #f8f9fa;
-        }
-        
-        .table-hover tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .form-label {
-            font-weight: 500;
-            color: #495057;
-        }
-        
-        .form-control, .form-select {
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 20px 0;
-            color: #6c757d;
-            font-size: 14px;
-            margin-top: 40px;
-            border-top: 1px solid #eee;
-        }
-        
-        .footer-line {
-            height: 1px;
-            background: linear-gradient(to right, transparent, #ced4da, transparent);
-            margin-bottom: 15px;
-        }
-        
-        .security-info {
-            background: rgba(0, 51, 102, 0.05);
-            border-left: 3px solid var(--secondary-color);
-            padding: 15px;
-            border-radius: 0 8px 8px 0;
-            margin-top: 20px;
-            font-size: 14px;
-        }
-        
-        .security-icon {
-            color: var(--secondary-color);
-            margin-right: 8px;
-        }
-        
-        @media (max-width: 576px) {
-            .login-container {
-                padding: 30px 20px;
-                margin: 20px;
-            }
-            
-            .footer {
-                font-size: 16px;
-                padding: 20px 0;
-            }
-        }
-        
-        /* Estilos para "Recordar mis credenciales" */
-        .form-check-input {
-            margin-top: 6px;
-            cursor: pointer;
-        }
-        
-        .form-check-label {
-            cursor: pointer;
-            color: #6c757d;
-            transition: all 0.2s;
-        }
-        
-        .form-check-input:focus {
-            box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.25);
-        }
-        
-        /* Estilos para los controles de desplegables */
-        .input-group {
-            display: flex;
-            align-items: center;
-        }
-        
-        .input-group .form-select {
-            flex-grow: 1;
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
-        }
-        
-        .manage-dropdown {
-            height: calc(2.5em + 2px);
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-            border-left: none;
-        }
-        
-        /* Estilos para la pestaña de consultas */
-        .consulta-section {
-            margin-top: 20px;
-        }
-        
-        .search-section {
-            background-color: #e9f7fe;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .result-section {
-            margin-top: 20px;
-        }
-        
-        .no-results {
-            background-color: #fff5f5;
-            border-left: 4px solid #dc3545;
-            padding: 15px;
-            border-radius: 0 4px 4px 0;
-            margin: 20px 0;
-        }
-        
-        .result-card {
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            background-color: white;
-        }
-        
-        .result-card-header {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-bottom: 1px solid #e9ecef;
-            border-radius: 8px 8px 0 0;
-        }
-        
-        .result-card-body {
-            padding: 20px;
-        }
-        
-        .result-group {
-            margin-bottom: 15px;
-        }
-        
-        .result-label {
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-        
-        .result-value {
-            padding: 8px 12px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-            border: 1px solid #dee2e6;
-            word-break: break-word;
-        }
-        
-        .result-image {
-            max-width: 150px;
-            max-height: 150px;
-            border-radius: 8px;
-            border: 2px solid #e9ecef;
-        }
-        
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            display: none;
-        }
-        
-        .loading-spinner {
-            display: inline-block;
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(0, 99, 204, 0.3);
-            border-radius: 50%;
-            border-top-color: #0066CC;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Estilos para la tabla de registros */
-        .personal-list-container {
-            margin-top: 20px;
-        }
-        
-        .personal-list-header {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px 8px 0 0;
-            border-bottom: 1px solid #dee2e6;
-        }
-        
-        .personal-list-body {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        
-        .personal-item {
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            padding: 15px;
-            background-color: white;
-        }
-        
-        .personal-item-header {
-            font-weight: 600;
-            color: #0066CC;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #e9ecef;
-            padding-bottom: 5px;
-        }
-        
-        .personal-item-info {
-            font-size: 0.9rem;
-            color: #495057;
-        }
-        
-        .personal-item-label {
-            font-weight: 600;
-            margin-right: 5px;
-        }
-        
-        .personal-item-actions {
-            margin-top: 10px;
-            text-align: right;
-        }
-        
-        .personal-item-actions .btn {
-            margin-left: 5px;
-            padding: 5px 10px;
-            font-size: 0.8rem;
-        }
-        
-        /* Estilos para el modal de administración */
-        .modal-dialog {
-            max-width: 800px;
-        }
-        
-        .dropdown-option-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .dropdown-option-row input {
-            flex-grow: 1;
-            margin-right: 10px;
-        }
-        
-        .dropdown-option-row .btn {
-            margin-left: 5px;
-        }
-        
-        .option-list-container {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #dee2e6;
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .option-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 12px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-            margin-bottom: 5px;
-            border: 1px solid #dee2e6;
-        }
-        
-        .option-item .btn {
-            padding: 4px 8px;
-            font-size: 0.75rem;
-        }
-        
-        .option-item input {
-            flex-grow: 1;
-            margin-right: 8px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Gestión de Expedientes</title>
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+:root {
+--primary-color: #003366;
+--secondary-color: #0066CC;
+--light-color: #f8f9fa;
+--dark-color: #212529;
+}
+body {
+background-color: #f5f7fa;
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+min-height: 100vh;
+}
+.login-container {
+max-width: 450px;
+margin: 20px auto 50px;
+background: white;
+border-radius: 15px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+overflow: hidden;
+}
+.header {
+background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+color: white;
+padding: 25px 20px;
+text-align: center;
+margin-bottom: 15px;
+}
+.centered-title {
+color: white;
+font-size: 2.5rem;
+font-weight: 700;
+letter-spacing: 1px;
+margin-bottom: 10px;
+text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+position: relative;
+display: inline-block;
+padding: 0 20px;
+}
+.centered-title:after {
+content: "";
+position: absolute;
+bottom: -8px;
+left: 50%;
+transform: translateX(-50%);
+width: 80px;
+height: 3px;
+background: linear-gradient(to right, white, rgba(255, 255, 255, 0.5));
+border-radius: 1.5px;
+}
+.centered-subtitle {
+color: rgba(255, 255, 255, 0.92);
+font-size: 1.25rem;
+font-weight: 400;
+max-width: 700px;
+margin: 0 auto;
+padding: 0 15px;
+opacity: 0.9;
+letter-spacing: 0.3px;
+line-height: 1.5;
+text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.logo-container {
+padding: 15px 0;
+text-align: center;
+}
+.logo-container img {
+max-width: 200px;
+height: auto;
+max-height: 80px;
+}
+.form-floating > label {
+padding: 1rem 0.75rem;
+}
+.form-floating > .form-control,
+.form-floating > .form-select {
+padding: 1rem 0.75rem;
+}
+.btn-primary {
+background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+border: none;
+padding: 0.75rem 0;
+font-weight: 600;
+letter-spacing: 0.5px;
+}
+.btn-primary:hover {
+transform: translateY(-2px);
+box-shadow: 0 5px 15px rgba(0, 51, 102, 0.2);
+background: linear-gradient(to right, #002244, #0055AA);
+}
+.error-message {
+background-color: #fff5f5;
+border-left: 4px solid #dc3545;
+padding: 10px 15px;
+margin-bottom: 20px;
+border-radius: 0 4px 4px 0;
+display: none;
+}
+.panel-container {
+max-width: 1200px;
+margin: 30px auto;
+}
+.card {
+border-radius: 12px;
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+margin-bottom: 25px;
+border: none;
+overflow: hidden;
+}
+.card-header {
+background: white;
+border-bottom: 1px solid #eee;
+padding: 15px 20px;
+font-weight: 600;
+}
+.footer {
+text-align: center;
+padding: 20px 0;
+color: #6c757d;
+font-size: 14px;
+margin-top: 40px;
+border-top: 1px solid #eee;
+}
+.footer-line {
+height: 1px;
+background: linear-gradient(to right, transparent, #ced4da, transparent);
+margin-bottom: 15px;
+}
+.security-info {
+background: rgba(0, 51, 102, 0.05);
+border-left: 3px solid var(--secondary-color);
+padding: 15px;
+border-radius: 0 8px 8px 0;
+margin-top: 20px;
+font-size: 14px;
+}
+.security-icon {
+color: var(--secondary-color);
+margin-right: 8px;
+}
+@media (max-width: 576px) {
+.login-container {
+padding: 30px 20px;
+margin: 20px;
+}
+.footer {
+font-size: 16px;
+padding: 20px 0;
+}
+}
+/* Estilos para "Recordar mis credenciales" */
+.form-check-input {
+margin-top: 6px;
+cursor: pointer;
+}
+.form-check-label {
+cursor: pointer;
+color: #6c757d;
+transition: all 0.2s;
+}
+.form-check-input:focus {
+box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.25);
+}
+</style>
 </head>
 <body>
-    <!-- Capa de carga -->
-    <div class="loading-overlay" id="loading-overlay">
-        <div class="loading-spinner"></div>
-    </div>
-    
-    <!-- Header con título centrado -->
-    <div class="header" id="main-title-section">
-        <h1 class="centered-title">SISTEMA DE GESTIÓN DE EXPEDIENTES</h1>
-        <p class="centered-subtitle">Registre y gestione expedientes de manera sencilla</p>
-    </div>
-    
-    <!-- Pantalla de Login -->
-    <div class="container" id="login-screen">
-        <div class="login-container">
-            <div class="card border-0">
-                <div class="card-body p-4">
-                    <!-- Contenedor del logo -->
-                    <div class="logo-container text-center mb-4">
-                        <img src="https://raw.githubusercontent.com/gamakingrock/sistema-expedientes/main/images/policia-nacional-bolivariana.png" 
-                             alt="Logo Policía Nacional Bolivariana" 
-                             class="img-fluid">
-                    </div>
-                    
-                    <h2 class="card-title text-center mb-4">Iniciar Sesión</h2>
-                    <div id="error-message" class="error-message">
-                        <i class="fas fa-exclamation-circle me-2"></i><span id="error-text"></span>
-                    </div>
-                    <form id="login-form">
-                        <div class="mb-3">
-                            <div class="form-floating">
-                                <input type="email" class="form-control" id="email" required>
-                                <label for="email"><i class="fas fa-envelope me-2"></i>Correo electrónico</label>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-floating">
-                                <input type="password" class="form-control" id="password" required>
-                                <label for="password"><i class="fas fa-lock me-2"></i>Contraseña</label>
-                            </div>
-                        </div>
-                        <!-- Checkbox para "Recordar mis credenciales" -->
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="remember-credentials">
-                            <label class="form-check-label" for="remember-credentials">Recordar mis credenciales</label>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <span id="login-spinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
-                            <span id="login-text">Iniciar Sesión</span>
-                        </button>
-                        <div class="mt-3 text-center">
-                            <button type="button" class="btn btn-link" id="show-register">¿No tienes cuenta? Regístrate</button>
-                        </div>
-                    </form>
-                    
-                    <!-- Formulario de Registro -->
-                    <form id="register-form" class="d-none mt-4">
-                        <h3 class="text-center mb-3">Crear Cuenta</h3>
-                        <div class="mb-3">
-                            <div class="form-floating">
-                                <input type="email" class="form-control" id="reg-email" required>
-                                <label for="reg-email"><i class="fas fa-envelope me-2"></i>Correo electrónico</label>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-floating">
-                                <input type="password" class="form-control" id="reg-password" required>
-                                <label for="reg-password"><i class="fas fa-lock me-2"></i>Contraseña</label>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-floating">
-                                <input type="text" class="form-control" id="reg-name" required>
-                                <label for="reg-name"><i class="fas fa-user me-2"></i>Nombre completo</label>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Crear Cuenta</button>
-                        <div class="mt-3 text-center">
-                            <button type="button" class="btn btn-link" id="show-login">¿Ya tienes cuenta? Inicia sesión</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Información de seguridad -->
-            <div class="security-info">
-                <i class="fas fa-shield-alt security-icon"></i>
-                Su información está protegida con encriptación de extremo a extremo
-            </div>
-        </div>
-    </div>
-    
-    <!-- Panel Principal (oculto al inicio) -->
-    <div class="container panel-container" id="main-panel" style="display: none;">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Bienvenido, <span id="user-name" class="text-primary"></span></h2>
-            <button id="logout-btn" class="btn btn-outline-danger">
-                <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
-            </button>
-        </div>
-        
-        <!-- Navegación entre pestañas -->
-        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="registro-tab" data-bs-toggle="tab" data-bs-target="#registro" type="button" role="tab">Registrar Personal</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="consultas-tab" data-bs-toggle="tab" data-bs-target="#consultas" type="button" role="tab">Consultas</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="panel-tab" data-bs-toggle="tab" data-bs-target="#panel" type="button" role="tab">Panel de Control</button>
-            </li>
-        </ul>
-        
-        <!-- Contenido de las pestañas -->
-        <div class="tab-content" id="myTabContent">
-            <!-- Pestaña de Registro de Personal -->
-            <div class="tab-pane fade show active" id="registro" role="tabpanel">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="mb-0">Registrar Personal</h5>
-                    </div>
-                    <div class="card-body">
-                        <form id="personal-form">
-                            <div class="row mb-4">
-                                <div class="col-md-4 text-center">
-                                    <div class="profile-picture-container mb-3 position-relative">
-                                        <img src="https://placehold.co/200x200/003366/white?text=Foto+Personal" 
-                                             alt="Foto del personal" 
-                                             class="img-fluid rounded-circle" 
-                                             id="profile-picture"
-                                             style="width: 180px; height: 180px; object-fit: cover;">
-                                        <div class="upload-icon" style="position: absolute; bottom: 5px; right: 35px;">
-                                            <label for="profile-picture-upload" class="btn btn-primary btn-sm rounded-circle p-2" 
-                                                   style="cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                                                <i class="fas fa-camera"></i>
-                                            </label>
-                                            <input type="file" id="profile-picture-upload" class="d-none" accept="image/*">
-                                        </div>
-                                    </div>
-                                    <p class="text-muted small">Haga clic en el ícono para subir una foto</p>
-                                </div>
-                                <div class="col-md-8">
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="nombres" class="form-label">NOMBRES</label>
-                                            <input type="text" class="form-control" id="nombres" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="apellidos" class="form-label">APELLIDOS</label>
-                                            <input type="text" class="form-control" id="apellidos" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="cedula" class="form-label">CÉDULA DE IDENTIDAD</label>
-                                            <input type="text" class="form-control" id="cedula" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="fecha-nacimiento" class="form-label">FECHA DE NACIMIENTO</label>
-                                            <input type="date" class="form-control" id="fecha-nacimiento">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="rango" class="form-label">RANGO</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="rango" required>
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="rango">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="sexo" class="form-label">SEXO</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="sexo" required>
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="sexo">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="fecha-inicio" class="form-label">FECHA DE INICIO</label>
-                                    <input type="date" class="form-control" id="fecha-inicio">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="estatus-funcionario" class="form-label">ESTATUS DEL FUNCIONARIO</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="estatus-funcionario">
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="estatus-funcionario">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="tipo-expediente" class="form-label">TIPO DE EXPEDIENTE</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="tipo-expediente">
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo-expediente">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="icap" class="form-label">ICAP (OFICINA)</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="icap">
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="icap">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="condicion" class="form-label">CONDICIÓN DEL FUNCIONARION EN EL CASO</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="condicion">
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="condicion">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="anio" class="form-label">AÑO</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="anio">
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="anio">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="servicio" class="form-label">SERVICIO DONDE LABORA EL FUNCIONARIO</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="servicio">
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="servicio">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="tipo-falta" class="form-label">TIPO DE FALTA</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="tipo-falta">
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo-falta">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="origen-falta" class="form-label">ORIGEN DE LA FALTA</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="origen-falta">
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="origen-falta">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="falta" class="form-label">FALTA</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="falta">
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="falta">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="denunciante" class="form-label">DENUNCIANTE</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="denunciante">
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="denunciante">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="detenido" class="form-label">FUNCIONARIO DETENIDO</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="detenido">
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="detenido">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="estatus" class="form-label">ESTATUS</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="estatus">
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="estatus">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="decision" class="form-label">DECISIÓN</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="decision">
-                                            <option value="">Seleccione...</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="decision">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Nuevos campos solicitados -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="expediente-numero" class="form-label">EXPEDIENTE NÚMERO</label>
-                                    <input type="text" class="form-control" id="expediente-numero" placeholder="Ej: ZUL-2023-001">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="expediente-penal" class="form-label">EXPEDIENTE PENAL</label>
-                                    <input type="text" class="form-control" id="expediente-penal" placeholder="Ingrese el número de expediente penal">
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="registrado-por" class="form-label">REGISTRADO POR</label>
-                                    <input type="text" class="form-control" id="registrado-por" placeholder="Nombre del registrador">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="sustanciador" class="form-label">SUSTANCIADOR</label>
-                                    <input type="text" class="form-control" id="sustanciador" placeholder="Nombre del sustanciador">
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="remision" class="form-label">REMISIÓN</label>
-                                    <input type="text" class="form-control" id="remision" placeholder="Remisión del caso">
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="resena" class="form-label">RESEÑA DEL CASO</label>
-                                <textarea class="form-control" id="resena" rows="3" placeholder="Reseña del caso..."></textarea>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="causa" class="form-label">CAUSA</label>
-                                <textarea class="form-control" id="causa" rows="3" placeholder="Causa del caso..."></textarea>
-                            </div>
-                            
-                            <div class="d-flex justify-content-end mt-4">
-                                <button type="submit" class="btn btn-primary py-2">
-                                    <i class="fas fa-save me-2"></i>Registrar Personal
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                
-                <!-- Lista de registros existentes -->
-                <div class="card shadow-sm personal-list-container">
-                    <div class="card-header bg-white py-3 personal-list-header">
-                        <h5 class="mb-0">Registros Existentes</h5>
-                    </div>
-                    <div class="card-body personal-list-body">
-                        <div class="input-group mb-3">
-                            <span class="input-group-text bg-light">
-                                <i class="fas fa-search"></i>
-                            </span>
-                            <input type="text" class="form-control" id="search-personal" placeholder="Buscar registros...">
-                        </div>
-                        
-                        <div id="personal-list">
-                            <!-- Los registros se cargarán aquí dinámicamente -->
-                            <div class="text-center py-4">
-                                <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
-                                <p class="text-muted">No hay registros almacenados. Registre un nuevo personal para verlo aquí.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Pestaña de Consultas -->
-            <div class="tab-pane fade" id="consultas" role="tabpanel">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="mb-0">Consultas</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="search-section">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light">
-                                            <i class="fas fa-search"></i>
-                                        </span>
-                                        <input type="text" class="form-control" id="search-cedula" placeholder="Ingrese la cédula de identidad para buscar...">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <button id="search-btn" class="btn btn-primary w-100">
-                                        <i class="fas fa-search me-2"></i>Buscar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div id="result-section" class="result-section" style="display: none;">
-                            <div class="card result-card">
-                                <div class="result-card-header">
-                                    <h6 class="mb-0">Resultado de la Consulta</h6>
-                                </div>
-                                <div class="result-card-body">
-                                    <div id="no-results" class="no-results" style="display: none;">
-                                        <i class="fas fa-exclamation-circle me-2"></i>
-                                        No se encontró ningún registro con la cédula proporcionada.
-                                    </div>
-                                    
-                                    <div id="result-content" style="display: none;">
-                                        <div class="row">
-                                            <div class="col-md-4 text-center mb-4">
-                                                <img id="result-foto" src="" alt="Foto del personal" class="result-image">
-                                            </div>
-                                            <div class="col-md-8">
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="result-group">
-                                                            <div class="result-label">NOMBRES</div>
-                                                            <div class="result-value" id="result-nombres"></div>
-                                                        </div>
-                                                        <div class="result-group">
-                                                            <div class="result-label">APELLIDOS</div>
-                                                            <div class="result-value" id="result-apellidos"></div>
-                                                        </div>
-                                                        <div class="result-group">
-                                                            <div class="result-label">CÉDULA DE IDENTIDAD</div>
-                                                            <div class="result-value" id="result-cedula"></div>
-                                                        </div>
-                                                        <div class="result-group">
-                                                            <div class="result-label">FECHA DE NACIMIENTO</div>
-                                                            <div class="result-value" id="result-fecha-nacimiento"></div>
-                                                        </div>
-                                                        <div class="result-group">
-                                                            <div class="result-label">RANGO</div>
-                                                            <div class="result-value" id="result-rango"></div>
-                                                        </div>
-                                                        <div class="result-group">
-                                                            <div class="result-label">SEXO</div>
-                                                            <div class="result-value" id="result-sexo"></div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="result-group">
-                                                            <div class="result-label">FECHA DE INICIO</div>
-                                                            <div class="result-value" id="result-fecha-inicio"></div>
-                                                        </div>
-                                                        <div class="result-group">
-                                                            <div class="result-label">ESTATUS DEL FUNCIONARIO</div>
-                                                            <div class="result-value" id="result-estatus-funcionario"></div>
-                                                        </div>
-                                                        <div class="result-group">
-                                                            <div class="result-label">TIPO DE EXPEDIENTE</div>
-                                                            <div class="result-value" id="result-tipo-expediente"></div>
-                                                        </div>
-                                                        <div class="result-group">
-                                                            <div class="result-label">ICAP (OFICINA)</div>
-                                                            <div class="result-value" id="result-icap"></div>
-                                                        </div>
-                                                        <div class="result-group">
-                                                            <div class="result-label">CONDICIÓN DEL FUNCIONARIO EN EL CASO</div>
-                                                            <div class="result-value" id="result-condicion"></div>
-                                                        </div>
-                                                        <div class="result-group">
-                                                            <div class="result-label">AÑO</div>
-                                                            <div class="result-value" id="result-anio"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="row mt-3">
-                                            <div class="col-md-6">
-                                                <div class="result-group">
-                                                    <div class="result-label">SERVICIO DONDE LABORA EL FUNCIONARIO</div>
-                                                    <div class="result-value" id="result-servicio"></div>
-                                                </div>
-                                                <div class="result-group">
-                                                    <div class="result-label">TIPO DE FALTA</div>
-                                                    <div class="result-value" id="result-tipo-falta"></div>
-                                                </div>
-                                                <div class="result-group">
-                                                    <div class="result-label">ORIGEN DE LA FALTA</div>
-                                                    <div class="result-value" id="result-origen-falta"></div>
-                                                </div>
-                                                <div class="result-group">
-                                                    <div class="result-label">FALTA</div>
-                                                    <div class="result-value" id="result-falta"></div>
-                                                </div>
-                                                <div class="result-group">
-                                                    <div class="result-label">DENUNCIANTE</div>
-                                                    <div class="result-value" id="result-denunciante"></div>
-                                                </div>
-                                                <div class="result-group">
-                                                    <div class="result-label">FUNCIONARIO DETENIDO</div>
-                                                    <div class="result-value" id="result-detenido"></div>
-                                                </div>
-                                                <div class="result-group">
-                                                    <div class="result-label">ESTATUS</div>
-                                                    <div class="result-value" id="result-estatus"></div>
-                                                </div>
-                                                <div class="result-group">
-                                                    <div class="result-label">DECISIÓN</div>
-                                                    <div class="result-value" id="result-decision"></div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="result-group">
-                                                    <div class="result-label">EXPEDIENTE NÚMERO</div>
-                                                    <div class="result-value" id="result-expediente-numero"></div>
-                                                </div>
-                                                <div class="result-group">
-                                                    <div class="result-label">EXPEDIENTE PENAL</div>
-                                                    <div class="result-value" id="result-expediente-penal"></div>
-                                                </div>
-                                                <div class="result-group">
-                                                    <div class="result-label">REGISTRADO POR</div>
-                                                    <div class="result-value" id="result-registrado-por"></div>
-                                                </div>
-                                                <div class="result-group">
-                                                    <div class="result-label">SUSTANCIADOR</div>
-                                                    <div class="result-value" id="result-sustanciador"></div>
-                                                </div>
-                                                <div class="result-group">
-                                                    <div class="result-label">REMISIÓN</div>
-                                                    <div class="result-value" id="result-remision"></div>
-                                                </div>
-                                                <div class="result-group">
-                                                    <div class="result-label">RESEÑA DEL CASO</div>
-                                                    <div class="result-value" id="result-resena"></div>
-                                                </div>
-                                                <div class="result-group">
-                                                    <div class="result-label">CAUSA</div>
-                                                    <div class="result-value" id="result-causa"></div>
-                                                </div>
-                                                <div class="result-group">
-                                                    <div class="result-label">FECHA DE REGISTRO</div>
-                                                    <div class="result-value" id="result-fecha-registro"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Pestaña de Panel de Control -->
-            <div class="tab-pane fade" id="panel" role="tabpanel">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="mb-0">Panel de Control</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="text-center py-5">
-                            <i class="fas fa-home fa-3x text-muted mb-3"></i>
-                            <h4>Bienvenido al sistema</h4>
-                            <p class="text-muted">Este es su panel de control. Aquí se mostrarán las funciones disponibles.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- Header con título centrado -->
+<div class="header" id="main-title-section">
+<h1 class="centered-title">SISTEMA DE GESTIÓN DE EXPEDIENTES</h1>
+<p class="centered-subtitle">Registre y gestione expedientes de manera sencilla</p>
+</div>
+<!-- Pantalla de Login -->
+<div class="container" id="login-screen">
+<div class="login-container">
+<div class="card border-0">
+<div class="card-body p-4">
+<!-- Contenedor del logo -->
+<div class="logo-container text-center mb-4">
+<img src="https://raw.githubusercontent.com/gamakingrock/sistema-expedientes/main/images/policia-nacional-bolivariana.png"
+alt="Logo Policía Nacional Bolivariana"
+class="img-fluid">
+</div>
+<h2 class="card-title text-center mb-4">Iniciar Sesión</h2>
+<div id="error-message" class="error-message">
+<i class="fas fa-exclamation-circle me-2"></i><span id="error-text"></span>
+</div>
+<form id="login-form">
+<div class="mb-3">
+<div class="form-floating">
+<input type="email" class="form-control" id="email" required>
+<label for="email"><i class="fas fa-envelope me-2"></i>Correo electrónico</label>
+</div>
+</div>
+<div class="mb-3">
+<div class="form-floating">
+<input type="password" class="form-control" id="password" required>
+<label for="password"><i class="fas fa-lock me-2"></i>Contraseña</label>
+</div>
+</div>
+<!-- Checkbox para "Recordar mis credenciales" -->
+<div class="mb-3 form-check">
+<input type="checkbox" class="form-check-input" id="remember-credentials">
+<label class="form-check-label" for="remember-credentials">Recordar mis credenciales</label>
+</div>
+<button type="submit" class="btn btn-primary w-100">
+<span id="login-spinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
+<span id="login-text">Iniciar Sesión</span>
+</button>
+</form>
+</div>
+</div>
+<!-- Información de seguridad -->
+<div class="security-info">
+<i class="fas fa-shield-alt security-icon"></i>
+Su información está protegida con encriptación de extremo a extremo
+</div>
+</div>
+</div>
+<!-- Panel Principal (oculto al inicio) -->
+<div class="container panel-container" id="main-panel" style="display: none;">
+<div class="d-flex justify-content-between align-items-center mb-4">
+<h2>Bienvenido, <span id="user-name" class="text-primary"></span></h2>
+<button id="logout-btn" class="btn btn-outline-danger">
+<i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+</button>
+</div>
+<div class="card shadow-sm mb-4">
+<div class="card-header bg-white py-3">
+<h5 class="mb-0">Panel de Control</h5>
+</div>
+<div class="card-body">
+<div class="text-center py-5">
+<i class="fas fa-home" style="font-size: 4rem; color: #0066CC; opacity: 0.3;"></i>
+<h3 class="mt-4" style="color: #6c757d;">Panel Principal</h3>
+<p class="text-muted mt-2">Este es el panel principal del sistema</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Pie de página mejorado con texto en minúsculas -->
+<div class="footer">
+<div class="footer-line"></div>
+<div class="footer-content">
+<div class="footer-text">
+sistema de gestión de expedientes - todos los derechos reservados © 2025 / REDIP OCCIDENTAL - CCPE ZULIA - OTIC ZULIA
+</div>
+</div>
+</div>
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Elementos del DOM
+const loginScreen = document.getElementById('login-screen');
+const mainPanel = document.getElementById('main-panel');
+const loginForm = document.getElementById('login-form');
+const logoutBtn = document.getElementById('logout-btn');
+const userNameElement = document.getElementById('user-name');
 
-    <!-- Modal de Administración de Desplegables -->
-    <div class="modal fade" id="manageDropdownModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="manageDropdownModalLabel">Administrar Opciones: <span id="dropdown-field-name"></span></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="new-option" class="form-label">Nueva opción</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="new-option" placeholder="Ingrese nueva opción">
-                            <button type="button" class="btn btn-primary" id="add-option-btn">Agregar</button>
-                        </div>
-                    </div>
-                    
-                    <div class="option-list-container">
-                        <div id="options-list">
-                            <!-- Las opciones se cargarán aquí dinámicamente -->
-                        </div>
-                    </div>
-                    
-                    <div class="mt-3">
-                        <div class="alert alert-info d-flex align-items-center" role="alert">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <div>
-                                <strong>Nota:</strong> Las opciones que agregues se guardarán permanentemente y estarán disponibles para todos los usuarios.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
+// Función para iniciar sesión (simulada)
+function login(e) {
+e.preventDefault();
+const email = document.getElementById('email').value;
 
-    <!-- Pie de página mejorado con texto en minúsculas y centrado -->
-    <div class="footer">
-        <div class="footer-line"></div>
-        <div class="footer-content">
-            <div class="footer-text">
-                sistema de gestión de expedientes - todos los derechos reservados © 2025 / REDIP OCCIDENTAL - CCPE ZULIA - OTIC ZULIA
-            </div>
-        </div>
-    </div>
+// Mostrar spinner de carga
+document.getElementById('login-spinner').classList.remove('d-none');
+document.getElementById('login-text').textContent = 'Iniciando sesión...';
 
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <script>
-        // Configuración de Supabase
-        const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
+// Simular proceso de autenticación
+setTimeout(() => {
+// Mostrar panel principal
+loginScreen.style.display = 'none';
+mainPanel.style.display = 'block';
 
-        // Inicialización CORRECTA de Supabase
-        const { createClient } = supabase;
-        const supabaseClient = createClient(supabaseUrl, supabaseKey, {
-            auth: {
-                autoRefreshToken: true,
-                persistSession: true,
-                detectSessionInUrl: true
-            }
-        });
+// Actualizar nombre de usuario
+const username = email.split('@')[0];
+userNameElement.textContent = username.charAt(0).toUpperCase() + username.slice(1);
 
-        // Elementos del DOM
-        const loginScreen = document.getElementById('login-screen');
-        const mainPanel = document.getElementById('main-panel');
-        const errorMessage = document.getElementById('error-message');
-        const errorText = document.getElementById('error-text');
-        const loginSpinner = document.getElementById('login-spinner');
-        const loginText = document.getElementById('login-text');
-        const logoutBtn = document.getElementById('logout-btn');
-        const showRegisterBtn = document.getElementById('show-register');
-        const showLoginBtn = document.getElementById('show-login');
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const userNameElement = document.getElementById('user-name');
+// Restaurar estado del botón
+document.getElementById('login-spinner').classList.add('d-none');
+document.getElementById('login-text').textContent = 'Iniciar Sesión';
+}, 800);
+}
 
-        // Elementos del modal de administración de desplegables
-        const manageDropdownModal = document.getElementById('manageDropdownModal');
-        const manageDropdownModalLabel = document.getElementById('manageDropdownModalLabel');
-        const dropdownFieldName = document.getElementById('dropdown-field-name');
-        const newOptionInput = document.getElementById('new-option');
-        const addOptionBtn = document.getElementById('add-option-btn');
-        const optionsList = document.getElementById('options-list');
+// Función para cerrar sesión
+function logout() {
+// Mostrar pantalla de login
+loginScreen.style.display = 'block';
+mainPanel.style.display = 'none';
 
-        // Elementos para la pestaña de consultas
-        const searchCedulaInput = document.getElementById('search-cedula');
-        const searchBtn = document.getElementById('search-btn');
-        const resultSection = document.getElementById('result-section');
-        const noResults = document.getElementById('no-results');
-        const resultContent = document.getElementById('result-content');
+// Limpiar el formulario de login
+document.getElementById('email').value = '';
+document.getElementById('password').value = '';
+}
 
-        // Elementos para la lista de registros
-        const personalList = document.getElementById('personal-list');
-        const searchPersonalInput = document.getElementById('search-personal');
+// Configurar eventos
+document.addEventListener('DOMContentLoaded', () => {
+// Configurar el evento de submit del formulario de login
+if (loginForm) {
+loginForm.addEventListener('submit', login);
+}
 
-        // Variables globales
-        let currentDropdownField = null;
-        let editingPersonalId = null;
-        let personalData = {};
-        let allDropdownOptions = {};
-
-        // Función para mostrar mensajes de error
-        function showError(message) {
-            if (errorText && errorMessage) {
-                errorText.textContent = message;
-                errorMessage.style.display = 'block';
-            }
-            console.error('Error:', message);
-        }
-
-        // Función para ocultar mensajes de error
-        function hideError() {
-            if (errorMessage) {
-                errorMessage.style.display = 'none';
-            }
-        }
-
-        // Función para guardar el correo recordado
-        function saveRememberedEmail(email) {
-            try {
-                localStorage.setItem('rememberedEmail', email);
-            } catch (e) {
-                console.warn("No se pudo guardar el correo en localStorage");
-            }
-        }
-
-        // Función para obtener el correo recordado
-        function getRememberedEmail() {
-            try {
-                return localStorage.getItem('rememberedEmail') || '';
-            } catch (e) {
-                console.warn("No se pudo obtener el correo de localStorage");
-                return '';
-            }
-        }
-
-        // Función para limpiar el correo recordado
-        function clearRememberedEmail() {
-            try {
-                localStorage.removeItem('rememberedEmail');
-            } catch (e) {
-                console.warn("No se pudo limpiar el correo de localStorage");
-            }
-        }
-
-        // Función para verificar la sesión
-        async function checkSession() {
-            try {
-                const { data, error } = await supabaseClient.auth.getSession();
-                
-                if (error) {
-                    console.error('Error al obtener sesión:', error);
-                    throw error;
-                }
-                
-                if (data?.session) {
-                    loginScreen.style.display = 'none';
-                    mainPanel.style.display = 'block';
-                    
-                    const user = data.session.user;
-                    if (userNameElement) {
-                        const fullName = user.user_metadata?.full_name || 
-                                        user.user_metadata?.fullName || 
-                                        user.user_metadata?.name ||
-                                        user.email?.split('@')[0] || 'Usuario';
-                        
-                        userNameElement.textContent = fullName;
-                    }
-                } else {
-                    loginScreen.style.display = 'block';
-                    mainPanel.style.display = 'none';
-                    
-                    const rememberedEmail = getRememberedEmail();
-                    if (rememberedEmail) {
-                        document.getElementById('email').value = rememberedEmail;
-                        document.getElementById('remember-credentials').checked = true;
-                    }
-                }
-            } catch (error) {
-                console.error('Error al verificar sesión:', error);
-                showError('Error al verificar sesión: ' + error.message);
-            }
-        }
-
-        // Función para iniciar sesión
-        async function login(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const rememberCredentials = document.getElementById('remember-credentials').checked;
-            
-            try {
-                hideError();
-                
-                loginSpinner.classList.remove('d-none');
-                loginText.textContent = 'Iniciando sesión...';
-                
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-                
-                if (error) {
-                    console.error('Error de autenticación:', error);
-                    
-                    let errorMessageText = 'Error: ' + error.message;
-                    
-                    if (error.message.includes('Invalid login credentials')) {
-                        errorMessageText = 'Credenciales inválidas. Verifique su correo y contraseña.';
-                    } else if (error.message.includes('Email not confirmed')) {
-                        errorMessageText = 'Correo no confirmado. Por favor, revise su bandeja de entrada y confirme su cuenta.';
-                    } else if (error.message.includes('Email rate limit exceeded')) {
-                        errorMessageText = 'Demasiados intentos. Por favor, intente más tarde.';
-                    }
-                    
-                    showError(errorMessageText);
-                    
-                    loginSpinner.classList.add('d-none');
-                    loginText.textContent = 'Iniciar Sesión';
-                    
-                    return;
-                }
-                
-                if (rememberCredentials) {
-                    saveRememberedEmail(email);
-                } else {
-                    clearRememberedEmail();
-                }
-                
-                loginScreen.style.display = 'none';
-                mainPanel.style.display = 'block';
-                
-                if (userNameElement) {
-                    const fullName = data.user.user_metadata?.full_name || 
-                                    data.user.user_metadata?.fullName || 
-                                    data.user.user_metadata?.name ||
-                                    data.user.email?.split('@')[0] || 'Usuario';
-                    
-                    userNameElement.textContent = fullName;
-                }
-                
-                loginSpinner.classList.add('d-none');
-                loginText.textContent = 'Iniciar Sesión';
-                
-            } catch (error) {
-                console.error('Error inesperado al iniciar sesión:', error);
-                showError('Error inesperado: ' + error.message);
-                
-                loginSpinner.classList.add('d-none');
-                loginText.textContent = 'Iniciar Sesión';
-            }
-        }
-
-        // Función para cerrar sesión
-        async function logout() {
-            try {
-                const { error } = await supabaseClient.auth.signOut();
-                if (error) throw error;
-                
-                clearRememberedEmail();
-                
-                loginScreen.style.display = 'block';
-                mainPanel.style.display = 'none';
-                
-                document.getElementById('email').value = '';
-                document.getElementById('password').value = '';
-                document.getElementById('remember-credentials').checked = false;
-            } catch (error) {
-                console.error('Error al cerrar sesión:', error);
-                alert('Error al cerrar sesión: ' + error.message);
-            }
-        }
-
-        // Funciones para mostrar/ocultar formularios
-        function showRegisterForm() {
-            loginForm.classList.add('d-none');
-            registerForm.classList.remove('d-none');
-        }
-
-        function showLoginForm() {
-            registerForm.classList.add('d-none');
-            loginForm.classList.remove('d-none');
-        }
-
-        // Función para cargar opciones de desplegables desde el almacenamiento local
-        function loadDropdownOptions(field) {
-            // Opciones predeterminadas para cada campo
-            const defaultOptions = {
-                'rango': ['General', 'Coronel', 'Teniente Coronel', 'Mayor', 'Capitán', 'Teniente', 'Subteniente', 'Sargento Mayor', 'Sargento', 'Cabo', 'Soldado'],
-                'sexo': ['Masculino', 'Femenino', 'Otro'],
-                'estatus-funcionario': ['Activo', 'Inactivo', 'En Licencia', 'Jubilado', 'Retirado'],
-                'tipo-expediente': ['Administrativo', 'Disciplinario', 'Penal', 'Civil'],
-                'icap': ['Zulia', 'Caracas', 'Miranda', 'Aragua', 'Otro'],
-                'condicion': ['Investigado', 'Imputado', 'Acusado', 'Condenado', 'Absuelto'],
-                'anio': ['2020', '2021', '2022', '2023', '2024', '2025', 'Otro'],
-                'servicio': ['Patrullaje', 'Investigación', 'Tránsito', 'Seguridad Ciudadana', 'Otro'],
-                'tipo-falta': ['Leve', 'Grave', 'Muy Grave'],
-                'origen-falta': ['Interna', 'Externa', 'Denuncia Ciudadana', 'Fiscalía'],
-                'falta': ['Abandono de Servicio', 'Desobediencia', 'Malversación', 'Abuso de Autoridad', 'Corrupción'],
-                'denunciante': ['Ciudadano', 'Funcionario', 'Fiscal', 'Juez', 'Familia', 'Otro'],
-                'detenido': ['Sí', 'No', 'En Proceso de Detención', 'En Libertad'],
-                'estatus': ['Abierto', 'En Proceso', 'Cerrado', 'Archivado', 'En Juicio', 'Sentencia'],
-                'decision': ['Sanción', 'Archivado', 'Absuelto', 'En Proceso', 'Otro']
-            };
-
-            // Obtener opciones del almacenamiento local o usar las predeterminadas
-            const storedOptions = JSON.parse(localStorage.getItem(`dropdown_options_${field}`)) || [];
-            const allOptions = [...new Set([...defaultOptions[field] || [], ...storedOptions])];
-            
-            // Actualizar el desplegable
-            const selectElement = document.getElementById(field);
-            if (selectElement) {
-                // Limpiar opciones actuales (excepto la opción predeterminada)
-                selectElement.innerHTML = '<option value="">Seleccione...</option>';
-                
-                // Añadir opciones
-                allOptions.forEach(option => {
-                    const optionElement = document.createElement('option');
-                    optionElement.value = option.toLowerCase().replace(/\s+/g, '-');
-                    optionElement.textContent = option;
-                    selectElement.appendChild(optionElement);
-                });
-            }
-            
-            // Guardar en el objeto global
-            allDropdownOptions[field] = allOptions;
-            return allOptions;
-        }
-
-        // Función para guardar una nueva opción en el almacenamiento local
-        function saveDropdownOption(field, option) {
-            const currentOptions = JSON.parse(localStorage.getItem(`dropdown_options_${field}`)) || [];
-            if (!currentOptions.includes(option)) {
-                currentOptions.push(option);
-                localStorage.setItem(`dropdown_options_${field}`, JSON.stringify(currentOptions));
-            }
-        }
-
-        // Función para eliminar una opción del almacenamiento local
-        function removeDropdownOption(field, option) {
-            const currentOptions = JSON.parse(localStorage.getItem(`dropdown_options_${field}`)) || [];
-            const updatedOptions = currentOptions.filter(opt => opt !== option);
-            localStorage.setItem(`dropdown_options_${field}`, JSON.stringify(updatedOptions));
-        }
-
-        // Función para abrir el modal de administración de desplegables
-        function openManageDropdownModal(field) {
-            currentDropdownField = field;
-            dropdownFieldName.textContent = field.split('-').map(word => 
-                word.charAt(0).toUpperCase() + word.slice(1)
-            ).join(' ');
-            
-            // Cargar opciones actuales
-            const options = loadDropdownOptions(field);
-            
-            // Mostrar el modal
-            const modal = new bootstrap.Modal(manageDropdownModal);
-            modal.show();
-            
-            // Cargar opciones en la lista del modal
-            updateOptionsList(field);
-        }
-
-        // Función para actualizar la lista de opciones en el modal
-        function updateOptionsList(field) {
-            const options = loadDropdownOptions(field);
-            optionsList.innerHTML = '';
-            
-            options.forEach((option, index) => {
-                // No mostrar la opción vacía
-                if (option === '') return;
-                
-                const row = document.createElement('div');
-                row.className = 'option-item';
-                row.innerHTML = `
-                    <div class="dropdown-option-row">
-                        <input type="text" class="form-control" value="${option}" data-option="${option}">
-                        <button class="btn btn-sm btn-outline-warning edit-option" data-option="${option}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger delete-option" data-option="${option}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                optionsList.appendChild(row);
-            });
-            
-            // Configurar eventos para los botones de edición y eliminación
-            document.querySelectorAll('.edit-option').forEach(button => {
-                button.addEventListener('click', function() {
-                    const option = this.getAttribute('data-option');
-                    const input = this.parentElement.querySelector('input');
-                    input.removeAttribute('readonly');
-                    input.focus();
-                    input.select();
-                    
-                    // Cambiar el botón a guardar
-                    this.innerHTML = '<i class="fas fa-check"></i>';
-                    this.classList.replace('btn-outline-warning', 'btn-outline-success');
-                    this.classList.replace('edit-option', 'save-option');
-                });
-            });
-            
-            document.querySelectorAll('.save-option').forEach(button => {
-                button.addEventListener('click', function() {
-                    const option = this.getAttribute('data-option');
-                    const input = this.parentElement.querySelector('input');
-                    const newOption = input.value.trim();
-                    
-                    if (!newOption) {
-                        alert('Por favor, ingrese una opción válida');
-                        return;
-                    }
-                    
-                    // Actualizar la opción
-                    removeDropdownOption(currentDropdownField, option);
-                    saveDropdownOption(currentDropdownField, newOption);
-                    
-                    // Recargar opciones
-                    updateOptionsList(currentDropdownField);
-                    loadDropdownOptions(currentDropdownField);
-                    
-                    // Cambiar el botón a editar
-                    this.innerHTML = '<i class="fas fa-edit"></i>';
-                    this.classList.replace('btn-outline-success', 'btn-outline-warning');
-                    this.classList.replace('save-option', 'edit-option');
-                });
-            });
-            
-            document.querySelectorAll('.delete-option').forEach(button => {
-                button.addEventListener('click', function() {
-                    const option = this.getAttribute('data-option');
-                    if (confirm('¿Está seguro de que desea eliminar esta opción?')) {
-                        removeDropdownOption(currentDropdownField, option);
-                        
-                        // Recargar opciones
-                        updateOptionsList(currentDropdownField);
-                        loadDropdownOptions(currentDropdownField);
-                    }
-                });
-            });
-        }
-
-        // Función para añadir una nueva opción
-        function addOption(field, option) {
-            if (!option.trim()) {
-                alert('Por favor, ingrese una opción válida');
-                return;
-            }
-            
-            // Guardar la opción
-            saveDropdownOption(field, option);
-            
-            // Recargar opciones
-            updateOptionsList(field);
-            loadDropdownOptions(field);
-            
-            // Limpiar el campo de entrada
-            newOptionInput.value = '';
-        }
-
-        // Función para formatear la fecha
-        function formatDate(dateString) {
-            if (!dateString) return 'N/A';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('es-ES', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        }
-
-        // Función para buscar por cédula
-        async function searchByCedula() {
-            try {
-                // Mostrar capa de carga
-                document.getElementById('loading-overlay').style.display = 'flex';
-                
-                const cedula = searchCedulaInput.value.trim();
-                
-                if (!cedula) {
-                    alert('Por favor, ingrese una cédula para buscar');
-                    document.getElementById('loading-overlay').style.display = 'none';
-                    return;
-                }
-                
-                // Simular búsqueda en los datos almacenados
-                if (personalData[cedula]) {
-                    const data = personalData[cedula];
-                    
-                    // Mostrar los resultados
-                    resultSection.style.display = 'block';
-                    noResults.style.display = 'none';
-                    resultContent.style.display = 'block';
-                    
-                    // Rellenar los campos con los datos encontrados
-                    document.getElementById('result-nombres').textContent = data.nombres || 'N/A';
-                    document.getElementById('result-apellidos').textContent = data.apellidos || 'N/A';
-                    document.getElementById('result-cedula').textContent = data.cedula || 'N/A';
-                    document.getElementById('result-fecha-nacimiento').textContent = formatDate(data.fecha_nacimiento);
-                    document.getElementById('result-rango').textContent = data.rango || 'N/A';
-                    document.getElementById('result-sexo').textContent = data.sexo || 'N/A';
-                    document.getElementById('result-fecha-inicio').textContent = formatDate(data.fecha_inicio);
-                    document.getElementById('result-estatus-funcionario').textContent = data.estatus_funcionario || 'N/A';
-                    document.getElementById('result-tipo-expediente').textContent = data.tipo_expediente || 'N/A';
-                    document.getElementById('result-icap').textContent = data.icap || 'N/A';
-                    document.getElementById('result-condicion').textContent = data.condicion || 'N/A';
-                    document.getElementById('result-anio').textContent = data.anio || 'N/A';
-                    document.getElementById('result-servicio').textContent = data.servicio || 'N/A';
-                    document.getElementById('result-tipo-falta').textContent = data.tipo_falta || 'N/A';
-                    document.getElementById('result-origen-falta').textContent = data.origen_falta || 'N/A';
-                    document.getElementById('result-falta').textContent = data.falta || 'N/A';
-                    document.getElementById('result-denunciante').textContent = data.denunciante || 'N/A';
-                    document.getElementById('result-detenido').textContent = data.detenido || 'N/A';
-                    document.getElementById('result-estatus').textContent = data.estatus || 'N/A';
-                    document.getElementById('result-decision').textContent = data.decision || 'N/A';
-                    document.getElementById('result-expediente-numero').textContent = data.expediente_numero || 'N/A';
-                    document.getElementById('result-expediente-penal').textContent = data.expediente_penal || 'N/A';
-                    document.getElementById('result-registrado-por').textContent = data.registrado_por || 'N/A';
-                    document.getElementById('result-sustanciador').textContent = data.sustanciador || 'N/A';
-                    document.getElementById('result-remision').textContent = data.remision || 'N/A';
-                    document.getElementById('result-resena').textContent = data.resena || 'N/A';
-                    document.getElementById('result-causa').textContent = data.causa || 'N/A';
-                    document.getElementById('result-fecha-registro').textContent = formatDate(data.fecha_registro);
-                    
-                    // Establecer la foto
-                    const fotoElement = document.getElementById('result-foto');
-                    if (data.foto && data.foto.startsWith('http')) {
-                        fotoElement.src = data.foto;
-                    } else {
-                        fotoElement.src = 'https://placehold.co/150x150/003366/white?text=Foto+No+Disponible';
-                    }
-                } else {
-                    // No se encontró el registro
-                    resultSection.style.display = 'block';
-                    noResults.style.display = 'block';
-                    resultContent.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error al buscar por cédula:', error);
-                alert(`Error al buscar: ${error.message}`);
-                resultSection.style.display = 'block';
-                noResults.style.display = 'block';
-                resultContent.style.display = 'none';
-                noResults.textContent = `Error al buscar: ${error.message}`;
-            } finally {
-                // Ocultar capa de carga
-                document.getElementById('loading-overlay').style.display = 'none';
-            }
-        }
-
-        // Función para guardar los datos del personal
-        async function savePersonal(e) {
-            e.preventDefault();
-            
-            try {
-                // Mostrar capa de carga
-                document.getElementById('loading-overlay').style.display = 'flex';
-                
-                // Obtener los valores del formulario
-                const nombres = document.getElementById('nombres').value;
-                const apellidos = document.getElementById('apellidos').value;
-                const cedula = document.getElementById('cedula').value;
-                const fecha_nacimiento = document.getElementById('fecha-nacimiento').value;
-                const rango = document.getElementById('rango').value;
-                const sexo = document.getElementById('sexo').value;
-                const fecha_inicio = document.getElementById('fecha-inicio').value;
-                const estatus_funcionario = document.getElementById('estatus-funcionario').value;
-                const tipo_expediente = document.getElementById('tipo-expediente').value;
-                const icap = document.getElementById('icap').value;
-                const condicion = document.getElementById('condicion').value;
-                const anio = document.getElementById('anio').value;
-                const servicio = document.getElementById('servicio').value;
-                const tipo_falta = document.getElementById('tipo-falta').value;
-                const origen_falta = document.getElementById('origen-falta').value;
-                const falta = document.getElementById('falta').value;
-                const denunciante = document.getElementById('denunciante').value;
-                const detenido = document.getElementById('detenido').value;
-                const estatus = document.getElementById('estatus').value;
-                const decision = document.getElementById('decision').value;
-                const expediente_numero = document.getElementById('expediente-numero').value;
-                const expediente_penal = document.getElementById('expediente-penal').value;
-                const registrado_por = document.getElementById('registrado-por').value;
-                const sustanciador = document.getElementById('sustanciador').value;
-                const remision = document.getElementById('remision').value;
-                const resena = document.getElementById('resena').value;
-                const causa = document.getElementById('causa').value;
-                const foto = document.getElementById('profile-picture').src;
-                
-                // Validar campos obligatorios
-                if (!nombres || !apellidos || !cedula || !rango || !sexo) {
-                    alert('Por favor, complete los campos obligatorios');
-                    document.getElementById('loading-overlay').style.display = 'none';
-                    return;
-                }
-                
-                // Crear objeto con los datos
-                const personalData = {
-                    nombres,
-                    apellidos,
-                    cedula,
-                    fecha_nacimiento,
-                    rango,
-                    sexo,
-                    fecha_inicio,
-                    estatus_funcionario,
-                    tipo_expediente,
-                    icap,
-                    condicion,
-                    anio,
-                    servicio,
-                    tipo_falta,
-                    origen_falta,
-                    falta,
-                    denunciante,
-                    detenido,
-                    estatus,
-                    decision,
-                    expediente_numero,
-                    expediente_penal,
-                    registrado_por,
-                    sustanciador,
-                    remision,
-                    resena,
-                    causa,
-                    foto,
-                    fecha_registro: new Date().toISOString()
-                };
-                
-                // Guardar en el almacenamiento local
-                const storedData = JSON.parse(localStorage.getItem('personal_data') || '{}');
-                storedData[cedula] = personalData;
-                localStorage.setItem('personal_data', JSON.stringify(storedData));
-                
-                // Actualizar el objeto global
-                personalData[cedula] = personalData;
-                
-                // Mostrar mensaje de éxito
-                alert('Datos guardados correctamente');
-                
-                // Resetear el formulario
-                document.getElementById('personal-form').reset();
-                document.getElementById('profile-picture').src = 'https://placehold.co/200x200/003366/white?text=Foto+Personal';
-                
-                // Recargar la lista de registros
-                loadPersonalRecords();
-                
-                // Limpiar el ID de edición
-                editingPersonalId = null;
-                
-            } catch (error) {
-                console.error('Error al guardar los datos:', error);
-                alert(`Error al guardar: ${error.message}`);
-            } finally {
-                // Ocultar capa de carga
-                document.getElementById('loading-overlay').style.display = 'none';
-            }
-        }
-
-        // Función para cargar los registros de personal
-        function loadPersonalRecords() {
-            try {
-                // Mostrar capa de carga
-                document.getElementById('loading-overlay').style.display = 'flex';
-                
-                // Obtener datos del almacenamiento local
-                const storedData = JSON.parse(localStorage.getItem('personal_data') || '{}');
-                personalData = storedData;
-                
-                // Limpiar la lista actual
-                personalList.innerHTML = '';
-                
-                // Verificar si hay registros
-                const records = Object.values(storedData);
-                if (records.length === 0) {
-                    personalList.innerHTML = `
-                        <div class="text-center py-4">
-                            <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
-                            <p class="text-muted">No hay registros almacenados. Registre un nuevo personal para verlo aquí.</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // Ordenar por fecha de registro (más reciente primero)
-                records.sort((a, b) => new Date(b.fecha_registro) - new Date(a.fecha_registro));
-                
-                // Crear elementos para cada registro
-                records.forEach(data => {
-                    const personalItem = document.createElement('div');
-                    personalItem.className = 'personal-item';
-                    personalItem.innerHTML = `
-                        <div class="personal-item-header">
-                            ${data.nombres} ${data.apellidos}
-                        </div>
-                        <div class="personal-item-info">
-                            <span class="personal-item-label">Cédula:</span> ${data.cedula} |
-                            <span class="personal-item-label">Rango:</span> ${data.rango} |
-                            <span class="personal-item-label">Fecha:</span> ${formatDate(data.fecha_registro)}
-                        </div>
-                        <div class="personal-item-actions">
-                            <button class="btn btn-sm btn-outline-primary view-record" data-cedula="${data.cedula}">
-                                <i class="fas fa-eye"></i> Ver
-                            </button>
-                            <button class="btn btn-sm btn-outline-warning edit-record" data-cedula="${data.cedula}">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger delete-record" data-cedula="${data.cedula}">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </div>
-                    `;
-                    personalList.appendChild(personalItem);
-                });
-                
-                // Configurar eventos para los botones de acción
-                document.querySelectorAll('.view-record').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const cedula = this.getAttribute('data-cedula');
-                        viewRecord(cedula);
-                    });
-                });
-                
-                document.querySelectorAll('.edit-record').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const cedula = this.getAttribute('data-cedula');
-                        editRecord(cedula);
-                    });
-                });
-                
-                document.querySelectorAll('.delete-record').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const cedula = this.getAttribute('data-cedula');
-                        deleteRecord(cedula);
-                    });
-                });
-                
-                // Configurar búsqueda en la lista
-                if (searchPersonalInput) {
-                    searchPersonalInput.addEventListener('input', function() {
-                        const searchTerm = this.value.toLowerCase();
-                        const rows = document.querySelectorAll('.personal-item');
-                        
-                        rows.forEach(row => {
-                            const cells = row.querySelectorAll('.personal-item-info, .personal-item-header');
-                            let match = false;
-                            
-                            for (let i = 0; i < cells.length; i++) {
-                                if (cells[i].textContent.toLowerCase().includes(searchTerm)) {
-                                    match = true;
-                                    break;
-                                }
-                            }
-                            
-                            row.style.display = match ? '' : 'none';
-                        });
-                    });
-                }
-                
-            } catch (error) {
-                console.error('Error al cargar los registros:', error);
-                personalList.innerHTML = `
-                    <div class="text-center py-4">
-                        <i class="fas fa-exclamation-triangle fa-2x text-danger mb-3"></i>
-                        <p class="text-danger">Error al cargar los registros: ${error.message}</p>
-                    </div>
-                `;
-            } finally {
-                // Ocultar capa de carga
-                document.getElementById('loading-overlay').style.display = 'none';
-            }
-        }
-
-        // Función para ver un registro
-        function viewRecord(cedula) {
-            if (personalData[cedula]) {
-                const data = personalData[cedula];
-                
-                // Mostrar los resultados
-                resultSection.style.display = 'block';
-                noResults.style.display = 'none';
-                resultContent.style.display = 'block';
-                
-                // Rellenar los campos con los datos encontrados
-                document.getElementById('result-nombres').textContent = data.nombres || 'N/A';
-                document.getElementById('result-apellidos').textContent = data.apellidos || 'N/A';
-                document.getElementById('result-cedula').textContent = data.cedula || 'N/A';
-                document.getElementById('result-fecha-nacimiento').textContent = formatDate(data.fecha_nacimiento);
-                document.getElementById('result-rango').textContent = data.rango || 'N/A';
-                document.getElementById('result-sexo').textContent = data.sexo || 'N/A';
-                document.getElementById('result-fecha-inicio').textContent = formatDate(data.fecha_inicio);
-                document.getElementById('result-estatus-funcionario').textContent = data.estatus_funcionario || 'N/A';
-                document.getElementById('result-tipo-expediente').textContent = data.tipo_expediente || 'N/A';
-                document.getElementById('result-icap').textContent = data.icap || 'N/A';
-                document.getElementById('result-condicion').textContent = data.condicion || 'N/A';
-                document.getElementById('result-anio').textContent = data.anio || 'N/A';
-                document.getElementById('result-servicio').textContent = data.servicio || 'N/A';
-                document.getElementById('result-tipo-falta').textContent = data.tipo_falta || 'N/A';
-                document.getElementById('result-origen-falta').textContent = data.origen_falta || 'N/A';
-                document.getElementById('result-falta').textContent = data.falta || 'N/A';
-                document.getElementById('result-denunciante').textContent = data.denunciante || 'N/A';
-                document.getElementById('result-detenido').textContent = data.detenido || 'N/A';
-                document.getElementById('result-estatus').textContent = data.estatus || 'N/A';
-                document.getElementById('result-decision').textContent = data.decision || 'N/A';
-                document.getElementById('result-expediente-numero').textContent = data.expediente_numero || 'N/A';
-                document.getElementById('result-expediente-penal').textContent = data.expediente_penal || 'N/A';
-                document.getElementById('result-registrado-por').textContent = data.registrado_por || 'N/A';
-                document.getElementById('result-sustanciador').textContent = data.sustanciador || 'N/A';
-                document.getElementById('result-remision').textContent = data.remision || 'N/A';
-                document.getElementById('result-resena').textContent = data.resena || 'N/A';
-                document.getElementById('result-causa').textContent = data.causa || 'N/A';
-                document.getElementById('result-fecha-registro').textContent = formatDate(data.fecha_registro);
-                
-                // Establecer la foto
-                const fotoElement = document.getElementById('result-foto');
-                if (data.foto && data.foto.startsWith('http')) {
-                    fotoElement.src = data.foto;
-                } else {
-                    fotoElement.src = 'https://placehold.co/150x150/003366/white?text=Foto+No+Disponible';
-                }
-                
-                // Cambiar a la pestaña de consultas
-                const consultasTab = document.getElementById('consultas-tab');
-                const consultasTabInstance = bootstrap.Tab.getOrCreateInstance(consultasTab);
-                consultasTabInstance.show();
-            }
-        }
-
-        // Función para editar un registro
-        function editRecord(cedula) {
-            if (personalData[cedula]) {
-                const data = personalData[cedula];
-                
-                // Rellenar el formulario con los datos
-                document.getElementById('nombres').value = data.nombres || '';
-                document.getElementById('apellidos').value = data.apellidos || '';
-                document.getElementById('cedula').value = data.cedula || '';
-                document.getElementById('fecha-nacimiento').value = data.fecha_nacimiento || '';
-                document.getElementById('rango').value = data.rango || '';
-                document.getElementById('sexo').value = data.sexo || '';
-                document.getElementById('fecha-inicio').value = data.fecha_inicio || '';
-                document.getElementById('estatus-funcionario').value = data.estatus_funcionario || '';
-                document.getElementById('tipo-expediente').value = data.tipo_expediente || '';
-                document.getElementById('icap').value = data.icap || '';
-                document.getElementById('condicion').value = data.condicion || '';
-                document.getElementById('anio').value = data.anio || '';
-                document.getElementById('servicio').value = data.servicio || '';
-                document.getElementById('tipo-falta').value = data.tipo_falta || '';
-                document.getElementById('origen-falta').value = data.origen_falta || '';
-                document.getElementById('falta').value = data.falta || '';
-                document.getElementById('denunciante').value = data.denunciante || '';
-                document.getElementById('detenido').value = data.detenido || '';
-                document.getElementById('estatus').value = data.estatus || '';
-                document.getElementById('decision').value = data.decision || '';
-                document.getElementById('expediente-numero').value = data.expediente_numero || '';
-                document.getElementById('expediente-penal').value = data.expediente_penal || '';
-                document.getElementById('registrado-por').value = data.registrado_por || '';
-                document.getElementById('sustanciador').value = data.sustanciador || '';
-                document.getElementById('remision').value = data.remision || '';
-                document.getElementById('resena').value = data.resena || '';
-                document.getElementById('causa').value = data.causa || '';
-                
-                // Establecer la foto
-                if (data.foto && data.foto.startsWith('http')) {
-                    document.getElementById('profile-picture').src = data.foto;
-                }
-                
-                // Establecer el ID de edición
-                editingPersonalId = cedula;
-                
-                // Cambiar a la pestaña de registro
-                const registroTab = document.getElementById('registro-tab');
-                const registroTabInstance = bootstrap.Tab.getOrCreateInstance(registroTab);
-                registroTabInstance.show();
-                
-                // Desplazar a la sección del formulario
-                document.getElementById('personal-form').scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-
-        // Función para eliminar un registro
-        function deleteRecord(cedula) {
-            if (confirm('¿Está seguro de que desea eliminar este registro?')) {
-                try {
-                    // Mostrar capa de carga
-                    document.getElementById('loading-overlay').style.display = 'flex';
-                    
-                    // Eliminar del objeto global
-                    delete personalData[cedula];
-                    
-                    // Eliminar del almacenamiento local
-                    const storedData = JSON.parse(localStorage.getItem('personal_data') || '{}');
-                    delete storedData[cedula];
-                    localStorage.setItem('personal_data', JSON.stringify(storedData));
-                    
-                    // Recargar la lista de registros
-                    loadPersonalRecords();
-                    
-                    alert('Registro eliminado correctamente');
-                    
-                } catch (error) {
-                    console.error('Error al eliminar el registro:', error);
-                    alert(`Error al eliminar el registro: ${error.message}`);
-                } finally {
-                    // Ocultar capa de carga
-                    document.getElementById('loading-overlay').style.display = 'none';
-                }
-            }
-        }
-
-        // Configurar eventos
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                await checkSession();
-                
-                supabaseClient.auth.onAuthStateChange((event, session) => {
-                    console.log('Cambio de estado de autenticación:', event);
-                    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-                        checkSession();
-                    }
-                });
-                
-                if (loginForm) {
-                    loginForm.addEventListener('submit', login);
-                }
-                
-                if (logoutBtn) {
-                    logoutBtn.addEventListener('click', logout);
-                }
-                
-                if (showRegisterBtn) {
-                    showRegisterBtn.addEventListener('click', showRegisterForm);
-                }
-                
-                if (showLoginBtn) {
-                    showLoginBtn.addEventListener('click', showLoginForm);
-                }
-                
-                // Configurar la carga de imagen
-                const profilePictureUpload = document.getElementById('profile-picture-upload');
-                const profilePicture = document.getElementById('profile-picture');
-                
-                if (profilePictureUpload && profilePicture) {
-                    profilePictureUpload.addEventListener('change', function(e) {
-                        const file = e.target.files[0];
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = function(e) {
-                                profilePicture.src = e.target.result;
-                            }
-                            reader.readAsDataURL(file);
-                        }
-                    });
-                }
-                
-                // Configurar botones de administración de desplegables
-                document.querySelectorAll('.manage-dropdown').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const field = this.getAttribute('data-field');
-                        openManageDropdownModal(field);
-                    });
-                });
-                
-                // Configurar botón de añadir opción
-                if (addOptionBtn) {
-                    addOptionBtn.addEventListener('click', function() {
-                        const newOption = newOptionInput.value.trim();
-                        if (newOption && currentDropdownField) {
-                            addOption(currentDropdownField, newOption);
-                        }
-                    });
-                }
-                
-                // Permitir añadir opción con Enter
-                if (newOptionInput) {
-                    newOptionInput.addEventListener('keypress', function(e) {
-                        if (e.key === 'Enter') {
-                            const newOption = this.value.trim();
-                            if (newOption && currentDropdownField) {
-                                addOption(currentDropdownField, newOption);
-                            }
-                        }
-                    });
-                }
-                
-                // Configurar el formulario de registro de personal
-                const personalForm = document.getElementById('personal-form');
-                if (personalForm) {
-                    // Eliminar cualquier listener existente
-                    const formClone = personalForm.cloneNode(true);
-                    personalForm.parentNode.replaceChild(formClone, personalForm);
-                    
-                    // Añadir el nuevo listener
-                    formClone.addEventListener('submit', savePersonal);
-                }
-                
-                // Cargar todas las opciones de desplegables
-                const dropdownFields = [
-                    'rango', 'sexo', 'estatus-funcionario', 'tipo-expediente', 'icap', 
-                    'condicion', 'anio', 'servicio', 'tipo-falta', 'origen-falta', 
-                    'falta', 'denunciante', 'detenido', 'estatus', 'decision'
-                ];
-                
-                dropdownFields.forEach(field => {
-                    loadDropdownOptions(field);
-                });
-                
-                // Cargar datos almacenados
-                const storedData = JSON.parse(localStorage.getItem('personal_data') || '{}');
-                personalData = storedData;
-                
-                // Cargar la lista de registros
-                loadPersonalRecords();
-                
-                // Configurar búsqueda por cédula
-                if (searchBtn) {
-                    searchBtn.addEventListener('click', searchByCedula);
-                }
-                
-                if (searchCedulaInput) {
-                    searchCedulaInput.addEventListener('keypress', function(e) {
-                        if (e.key === 'Enter') {
-                            searchByCedula();
-                        }
-                    });
-                }
-                
-                console.log('Sistema inicializado correctamente');
-            } catch (error) {
-                console.error('Error al inicializar el sistema:', error);
-                alert('Error al inicializar el sistema: ' + error.message);
-            }
-        });
-    </script>
-</body>
+// Configurar botón de cerrar sesión
+if (logoutBtn) {
+logoutBtn.addEventListener('click', logout);
+}
+});
+</script></body>
 </html>
