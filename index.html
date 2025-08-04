@@ -243,6 +243,9 @@
         .super-admin-only {
             display: none;
         }
+        .admin-only {
+            display: none;
+        }
         @media (max-width: 576px) {
             .login-container {
                 padding: 30px 20px;
@@ -452,8 +455,11 @@
             <li class="nav-item">
                 <a class="nav-link active" id="panel-tab" data-bs-toggle="tab" href="#panel-content">Panel Principal</a>
             </li>
-            <li class="nav-item super-admin-only">
+            <li class="nav-item admin-only">
                 <a class="nav-link" id="register-tab" data-bs-toggle="tab" href="#register-content">Registrar Personal</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="consulta-tab" data-bs-toggle="tab" href="#consulta-content">Consulta</a>
             </li>
         </ul>
         
@@ -475,11 +481,11 @@
                 </div>
             </div>
             
-            <!-- Contenido de Registrar Personal (solo para super-admin) -->
-            <div class="tab-pane fade super-admin-only" id="register-content">
+            <!-- Contenido de Registrar Personal (solo para administradores) -->
+            <div class="tab-pane fade admin-only" id="register-content">
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-white py-3">
-                        <h5 class="mb-0">Registrar Personal</h5>
+                        <h5 class="mb-0">Registro de Personal</h5>
                     </div>
                     <div class="card-body">
                         <form id="personal-form">
@@ -564,6 +570,65 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Contenido de Consulta (visible para todos) -->
+            <div class="tab-pane fade" id="consulta-content">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Consulta de Personal</h5>
+                        <div class="d-flex">
+                            <div class="input-group w-auto me-2" style="max-width: 300px;">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="consulta-search" placeholder="Buscar...">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Número</th>
+                                        <th>Foto</th>
+                                        <th>Nombres</th>
+                                        <th>Apellidos</th>
+                                        <th>Cédula</th>
+                                        <th>Rango</th>
+                                        <th>Registrado por</th>
+                                        <th>Fecha Registro</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="consulta-list">
+                                    <!-- Los registros de personal se cargarán aquí dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Controles de paginación -->
+                        <div class="pagination-controls">
+                            <div class="pagination-info" id="consulta-pagination-info">
+                                Mostrando 0 de 0 registros
+                            </div>
+                            <div class="pagination-buttons">
+                                <button id="consulta-first-page" class="pagination-btn" title="Primera página">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </button>
+                                <button id="consulta-prev-page" class="pagination-btn" title="Página anterior">
+                                    <i class="fas fa-angle-left"></i>
+                                </button>
+                                <button id="consulta-current-page" class="pagination-btn active" disabled>1</button>
+                                <button id="consulta-next-page" class="pagination-btn" title="Página siguiente">
+                                    <i class="fas fa-angle-right"></i>
+                                </button>
+                                <button id="consulta-last-page" class="pagination-btn" title="Última página">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <!-- Pie de página mejorado con texto en minúsculas -->
@@ -580,9 +645,17 @@
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Variables de paginación para la consulta
+        let consultaCurrentPage = 1;
+        let consultaItemsPerPage = 10;
+        let allConsultaData = [];
+        let filteredConsultaData = [];
+        let loadingTimer = null;
+        
         // Configuración de Supabase
         const supabaseUrl = 'https://sgcozosmelxzsjcecqrl.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY296b3NtZWx4enNqY2VjcXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMDI4NjYsImV4cCI6MjA2OTU3ODg2Nn0.OpBo_hAeq_EDreiMKiuQyk5o-5nbr8jWcbw4mr0_1I0';
+        
         // Inicialización CORRECTA de Supabase
         const { createClient } = supabase;
         const supabaseClient = createClient(supabaseUrl, supabaseKey, {
@@ -592,6 +665,7 @@
                 detectSessionInUrl: true
             }
         });
+        
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
         const mainPanel = document.getElementById('main-panel');
@@ -605,6 +679,16 @@
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const personalForm = document.getElementById('personal-form');
+        const consultaSearch = document.getElementById('consulta-search');
+        const consultaList = document.getElementById('consulta-list');
+        const consultaPaginationInfo = document.getElementById('consulta-pagination-info');
+        const consultaFirstPageBtn = document.getElementById('consulta-first-page');
+        const consultaPrevPageBtn = document.getElementById('consulta-prev-page');
+        const consultaCurrentPageBtn = document.getElementById('consulta-current-page');
+        const consultaNextPageBtn = document.getElementById('consulta-next-page');
+        const consultaLastPageBtn = document.getElementById('consulta-last-page');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        
         // Variables globales
         let currentUserRole = 'user'; // Por defecto es usuario normal
         
@@ -700,6 +784,8 @@
                         console.log('METADATOS COMPLETOS:', user.user_metadata);
                         // Aplicar restricciones según el rol
                         applyRoleRestrictions(userRole);
+                        // Carga los registros de consulta
+                        await loadConsulta();
                     }
                 } else {
                     console.log('No hay sesión activa');
@@ -741,7 +827,7 @@
             if (role === 'admin' || role === 'super_admin') {
                 console.log('Usuario es ADMINISTRADOR o SUPER ADMINISTRADOR');
                 // Mostrar la pestaña de Registrar Personal
-                document.querySelectorAll('.super-admin-only').forEach(element => {
+                document.querySelectorAll('.admin-only').forEach(element => {
                     element.style.display = 'block';
                 });
                 return;
@@ -750,9 +836,167 @@
             // Para usuarios normales:
             console.log('Usuario es USUARIO NORMAL');
             // Ocultar la pestaña de Registrar Personal
-            document.querySelectorAll('.super-admin-only').forEach(element => {
+            document.querySelectorAll('.admin-only').forEach(element => {
                 element.style.display = 'none';
             });
+        }
+        
+        // Función para formatear la fecha
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+        
+        // Función para actualizar la interfaz de paginación de consulta
+        function updateConsultaPaginationControls() {
+            const totalPages = Math.ceil(filteredConsultaData.length / consultaItemsPerPage);
+            // Actualizar información de paginación
+            const startItem = (consultaCurrentPage - 1) * consultaItemsPerPage + 1;
+            const endItem = Math.min(consultaCurrentPage * consultaItemsPerPage, filteredConsultaData.length);
+            consultaPaginationInfo.textContent = `Mostrando ${startItem}-${endItem} de ${filteredConsultaData.length} registros`;
+            // Actualizar estado de los botones
+            consultaFirstPageBtn.disabled = consultaCurrentPage === 1;
+            consultaPrevPageBtn.disabled = consultaCurrentPage === 1;
+            consultaCurrentPageBtn.textContent = consultaCurrentPage;
+            consultaNextPageBtn.disabled = consultaCurrentPage === totalPages || totalPages === 0;
+            consultaLastPageBtn.disabled = consultaCurrentPage === totalPages || totalPages === 0;
+        }
+        
+        // Función para renderizar la página actual de consulta
+        function renderConsultaCurrentPage() {
+            if (!consultaList) return;
+            // Calcular índices para la paginación
+            const startIndex = (consultaCurrentPage - 1) * consultaItemsPerPage;
+            const endIndex = Math.min(startIndex + consultaItemsPerPage, filteredConsultaData.length);
+            // Limpiar la tabla
+            consultaList.innerHTML = '';
+            // Mostrar mensaje si no hay registros
+            if (filteredConsultaData.length === 0) {
+                consultaList.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            <i class="fas fa-inbox me-2"></i>No hay registros de personal
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            // Agregar los registros de la página actual
+            for (let i = startIndex; i < endIndex; i++) {
+                const personal = filteredConsultaData[i];
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${personal.expediente_numero || 'N/A'}</td>
+                    <td><img src="${personal.foto || 'https://placehold.co/40x40/003366/white?text=FP'}" 
+                             class="rounded-circle" width="40"></td>
+                    <td>${personal.nombres || 'N/A'}</td>
+                    <td>${personal.apellidos || 'N/A'}</td>
+                    <td>${personal.cedula || 'N/A'}</td>
+                    <td>${personal.rango || 'N/A'}</td>
+                    <td>${personal.registrado_por || 'N/A'}</td>
+                    <td>${formatDate(personal.fecha_registro)}</td>
+                `;
+                consultaList.appendChild(row);
+            }
+        }
+        
+        // Función para ir a una página específica en consulta
+        function goToConsultaPage(page) {
+            const totalPages = Math.ceil(filteredConsultaData.length / consultaItemsPerPage);
+            // Validar que la página esté dentro del rango
+            if (page < 1 || page > totalPages) return;
+            consultaCurrentPage = page;
+            renderConsultaCurrentPage();
+            updateConsultaPaginationControls();
+        }
+        
+        // Función para cargar los registros de consulta
+        async function loadConsulta() {
+            try {
+                // Mostrar loader
+                showLoading();
+                // Asegurar que hay una sesión válida
+                const isValid = await isSessionValid();
+                if (!isValid) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                // Obtener el rol del usuario
+                const userRole = data.session.user.user_metadata?.role || 'user';
+                currentUserRole = userRole;
+                
+                // Si el usuario es administrador, obtiene TODOS los registros
+                // Si es usuario normal, solo obtiene sus propios registros
+                let query = supabaseClient.from('personal').select('*');
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    query = query.eq('user_id', data.session.user.id);
+                }
+                
+                // Agregar límite para mejorar rendimiento
+                query = query.limit(100);
+                
+                // Realizar la consulta con timeout
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Tiempo de espera agotado. Por favor, intente de nuevo.")), 10000)
+                );
+                
+                const { data: consultaData, error } = await Promise.race([
+                    query.order('fecha_registro', { ascending: false }),
+                    timeoutPromise
+                ]);
+                
+                if (error) throw error;
+                
+                // Guardar los datos en la variable global
+                allConsultaData = consultaData || [];
+                filteredConsultaData = [...allConsultaData];
+                
+                // Si no hay registros
+                if (filteredConsultaData.length === 0) {
+                    consultaList.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                <i class="fas fa-inbox me-2"></i>No hay registros de personal
+                            </td>
+                        </tr>
+                    `;
+                    // Actualizar información de paginación
+                    consultaPaginationInfo.textContent = 'Mostrando 0 de 0 registros';
+                    consultaFirstPageBtn.disabled = true;
+                    consultaPrevPageBtn.disabled = true;
+                    consultaCurrentPageBtn.textContent = '1';
+                    consultaNextPageBtn.disabled = true;
+                    consultaLastPageBtn.disabled = true;
+                    hideLoading();
+                    return;
+                }
+                
+                // Reiniciar a la primera página
+                consultaCurrentPage = 1;
+                // Renderizar la primera página
+                renderConsultaCurrentPage();
+                updateConsultaPaginationControls();
+                hideLoading();
+            } catch (error) {
+                console.error('Error al cargar registros de consulta:', error);
+                consultaList.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}
+                        </td>
+                    </tr>
+                `;
+                hideLoading();
+            }
         }
         
         // Función para guardar un registro de personal
@@ -816,6 +1060,9 @@
                 document.getElementById('sexo').value = '';
                 document.getElementById('fecha-nacimiento').value = '';
                 document.getElementById('profile-picture').src = 'https://placehold.co/200x200/003366/white?text=Foto+Personal';
+                
+                // Recargar la consulta
+                await loadConsulta();
             } catch (error) {
                 console.error('Error al guardar registro de personal:', error);
                 alert(`Error al guardar: ${error.message}`);
@@ -930,6 +1177,8 @@
                 console.log('METADATOS COMPLETOS:', data.user.user_metadata);
                 // Aplicar restricciones según el rol
                 applyRoleRestrictions(userRole);
+                // Cargar los datos de consulta
+                await loadConsulta();
                 // Restaurar el estado del botón
                 loginSpinner.classList.add('d-none');
                 loginText.textContent = 'Iniciar Sesión';
@@ -1023,12 +1272,74 @@
                 if (logoutBtn) {
                     logoutBtn.addEventListener('click', logout);
                 }
+                // Configurar controles de paginación de consulta
+                if (consultaFirstPageBtn) {
+                    consultaFirstPageBtn.addEventListener('click', () => goToConsultaPage(1));
+                }
+                if (consultaPrevPageBtn) {
+                    consultaPrevPageBtn.addEventListener('click', () => goToConsultaPage(consultaCurrentPage - 1));
+                }
+                if (consultaNextPageBtn) {
+                    consultaNextPageBtn.addEventListener('click', () => goToConsultaPage(consultaCurrentPage + 1));
+                }
+                if (consultaLastPageBtn) {
+                    consultaLastPageBtn.addEventListener('click', () => {
+                        const totalPages = Math.ceil(filteredConsultaData.length / consultaItemsPerPage);
+                        goToConsultaPage(totalPages);
+                    });
+                }
+                // Configurar búsqueda en consulta
+                if (consultaSearch) {
+                    consultaSearch.addEventListener('input', function() {
+                        const searchTerm = this.value.toLowerCase();
+                        if (!searchTerm) {
+                            // Si no hay término de búsqueda, mostrar todos los registros
+                            filteredConsultaData = [...allConsultaData];
+                        } else {
+                            // Filtrar los registros
+                            filteredConsultaData = allConsultaData.filter(personal => {
+                                // Convertir todos los campos a string y buscar en ellos
+                                return Object.values(personal).some(value => {
+                                    if (value === null || value === undefined) return false;
+                                    return value.toString().toLowerCase().includes(searchTerm);
+                                });
+                            });
+                        }
+                        // Reiniciar a la primera página
+                        consultaCurrentPage = 1;
+                        // Renderizar la primera página
+                        renderConsultaCurrentPage();
+                        updateConsultaPaginationControls();
+                    });
+                }
                 console.log('Sistema inicializado correctamente');
             } catch (error) {
                 console.error('Error al inicializar el sistema:', error);
                 alert('Error al inicializar el sistema: ' + error.message);
             }
         });
+        
+        // Función para mostrar el overlay de carga
+        function showLoading() {
+            // Limpia cualquier temporizador anterior
+            if (loadingTimer) {
+                clearTimeout(loadingTimer);
+            }
+            // Muestra el overlay después de 300ms (para evitar parpadeos)
+            loadingTimer = setTimeout(() => {
+                loadingOverlay.style.display = 'flex';
+            }, 300);
+        }
+        
+        // Función para ocultar el overlay de carga
+        function hideLoading() {
+            // Cancela el temporizador si existe
+            if (loadingTimer) {
+                clearTimeout(loadingTimer);
+                loadingTimer = null;
+            }
+            loadingOverlay.style.display = 'none';
+        }
     </script>
 </body>
 </html>
