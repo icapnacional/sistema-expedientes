@@ -271,9 +271,110 @@
             border-bottom-left-radius: 0;
             border-left: none;
         }
+        
+        /* Estilos para la pestaña de consultas */
+        .consulta-section {
+            margin-top: 20px;
+        }
+        
+        .search-section {
+            background-color: #e9f7fe;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .result-section {
+            margin-top: 20px;
+        }
+        
+        .no-results {
+            background-color: #fff5f5;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            border-radius: 0 4px 4px 0;
+            margin: 20px 0;
+        }
+        
+        .result-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background-color: white;
+        }
+        
+        .result-card-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .result-card-body {
+            padding: 20px;
+        }
+        
+        .result-group {
+            margin-bottom: 15px;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .result-value {
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            word-break: break-word;
+        }
+        
+        .result-image {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 99, 204, 0.3);
+            border-radius: 50%;
+            border-top-color: #0066CC;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
+    <!-- Capa de carga -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+    
     <!-- Header con título centrado -->
     <div class="header" id="main-title-section">
         <h1 class="centered-title">SISTEMA DE GESTIÓN DE EXPEDIENTES</h1>
@@ -745,10 +846,171 @@
                         <h5 class="mb-0">Consultas</h5>
                     </div>
                     <div class="card-body">
-                        <div class="text-center py-5">
-                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                            <h4>Sistema de Consultas</h4>
-                            <p class="text-muted">Esta sección se utilizará para realizar búsquedas y consultas en el sistema.</p>
+                        <div class="search-section">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-search"></i>
+                                        </span>
+                                        <input type="text" class="form-control" id="search-cedula" placeholder="Ingrese la cédula de identidad para buscar...">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <button id="search-btn" class="btn btn-primary w-100">
+                                        <i class="fas fa-search me-2"></i>Buscar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="result-section" class="result-section" style="display: none;">
+                            <div class="card result-card">
+                                <div class="result-card-header">
+                                    <h6 class="mb-0">Resultado de la Consulta</h6>
+                                </div>
+                                <div class="result-card-body">
+                                    <div id="no-results" class="no-results" style="display: none;">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        No se encontró ningún registro con la cédula proporcionada.
+                                    </div>
+                                    
+                                    <div id="result-content" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-4 text-center mb-4">
+                                                <img id="result-foto" src="" alt="Foto del personal" class="result-image">
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="result-group">
+                                                            <div class="result-label">NOMBRES</div>
+                                                            <div class="result-value" id="result-nombres"></div>
+                                                        </div>
+                                                        <div class="result-group">
+                                                            <div class="result-label">APELLIDOS</div>
+                                                            <div class="result-value" id="result-apellidos"></div>
+                                                        </div>
+                                                        <div class="result-group">
+                                                            <div class="result-label">CÉDULA DE IDENTIDAD</div>
+                                                            <div class="result-value" id="result-cedula"></div>
+                                                        </div>
+                                                        <div class="result-group">
+                                                            <div class="result-label">FECHA DE NACIMIENTO</div>
+                                                            <div class="result-value" id="result-fecha-nacimiento"></div>
+                                                        </div>
+                                                        <div class="result-group">
+                                                            <div class="result-label">RANGO</div>
+                                                            <div class="result-value" id="result-rango"></div>
+                                                        </div>
+                                                        <div class="result-group">
+                                                            <div class="result-label">SEXO</div>
+                                                            <div class="result-value" id="result-sexo"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="result-group">
+                                                            <div class="result-label">FECHA DE INICIO</div>
+                                                            <div class="result-value" id="result-fecha-inicio"></div>
+                                                        </div>
+                                                        <div class="result-group">
+                                                            <div class="result-label">ESTATUS DEL FUNCIONARIO</div>
+                                                            <div class="result-value" id="result-estatus-funcionario"></div>
+                                                        </div>
+                                                        <div class="result-group">
+                                                            <div class="result-label">TIPO DE EXPEDIENTE</div>
+                                                            <div class="result-value" id="result-tipo-expediente"></div>
+                                                        </div>
+                                                        <div class="result-group">
+                                                            <div class="result-label">ICAP (OFICINA)</div>
+                                                            <div class="result-value" id="result-icap"></div>
+                                                        </div>
+                                                        <div class="result-group">
+                                                            <div class="result-label">CONDICIÓN DEL FUNCIONARIO EN EL CASO</div>
+                                                            <div class="result-value" id="result-condicion"></div>
+                                                        </div>
+                                                        <div class="result-group">
+                                                            <div class="result-label">AÑO</div>
+                                                            <div class="result-value" id="result-anio"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <div class="result-group">
+                                                    <div class="result-label">SERVICIO DONDE LABORA EL FUNCIONARIO</div>
+                                                    <div class="result-value" id="result-servicio"></div>
+                                                </div>
+                                                <div class="result-group">
+                                                    <div class="result-label">TIPO DE FALTA</div>
+                                                    <div class="result-value" id="result-tipo-falta"></div>
+                                                </div>
+                                                <div class="result-group">
+                                                    <div class="result-label">ORIGEN DE LA FALTA</div>
+                                                    <div class="result-value" id="result-origen-falta"></div>
+                                                </div>
+                                                <div class="result-group">
+                                                    <div class="result-label">FALTA</div>
+                                                    <div class="result-value" id="result-falta"></div>
+                                                </div>
+                                                <div class="result-group">
+                                                    <div class="result-label">DENUNCIANTE</div>
+                                                    <div class="result-value" id="result-denunciante"></div>
+                                                </div>
+                                                <div class="result-group">
+                                                    <div class="result-label">FUNCIONARIO DETENIDO</div>
+                                                    <div class="result-value" id="result-detenido"></div>
+                                                </div>
+                                                <div class="result-group">
+                                                    <div class="result-label">ESTATUS</div>
+                                                    <div class="result-value" id="result-estatus"></div>
+                                                </div>
+                                                <div class="result-group">
+                                                    <div class="result-label">DECISIÓN</div>
+                                                    <div class="result-value" id="result-decision"></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="result-group">
+                                                    <div class="result-label">EXPEDIENTE NÚMERO</div>
+                                                    <div class="result-value" id="result-expediente-numero"></div>
+                                                </div>
+                                                <div class="result-group">
+                                                    <div class="result-label">EXPEDIENTE PENAL</div>
+                                                    <div class="result-value" id="result-expediente-penal"></div>
+                                                </div>
+                                                <div class="result-group">
+                                                    <div class="result-label">REGISTRADO POR</div>
+                                                    <div class="result-value" id="result-registrado-por"></div>
+                                                </div>
+                                                <div class="result-group">
+                                                    <div class="result-label">SUSTANCIADOR</div>
+                                                    <div class="result-value" id="result-sustanciador"></div>
+                                                </div>
+                                                <div class="result-group">
+                                                    <div class="result-label">REMISIÓN</div>
+                                                    <div class="result-value" id="result-remision"></div>
+                                                </div>
+                                                <div class="result-group">
+                                                    <div class="result-label">RESEÑA DEL CASO</div>
+                                                    <div class="result-value" id="result-resena"></div>
+                                                </div>
+                                                <div class="result-group">
+                                                    <div class="result-label">CAUSA</div>
+                                                    <div class="result-value" id="result-causa"></div>
+                                                </div>
+                                                <div class="result-group">
+                                                    <div class="result-label">FECHA DE REGISTRO</div>
+                                                    <div class="result-value" id="result-fecha-registro"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -861,6 +1123,13 @@
         const newOptionInput = document.getElementById('new-option');
         const addOptionBtn = document.getElementById('add-option-btn');
         const optionsList = document.getElementById('options-list');
+
+        // Elementos para la pestaña de consultas
+        const searchCedulaInput = document.getElementById('search-cedula');
+        const searchBtn = document.getElementById('search-btn');
+        const resultSection = document.getElementById('result-section');
+        const noResults = document.getElementById('no-results');
+        const resultContent = document.getElementById('result-content');
 
         // Variable para almacenar el campo actual del desplegable
         let currentDropdownField = null;
@@ -1175,6 +1444,110 @@
             }
         }
 
+        // Función para formatear la fecha
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // Función para buscar por cédula
+        async function searchByCedula() {
+            try {
+                // Mostrar capa de carga
+                document.getElementById('loading-overlay').style.display = 'flex';
+                
+                const cedula = searchCedulaInput.value.trim();
+                
+                if (!cedula) {
+                    alert('Por favor, ingrese una cédula para buscar');
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    return;
+                }
+                
+                // Obtener la sesión actual
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError) throw sessionError;
+                if (!session) throw new Error('No hay sesión activa');
+                
+                // Buscar en la base de datos
+                const { data, error } = await supabaseClient
+                    .from('personal')
+                    .select('*')
+                    .eq('cedula', cedula)
+                    .eq('user_id', session.user.id)
+                    .single();
+                
+                if (error) {
+                    if (error.code === 'PGRST116') {
+                        // No se encontró el registro
+                        resultSection.style.display = 'block';
+                        noResults.style.display = 'block';
+                        resultContent.style.display = 'none';
+                    } else {
+                        throw error;
+                    }
+                } else {
+                    // Mostrar los resultados
+                    resultSection.style.display = 'block';
+                    noResults.style.display = 'none';
+                    resultContent.style.display = 'block';
+                    
+                    // Rellenar los campos con los datos encontrados
+                    document.getElementById('result-nombres').textContent = data.nombres || 'N/A';
+                    document.getElementById('result-apellidos').textContent = data.apellidos || 'N/A';
+                    document.getElementById('result-cedula').textContent = data.cedula || 'N/A';
+                    document.getElementById('result-fecha-nacimiento').textContent = formatDate(data.fecha_nacimiento);
+                    document.getElementById('result-rango').textContent = data.rango || 'N/A';
+                    document.getElementById('result-sexo').textContent = data.sexo || 'N/A';
+                    document.getElementById('result-fecha-inicio').textContent = formatDate(data.fecha_inicio);
+                    document.getElementById('result-estatus-funcionario').textContent = data.estatus_funcionario || 'N/A';
+                    document.getElementById('result-tipo-expediente').textContent = data.tipo_expediente || 'N/A';
+                    document.getElementById('result-icap').textContent = data.icap || 'N/A';
+                    document.getElementById('result-condicion').textContent = data.condicion || 'N/A';
+                    document.getElementById('result-anio').textContent = data.anio || 'N/A';
+                    document.getElementById('result-servicio').textContent = data.servicio || 'N/A';
+                    document.getElementById('result-tipo-falta').textContent = data.tipo_falta || 'N/A';
+                    document.getElementById('result-origen-falta').textContent = data.origen_falta || 'N/A';
+                    document.getElementById('result-falta').textContent = data.falta || 'N/A';
+                    document.getElementById('result-denunciante').textContent = data.denunciante || 'N/A';
+                    document.getElementById('result-detenido').textContent = data.detenido || 'N/A';
+                    document.getElementById('result-estatus').textContent = data.estatus || 'N/A';
+                    document.getElementById('result-decision').textContent = data.decision || 'N/A';
+                    document.getElementById('result-expediente-numero').textContent = data.expediente_numero || 'N/A';
+                    document.getElementById('result-expediente-penal').textContent = data.expediente_penal || 'N/A';
+                    document.getElementById('result-registrado-por').textContent = data.registrado_por || 'N/A';
+                    document.getElementById('result-sustanciador').textContent = data.sustanciador || 'N/A';
+                    document.getElementById('result-remision').textContent = data.remision || 'N/A';
+                    document.getElementById('result-resena').textContent = data.resena || 'N/A';
+                    document.getElementById('result-causa').textContent = data.causa || 'N/A';
+                    document.getElementById('result-fecha-registro').textContent = formatDate(data.fecha_registro);
+                    
+                    // Establecer la foto
+                    const fotoElement = document.getElementById('result-foto');
+                    if (data.foto && data.foto.startsWith('http')) {
+                        fotoElement.src = data.foto;
+                    } else {
+                        fotoElement.src = 'https://placehold.co/150x150/003366/white?text=Foto+No+Disponible';
+                    }
+                }
+            } catch (error) {
+                console.error('Error al buscar por cédula:', error);
+                alert(`Error al buscar: ${error.message}`);
+                resultSection.style.display = 'block';
+                noResults.style.display = 'block';
+                resultContent.style.display = 'none';
+                noResults.textContent = `Error al buscar: ${error.message}`;
+            } finally {
+                // Ocultar capa de carga
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
+
         // Configurar eventos
         document.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -1246,6 +1619,19 @@
                             if (newOption && currentDropdownField) {
                                 addOption(currentDropdownField, newOption);
                             }
+                        }
+                    });
+                }
+                
+                // Configurar búsqueda por cédula
+                if (searchBtn) {
+                    searchBtn.addEventListener('click', searchByCedula);
+                }
+                
+                if (searchCedulaInput) {
+                    searchCedulaInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            searchByCedula();
                         }
                     });
                 }
