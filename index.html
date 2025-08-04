@@ -252,6 +252,25 @@
         .form-check-input:focus {
             box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.25);
         }
+        
+        /* Estilos para los controles de desplegables */
+        .input-group {
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-group .form-select {
+            flex-grow: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        .manage-dropdown {
+            height: calc(2.5em + 2px);
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-left: none;
+        }
     </style>
 </head>
 <body>
@@ -439,6 +458,223 @@
                                 </div>
                             </div>
                             
+                            <!-- Nuevos campos como desplegables -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="fecha-inicio" class="form-label">FECHA DE INICIO</label>
+                                    <input type="date" class="form-control" id="fecha-inicio">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="tipo-expediente" class="form-label">TIPO DE EXPEDIENTE</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="tipo-expediente">
+                                            <option value="">Seleccione...</option>
+                                            <option value="administrativo">Administrativo</option>
+                                            <option value="disciplinario">Disciplinario</option>
+                                            <option value="penal">Penal</option>
+                                            <option value="civil">Civil</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo-expediente">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="icap" class="form-label">ICAP (OFICINA)</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="icap">
+                                            <option value="">Seleccione...</option>
+                                            <option value="zulia">Zulia</option>
+                                            <option value="caracas">Caracas</option>
+                                            <option value="miranda">Miranda</option>
+                                            <option value="aragua">Aragua</option>
+                                            <option value="otro">Otro</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="icap">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="condicion" class="form-label">CONDICIÓN DEL FUNCIONARION EN EL CASO</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="condicion">
+                                            <option value="">Seleccione...</option>
+                                            <option value="investigado">Investigado</option>
+                                            <option value="imputado">Imputado</option>
+                                            <option value="acusado">Acusado</option>
+                                            <option value="condenado">Condenado</option>
+                                            <option value="absuelto">Absuelto</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="condicion">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="anio" class="form-label">AÑO</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="anio">
+                                            <option value="">Seleccione...</option>
+                                            <option value="2020">2020</option>
+                                            <option value="2021">2021</option>
+                                            <option value="2022">2022</option>
+                                            <option value="2023">2023</option>
+                                            <option value="2024">2024</option>
+                                            <option value="2025">2025</option>
+                                            <option value="otro">Otro</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="anio">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="servicio" class="form-label">SERVICIO DONDE LABORA EL FUNCIONARIO</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="servicio">
+                                            <option value="">Seleccione...</option>
+                                            <option value="patrullaje">Patrullaje</option>
+                                            <option value="investigacion">Investigación</option>
+                                            <option value="transito">Tránsito</option>
+                                            <option value="seguridad-ciudadana">Seguridad Ciudadana</option>
+                                            <option value="otro">Otro</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="servicio">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="tipo-falta" class="form-label">TIPO DE FALTA</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="tipo-falta">
+                                            <option value="">Seleccione...</option>
+                                            <option value="leve">Leve</option>
+                                            <option value="grave">Grave</option>
+                                            <option value="muy-grave">Muy Grave</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="tipo-falta">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="origen-falta" class="form-label">ORIGEN DE LA FALTA</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="origen-falta">
+                                            <option value="">Seleccione...</option>
+                                            <option value="interna">Interna</option>
+                                            <option value="externa">Externa</option>
+                                            <option value="ciudadano">Denuncia Ciudadana</option>
+                                            <option value="fiscalia">Fiscalía</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="origen-falta">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="falta" class="form-label">FALTA</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="falta">
+                                            <option value="">Seleccione...</option>
+                                            <option value="abandono-servicio">Abandono de Servicio</option>
+                                            <option value="desobediencia">Desobediencia</option>
+                                            <option value="malversacion">Malversación</option>
+                                            <option value="abuso-autoridad">Abuso de Autoridad</option>
+                                            <option value="corrupcion">Corrupción</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="falta">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="denunciante" class="form-label">DENUNCIANTE</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="denunciante">
+                                            <option value="">Seleccione...</option>
+                                            <option value="ciudadano">Ciudadano</option>
+                                            <option value="funcionario">Funcionario</option>
+                                            <option value="fiscal">Fiscal</option>
+                                            <option value="juez">Juez</option>
+                                            <option value="familia">Familia</option>
+                                            <option value="otro">Otro</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="denunciante">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="detenido" class="form-label">FUNCIONARIO DETENIDO</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="detenido">
+                                            <option value="">Seleccione...</option>
+                                            <option value="si">Sí</option>
+                                            <option value="no">No</option>
+                                            <option value="proceso">En Proceso de Detención</option>
+                                            <option value="libertad">En Libertad</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="detenido">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="estatus" class="form-label">ESTATUS</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="estatus">
+                                            <option value="">Seleccione...</option>
+                                            <option value="abierto">Abierto</option>
+                                            <option value="en-proceso">En Proceso</option>
+                                            <option value="cerrado">Cerrado</option>
+                                            <option value="archivado">Archivado</option>
+                                            <option value="en-juicio">En Juicio</option>
+                                            <option value="sentencia">Sentencia</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="estatus">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="decision" class="form-label">DECISIÓN</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="decision">
+                                            <option value="">Seleccione...</option>
+                                            <option value="sancion">Sanción</option>
+                                            <option value="archivado">Archivado</option>
+                                            <option value="absuelto">Absuelto</option>
+                                            <option value="proceso">En Proceso</option>
+                                            <option value="otro">Otro</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary manage-dropdown" data-field="decision">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="d-flex justify-content-end mt-4">
                                 <button type="submit" class="btn btn-primary py-2">
                                     <i class="fas fa-save me-2"></i>Registrar Personal
@@ -462,6 +698,43 @@
                             <p class="text-muted">Este es su panel de control. Aquí se mostrarán las funciones disponibles.</p>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Administración de Desplegables -->
+    <div class="modal fade" id="manageDropdownModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="manageDropdownModalLabel">Administrar Opciones: <span id="dropdown-field-name"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="new-option" class="form-label">Nueva opción</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="new-option" placeholder="Ingrese nueva opción">
+                            <button type="button" class="btn btn-primary" id="add-option-btn">Agregar</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Opción</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="options-list">
+                                <!-- Las opciones se cargarán dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
@@ -511,6 +784,17 @@
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const userNameElement = document.getElementById('user-name');
+
+        // Elementos del modal de administración de desplegables
+        const manageDropdownModal = document.getElementById('manageDropdownModal');
+        const manageDropdownModalLabel = document.getElementById('manageDropdownModalLabel');
+        const dropdownFieldName = document.getElementById('dropdown-field-name');
+        const newOptionInput = document.getElementById('new-option');
+        const addOptionBtn = document.getElementById('add-option-btn');
+        const optionsList = document.getElementById('options-list');
+
+        // Variable para almacenar el campo actual del desplegable
+        let currentDropdownField = null;
 
         // Función para mostrar mensajes de error
         function showError(message) {
@@ -695,6 +979,131 @@
             loginForm.classList.remove('d-none');
         }
 
+        // Función para cargar opciones de desplegables
+        async function loadDropdownOptions(field) {
+            // Para esta versión, usaremos opciones predeterminadas
+            // En una versión más avanzada, estas opciones se cargarían desde una base de datos
+            const defaultOptions = {
+                'tipo-expediente': ['Administrativo', 'Disciplinario', 'Penal', 'Civil'],
+                'icap': ['Zulia', 'Caracas', 'Miranda', 'Aragua', 'Otro'],
+                'condicion': ['Investigado', 'Imputado', 'Acusado', 'Condenado', 'Absuelto'],
+                'anio': ['2020', '2021', '2022', '2023', '2024', '2025', 'Otro'],
+                'servicio': ['Patrullaje', 'Investigación', 'Tránsito', 'Seguridad Ciudadana', 'Otro'],
+                'tipo-falta': ['Leve', 'Grave', 'Muy Grave'],
+                'origen-falta': ['Interna', 'Externa', 'Denuncia Ciudadana', 'Fiscalía'],
+                'falta': ['Abandono de Servicio', 'Desobediencia', 'Malversación', 'Abuso de Autoridad', 'Corrupción'],
+                'denunciante': ['Ciudadano', 'Funcionario', 'Fiscal', 'Juez', 'Familia', 'Otro'],
+                'detenido': ['Sí', 'No', 'En Proceso de Detención', 'En Libertad'],
+                'estatus': ['Abierto', 'En Proceso', 'Cerrado', 'Archivado', 'En Juicio', 'Sentencia'],
+                'decision': ['Sanción', 'Archivado', 'Absuelto', 'En Proceso', 'Otro']
+            };
+
+            const options = defaultOptions[field] || [];
+            const selectElement = document.getElementById(field);
+            
+            if (selectElement) {
+                // Limpiar opciones actuales (excepto la opción predeterminada)
+                selectElement.innerHTML = '<option value="">Seleccione...</option>';
+                
+                // Añadir opciones
+                options.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option.toLowerCase().replace(/\s+/g, '-');
+                    optionElement.textContent = option;
+                    selectElement.appendChild(optionElement);
+                });
+            }
+        }
+
+        // Función para abrir el modal de administración de desplegables
+        function openManageDropdownModal(field) {
+            currentDropdownField = field;
+            dropdownFieldName.textContent = field.split('-').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+            
+            // Cargar opciones actuales
+            loadDropdownOptions(field);
+            
+            // Mostrar el modal
+            const modal = new bootstrap.Modal(manageDropdownModal);
+            modal.show();
+            
+            // Cargar opciones en la lista del modal
+            updateOptionsList(field);
+        }
+
+        // Función para actualizar la lista de opciones en el modal
+        function updateOptionsList(field) {
+            const defaultOptions = {
+                'tipo-expediente': ['Administrativo', 'Disciplinario', 'Penal', 'Civil'],
+                'icap': ['Zulia', 'Caracas', 'Miranda', 'Aragua', 'Otro'],
+                'condicion': ['Investigado', 'Imputado', 'Acusado', 'Condenado', 'Absuelto'],
+                'anio': ['2020', '2021', '2022', '2023', '2024', '2025', 'Otro'],
+                'servicio': ['Patrullaje', 'Investigación', 'Tránsito', 'Seguridad Ciudadana', 'Otro'],
+                'tipo-falta': ['Leve', 'Grave', 'Muy Grave'],
+                'origen-falta': ['Interna', 'Externa', 'Denuncia Ciudadana', 'Fiscalía'],
+                'falta': ['Abandono de Servicio', 'Desobediencia', 'Malversación', 'Abuso de Autoridad', 'Corrupción'],
+                'denunciante': ['Ciudadano', 'Funcionario', 'Fiscal', 'Juez', 'Familia', 'Otro'],
+                'detenido': ['Sí', 'No', 'En Proceso de Detención', 'En Libertad'],
+                'estatus': ['Abierto', 'En Proceso', 'Cerrado', 'Archivado', 'En Juicio', 'Sentencia'],
+                'decision': ['Sanción', 'Archivado', 'Absuelto', 'En Proceso', 'Otro']
+            };
+
+            const options = defaultOptions[field] || [];
+            optionsList.innerHTML = '';
+            
+            options.forEach((option, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${option}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger delete-option" data-index="${index}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                optionsList.appendChild(row);
+            });
+            
+            // Configurar eventos para los botones de eliminación
+            document.querySelectorAll('.delete-option').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = this.getAttribute('data-index');
+                    removeOption(field, index);
+                });
+            });
+        }
+
+        // Función para añadir una nueva opción
+        function addOption(field, option) {
+            if (!option.trim()) {
+                alert('Por favor, ingrese una opción válida');
+                return;
+            }
+            
+            // En una versión más avanzada, esto se guardaría en la base de datos
+            alert(`Opción "${option}" añadida exitosamente`);
+            
+            // Recargar opciones
+            updateOptionsList(field);
+            loadDropdownOptions(field);
+            
+            // Limpiar el campo de entrada
+            newOptionInput.value = '';
+        }
+
+        // Función para eliminar una opción
+        function removeOption(field, index) {
+            if (confirm('¿Está seguro de que desea eliminar esta opción?')) {
+                alert('Opción eliminada exitosamente');
+                
+                // Recargar opciones
+                updateOptionsList(field);
+                loadDropdownOptions(field);
+            }
+        }
+
         // Configurar eventos
         document.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -736,6 +1145,36 @@
                                 profilePicture.src = e.target.result;
                             }
                             reader.readAsDataURL(file);
+                        }
+                    });
+                }
+                
+                // Configurar botones de administración de desplegables
+                document.querySelectorAll('.manage-dropdown').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const field = this.getAttribute('data-field');
+                        openManageDropdownModal(field);
+                    });
+                });
+                
+                // Configurar botón de añadir opción
+                if (addOptionBtn) {
+                    addOptionBtn.addEventListener('click', function() {
+                        const newOption = newOptionInput.value.trim();
+                        if (newOption && currentDropdownField) {
+                            addOption(currentDropdownField, newOption);
+                        }
+                    });
+                }
+                
+                // Permitir añadir opción con Enter
+                if (newOptionInput) {
+                    newOptionInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            const newOption = this.value.trim();
+                            if (newOption && currentDropdownField) {
+                                addOption(currentDropdownField, newOption);
+                            }
                         }
                     });
                 }
