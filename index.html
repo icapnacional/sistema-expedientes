@@ -367,6 +367,60 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        
+        /* Estilos para la tabla de registros */
+        .personal-list-container {
+            margin-top: 20px;
+        }
+        
+        .personal-list-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .personal-list-body {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .personal-item {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            padding: 15px;
+            background-color: white;
+        }
+        
+        .personal-item-header {
+            font-weight: 600;
+            color: #0066CC;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 5px;
+        }
+        
+        .personal-item-info {
+            font-size: 0.9rem;
+            color: #495057;
+        }
+        
+        .personal-item-label {
+            font-weight: 600;
+            margin-right: 5px;
+        }
+        
+        .personal-item-actions {
+            margin-top: 10px;
+            text-align: right;
+        }
+        
+        .personal-item-actions .btn {
+            margin-left: 5px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
@@ -774,6 +828,22 @@
                         </form>
                     </div>
                 </div>
+                
+                <!-- Lista de registros existentes -->
+                <div class="card shadow-sm personal-list-container">
+                    <div class="card-header bg-white py-3 personal-list-header">
+                        <h5 class="mb-0">Registros Existentes</h5>
+                    </div>
+                    <div class="card-body personal-list-body">
+                        <div id="personal-list">
+                            <!-- Los registros se cargarán aquí dinámicamente -->
+                            <div class="text-center py-4">
+                                <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
+                                <p class="text-muted">No hay registros almacenados. Registre un nuevo personal para verlo aquí.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Pestaña de Consultas -->
@@ -1068,9 +1138,13 @@
         const noResults = document.getElementById('no-results');
         const resultContent = document.getElementById('result-content');
 
+        // Elementos para la lista de registros
+        const personalList = document.getElementById('personal-list');
+
         // Variables globales
         let currentDropdownField = null;
         let personalData = {};
+        let allDropdownOptions = {};
 
         // Función para mostrar mensajes de error
         function showError(message) {
@@ -1295,6 +1369,8 @@
                 });
             }
             
+            // Guardar en el objeto global
+            allDropdownOptions[field] = allOptions;
             return allOptions;
         }
 
@@ -1574,12 +1650,238 @@
                 document.getElementById('personal-form').reset();
                 document.getElementById('profile-picture').src = 'https://placehold.co/200x200/003366/white?text=Foto+Personal';
                 
+                // Recargar la lista de registros
+                loadPersonalRecords();
+                
             } catch (error) {
                 console.error('Error al guardar los datos:', error);
                 alert(`Error al guardar: ${error.message}`);
             } finally {
                 // Ocultar capa de carga
                 document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
+
+        // Función para cargar los registros de personal
+        function loadPersonalRecords() {
+            try {
+                // Mostrar capa de carga
+                document.getElementById('loading-overlay').style.display = 'flex';
+                
+                // Obtener datos del almacenamiento local
+                const storedData = JSON.parse(localStorage.getItem('personal_data') || '{}');
+                personalData = storedData;
+                
+                // Limpiar la lista actual
+                personalList.innerHTML = '';
+                
+                // Verificar si hay registros
+                const records = Object.values(storedData);
+                if (records.length === 0) {
+                    personalList.innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
+                            <p class="text-muted">No hay registros almacenados. Registre un nuevo personal para verlo aquí.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Ordenar por fecha de registro (más reciente primero)
+                records.sort((a, b) => new Date(b.fecha_registro) - new Date(a.fecha_registro));
+                
+                // Crear elementos para cada registro
+                records.forEach(data => {
+                    const personalItem = document.createElement('div');
+                    personalItem.className = 'personal-item';
+                    personalItem.innerHTML = `
+                        <div class="personal-item-header">
+                            ${data.nombres} ${data.apellidos}
+                        </div>
+                        <div class="personal-item-info">
+                            <span class="personal-item-label">Cédula:</span> ${data.cedula} |
+                            <span class="personal-item-label">Rango:</span> ${data.rango} |
+                            <span class="personal-item-label">Fecha:</span> ${formatDate(data.fecha_registro)}
+                        </div>
+                        <div class="personal-item-actions">
+                            <button class="btn btn-sm btn-outline-primary view-record" data-cedula="${data.cedula}">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning edit-record" data-cedula="${data.cedula}">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-record" data-cedula="${data.cedula}">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    `;
+                    personalList.appendChild(personalItem);
+                });
+                
+                // Configurar eventos para los botones de acción
+                document.querySelectorAll('.view-record').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const cedula = this.getAttribute('data-cedula');
+                        viewRecord(cedula);
+                    });
+                });
+                
+                document.querySelectorAll('.edit-record').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const cedula = this.getAttribute('data-cedula');
+                        editRecord(cedula);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-record').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const cedula = this.getAttribute('data-cedula');
+                        deleteRecord(cedula);
+                    });
+                });
+                
+            } catch (error) {
+                console.error('Error al cargar los registros:', error);
+                personalList.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-2x text-danger mb-3"></i>
+                        <p class="text-danger">Error al cargar los registros: ${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                // Ocultar capa de carga
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
+
+        // Función para ver un registro
+        function viewRecord(cedula) {
+            if (personalData[cedula]) {
+                const data = personalData[cedula];
+                
+                // Mostrar los resultados
+                resultSection.style.display = 'block';
+                noResults.style.display = 'none';
+                resultContent.style.display = 'block';
+                
+                // Rellenar los campos con los datos encontrados
+                document.getElementById('result-nombres').textContent = data.nombres || 'N/A';
+                document.getElementById('result-apellidos').textContent = data.apellidos || 'N/A';
+                document.getElementById('result-cedula').textContent = data.cedula || 'N/A';
+                document.getElementById('result-fecha-nacimiento').textContent = formatDate(data.fecha_nacimiento);
+                document.getElementById('result-rango').textContent = data.rango || 'N/A';
+                document.getElementById('result-sexo').textContent = data.sexo || 'N/A';
+                document.getElementById('result-fecha-inicio').textContent = formatDate(data.fecha_inicio);
+                document.getElementById('result-estatus-funcionario').textContent = data.estatus_funcionario || 'N/A';
+                document.getElementById('result-tipo-expediente').textContent = data.tipo_expediente || 'N/A';
+                document.getElementById('result-icap').textContent = data.icap || 'N/A';
+                document.getElementById('result-condicion').textContent = data.condicion || 'N/A';
+                document.getElementById('result-anio').textContent = data.anio || 'N/A';
+                document.getElementById('result-servicio').textContent = data.servicio || 'N/A';
+                document.getElementById('result-tipo-falta').textContent = data.tipo_falta || 'N/A';
+                document.getElementById('result-origen-falta').textContent = data.origen_falta || 'N/A';
+                document.getElementById('result-falta').textContent = data.falta || 'N/A';
+                document.getElementById('result-denunciante').textContent = data.denunciante || 'N/A';
+                document.getElementById('result-detenido').textContent = data.detenido || 'N/A';
+                document.getElementById('result-estatus').textContent = data.estatus || 'N/A';
+                document.getElementById('result-decision').textContent = data.decision || 'N/A';
+                document.getElementById('result-expediente-numero').textContent = data.expediente_numero || 'N/A';
+                document.getElementById('result-expediente-penal').textContent = data.expediente_penal || 'N/A';
+                document.getElementById('result-registrado-por').textContent = data.registrado_por || 'N/A';
+                document.getElementById('result-sustanciador').textContent = data.sustanciador || 'N/A';
+                document.getElementById('result-remision').textContent = data.remision || 'N/A';
+                document.getElementById('result-resena').textContent = data.resena || 'N/A';
+                document.getElementById('result-causa').textContent = data.causa || 'N/A';
+                document.getElementById('result-fecha-registro').textContent = formatDate(data.fecha_registro);
+                
+                // Establecer la foto
+                const fotoElement = document.getElementById('result-foto');
+                if (data.foto && data.foto.startsWith('http')) {
+                    fotoElement.src = data.foto;
+                } else {
+                    fotoElement.src = 'https://placehold.co/150x150/003366/white?text=Foto+No+Disponible';
+                }
+                
+                // Cambiar a la pestaña de consultas
+                const consultasTab = document.getElementById('consultas-tab');
+                const consultasTabInstance = bootstrap.Tab.getOrCreateInstance(consultasTab);
+                consultasTabInstance.show();
+            }
+        }
+
+        // Función para editar un registro
+        function editRecord(cedula) {
+            if (personalData[cedula]) {
+                const data = personalData[cedula];
+                
+                // Rellenar el formulario con los datos
+                document.getElementById('nombres').value = data.nombres || '';
+                document.getElementById('apellidos').value = data.apellidos || '';
+                document.getElementById('cedula').value = data.cedula || '';
+                document.getElementById('fecha-nacimiento').value = data.fecha_nacimiento || '';
+                document.getElementById('rango').value = data.rango || '';
+                document.getElementById('sexo').value = data.sexo || '';
+                document.getElementById('fecha-inicio').value = data.fecha_inicio || '';
+                document.getElementById('estatus-funcionario').value = data.estatus_funcionario || '';
+                document.getElementById('tipo-expediente').value = data.tipo_expediente || '';
+                document.getElementById('icap').value = data.icap || '';
+                document.getElementById('condicion').value = data.condicion || '';
+                document.getElementById('anio').value = data.anio || '';
+                document.getElementById('servicio').value = data.servicio || '';
+                document.getElementById('tipo-falta').value = data.tipo_falta || '';
+                document.getElementById('origen-falta').value = data.origen_falta || '';
+                document.getElementById('falta').value = data.falta || '';
+                document.getElementById('denunciante').value = data.denunciante || '';
+                document.getElementById('detenido').value = data.detenido || '';
+                document.getElementById('estatus').value = data.estatus || '';
+                document.getElementById('decision').value = data.decision || '';
+                document.getElementById('expediente-numero').value = data.expediente_numero || '';
+                document.getElementById('expediente-penal').value = data.expediente_penal || '';
+                document.getElementById('registrado-por').value = data.registrado_por || '';
+                document.getElementById('sustanciador').value = data.sustanciador || '';
+                document.getElementById('remision').value = data.remision || '';
+                document.getElementById('resena').value = data.resena || '';
+                document.getElementById('causa').value = data.causa || '';
+                
+                // Establecer la foto
+                if (data.foto && data.foto.startsWith('http')) {
+                    document.getElementById('profile-picture').src = data.foto;
+                }
+                
+                // Cambiar a la pestaña de registro
+                const registroTab = document.getElementById('registro-tab');
+                const registroTabInstance = bootstrap.Tab.getOrCreateInstance(registroTab);
+                registroTabInstance.show();
+            }
+        }
+
+        // Función para eliminar un registro
+        function deleteRecord(cedula) {
+            if (confirm('¿Está seguro de que desea eliminar este registro?')) {
+                try {
+                    // Mostrar capa de carga
+                    document.getElementById('loading-overlay').style.display = 'flex';
+                    
+                    // Eliminar del objeto global
+                    delete personalData[cedula];
+                    
+                    // Eliminar del almacenamiento local
+                    const storedData = JSON.parse(localStorage.getItem('personal_data') || '{}');
+                    delete storedData[cedula];
+                    localStorage.setItem('personal_data', JSON.stringify(storedData));
+                    
+                    // Recargar la lista de registros
+                    loadPersonalRecords();
+                    
+                    alert('Registro eliminado correctamente');
+                    
+                } catch (error) {
+                    console.error('Error al eliminar el registro:', error);
+                    alert(`Error al eliminar el registro: ${error.message}`);
+                } finally {
+                    // Ocultar capa de carga
+                    document.getElementById('loading-overlay').style.display = 'none';
+                }
             }
         }
 
@@ -1683,6 +1985,9 @@
                 // Cargar datos almacenados
                 const storedData = JSON.parse(localStorage.getItem('personal_data') || '{}');
                 personalData = storedData;
+                
+                // Cargar la lista de registros
+                loadPersonalRecords();
                 
                 // Configurar búsqueda por cédula
                 if (searchBtn) {
