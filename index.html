@@ -422,8 +422,8 @@
                                             <input type="text" class="form-control" id="cedula" required>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label for="edad" class="form-label">EDAD</label>
-                                            <input type="number" class="form-control" id="edad" min="18" max="70">
+                                            <label for="fecha-nacimiento" class="form-label">FECHA DE NACIMIENTO</label>
+                                            <input type="date" class="form-control" id="fecha-nacimiento">
                                         </div>
                                     </div>
                                 </div>
@@ -458,12 +458,25 @@
                                 </div>
                             </div>
                             
-                            <!-- Nuevos campos como desplegables -->
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="fecha-inicio" class="form-label">FECHA DE INICIO</label>
                                     <input type="date" class="form-control" id="fecha-inicio">
                                 </div>
+                                <div class="col-md-6">
+                                    <label for="estatus-funcionario" class="form-label">ESTATUS DEL FUNCIONARIO</label>
+                                    <select class="form-select" id="estatus-funcionario">
+                                        <option value="">Seleccione...</option>
+                                        <option value="activo">Activo</option>
+                                        <option value="inactivo">Inactivo</option>
+                                        <option value="licencia">En Licencia</option>
+                                        <option value="jubilado">Jubilado</option>
+                                        <option value="retirado">Retirado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="tipo-expediente" class="form-label">TIPO DE EXPEDIENTE</label>
                                     <div class="input-group">
@@ -479,9 +492,6 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="icap" class="form-label">ICAP (OFICINA)</label>
                                     <div class="input-group">
@@ -498,6 +508,9 @@
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="condicion" class="form-label">CONDICIÓN DEL FUNCIONARION EN EL CASO</label>
                                     <div class="input-group">
@@ -514,9 +527,6 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="anio" class="form-label">AÑO</label>
                                     <div class="input-group">
@@ -535,6 +545,9 @@
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="servicio" class="form-label">SERVICIO DONDE LABORA EL FUNCIONARIO</label>
                                     <div class="input-group">
@@ -551,9 +564,6 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="tipo-falta" class="form-label">TIPO DE FALTA</label>
                                     <div class="input-group">
@@ -568,6 +578,9 @@
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="origen-falta" class="form-label">ORIGEN DE LA FALTA</label>
                                     <div class="input-group">
@@ -583,9 +596,6 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="falta" class="form-label">FALTA</label>
                                     <div class="input-group">
@@ -602,6 +612,9 @@
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="denunciante" class="form-label">DENUNCIANTE</label>
                                     <div class="input-group">
@@ -619,9 +632,6 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="detenido" class="form-label">FUNCIONARIO DETENIDO</label>
                                     <div class="input-group">
@@ -637,6 +647,9 @@
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="estatus" class="form-label">ESTATUS</label>
                                     <div class="input-group">
@@ -654,9 +667,6 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="decision" class="form-label">DECISIÓN</label>
                                     <div class="input-group">
@@ -995,7 +1005,8 @@
                 'denunciante': ['Ciudadano', 'Funcionario', 'Fiscal', 'Juez', 'Familia', 'Otro'],
                 'detenido': ['Sí', 'No', 'En Proceso de Detención', 'En Libertad'],
                 'estatus': ['Abierto', 'En Proceso', 'Cerrado', 'Archivado', 'En Juicio', 'Sentencia'],
-                'decision': ['Sanción', 'Archivado', 'Absuelto', 'En Proceso', 'Otro']
+                'decision': ['Sanción', 'Archivado', 'Absuelto', 'En Proceso', 'Otro'],
+                'estatus-funcionario': ['Activo', 'Inactivo', 'En Licencia', 'Jubilado', 'Retirado']
             };
 
             const options = defaultOptions[field] || [];
@@ -1047,7 +1058,8 @@
                 'denunciante': ['Ciudadano', 'Funcionario', 'Fiscal', 'Juez', 'Familia', 'Otro'],
                 'detenido': ['Sí', 'No', 'En Proceso de Detención', 'En Libertad'],
                 'estatus': ['Abierto', 'En Proceso', 'Cerrado', 'Archivado', 'En Juicio', 'Sentencia'],
-                'decision': ['Sanción', 'Archivado', 'Absuelto', 'En Proceso', 'Otro']
+                'decision': ['Sanción', 'Archivado', 'Absuelto', 'En Proceso', 'Otro'],
+                'estatus-funcionario': ['Activo', 'Inactivo', 'En Licencia', 'Jubilado', 'Retirado']
             };
 
             const options = defaultOptions[field] || [];
