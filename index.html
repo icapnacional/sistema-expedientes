@@ -139,6 +139,78 @@
             font-weight: 600;
         }
         
+        .profile-picture-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .profile-picture-container img {
+            border: 3px solid var(--secondary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .profile-picture-container:hover img {
+            transform: scale(1.03);
+        }
+        
+        .upload-icon {
+            position: absolute;
+            bottom: 5px;
+            right: 35px;
+        }
+        
+        #personal-list td {
+            vertical-align: middle;
+        }
+        
+        #personal-list img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+        }
+        
+        .table th {
+            font-weight: 600;
+            background-color: #f8f9fa;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .form-control, .form-select {
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+        }
+        
+        .footer-line {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #ced4da, transparent);
+            margin-bottom: 15px;
+        }
+        
         .security-info {
             background: rgba(0, 51, 102, 0.05);
             border-left: 3px solid var(--secondary-color);
@@ -158,35 +230,27 @@
                 padding: 30px 20px;
                 margin: 20px;
             }
+            
+            .footer {
+                font-size: 16px;
+                padding: 20px 0;
+            }
         }
         
-        /* Estilos para el pie de página centrado */
-        .footer {
-            text-align: center;
-            padding: 20px 0;
+        /* Estilos para "Recordar mis credenciales" */
+        .form-check-input {
+            margin-top: 6px;
+            cursor: pointer;
+        }
+        
+        .form-check-label {
+            cursor: pointer;
             color: #6c757d;
-            font-size: 14px;
-            margin-top: 40px;
-            border-top: 1px solid #eee;
+            transition: all 0.2s;
         }
         
-        .footer-line {
-            height: 1px;
-            background: linear-gradient(to right, transparent, #ced4da, transparent);
-            margin-bottom: 15px;
-        }
-        
-        .footer-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .footer-text {
-            text-align: center;
-            font-size: 14px;
-            opacity: 0.8;
+        .form-check-input:focus {
+            box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.25);
         }
     </style>
 </head>
@@ -305,11 +369,82 @@
                         <h5 class="mb-0">Registrar Personal</h5>
                     </div>
                     <div class="card-body">
-                        <div class="text-center py-5">
-                            <i class="fas fa-user-plus fa-3x text-muted mb-3"></i>
-                            <h4>Registro de Personal</h4>
-                            <p class="text-muted">Esta sección se utilizará para registrar nuevos miembros del personal.</p>
-                        </div>
+                        <form id="personal-form">
+                            <div class="row mb-4">
+                                <div class="col-md-4 text-center">
+                                    <div class="profile-picture-container mb-3 position-relative">
+                                        <img src="https://placehold.co/200x200/003366/white?text=Foto+Personal" 
+                                             alt="Foto del personal" 
+                                             class="img-fluid rounded-circle" 
+                                             id="profile-picture"
+                                             style="width: 180px; height: 180px; object-fit: cover;">
+                                        <div class="upload-icon" style="position: absolute; bottom: 5px; right: 35px;">
+                                            <label for="profile-picture-upload" class="btn btn-primary btn-sm rounded-circle p-2" 
+                                                   style="cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                                                <i class="fas fa-camera"></i>
+                                            </label>
+                                            <input type="file" id="profile-picture-upload" class="d-none" accept="image/*">
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small">Haga clic en el ícono para subir una foto</p>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="nombres" class="form-label">NOMBRES</label>
+                                            <input type="text" class="form-control" id="nombres" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="apellidos" class="form-label">APELLIDOS</label>
+                                            <input type="text" class="form-control" id="apellidos" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="cedula" class="form-label">CÉDULA DE IDENTIDAD</label>
+                                            <input type="text" class="form-control" id="cedula" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edad" class="form-label">EDAD</label>
+                                            <input type="number" class="form-control" id="edad" min="18" max="70">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="rango" class="form-label">RANGO</label>
+                                    <select class="form-select" id="rango" required>
+                                        <option value="">Seleccione...</option>
+                                        <option value="general">General</option>
+                                        <option value="coronel">Coronel</option>
+                                        <option value="teniente-coronel">Teniente Coronel</option>
+                                        <option value="mayor">Mayor</option>
+                                        <option value="capitan">Capitán</option>
+                                        <option value="teniente">Teniente</option>
+                                        <option value="subteniente">Subteniente</option>
+                                        <option value="sargento-mayor">Sargento Mayor</option>
+                                        <option value="sargento">Sargento</option>
+                                        <option value="cabo">Cabo</option>
+                                        <option value="soldado">Soldado</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="sexo" class="form-label">SEXO</label>
+                                    <select class="form-select" id="sexo" required>
+                                        <option value="">Seleccione...</option>
+                                        <option value="masculino">Masculino</option>
+                                        <option value="femenino">Femenino</option>
+                                        <option value="otro">Otro</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="submit" class="btn btn-primary py-2">
+                                    <i class="fas fa-save me-2"></i>Registrar Personal
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -586,6 +721,23 @@
                 
                 if (showLoginBtn) {
                     showLoginBtn.addEventListener('click', showLoginForm);
+                }
+                
+                // Configurar la carga de imagen
+                const profilePictureUpload = document.getElementById('profile-picture-upload');
+                const profilePicture = document.getElementById('profile-picture');
+                
+                if (profilePictureUpload && profilePicture) {
+                    profilePictureUpload.addEventListener('change', function(e) {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                profilePicture.src = e.target.result;
+                            }
+                            reader.readAsDataURL(file);
+                        }
+                    });
                 }
                 
                 console.log('Sistema inicializado correctamente');
