@@ -646,7 +646,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // IMPLEMENTACIÓN NATIVA DE UUID V4 (NO DEPENDE DE CDNS EXTERNOS)
-        // Esta función genera UUIDs válidos en formato v4 compatible con PostgreSQL
         function uuidv4() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -959,7 +958,7 @@
                     setTimeout(() => reject(new Error("Tiempo de espera agotado. Por favor, intente de nuevo.")), 10000)
                 );
                 
-                const {  consultaData, error } = await Promise.race([
+                const { data: consultaData, error } = await Promise.race([
                     query.order('fecha_registro', { ascending: false }),
                     timeoutPromise
                 ]);
@@ -1099,11 +1098,11 @@
                 if (userRole !== 'admin' && userRole !== 'super_admin') {
                     throw new Error("Solo los administradores pueden crear nuevos usuarios");
                 }
-                const {  signUpData, error } = await supabaseClient.auth.signUp({
+                const { data: signUpData, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password,
                     options: {
-                         {
+                        data: {
                             full_name: fullName,
                             role: 'user'  // Todos los nuevos usuarios serán de rol "user"
                         }
@@ -1140,28 +1139,36 @@
                 loginSpinner.classList.remove('d-none');
                 loginText.textContent = 'Iniciando sesión...';
                 console.log('Intentando iniciar sesión con:', email);
-                // Intenta iniciar sesión
+                
+                // Intenta iniciar sesión SIN el parámetro captchaToken
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
+                
                 if (error) {
                     console.error('Error de autenticación:', error);
                     // Manejo específico de errores
                     let errorMessageText = 'Error: ' + error.message;
+                    
+                    // Mensajes personalizados para errores comunes
                     if (error.message.includes('Invalid login credentials')) {
                         errorMessageText = 'Credenciales inválidas. Verifique su correo y contraseña.';
                     } else if (error.message.includes('Email not confirmed')) {
                         errorMessageText = 'Correo no confirmado. Por favor, revise su bandeja de entrada y confirme su cuenta.';
                     } else if (error.message.includes('Email rate limit exceeded')) {
                         errorMessageText = 'Demasiados intentos. Por favor, intente más tarde.';
+                    } else if (error.message.includes('captcha')) {
+                        errorMessageText = 'Error de verificación CAPTCHA. Por favor, desactive el CAPTCHA en Supabase o contacte al administrador.';
                     }
+                    
                     showError(errorMessageText);
                     // Restaurar el estado del botón
                     loginSpinner.classList.add('d-none');
                     loginText.textContent = 'Iniciar Sesión';
                     return;
                 }
+                
                 console.log('Inicio de sesión exitoso', data);
                 // Si el usuario quiere recordar sus credenciales, guarda el correo
                 if (rememberCredentials) {
