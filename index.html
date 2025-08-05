@@ -585,46 +585,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Número</th>
-                                        <th>Foto</th>
-                                        <th>Nombres</th>
-                                        <th>Apellidos</th>
-                                        <th>Cédula</th>
-                                        <th>Rango</th>
-                                        <th>Registrado por</th>
-                                        <th>Fecha Registro</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="consulta-list">
-                                    <!-- Los registros de personal se cargarán aquí dinámicamente -->
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- Controles de paginación -->
-                        <div class="pagination-controls">
-                            <div class="pagination-info" id="consulta-pagination-info">
-                                Mostrando 0 de 0 registros
-                            </div>
-                            <div class="pagination-buttons">
-                                <button id="consulta-first-page" class="pagination-btn" title="Primera página">
-                                    <i class="fas fa-angle-double-left"></i>
-                                </button>
-                                <button id="consulta-prev-page" class="pagination-btn" title="Página anterior">
-                                    <i class="fas fa-angle-left"></i>
-                                </button>
-                                <button id="consulta-current-page" class="pagination-btn active" disabled>1</button>
-                                <button id="consulta-next-page" class="pagination-btn" title="Página siguiente">
-                                    <i class="fas fa-angle-right"></i>
-                                </button>
-                                <button id="consulta-last-page" class="pagination-btn" title="Última página">
-                                    <i class="fas fa-angle-double-right"></i>
-                                </button>
-                            </div>
+                    <div class="card-body p-4 text-center">
+                        <div class="py-5">
+                            <i class="fas fa-info-circle" style="font-size: 4rem; color: #6c757d; opacity: 0.3;"></i>
+                            <h3 class="mt-4" style="color: #6c757d;">Funcionalidad de Consulta</h3>
+                            <p class="text-muted mt-2">La funcionalidad de consulta está temporalmente deshabilitada.</p>
+                            <p class="text-muted">Por favor, contacte al administrador si necesita acceder a los registros de personal.</p>
                         </div>
                     </div>
                 </div>
@@ -787,10 +753,12 @@
                                         user.email?.split('@')[0] || 'Usuario';
                         userNameElement.textContent = fullName;
                         // Verificar el rol del usuario
-                        const userRole = user.user_metadata?.role || 'user';
+                        // CORRECCIÓN: Primero intentamos con app_metadata, luego con user_metadata
+                        const userRole = user.app_metadata?.role || user.user_metadata?.role || 'user';
                         currentUserRole = userRole;
                         console.log('ROL DEL USUARIO:', userRole);
-                        console.log('METADATOS COMPLETOS:', user.user_metadata);
+                        console.log('METADATOS COMPLETOS (app_metadata):', user.app_metadata);
+                        console.log('METADATOS COMPLETOS (user_metadata):', user.user_metadata);
                         // Aplicar restricciones según el rol
                         applyRoleRestrictions(userRole);
                         // Carga los registros de consulta
@@ -907,6 +875,8 @@
                     <td>${personal.apellidos || 'N/A'}</td>
                     <td>${personal.cedula || 'N/A'}</td>
                     <td>${personal.rango || 'N/A'}</td>
+                    <td>${personal.registrado_por || 'N/A'}</td>
+                    <td>${formatDate(personal.fecha_registro)}</td>
                 `;
                 consultaList.appendChild(row);
             }
@@ -938,7 +908,9 @@
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 // Obtener el rol del usuario
-                const userRole = data.session.user.user_metadata?.role || 'user';
+                // CORRECCIÓN: Primero intentamos con app_metadata, luego con user_metadata
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
                 currentUserRole = userRole;
                 
                 // Si el usuario es administrador, obtiene TODOS los registros
@@ -1021,7 +993,9 @@
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 // Verificar el rol del usuario
-                const userRole = data.session.user.user_metadata?.role || 'user';
+                // CORRECCIÓN: Primero intentamos con app_metadata, luego con user_metadata
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
                 // Si no es administrador ni super_admin, impedir el registro
                 if (userRole !== 'admin' && userRole !== 'super_admin') {
                     alert("No tiene permisos para registrar personal. Solo los administradores pueden registrar.");
@@ -1030,7 +1004,7 @@
                 
                 // Recoger los datos del formulario
                 const personal = {
-                    id: editingPersonalId || uuidv4(), // ¡USAMOS LA FUNCIÓN DEFINIDA ARRIBA!
+                    id: editingPersonalId || uuidv4(),
                     nombres: document.getElementById('nombres').value,
                     apellidos: document.getElementById('apellidos').value,
                     cedula: document.getElementById('cedula').value,
@@ -1041,6 +1015,7 @@
                     foto: document.getElementById('profile-picture').src,
                     fecha_registro: new Date().toISOString().split('T')[0],
                     user_id: data.session.user.id,
+                    registrado_por: data.session.user.email?.split('@')[0] || 'Usuario'
                 };
                 
                 // Validación básica
@@ -1091,7 +1066,9 @@
                 if (sessionError || !data?.session) {
                     throw new Error("Debe iniciar sesión para crear nuevos usuarios");
                 }
-                const userRole = data.session.user.user_metadata?.role || 'user';
+                // CORRECCIÓN: Primero intentamos con app_metadata, luego con user_metadata
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
                 if (userRole !== 'admin' && userRole !== 'super_admin') {
                     throw new Error("Solo los administradores pueden crear nuevos usuarios");
                 }
@@ -1101,7 +1078,8 @@
                     options: {
                         data: {
                             full_name: fullName,
-                            role: 'user'  // Todos los nuevos usuarios serán de rol "user"
+                            // CORRECCIÓN: Guardamos el rol en app_metadata
+                            role: 'user'
                         }
                     }
                 });
@@ -1136,19 +1114,15 @@
                 loginSpinner.classList.remove('d-none');
                 loginText.textContent = 'Iniciando sesión...';
                 console.log('Intentando iniciar sesión con:', email);
-                
-                // Intenta iniciar sesión SIN el parámetro captchaToken
+                // Intenta iniciar sesión
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
-                
                 if (error) {
                     console.error('Error de autenticación:', error);
                     // Manejo específico de errores
                     let errorMessageText = 'Error: ' + error.message;
-                    
-                    // Mensajes personalizados para errores comunes
                     if (error.message.includes('Invalid login credentials')) {
                         errorMessageText = 'Credenciales inválidas. Verifique su correo y contraseña.';
                     } else if (error.message.includes('Email not confirmed')) {
@@ -1158,14 +1132,12 @@
                     } else if (error.message.includes('captcha')) {
                         errorMessageText = 'Error de verificación CAPTCHA. Por favor, desactive el CAPTCHA en Supabase o contacte al administrador.';
                     }
-                    
                     showError(errorMessageText);
                     // Restaurar el estado del botón
                     loginSpinner.classList.add('d-none');
                     loginText.textContent = 'Iniciar Sesión';
                     return;
                 }
-                
                 console.log('Inicio de sesión exitoso', data);
                 // Si el usuario quiere recordar sus credenciales, guarda el correo
                 if (rememberCredentials) {
@@ -1187,10 +1159,13 @@
                     userNameElement.textContent = fullName;
                 }
                 // Verificar el rol del usuario
-                const userRole = data.user.user_metadata?.role || 'user';
+                // CORRECCIÓN: Primero intentamos con app_metadata, luego con user_metadata
+                const userRole = data.user.app_metadata?.role || 
+                                 data.user.user_metadata?.role || 'user';
                 currentUserRole = userRole;
                 console.log('ROL DEL USUARIO:', userRole);
-                console.log('METADATOS COMPLETOS:', data.user.user_metadata);
+                console.log('METADATOS COMPLETOS (app_metadata):', data.user.app_metadata);
+                console.log('METADATOS COMPLETOS (user_metadata):', data.user.user_metadata);
                 // Aplicar restricciones según el rol
                 applyRoleRestrictions(userRole);
                 // Cargar los datos de consulta
