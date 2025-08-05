@@ -289,6 +289,7 @@
             background-color: #f8f9fa;
             border-top: 1px solid #eee;
             border-radius: 0 0 12px 12px;
+            display: none; /* Ocultamos los controles de paginación */
         }
         .pagination-info {
             color: #6c757d;
@@ -754,7 +755,8 @@
                         userNameElement.textContent = fullName;
                         // Verificar el rol del usuario
                         // CORRECCIÓN: Primero intentamos con app_metadata, luego con user_metadata
-                        const userRole = user.app_metadata?.role || user.user_metadata?.role || 'user';
+                        const userRole = user.app_metadata?.role || 
+                                         user.user_metadata?.role || 'user';
                         currentUserRole = userRole;
                         console.log('ROL DEL USUARIO:', userRole);
                         console.log('METADATOS COMPLETOS (app_metadata):', user.app_metadata);
@@ -1004,7 +1006,7 @@
                 
                 // Recoger los datos del formulario
                 const personal = {
-                    id: editingPersonalId || uuidv4(),
+                    id: editingPersonalId || uuidv4(), // ¡USAMOS LA FUNCIÓN DEFINIDA ARRIBA!
                     nombres: document.getElementById('nombres').value,
                     apellidos: document.getElementById('apellidos').value,
                     cedula: document.getElementById('cedula').value,
