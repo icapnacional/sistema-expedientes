@@ -679,6 +679,33 @@
             </div>
         </div>
     </div>
+    <!-- Formulario de Registro -->
+<form id="register-form" class="d-none mt-4">
+    <h3 class="text-center mb-3">Crear Cuenta</h3>
+    <div class="mb-3">
+        <div class="form-floating">
+            <input type="text" class="form-control" id="reg-name" required>
+            <label for="reg-name"><i class="fas fa-user me-2"></i>Nombre Completo</label>
+        </div>
+    </div>
+    <div class="mb-3">
+        <div class="form-floating">
+            <input type="email" class="form-control" id="reg-email" required>
+            <label for="reg-email"><i class="fas fa-envelope me-2"></i>Correo electrónico</label>
+        </div>
+    </div>
+    <div class="mb-3">
+        <div class="form-floating">
+            <input type="password" class="form-control" id="reg-password" required>
+            <label for="reg-password"><i class="fas fa-lock me-2"></i>Contraseña</label>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary w-100 py-2">
+        <span id="register-spinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
+        <span id="register-text">Registrarse</span>
+    </button>
+    <button type="button" class="btn btn-link mt-2" id="show-login">¿Ya tienes cuenta? Inicia sesión</button>
+</form>
     
     <!-- Pie de página -->
     <div class="container mt-5 text-center text-muted">
@@ -715,6 +742,8 @@
         const personalForm = document.getElementById('personal-form');
         const userNameElement = document.getElementById('user-name');
         const adminIconContainer = document.getElementById('admin-icon-container');
+        if (registerForm) {
+    registerForm.addEventListener('submit', register);
         
         // Función para mostrar mensajes de error
         function showError(message) {
@@ -759,7 +788,55 @@
                 console.warn("No se pudo limpiar el correo de localStorage");
             }
         }
-        
+        // Función para registrar un usuario
+async function register(e) {
+    e.preventDefault();
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    const fullName = document.getElementById('reg-name').value;
+    try {
+        hideError();
+        // Solo el administrador puede crear nuevos usuarios
+        // Manejo seguro de la sesión
+        const { data, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !data?.session) {
+            throw new Error("Debe iniciar sesión para crear nuevos usuarios");
+        }
+        // CORRECCIÓN: Primero intentamos con app_metadata, luego con user_metadata
+        const userRole = data.session.user.app_metadata?.role || 
+                         data.session.user.user_metadata?.role || 'user';
+        if (userRole !== 'admin' && userRole !== 'super_admin') {
+            throw new Error("Solo los administradores pueden crear nuevos usuarios");
+        }
+        const {  signUpData, error } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                 {  // CORRECCIÓN: Añadido "" aquí
+                    full_name: fullName,
+                    // CORRECCIÓN: Guardamos el rol en app_metadata
+                    role: 'user'
+                }
+            }
+        });
+        if (error) {
+            throw error;
+        }
+        if (signUpData?.user) {
+            console.log('Registro exitoso', signUpData);
+            alert('¡Usuario creado exitosamente!');
+            showLoginForm();
+        } else {
+            console.log('Registro pendiente de confirmación', signUpData);
+            alert('¡Usuario creado exitosamente! Revisa el correo para confirmar.');
+            showLoginForm();
+        }
+    } catch (error) {
+        console.error('Error al registrar:', error);
+        alert('Error: ' + error.message);
+        return;
+    }
+}
         // Función para verificar la sesión
         async function checkSession() {
             try {
