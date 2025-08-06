@@ -109,13 +109,17 @@
             color: var(--secondary-color);
             margin-right: 8px;
         }
+        .panel-container {
+            max-width: 1200px;
+            margin: 30px auto;
+        }
     </style>
 </head>
 <body>
     <!-- Header con título centrado -->
     <div class="header" id="main-title-section">
         <h1 class="centered-title">SISTEMA DE GESTIÓN DE EXPEDIENTES</h1>
-        <p class="centered-subtitle">Registre y gestione expedientes de manera sencilla</p>
+        <p class="centered-subtitle">Inicie sesión para acceder al sistema</p>
     </div>
     
     <!-- Pantalla de Login -->
@@ -165,6 +169,26 @@
         </div>
     </div>
     
+    <!-- Panel Principal (oculto al inicio) -->
+    <div class="container panel-container" id="main-panel" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Bienvenido, <span id="user-name" class="text-primary"></span></h2>
+            <button id="logout-btn" class="btn btn-outline-danger">
+                <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+            </button>
+        </div>
+        
+        <!-- Panel Principal en Blanco -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">Panel Principal</h5>
+            </div>
+            <div class="card-body" style="min-height: 600px; background-color: #f8f9fa; border-radius: 0 0 12px 12px;">
+                <!-- Panel completamente en blanco sin contenido -->
+            </div>
+        </div>
+    </div>
+    
     <!-- Pie de página -->
     <div class="container mt-5 text-center text-muted">
         <p>sistema de gestión de expedientes - todos los derechos reservados © 2025</p>
@@ -175,26 +199,24 @@
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Configuración de Supabase (debes reemplazar estos valores después de crear tu proyecto)
+        // Configuración de Supabase (reemplaza estos valores después de crear tu proyecto)
         const supabaseUrl = 'TU_SUPABASE_URL_AQUÍ';
         const supabaseKey = 'TU_SUPABASE_ANON_KEY_AQUÍ';
         
         // Inicialización de Supabase
         const { createClient } = supabase;
-        const supabaseClient = createClient(supabaseUrl, supabaseKey, {
-            auth: {
-                autoRefreshToken: true,
-                persistSession: true,
-                detectSessionInUrl: true
-            }
-        });
+        const supabaseClient = createClient(supabaseUrl, supabaseKey);
         
         // Elementos del DOM
-        const loginForm = document.getElementById('login-form');
+        const loginScreen = document.getElementById('login-screen');
+        const mainPanel = document.getElementById('main-panel');
         const errorMessage = document.getElementById('error-message');
         const errorText = document.getElementById('error-text');
         const loginSpinner = document.getElementById('login-spinner');
         const loginText = document.getElementById('login-text');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loginForm = document.getElementById('login-form');
+        const userNameElement = document.getElementById('user-name');
         
         // Función para mostrar mensajes de error
         function showError(message) {
@@ -236,6 +258,46 @@
                 localStorage.removeItem('rememberedEmail');
             } catch (e) {
                 console.warn("No se pudo limpiar el correo de localStorage");
+            }
+        }
+        
+        // Función para verificar la sesión
+        async function checkSession() {
+            try {
+                // Manejo seguro de la sesión
+                const { data, error } = await supabaseClient.auth.getSession();
+                if (error) {
+                    console.error('Error al obtener sesión:', error);
+                    throw error;
+                }
+                if (data?.session) {
+                    // Usuario autenticado - muestra el panel principal
+                    loginScreen.style.display = 'none';
+                    mainPanel.style.display = 'block';
+                    // Muestra el nombre del usuario
+                    const user = data.session.user;
+                    if (userNameElement) {
+                        // Manejo seguro de user_metadata
+                        const fullName = user.user_metadata?.full_name || 
+                                        user.user_metadata?.fullName || 
+                                        user.user_metadata?.name ||
+                                        user.email?.split('@')[0] || 'Usuario';
+                        userNameElement.textContent = fullName;
+                    }
+                } else {
+                    // Usuario no autenticado - muestra el login
+                    loginScreen.style.display = 'block';
+                    mainPanel.style.display = 'none';
+                    // Rellenar el correo si está guardado
+                    const rememberedEmail = getRememberedEmail();
+                    if (rememberedEmail) {
+                        document.getElementById('email').value = rememberedEmail;
+                        document.getElementById('remember-credentials').checked = true;
+                    }
+                }
+            } catch (error) {
+                console.error('Error al verificar sesión:', error);
+                showError('Error al verificar sesión: ' + error.message);
             }
         }
         
@@ -283,9 +345,21 @@
                     clearRememberedEmail();
                 }
                 
-                // Redirigir al panel principal
-                window.location.href = 'panel.html';
-                
+                // Si llegamos aquí, el inicio de sesión fue exitoso
+                loginScreen.style.display = 'none';
+                mainPanel.style.display = 'block';
+                // Actualizar el nombre del usuario
+                if (userNameElement) {
+                    // Manejo seguro de user_metadata
+                    const fullName = data.user.user_metadata?.full_name || 
+                                    data.user.user_metadata?.fullName || 
+                                    data.user.user_metadata?.name ||
+                                    data.user.email?.split('@')[0] || 'Usuario';
+                    userNameElement.textContent = fullName;
+                }
+                // Restaurar el estado del botón
+                loginSpinner.classList.add('d-none');
+                loginText.textContent = 'Iniciar Sesión';
             } catch (error) {
                 console.error('Error inesperado al iniciar sesión:', error);
                 showError('Error inesperado: ' + error.message);
@@ -295,18 +369,48 @@
             }
         }
         
+        // Función para cerrar sesión
+        async function logout() {
+            try {
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) throw error;
+                // Limpiar el correo recordado
+                clearRememberedEmail();
+                // Mostrar pantalla de login
+                loginScreen.style.display = 'block';
+                mainPanel.style.display = 'none';
+                // Limpiar el formulario de login
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
+                document.getElementById('remember-credentials').checked = false;
+                userNameElement.textContent = '';
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+                alert('Error al cerrar sesión: ' + error.message);
+            }
+        }
+        
         // Configurar eventos
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar la sesión inicial
+            await checkSession();
+            
+            // Agregar listener para cambios de autenticación
+            supabaseClient.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+                    // Verificar la sesión nuevamente
+                    checkSession();
+                }
+            });
+            
             // Configurar el evento de submit del formulario de login
             if (loginForm) {
                 loginForm.addEventListener('submit', login);
             }
             
-            // Rellenar el correo si está guardado
-            const rememberedEmail = getRememberedEmail();
-            if (rememberedEmail) {
-                document.getElementById('email').value = rememberedEmail;
-                document.getElementById('remember-credentials').checked = true;
+            // Configurar botón de cierre de sesión
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', logout);
             }
         });
     </script>
