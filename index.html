@@ -747,8 +747,8 @@
         let editingOptionId = null;
         
         // Configuración de Supabase (reemplaza estos valores con los de tu proyecto)
-        const supabaseUrl = 'https://lppjafflhozcxlavkzpv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwcGphZmZsaG96Y3hsYXZrenB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzkwNjcsImV4cCI6MjA3MDAxNTA2N30.flI3AqJfa80ylGELcU4-l7JA3ly0oEGOtvmC9qaF1lU';
+        const supabaseUrl = 'https://TU_SUPABASE_URL.supabase.co';
+        const supabaseKey = 'TU_SUPABASE_ANON_KEY_AQUÍ';
         
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
@@ -979,7 +979,6 @@
                 }
                 
                 // Consultar las opciones desde Supabase
-                // CORRECCIÓN: Cambiado de {  optionsData, error } a {  optionsData, error }
                 const {  optionsData, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
@@ -1019,7 +1018,6 @@
                 }
                 
                 // Obtener opciones globales y del usuario
-                // CORRECCIÓN: Cambiado de {  optionsData, error } a {  optionsData, error }
                 const {  optionsData, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
@@ -1409,7 +1407,6 @@
                     setTimeout(() => reject(new Error("Tiempo de espera agotado. Por favor, intente de nuevo.")), 10000)
                 );
                 
-                // CORRECCIÓN: Cambiado de {  consultaData, error } a { data: consultaData, error }
                 const {  consultaData, error } = await Promise.race([
                     query.order('fecha_registro', { ascending: false }),
                     timeoutPromise
@@ -1735,11 +1732,11 @@
                 if (userRole !== 'admin' && userRole !== 'super_admin') {
                     throw new Error("Solo los administradores pueden crear nuevos usuarios");
                 }
-                const { data: signUpData, error } = await supabaseClient.auth.signUp({
+                const {  signUpData, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password,
                     options: {
-                        data: {
+                         {
                             full_name: fullName,
                             // CORRECCIÓN: Guardamos el rol en app_metadata
                             role: 'user'
