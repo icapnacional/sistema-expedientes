@@ -237,9 +237,65 @@
         .manage-dropdown i {
             color: #495057;
         }
+        /* Estilos para la tabla de opciones */
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .table th {
+            font-weight: 600;
+            background-color: #f8f9fa;
+        }
     </style>
 </head>
 <body>
+    <!-- Modal para administrar desplegables -->
+    <div class="modal fade" id="manageDropdownModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Administrar Opciones - <span id="dropdown-field-name"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="new-option-value" class="form-label">Valor de la Opción</label>
+                        <input type="text" class="form-control" id="new-option-value" placeholder="Ej: activo, inactivo, etc.">
+                    </div>
+                    <div class="mb-3">
+                        <label for="new-option-label" class="form-label">Etiqueta de la Opción</label>
+                        <input type="text" class="form-control" id="new-option-label" placeholder="Ej: Activo, Inactivo, etc.">
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="new-option-global" checked>
+                        <label class="form-check-label" for="new-option-global">Opción Global (visible para todos)</label>
+                    </div>
+                    <button type="button" class="btn btn-primary mb-4" id="btn-add-option">
+                        <i class="fas fa-plus me-2"></i>Agregar Nueva Opción
+                    </button>
+                    <h6 class="mb-3">Opciones Existentes:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Valor</th>
+                                    <th>Etiqueta</th>
+                                    <th>Tipo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="options-list">
+                                <!-- Las opciones se cargarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Header con título centrado -->
     <div class="header" id="main-title-section">
         <h1 class="centered-title">SISTEMA DE GESTIÓN DE EXPEDIENTES</h1>
@@ -283,6 +339,32 @@
                             <span id="login-text">Iniciar Sesión</span>
                         </button>
                     </form>
+                    <!-- Formulario de Registro -->
+                    <form id="register-form" class="d-none mt-4">
+                        <h3 class="text-center mb-3">Crear Cuenta</h3>
+                        <div class="mb-3">
+                            <div class="form-floating">
+                                <input type="email" class="form-control" id="reg-email" required>
+                                <label for="reg-email"><i class="fas fa-envelope me-2"></i>Correo electrónico</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-floating">
+                                <input type="password" class="form-control" id="reg-password" required>
+                                <label for="reg-password"><i class="fas fa-lock me-2"></i>Contraseña</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="reg-name" required>
+                                <label for="reg-name"><i class="fas fa-user me-2"></i>Nombre completo</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Crear Cuenta</button>
+                        <div class="mt-3 text-center">
+                            <button type="button" class="btn btn-link" id="show-login">¿Ya tienes cuenta? Inicia sesión</button>
+                        </div>
+                    </form>
                 </div>
             </div>
             <!-- Información de seguridad -->
@@ -296,10 +378,14 @@
     <!-- Panel Principal (oculto al inicio) -->
     <div class="container panel-container" id="main-panel" style="display: none;">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Bienvenido, <span id="user-name" class="text-primary"></span> <span id="admin-icon-container"></span></h2>
-            <button id="logout-btn" class="btn btn-outline-danger">
-                <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
-            </button>
+            <div>
+                <h2>Bienvenido, <span id="user-name" class="text-primary"></span> <span id="admin-icon-container"></span></h2>
+            </div>
+            <div>
+                <button id="logout-btn" class="btn btn-outline-danger">
+                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+                </button>
+            </div>
         </div>
         
         <!-- Pestañas de navegación -->
@@ -385,17 +471,12 @@
                                     <label for="rango" class="form-label">Rango</label>
                                     <div class="input-group">
                                         <select class="form-select" id="rango" required>
-                                            <option value="general">Comisario Mayor</option>
-                                            <option value="coronel">Comisario General</option>
-                                            <option value="teniente">Comisario Jefe</option>
-                                            <option value="sargento">Primer Comisario</option>
-                                            <option value="cabomayor">Comisario</option>
-                                            <option value="cabomayor">Inspector Jefe</option>
-                                            <option value="cabomayor">Primer Inspector</option>
-                                            <option value="cabomayor">Inspector</option>
-                                            <option value="cabomayor">Oficial Jefe</option>
-                                            <option value="cabomayor">Primer Oficial</option>
-                                            <option value="cabomayor">Oficial</option>
+                                            <option value="">Seleccione...</option>
+                                            <option value="general">General</option>
+                                            <option value="coronel">Coronel</option>
+                                            <option value="teniente">Teniente</option>
+                                            <option value="sargento">Sargento</option>
+                                            <option value="cabomayor">Cabo Mayor</option>
                                         </select>
                                     </div>
                                 </div>
@@ -624,14 +705,47 @@
             <!-- Contenido de Consulta -->
             <div class="tab-pane fade" id="consulta-content">
                 <div class="card shadow-sm">
-                    <div class="card-header bg-white py-3">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Consulta de Personal</h5>
+                        <div class="d-flex">
+                            <div class="input-group w-auto me-2" style="max-width: 300px;">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="consulta-search" placeholder="Buscar...">
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body p-4 text-center">
-                        <div class="py-5">
-                            <i class="fas fa-search" style="font-size: 4rem; color: #6c757d; opacity: 0.3;"></i>
-                            <h3 class="mt-4" style="color: #6c757d;">Funcionalidad de Consulta</h3>
-                            <p class="text-muted mt-2">La funcionalidad de consulta está temporalmente deshabilitada.</p>
+                    <div class="card-body p-4">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Foto</th>
+                                        <th>Nombres</th>
+                                        <th>Apellidos</th>
+                                        <th>Cédula</th>
+                                        <th>Rango</th>
+                                        <th>Registrado por</th>
+                                        <th>Fecha Registro</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="consulta-list">
+                                    <!-- Los registros se cargarán aquí dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination-controls">
+                            <div class="pagination-info" id="consulta-pagination-info">Mostrando 0 de 0 registros</div>
+                            <div class="pagination-buttons">
+                                <button class="pagination-btn" id="consulta-first-page">&laquo;</button>
+                                <button class="pagination-btn" id="consulta-prev-page">&lsaquo;</button>
+                                <button class="pagination-btn active" id="consulta-current-page">1</button>
+                                <button class="pagination-btn" id="consulta-next-page">&rsaquo;</button>
+                                <button class="pagination-btn" id="consulta-last-page">&raquo;</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -649,16 +763,18 @@
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Configuración de Supabase (reemplaza estos valores con los de tu proyecto)
-        const supabaseUrl = 'https://lppjafflhozcxlavkzpv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwcGphZmZsaG96Y3hsYXZrenB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzkwNjcsImV4cCI6MjA3MDAxNTA2N30.flI3AqJfa80ylGELcU4-l7JA3ly0oEGOtvmC9qaF1lU';
-        
         // Variables globales
         let supabaseClient = null;
         let isSupabaseConfigured = false;
         let currentUserRole = 'user'; // Por defecto es usuario normal
         let isSaving = false;
         let editingPersonalId = null;
+        let currentDropdownField = '';
+        let editingOptionId = null;
+        
+        // Configuración de Supabase (reemplaza estos valores con los de tu proyecto)
+        const supabaseUrl = 'https://TU_SUPABASE_URL.supabase.co';
+        const supabaseKey = 'TU_SUPABASE_ANON_KEY_AQUÍ';
         
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
@@ -669,9 +785,26 @@
         const loginText = document.getElementById('login-text');
         const logoutBtn = document.getElementById('logout-btn');
         const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const showRegisterBtn = document.getElementById('show-register');
+        const showLoginBtn = document.getElementById('show-login');
         const personalForm = document.getElementById('personal-form');
         const userNameElement = document.getElementById('user-name');
         const adminIconContainer = document.getElementById('admin-icon-container');
+        const consultaSearch = document.getElementById('consulta-search');
+        const consultaList = document.getElementById('consulta-list');
+        const consultaPaginationInfo = document.getElementById('consulta-pagination-info');
+        const consultaFirstPageBtn = document.getElementById('consulta-first-page');
+        const consultaPrevPageBtn = document.getElementById('consulta-prev-page');
+        const consultaCurrentPageBtn = document.getElementById('consulta-current-page');
+        const consultaNextPageBtn = document.getElementById('consulta-next-page');
+        const consultaLastPageBtn = document.getElementById('consulta-last-page');
+        
+        // Variables de paginación para la consulta
+        let consultaCurrentPage = 1;
+        let consultaItemsPerPage = 10;
+        let allConsultaData = [];
+        let filteredConsultaData = [];
         
         // Función para mostrar mensajes de error
         function showError(message) {
@@ -717,22 +850,32 @@
             }
         }
         
+        // Función para verificar si la sesión es válida
+        async function isSessionValid() {
+            try {
+                // Manejo seguro de la sesión
+                const { data, error } = await supabaseClient.auth.getSession();
+                if (error) {
+                    console.error('Error al obtener sesión:', error);
+                    return false;
+                }
+                return !!data?.session;
+            } catch (error) {
+                console.error('Error al verificar validez de sesión:', error);
+                return false;
+            }
+        }
+        
         // Función para verificar la sesión
         async function checkSession() {
             try {
-                // Verificar si Supabase está configurado
-                if (!isSupabaseConfigured) {
-                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
-                }
-                
+                console.log('Verificando sesión...');
                 // Manejo seguro de la sesión
                 const { data, error } = await supabaseClient.auth.getSession();
-                
                 if (error) {
                     console.error('Error al obtener sesión:', error);
                     throw error;
                 }
-                
                 if (data?.session) {
                     console.log('Sesión encontrada:', data.session);
                     // Usuario autenticado - muestra el panel principal
@@ -740,12 +883,19 @@
                     mainPanel.style.display = 'block';
                     // Muestra el nombre del usuario
                     const user = data.session.user;
+                    const userNameElement = document.getElementById('user-name');
+                    const adminIconContainer = document.getElementById('admin-icon-container');
+                    
                     if (userNameElement && adminIconContainer) {
-                        // Verificar el rol del usuario (usando app_metadata primero)
-                        const userRole = user.app_metadata?.role || user.user_metadata?.role || 'user';
+                        // Verificar el rol del usuario
+                        const userRole = user.app_metadata?.role || 
+                                         user.user_metadata?.role || 'user';
                         currentUserRole = userRole;
+                        console.log('ROL DEL USUARIO:', userRole);
+                        console.log('METADATOS COMPLETOS (app_metadata):', user.app_metadata);
+                        console.log('METADATOS COMPLETOS (user_metadata):', user.user_metadata);
                         
-                        // Mostrar "Administrador Principal" con icono si es admin
+                        // MODIFICACIÓN: Mostrar "Administrador Principal" con icono si es admin
                         if (userRole === 'admin' || userRole === 'super_admin') {
                             userNameElement.textContent = 'Administrador Principal';
                             adminIconContainer.innerHTML = '<i class="fas fa-user-shield text-danger ms-2" style="font-size: 1.2rem;"></i>';
@@ -761,6 +911,8 @@
                         
                         // Aplicar restricciones según el rol
                         applyRoleRestrictions(userRole);
+                        // Carga los registros de consulta
+                        await loadConsulta();
                     }
                 } else {
                     console.log('No hay sesión activa');
@@ -783,6 +935,20 @@
         // Función para aplicar restricciones según el rol del usuario
         function applyRoleRestrictions(role) {
             console.log('Aplicando restricciones para rol:', role);
+            // Actualizar badge de rol
+            const userRoleElement = document.getElementById('user-role');
+            if (userRoleElement) {
+                userRoleElement.textContent = role === 'super_admin' ? 'Admin Principal' : 
+                                            role === 'admin' ? 'Administrador' : 'Usuario';
+                userRoleElement.className = 'role-badge';
+                if (role === 'super_admin') {
+                    userRoleElement.classList.add('role-super-admin');
+                } else if (role === 'admin') {
+                    userRoleElement.classList.add('role-admin');
+                } else {
+                    userRoleElement.classList.add('role-user');
+                }
+            }
             
             // Si es administrador o super_admin, mostrar la pestaña de registro
             if (role === 'admin' || role === 'super_admin') {
@@ -831,15 +997,21 @@
                     .eq('field_name', field)
                     .order('option_label', { ascending: true });
                 
-                if (error) throw error;
+                if (error) {
+                    throw error;
+                }
                 
-                // Agregar las opciones al select
-                optionsData.forEach(option => {
-                    const optionElement = document.createElement('option');
-                    optionElement.value = option.option_value;
-                    optionElement.textContent = option.option_label;
-                    selectElement.appendChild(optionElement);
-                });
+                // Validar que optionsData sea un arreglo antes de usar forEach
+                if (Array.isArray(optionsData) && optionsData.length > 0) {
+                    optionsData.forEach(option => {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option.option_value;
+                        optionElement.textContent = option.option_label;
+                        selectElement.appendChild(optionElement);
+                    });
+                } else {
+                    console.log(`No hay opciones definidas para el campo: ${field}`);
+                }
                 
                 return optionsData;
             } catch (error) {
@@ -848,16 +1020,77 @@
             }
         }
         
-        // Función para cargar todas las opciones de desplegables
-        async function loadAllDropdownOptions() {
-            const fields = [
-                'sexo', 'tipo-expediente', 'icap', 'condicion', 'anio', 
-                'servicio', 'tipo-falta', 'origen-falta', 'falta', 
-                'denunciante', 'detenido', 'estatus', 'decision'
-            ];
-            
-            for (const field of fields) {
-                await loadDropdownOptions(field);
+        // Función para cargar opciones para el modal de administración
+        async function loadDropdownOptionsForManagement(field) {
+            try {
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // Obtener opciones globales y del usuario
+                const {  optionsData, error } = await supabaseClient
+                    .from('dropdown_options')
+                    .select('*')
+                    .eq('field_name', field)
+                    .order('option_label', { ascending: true });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                // Mostrar opciones en la tabla
+                const optionsList = document.getElementById('options-list');
+                optionsList.innerHTML = '';
+                
+                if (Array.isArray(optionsData) && optionsData.length > 0) {
+                    optionsData.forEach(option => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${option.option_value}</td>
+                            <td>${option.option_label}</td>
+                            <td>${option.is_global ? 'Global' : 'Personal'}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary edit-option" data-id="${option.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-option ms-1" data-id="${option.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        optionsList.appendChild(row);
+                    });
+                    
+                    // Configurar eventos para los botones
+                    document.querySelectorAll('.edit-option').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const id = this.getAttribute('data-id');
+                            editOption(id);
+                        });
+                    });
+                    
+                    document.querySelectorAll('.delete-option').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const id = this.getAttribute('data-id');
+                            deleteOption(id);
+                        });
+                    });
+                } else {
+                    optionsList.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center py-3 text-muted">
+                                <i class="fas fa-inbox me-2"></i>No hay opciones definidas
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                return optionsData;
+            } catch (error) {
+                console.error(`Error al cargar opciones para administración de ${field}:`, error);
+                return [];
             }
         }
         
@@ -877,189 +1110,360 @@
                 return;
             }
             
+            // Actualizar variable global para saber qué campo estamos editando
+            currentDropdownField = field;
+            
+            // Actualizar título del modal
+            document.getElementById('dropdown-field-name').textContent = field.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            
             // Crear y mostrar el modal
-            const modal = document.createElement('div');
-            modal.className = 'modal fade';
-            modal.tabIndex = -1;
-            modal.innerHTML = `
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Administrar Opciones - ${field.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="new-option-value" class="form-label">Valor de la Opción</label>
-                                <input type="text" class="form-control" id="new-option-value" placeholder="Ej: activo, inactivo, etc.">
-                            </div>
-                            <div class="mb-3">
-                                <label for="new-option-label" class="form-label">Etiqueta de la Opción</label>
-                                <input type="text" class="form-control" id="new-option-label" placeholder="Ej: Activo, Inactivo, etc.">
-                            </div>
-                            <button type="button" id="add-option-btn" class="btn btn-primary mb-4">Agregar Opción</button>
-                            
-                            <h6 class="mb-3">Opciones existentes:</h6>
-                            <ul id="options-list" class="list-group">
-                                <!-- Las opciones se cargarán dinámicamente -->
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Añadir el modal al body
-            document.body.appendChild(modal);
-            
-            // Inicializar el modal de Bootstrap
-            const bootstrapModal = new bootstrap.Modal(modal);
-            bootstrapModal.show();
-            
-            // Cerrar el modal cuando se oculta
-            modal.addEventListener('hidden.bs.modal', () => {
-                modal.remove();
-            });
+            const manageDropdownModal = new bootstrap.Modal(document.getElementById('manageDropdownModal'));
+            manageDropdownModal.show();
             
             // Cargar opciones existentes
-            const optionsList = modal.querySelector('#options-list');
-            const {  optionsData, error } = await supabaseClient
-                .from('dropdown_options')
-                .select('*')
-                .eq('field_name', field);
+            await loadDropdownOptionsForManagement(field);
+        }
+        
+        // Función para agregar una nueva opción
+        async function addOption() {
+            const newValue = document.getElementById('new-option-value').value.trim();
+            const newLabel = document.getElementById('new-option-label').value.trim();
+            const isGlobal = document.getElementById('new-option-global').checked;
             
-            if (error) {
-                console.error(`Error al cargar opciones para ${field}:`, error);
-                optionsList.innerHTML = '<li class="list-group-item text-danger">Error al cargar opciones</li>';
-            } else {
-                if (optionsData.length === 0) {
-                    optionsList.innerHTML = '<li class="list-group-item">No hay opciones definidas</li>';
-                } else {
-                    optionsData.forEach(option => {
-                        const li = document.createElement('li');
-                        li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                        li.innerHTML = `
-                            <span><strong>${option.option_value}</strong> - ${option.option_label}</span>
-                            <button type="button" class="btn btn-sm btn-outline-danger delete-option" data-id="${option.id}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        `;
-                        optionsList.appendChild(li);
-                    });
-                }
+            if (!newValue || !newLabel) {
+                alert('Por favor, complete ambos campos');
+                return;
             }
             
-            // Manejar el evento de agregar opción
-            const addOptionBtn = modal.querySelector('#add-option-btn');
-            addOptionBtn.addEventListener('click', async () => {
-                const valueInput = modal.querySelector('#new-option-value');
-                const labelInput = modal.querySelector('#new-option-label');
-                const value = valueInput.value.trim();
-                const label = labelInput.value.trim();
+            try {
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
                 
-                if (!value || !label) {
+                // Verificar si es edición o creación
+                if (editingOptionId) {
+                    await saveEditedOption();
+                    return;
+                }
+                
+                const newOption = {
+                    field_name: currentDropdownField,
+                    option_value: newValue,
+                    option_label: newLabel,
+                    user_id: isGlobal ? null : data.session.user.id,
+                    is_global: isGlobal
+                };
+                
+                const { error } = await supabaseClient
+                    .from('dropdown_options')
+                    .insert([newOption]);
+                
+                if (error) throw error;
+                
+                // Limpiar campos
+                document.getElementById('new-option-value').value = '';
+                document.getElementById('new-option-label').value = '';
+                
+                // Recargar opciones
+                await loadDropdownOptionsForManagement(currentDropdownField);
+                // Actualizar el desplegable principal
+                await loadDropdownOptions(currentDropdownField);
+                
+                alert('Opción agregada exitosamente');
+            } catch (error) {
+                console.error('Error al agregar opción:', error);
+                alert(`Error al agregar opción: ${error.message}`);
+            }
+        }
+        
+        // Función para editar una opción
+        async function editOption(id) {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('dropdown_options')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                
+                if (error) throw error;
+                if (!data) {
+                    throw new Error('Opción no encontrada');
+                }
+                
+                // Rellenar el formulario de nueva opción con los datos de edición
+                document.getElementById('new-option-value').value = data.option_value;
+                document.getElementById('new-option-label').value = data.option_label;
+                document.getElementById('new-option-global').checked = data.is_global;
+                
+                // Establecer el ID de edición
+                editingOptionId = id;
+                
+                // Desplazar al formulario
+                document.getElementById('new-option-value').scrollIntoView({ behavior: 'smooth' });
+                
+                alert('Ahora edite los valores y haga clic en "Agregar Nueva Opción" para guardar los cambios');
+            } catch (error) {
+                console.error('Error al editar opción:', error);
+                alert(`Error al editar opción: ${error.message}`);
+            }
+        }
+        
+        // Función para guardar una opción editada
+        async function saveEditedOption() {
+            try {
+                const newValue = document.getElementById('new-option-value').value.trim();
+                const newLabel = document.getElementById('new-option-label').value.trim();
+                const isGlobal = document.getElementById('new-option-global').checked;
+                
+                if (!newValue || !newLabel) {
                     alert('Por favor, complete ambos campos');
                     return;
                 }
                 
-                try {
-                    const { error } = await supabaseClient
-                        .from('dropdown_options')
-                        .insert([{
-                            field_name: field,
-                            option_value: value,
-                            option_label: label,
-                            user_id: data.session.user.id,
-                            is_global: true
-                        }]);
-                    
-                    if (error) throw error;
-                    
-                    // Recargar las opciones
-                    await loadDropdownOptions(field);
-                    
-                    // Actualizar el modal
-                    valueInput.value = '';
-                    labelInput.value = '';
-                    const {  newOptionsData } = await supabaseClient
-                        .from('dropdown_options')
-                        .select('*')
-                        .eq('field_name', field);
-                    
-                    optionsList.innerHTML = '';
-                    if (newOptionsData.length === 0) {
-                        optionsList.innerHTML = '<li class="list-group-item">No hay opciones definidas</li>';
-                    } else {
-                        newOptionsData.forEach(option => {
-                            const li = document.createElement('li');
-                            li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                            li.innerHTML = `
-                                <span><strong>${option.option_value}</strong> - ${option.option_label}</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger delete-option" data-id="${option.id}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            `;
-                            optionsList.appendChild(li);
-                        });
-                    }
-                    
-                    alert('Opción agregada exitosamente');
-                } catch (error) {
-                    console.error('Error al agregar opción:', error);
-                    alert('Error al agregar opción: ' + error.message);
-                }
+                const { error } = await supabaseClient
+                    .from('dropdown_options')
+                    .update({
+                        option_value: newValue,
+                        option_label: newLabel,
+                        is_global: isGlobal
+                    })
+                    .eq('id', editingOptionId);
+                
+                if (error) throw error;
+                
+                // Limpiar campos y resetear ID de edición
+                document.getElementById('new-option-value').value = '';
+                document.getElementById('new-option-label').value = '';
+                editingOptionId = null;
+                
+                // Recargar opciones
+                await loadDropdownOptionsForManagement(currentDropdownField);
+                // Actualizar el desplegable principal
+                await loadDropdownOptions(currentDropdownField);
+                
+                alert('Opción actualizada exitosamente');
+            } catch (error) {
+                console.error('Error al guardar opción editada:', error);
+                alert(`Error al guardar opción: ${error.message}`);
+            }
+        }
+        
+        // Función para eliminar una opción
+        async function deleteOption(id) {
+            if (!confirm('¿Está seguro de que desea eliminar esta opción?')) {
+                return;
+            }
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('dropdown_options')
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                // Recargar opciones
+                await loadDropdownOptionsForManagement(currentDropdownField);
+                // Actualizar el desplegable principal
+                await loadDropdownOptions(currentDropdownField);
+                
+                alert('Opción eliminada exitosamente');
+            } catch (error) {
+                console.error('Error al eliminar opción:', error);
+                alert(`Error al eliminar opción: ${error.message}`);
+            }
+        }
+        
+        // Función para cargar todas las opciones de desplegables
+        async function loadAllDropdownOptions() {
+            const fields = [
+                'sexo', 'tipo-expediente', 'icap', 'condicion', 'anio', 
+                'servicio', 'tipo-falta', 'origen-falta', 'falta', 
+                'denunciante', 'detenido', 'estatus', 'decision'
+            ];
+            
+            for (const field of fields) {
+                await loadDropdownOptions(field);
+            }
+        }
+        
+        // Función para formatear la fecha
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+        
+        // Función para actualizar la interfaz de paginación de consulta
+        function updateConsultaPaginationControls() {
+            const totalPages = Math.ceil(filteredConsultaData.length / consultaItemsPerPage);
+            // Actualizar información de paginación
+            const startItem = (consultaCurrentPage - 1) * consultaItemsPerPage + 1;
+            const endItem = Math.min(consultaCurrentPage * consultaItemsPerPage, filteredConsultaData.length);
+            consultaPaginationInfo.textContent = `Mostrando ${startItem}-${endItem} de ${filteredConsultaData.length} registros`;
+            // Actualizar estado de los botones
+            consultaFirstPageBtn.disabled = consultaCurrentPage === 1;
+            consultaPrevPageBtn.disabled = consultaCurrentPage === 1;
+            consultaCurrentPageBtn.textContent = consultaCurrentPage;
+            consultaNextPageBtn.disabled = consultaCurrentPage === totalPages || totalPages === 0;
+            consultaLastPageBtn.disabled = consultaCurrentPage === totalPages || totalPages === 0;
+        }
+        
+        // Función para renderizar la página actual de consulta
+        function renderConsultaCurrentPage() {
+            if (!consultaList) return;
+            // Calcular índices para la paginación
+            const startIndex = (consultaCurrentPage - 1) * consultaItemsPerPage;
+            const endIndex = Math.min(startIndex + consultaItemsPerPage, filteredConsultaData.length);
+            // Limpiar la tabla
+            consultaList.innerHTML = '';
+            // Mostrar mensaje si no hay registros
+            if (filteredConsultaData.length === 0) {
+                consultaList.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">
+                            <i class="fas fa-inbox me-2"></i>No hay registros de personal
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            // Agregar los registros de la página actual
+            for (let i = startIndex; i < endIndex; i++) {
+                const personal = filteredConsultaData[i];
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${i + 1}</td>
+                    <td><img src="${personal.foto || 'https://placehold.co/40x40/003366/white?text=FP'}" 
+                             class="rounded-circle" width="40"></td>
+                    <td>${personal.nombres || 'N/A'}</td>
+                    <td>${personal.apellidos || 'N/A'}</td>
+                    <td>${personal.cedula || 'N/A'}</td>
+                    <td>${personal.rango || 'N/A'}</td>
+                    <td>${personal.registrado_por || 'N/A'}</td>
+                    <td>${formatDate(personal.fecha_registro)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary edit-personal me-1" data-id="${personal.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger delete-personal" data-id="${personal.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                consultaList.appendChild(row);
+            }
+            
+            // Configurar eventos para los botones de edición y eliminación
+            document.querySelectorAll('.edit-personal').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    editPersonal(id);
+                });
             });
             
-            // Manejar el evento de eliminar opción
-            optionsList.addEventListener('click', async (e) => {
-                if (e.target.closest('.delete-option')) {
-                    const button = e.target.closest('.delete-option');
-                    const optionId = button.dataset.id;
-                    
-                    if (!confirm('¿Está seguro de que desea eliminar esta opción?')) {
-                        return;
-                    }
-                    
-                    try {
-                        const { error } = await supabaseClient
-                            .from('dropdown_options')
-                            .delete()
-                            .eq('id', optionId);
-                        
-                        if (error) throw error;
-                        
-                        // Recargar las opciones
-                        await loadDropdownOptions(field);
-                        
-                        // Actualizar el modal
-                        const {  updatedOptionsData } = await supabaseClient
-                            .from('dropdown_options')
-                            .select('*')
-                            .eq('field_name', field);
-                        
-                        optionsList.innerHTML = '';
-                        if (updatedOptionsData.length === 0) {
-                            optionsList.innerHTML = '<li class="list-group-item">No hay opciones definidas</li>';
-                        } else {
-                            updatedOptionsData.forEach(option => {
-                                const li = document.createElement('li');
-                                li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                                li.innerHTML = `
-                                    <span><strong>${option.option_value}</strong> - ${option.option_label}</span>
-                                    <button type="button" class="btn btn-sm btn-outline-danger delete-option" data-id="${option.id}">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                `;
-                                optionsList.appendChild(li);
-                            });
-                        }
-                        
-                        alert('Opción eliminada exitosamente');
-                    } catch (error) {
-                        console.error('Error al eliminar opción:', error);
-                        alert('Error al eliminar opción: ' + error.message);
-                    }
-                }
+            document.querySelectorAll('.delete-personal').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    deletePersonal(id);
+                });
             });
+        }
+        
+        // Función para ir a una página específica en consulta
+        function goToConsultaPage(page) {
+            const totalPages = Math.ceil(filteredConsultaData.length / consultaItemsPerPage);
+            // Validar que la página esté dentro del rango
+            if (page < 1 || page > totalPages) return;
+            consultaCurrentPage = page;
+            renderConsultaCurrentPage();
+            updateConsultaPaginationControls();
+        }
+        
+        // Función para cargar los registros de consulta
+        async function loadConsulta() {
+            try {
+                // Asegurar que hay una sesión válida
+                const isValid = await isSessionValid();
+                if (!isValid) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                // CORRECCIÓN: Primero intentamos con app_metadata, luego con user_metadata
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
+                currentUserRole = userRole;
+                
+                // Si el usuario es administrador, obtiene TODOS los registros
+                // Si es usuario normal, solo obtiene sus propios registros
+                let query = supabaseClient.from('personal').select('*');
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    query = query.eq('user_id', data.session.user.id);
+                }
+                
+                // Agregar límite para mejorar rendimiento
+                query = query.limit(100);
+                
+                // Realizar la consulta con timeout
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Tiempo de espera agotado. Por favor, intente de nuevo.")), 10000)
+                );
+                
+                const {  consultaData, error } = await Promise.race([
+                    query.order('fecha_registro', { ascending: false }),
+                    timeoutPromise
+                ]);
+                
+                if (error) throw error;
+                
+                // Guardar los datos en la variable global
+                allConsultaData = consultaData || [];
+                filteredConsultaData = [...allConsultaData];
+                
+                // Si no hay registros
+                if (filteredConsultaData.length === 0) {
+                    consultaList.innerHTML = `
+                        <tr>
+                            <td colspan="9" class="text-center py-4 text-muted">
+                                <i class="fas fa-inbox me-2"></i>No hay registros de personal
+                            </td>
+                        </tr>
+                    `;
+                    // Actualizar información de paginación
+                    consultaPaginationInfo.textContent = 'Mostrando 0 de 0 registros';
+                    consultaFirstPageBtn.disabled = true;
+                    consultaPrevPageBtn.disabled = true;
+                    consultaCurrentPageBtn.textContent = '1';
+                    consultaNextPageBtn.disabled = true;
+                    consultaLastPageBtn.disabled = true;
+                    return;
+                }
+                
+                // Reiniciar a la primera página
+                consultaCurrentPage = 1;
+                // Renderizar la primera página
+                renderConsultaCurrentPage();
+                updateConsultaPaginationControls();
+            } catch (error) {
+                console.error('Error al cargar registros de consulta:', error);
+                consultaList.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
         }
         
         // Función para guardar un registro de personal
@@ -1098,6 +1502,7 @@
                 
                 // Recoger los datos del formulario
                 const personal = {
+                    id: editingPersonalId || Date.now().toString(),
                     nombres: document.getElementById('nombres').value,
                     apellidos: document.getElementById('apellidos').value,
                     cedula: document.getElementById('cedula').value,
@@ -1141,7 +1546,7 @@
                 // Guardar en Supabase
                 const { error } = await supabaseClient
                     .from('personal')
-                    .insert([personal]);
+                    .upsert([personal], { onConflict: 'id' });
                     
                 if (error) throw error;
                 
@@ -1181,6 +1586,14 @@
                 // Resetear el ID de edición
                 editingPersonalId = null;
                 
+                // Actualizar botón de guardar
+                const saveButton = document.querySelector('#personal-form button[type="submit"]');
+                if (saveButton) {
+                    saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Registrar Nuevo Personal';
+                }
+                
+                // Recargar la consulta
+                await loadConsulta();
             } catch (error) {
                 console.error('Error al guardar registro de personal:', error);
                 alert(`Error al guardar: ${error.message}`);
@@ -1189,31 +1602,175 @@
             }
         }
         
-        // Función para verificar si la sesión es válida
-        async function isSessionValid() {
+        // Función para editar un registro de personal
+        async function editPersonal(id) {
             try {
                 // Manejo seguro de la sesión
-                const { data, error } = await supabaseClient.auth.getSession();
-                if (error) {
-                    console.error('Error al obtener sesión:', error);
-                    return false;
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
-                return !!data?.session;
+                
+                // Obtener el registro
+                const {  personalData, error } = await supabaseClient
+                    .from('personal')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                
+                if (error) throw error;
+                if (!personalData) {
+                    throw new Error('Registro no encontrado');
+                }
+                
+                // Verificar si el usuario tiene permisos para editar
+                const userRole = data.session.user.user_metadata?.role || 'user';
+                console.log('ROL EN editPersonal:', userRole);
+                
+                // Si no es administrador, impedir la edición
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    alert("No tiene permisos para editar registros. Solo los administradores pueden editar.");
+                    return;
+                }
+                
+                // Rellenar el formulario con los datos del registro
+                document.getElementById('nombres').value = personalData.nombres || '';
+                document.getElementById('apellidos').value = personalData.apellidos || '';
+                document.getElementById('cedula').value = personalData.cedula || '';
+                document.getElementById('edad').value = personalData.edad || '';
+                document.getElementById('rango').value = personalData.rango || '';
+                document.getElementById('sexo').value = personalData.sexo || '';
+                document.getElementById('fecha-nacimiento').value = personalData.fecha_nacimiento || '';
+                document.getElementById('fecha-inicio').value = personalData.fecha_inicio || '';
+                document.getElementById('tipo-expediente').value = personalData.tipo_expediente || '';
+                document.getElementById('icap').value = personalData.icap || '';
+                document.getElementById('condicion').value = personalData.condicion || '';
+                document.getElementById('anio').value = personalData.anio || '';
+                document.getElementById('servicio').value = personalData.servicio || '';
+                document.getElementById('tipo-falta').value = personalData.tipo_falta || '';
+                document.getElementById('origen-falta').value = personalData.origen_falta || '';
+                document.getElementById('falta').value = personalData.falta || '';
+                document.getElementById('denunciante').value = personalData.denunciante || '';
+                document.getElementById('detenido').value = personalData.detenido || '';
+                document.getElementById('estatus').value = personalData.estatus || '';
+                document.getElementById('decision').value = personalData.decision || '';
+                document.getElementById('expediente-numero').value = personalData.expediente_numero || '';
+                document.getElementById('expediente-penal').value = personalData.expediente_penal || '';
+                document.getElementById('registrado-por').value = personalData.registrador || '';
+                document.getElementById('sustanciador').value = personalData.sustanciador || '';
+                document.getElementById('remision').value = personalData.remision || '';
+                document.getElementById('resena').value = personalData.resena || '';
+                document.getElementById('causa').value = personalData.causa || '';
+                
+                // Establecer la foto
+                if (personalData.foto) {
+                    document.getElementById('profile-picture').src = personalData.foto;
+                }
+                
+                // Establecer el ID de edición
+                editingPersonalId = id;
+                
+                // Cambiar texto del botón de guardar
+                const saveButton = document.querySelector('#personal-form button[type="submit"]');
+                if (saveButton) {
+                    saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Guardar Cambios';
+                }
+                
+                // Desplazar al formulario
+                document.getElementById('personal-form').scrollIntoView({ behavior: 'smooth' });
             } catch (error) {
-                console.error('Error al verificar validez de sesión:', error);
-                return false;
+                console.error('Error al editar personal:', error);
+                alert(`Error al editar: ${error.message}`);
             }
         }
         
-        // Función para manejar la carga de foto
-        function handleProfilePictureUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('profile-picture').src = e.target.result;
-                };
-                reader.readAsDataURL(file);
+        // Función para eliminar un registro de personal
+        async function deletePersonal(id) {
+            if (!confirm('¿Está seguro de que desea eliminar este registro?')) {
+                return;
+            }
+            
+            try {
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // Verificar el rol del usuario
+                const userRole = data.session.user.user_metadata?.role || 'user';
+                console.log('ROL EN deletePersonal:', userRole);
+                
+                // Si no es administrador, impedir la eliminación
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    alert("No tiene permisos para eliminar registros. Solo los administradores pueden eliminar.");
+                    return;
+                }
+                
+                const { error } = await supabaseClient
+                    .from('personal')
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                // Recargar la consulta
+                await loadConsulta();
+                
+                alert('Registro eliminado exitosamente');
+            } catch (error) {
+                console.error('Error al eliminar personal:', error);
+                alert(`Error al eliminar: ${error.message}`);
+            }
+        }
+        
+        // Función para registrar un usuario
+        async function register(e) {
+            e.preventDefault();
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const fullName = document.getElementById('reg-name').value;
+            try {
+                hideError();
+                // Solo el administrador puede crear nuevos usuarios
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("Debe iniciar sesión para crear nuevos usuarios");
+                }
+                // CORRECCIÓN: Primero intentamos con app_metadata, luego con user_metadata
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    throw new Error("Solo los administradores pueden crear nuevos usuarios");
+                }
+                const {  signUpData, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                         {
+                            full_name: fullName,
+                            // CORRECCIÓN: Guardamos el rol en app_metadata
+                            role: 'user'
+                        }
+                    }
+                });
+                if (error) {
+                    throw error;
+                }
+                if (signUpData?.user) {
+                    console.log('Registro exitoso', signUpData);
+                    alert('¡Usuario creado exitosamente!');
+                    showLoginForm();
+                } else {
+                    console.log('Registro pendiente de confirmación', signUpData);
+                    alert('¡Usuario creado exitosamente! Revisa el correo para confirmar.');
+                    showLoginForm();
+                }
+            } catch (error) {
+                console.error('Error al registrar:', error);
+                alert('Error: ' + error.message);
+                return;
             }
         }
         
@@ -1223,26 +1780,17 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const rememberCredentials = document.getElementById('remember-credentials').checked;
-            
             try {
-                // Verificar si Supabase está configurado
-                if (!isSupabaseConfigured) {
-                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
-                }
-                
                 hideError();
                 // Mostrar spinner de carga
                 loginSpinner.classList.remove('d-none');
                 loginText.textContent = 'Iniciando sesión...';
-                
                 console.log('Intentando iniciar sesión con:', email);
-                
                 // Intenta iniciar sesión
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
-                
                 if (error) {
                     console.error('Error de autenticación:', error);
                     // Manejo específico de errores
@@ -1262,26 +1810,30 @@
                     loginText.textContent = 'Iniciar Sesión';
                     return;
                 }
-                
                 console.log('Inicio de sesión exitoso', data);
-                
                 // Si el usuario quiere recordar sus credenciales, guarda el correo
                 if (rememberCredentials) {
                     saveRememberedEmail(email);
                 } else {
                     clearRememberedEmail();
                 }
-                
                 // Si llegamos aquí, el inicio de sesión fue exitoso
                 loginScreen.style.display = 'none';
                 mainPanel.style.display = 'block';
                 // Actualizar el nombre del usuario
+                const userNameElement = document.getElementById('user-name');
+                const adminIconContainer = document.getElementById('admin-icon-container');
+                
                 if (userNameElement && adminIconContainer) {
                     // Verificar el rol del usuario
-                    const userRole = data.user.app_metadata?.role || data.user.user_metadata?.role || 'user';
+                    const userRole = data.user.app_metadata?.role || 
+                                     data.user.user_metadata?.role || 'user';
                     currentUserRole = userRole;
+                    console.log('ROL DEL USUARIO:', userRole);
+                    console.log('METADATOS COMPLETOS (app_metadata):', data.user.app_metadata);
+                    console.log('METADATOS COMPLETOS (user_metadata):', data.user.user_metadata);
                     
-                    // Mostrar "Administrador Principal" con icono si es admin
+                    // MODIFICACIÓN: Mostrar "Administrador Principal" con icono si es admin
                     if (userRole === 'admin' || userRole === 'super_admin') {
                         userNameElement.textContent = 'Administrador Principal';
                         adminIconContainer.innerHTML = '<i class="fas fa-user-shield text-danger ms-2" style="font-size: 1.2rem;"></i>';
@@ -1294,10 +1846,11 @@
                         userNameElement.textContent = fullName;
                         adminIconContainer.innerHTML = '';
                     }
-                    
-                    // Aplicar restricciones según el rol
-                    applyRoleRestrictions(userRole);
                 }
+                // Aplicar restricciones según el rol
+                applyRoleRestrictions(userRole);
+                // Cargar los datos de consulta
+                await loadConsulta();
                 // Restaurar el estado del botón
                 loginSpinner.classList.add('d-none');
                 loginText.textContent = 'Iniciar Sesión';
@@ -1313,11 +1866,6 @@
         // Función para cerrar sesión
         async function logout() {
             try {
-                // Verificar si Supabase está configurado
-                if (!isSupabaseConfigured) {
-                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
-                }
-                
                 const { error } = await supabaseClient.auth.signOut();
                 if (error) throw error;
                 // Limpiar el correo recordado
@@ -1329,13 +1877,139 @@
                 document.getElementById('email').value = '';
                 document.getElementById('password').value = '';
                 document.getElementById('remember-credentials').checked = false;
-                userNameElement.textContent = '';
-                adminIconContainer.innerHTML = '';
+                document.getElementById('user-name').textContent = '';
+                document.getElementById('admin-icon-container').innerHTML = '';
             } catch (error) {
                 console.error('Error al cerrar sesión:', error);
                 alert('Error al cerrar sesión: ' + error.message);
             }
         }
+        
+        // Funciones para mostrar/ocultar formularios
+        function showRegisterForm() {
+            loginForm.classList.add('d-none');
+            registerForm.classList.remove('d-none');
+        }
+        
+        function showLoginForm() {
+            registerForm.classList.add('d-none');
+            loginForm.classList.remove('d-none');
+        }
+        
+        // Función para manejar la carga de foto
+        function handleProfilePictureUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile-picture').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Configurar eventos
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Verificar la sesión inicial
+                await checkSession();
+                // Agregar listener para cambios de autenticación
+                supabaseClient.auth.onAuthStateChange((event, session) => {
+                    console.log('Cambio de estado de autenticación:', event);
+                    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+                        // Verificar la sesión nuevamente
+                        checkSession();
+                    }
+                });
+                // Configurar el evento de submit del formulario de login
+                if (loginForm) {
+                    loginForm.addEventListener('submit', login);
+                }
+                // Configurar el evento de submit del formulario de registro
+                if (registerForm) {
+                    registerForm.addEventListener('submit', register);
+                }
+                // Configurar el evento de submit del formulario de personal
+                if (personalForm) {
+                    personalForm.addEventListener('submit', savePersonal);
+                }
+                // Configurar el evento de subida de foto
+                const profilePictureUpload = document.getElementById('profile-picture-upload');
+                if (profilePictureUpload) {
+                    profilePictureUpload.addEventListener('change', handleProfilePictureUpload);
+                }
+                // Configurar botones de navegación
+                if (showRegisterBtn) {
+                    showRegisterBtn.addEventListener('click', showRegisterForm);
+                }
+                if (showLoginBtn) {
+                    showLoginBtn.addEventListener('click', showLoginForm);
+                }
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', logout);
+                }
+                // Configurar controles de paginación de consulta
+                if (consultaFirstPageBtn) {
+                    consultaFirstPageBtn.addEventListener('click', () => goToConsultaPage(1));
+                }
+                if (consultaPrevPageBtn) {
+                    consultaPrevPageBtn.addEventListener('click', () => goToConsultaPage(consultaCurrentPage - 1));
+                }
+                if (consultaNextPageBtn) {
+                    consultaNextPageBtn.addEventListener('click', () => goToConsultaPage(consultaCurrentPage + 1));
+                }
+                if (consultaLastPageBtn) {
+                    consultaLastPageBtn.addEventListener('click', () => {
+                        const totalPages = Math.ceil(filteredConsultaData.length / consultaItemsPerPage);
+                        goToConsultaPage(totalPages);
+                    });
+                }
+                // Configurar búsqueda en consulta
+                if (consultaSearch) {
+                    consultaSearch.addEventListener('input', function() {
+                        const searchTerm = this.value.toLowerCase();
+                        if (!searchTerm) {
+                            // Si no hay término de búsqueda, mostrar todos los registros
+                            filteredConsultaData = [...allConsultaData];
+                        } else {
+                            // Filtrar los registros
+                            filteredConsultaData = allConsultaData.filter(personal => {
+                                // Convertir todos los campos a string y buscar en ellos
+                                return Object.values(personal).some(value => {
+                                    if (value === null || value === undefined) return false;
+                                    return value.toString().toLowerCase().includes(searchTerm);
+                                });
+                            });
+                        }
+                        // Reiniciar a la primera página
+                        consultaCurrentPage = 1;
+                        // Renderizar la primera página
+                        renderConsultaCurrentPage();
+                        updateConsultaPaginationControls();
+                    });
+                }
+                // Configurar botones de administración de desplegables
+                document.addEventListener('click', (e) => {
+                    const manageBtn = e.target.closest('.manage-dropdown');
+                    if (manageBtn) {
+                        const field = manageBtn.dataset.field;
+                        showManageDropdownModal(field);
+                    }
+                });
+                // Configurar botón para agregar opciones
+                document.getElementById('btn-add-option')?.addEventListener('click', addOption);
+                // Permitir agregar opciones con Enter en el campo de texto
+                document.getElementById('new-option-value')?.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        addOption();
+                    }
+                });
+                console.log('Sistema inicializado correctamente');
+            } catch (error) {
+                console.error('Error al inicializar el sistema:', error);
+                alert('Error al inicializar el sistema: ' + error.message);
+            }
+        });
         
         // Función para inicializar Supabase
         function initSupabase() {
@@ -1358,66 +2032,14 @@
                 
                 isSupabaseConfigured = true;
                 console.log("Supabase inicializado correctamente");
-                
-                // Verificar la sesión inicial
-                checkSession();
-                
-                // Agregar listener para cambios de autenticación
-                supabaseClient.auth.onAuthStateChange((event, session) => {
-                    console.log('Cambio de estado de autenticación:', event);
-                    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-                        // Verificar la sesión nuevamente
-                        checkSession();
-                    }
-                });
             } catch (error) {
                 console.error("Error al inicializar Supabase:", error);
                 showError("Error de configuración: " + error.message);
             }
         }
         
-        // Configurar eventos
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("Página cargada. Inicializando sistema...");
-            
-            try {
-                // Configurar el evento de submit del formulario de login
-                if (loginForm) {
-                    loginForm.addEventListener('submit', login);
-                }
-                
-                // Configurar el evento de submit del formulario de personal
-                if (personalForm) {
-                    personalForm.addEventListener('submit', savePersonal);
-                }
-                
-                // Configurar el evento de subida de foto
-                const profilePictureUpload = document.getElementById('profile-picture-upload');
-                if (profilePictureUpload) {
-                    profilePictureUpload.addEventListener('change', handleProfilePictureUpload);
-                }
-                
-                // Configurar botones de administración de desplegables
-                document.addEventListener('click', (e) => {
-                    const manageBtn = e.target.closest('.manage-dropdown');
-                    if (manageBtn) {
-                        const field = manageBtn.dataset.field;
-                        showManageDropdownModal(field);
-                    }
-                });
-                
-                // Configurar botón de cierre de sesión
-                if (logoutBtn) {
-                    logoutBtn.addEventListener('click', logout);
-                }
-                
-                // Inicializar Supabase
-                initSupabase();
-            } catch (error) {
-                console.error('Error crítico al inicializar el sistema:', error);
-                showError('Error crítico: ' + error.message);
-            }
-        });
+        // Inicializar Supabase
+        initSupabase();
     </script>
 </body>
 </html>
