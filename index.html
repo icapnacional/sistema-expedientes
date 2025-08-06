@@ -262,54 +262,141 @@
             }
         }
         
-        // Función para verificar la sesión
-        async function checkSession() {
-            try {
-                // Verificar si Supabase está configurado
-                if (!isSupabaseConfigured) {
-                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
-                }
-                
-                // Manejo seguro de la sesión
-                const { data, error } = await supabaseClient.auth.getSession();
-                
-                if (error) {
-                    console.error('Error al obtener sesión:', error);
-                    throw error;
-                }
-                
-                if (data?.session) {
-                    console.log('Sesión encontrada:', data.session);
-                    // Usuario autenticado - muestra el panel principal
-                    loginScreen.style.display = 'none';
-                    mainPanel.style.display = 'block';
-                    // Muestra el nombre del usuario
-                    const user = data.session.user;
-                    if (userNameElement) {
-                        // Manejo seguro de user_metadata
-                        const fullName = user.user_metadata?.full_name || 
-                                        user.user_metadata?.fullName || 
-                                        user.user_metadata?.name ||
-                                        user.email?.split('@')[0] || 'Usuario';
-                        userNameElement.textContent = fullName;
-                    }
-                } else {
-                    console.log('No hay sesión activa');
-                    // Usuario no autenticado - muestra el login
-                    loginScreen.style.display = 'block';
-                    mainPanel.style.display = 'none';
-                    // Rellenar el correo si está guardado
-                    const rememberedEmail = getRememberedEmail();
-                    if (rememberedEmail) {
-                        document.getElementById('email').value = rememberedEmail;
-                        document.getElementById('remember-credentials').checked = true;
-                    }
-                }
-            } catch (error) {
-                console.error('Error al verificar sesión:', error);
-                showError('Error al verificar sesión: ' + error.message);
+       // Función para verificar la sesión
+async function checkSession() {
+    try {
+        console.log('Verificando sesión...');
+        // Manejo seguro de la sesión
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) {
+            console.error('Error al obtener sesión:', error);
+            throw error;
+        }
+        if (data?.session) {
+            console.log('Sesión encontrada:', data.session);
+            // Usuario autenticado - muestra el panel principal
+            loginScreen.style.display = 'none';
+            mainPanel.style.display = 'block';
+            // Muestra el nombre del usuario
+            const user = data.session.user;
+            const userNameElement = document.getElementById('user-name');
+            if (userNameElement) {
+                // Manejo seguro de user_metadata - AHORA PRIORIZA display_name
+                const fullName = user.user_metadata?.display_name || // Prioridad máxima
+                                user.user_metadata?.full_name || 
+                                user.user_metadata?.fullName || 
+                                user.user_metadata?.name ||
+                                user.email?.split('@')[0] || 'Usuario';
+                userNameElement.textContent = fullName;
+                // Verificar el rol del usuario
+                const userRole = user.app_metadata?.role || 
+                                 user.user_metadata?.role || 'user';
+                currentUserRole = userRole;
+                console.log('ROL DEL USUARIO:', userRole);
+                console.log('METADATOS COMPLETOS (app_metadata):', user.app_metadata);
+                console.log('METADATOS COMPLETOS (user_metadata):', user.user_metadata);
+                // Aplicar restricciones según el rol
+                applyRoleRestrictions(userRole);
+                // Carga los registros de consulta
+                await loadConsulta();
+            }
+        } else {
+            console.log('No hay sesión activa');
+            // Usuario no autenticado - muestra el login
+            loginScreen.style.display = 'block';
+            mainPanel.style.display = 'none';
+            // Rellenar el correo si está guardado
+            const rememberedEmail = getRememberedEmail();
+            if (rememberedEmail) {
+                document.getElementById('email').value = rememberedEmail;
+                document.getElementById('remember-credentials').checked = true;
             }
         }
+    } catch (error) {
+        console.error('Error al verificar sesión:', error);
+        showError('Error al verificar sesión: ' + error.message);
+    }
+}
+
+// Función para iniciar sesión
+async function login(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const rememberCredentials = document.getElementById('remember-credentials').checked;
+    try {
+        hideError();
+        // Mostrar spinner de carga
+        loginSpinner.classList.remove('d-none');
+        loginText.textContent = 'Iniciando sesión...';
+        console.log('Intentando iniciar sesión con:', email);
+        // Intenta iniciar sesión
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+        if (error) {
+            console.error('Error de autenticación:', error);
+            // Manejo específico de errores
+            let errorMessageText = 'Error: ' + error.message;
+            if (error.message.includes('Invalid login credentials')) {
+                errorMessageText = 'Credenciales inválidas. Verifique su correo y contraseña.';
+            } else if (error.message.includes('Email not confirmed')) {
+                errorMessageText = 'Correo no confirmado. Por favor, revise su bandeja de entrada y confirme su cuenta.';
+            } else if (error.message.includes('Email rate limit exceeded')) {
+                errorMessageText = 'Demasiados intentos. Por favor, intente más tarde.';
+            } else if (error.message.includes('captcha')) {
+                errorMessageText = 'Error de verificación CAPTCHA. Por favor, desactive el CAPTCHA en Supabase o contacte al administrador.';
+            }
+            showError(errorMessageText);
+            // Restaurar el estado del botón
+            loginSpinner.classList.add('d-none');
+            loginText.textContent = 'Iniciar Sesión';
+            return;
+        }
+        console.log('Inicio de sesión exitoso', data);
+        // Si el usuario quiere recordar sus credenciales, guarda el correo
+        if (rememberCredentials) {
+            saveRememberedEmail(email);
+        } else {
+            clearRememberedEmail();
+        }
+        // Si llegamos aquí, el inicio de sesión fue exitoso
+        loginScreen.style.display = 'none';
+        mainPanel.style.display = 'block';
+        // Actualizar el nombre del usuario
+        const userNameElement = document.getElementById('user-name');
+        if (userNameElement) {
+            // Manejo seguro de user_metadata - AHORA PRIORIZA display_name
+            const fullName = data.user.user_metadata?.display_name || // Prioridad máxima
+                            data.user.user_metadata?.full_name || 
+                            data.user.user_metadata?.fullName || 
+                            data.user.user_metadata?.name ||
+                            data.user.email?.split('@')[0] || 'Usuario';
+            userNameElement.textContent = fullName;
+        }
+        // Verificar el rol del usuario
+        const userRole = data.user.app_metadata?.role || 
+                         data.user.user_metadata?.role || 'user';
+        currentUserRole = userRole;
+        console.log('ROL DEL USUARIO:', userRole);
+        console.log('METADATOS COMPLETOS (app_metadata):', data.user.app_metadata);
+        console.log('METADATOS COMPLETOS (user_metadata):', data.user.user_metadata);
+        // Aplicar restricciones según el rol
+        applyRoleRestrictions(userRole);
+        // Cargar los datos de consulta
+        await loadConsulta();
+        // Restaurar el estado del botón
+        loginSpinner.classList.add('d-none');
+        loginText.textContent = 'Iniciar Sesión';
+    } catch (error) {
+        console.error('Error inesperado al iniciar sesión:', error);
+        showError('Error inesperado: ' + error.message);
+        // Restaurar el estado del botón
+        loginSpinner.classList.add('d-none');
+        loginText.textContent = 'Iniciar Sesión';
+    }
+}
         
         // Función para iniciar sesión
         async function login(e) {
