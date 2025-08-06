@@ -773,8 +773,8 @@
         let editingOptionId = null;
         
         // Configuración de Supabase (reemplaza estos valores con los de tu proyecto)
-        const supabaseUrl = 'https://TU_SUPABASE_URL.supabase.co';
-        const supabaseKey = 'TU_SUPABASE_ANON_KEY_AQUÍ';
+        const supabaseUrl = 'https://lppjafflhozcxlavkzpv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwcGphZmZsaG96Y3hsYXZrenB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzkwNjcsImV4cCI6MjA3MDAxNTA2N30.flI3AqJfa80ylGELcU4-l7JA3ly0oEGOtvmC9qaF1lU';
         
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
@@ -853,6 +853,12 @@
         // Función para verificar si la sesión es válida
         async function isSessionValid() {
             try {
+                // Verificar si Supabase está configurado
+                if (!isSupabaseConfigured) {
+                    console.error('Supabase no está configurado. Verifica tus credenciales.');
+                    return false;
+                }
+                
                 // Manejo seguro de la sesión
                 const { data, error } = await supabaseClient.auth.getSession();
                 if (error) {
@@ -870,6 +876,14 @@
         async function checkSession() {
             try {
                 console.log('Verificando sesión...');
+                
+                // Verificar si Supabase está configurado
+                if (!isSupabaseConfigured) {
+                    console.error('Supabase no está configurado. Verifica tus credenciales.');
+                    showError('Supabase no está configurado. Verifica tus credenciales.');
+                    return;
+                }
+                
                 // Manejo seguro de la sesión
                 const { data, error } = await supabaseClient.auth.getSession();
                 if (error) {
@@ -887,7 +901,7 @@
                     const adminIconContainer = document.getElementById('admin-icon-container');
                     
                     if (userNameElement && adminIconContainer) {
-                        // Verificar el rol del usuario
+                        // CORRECCIÓN: Primero intentamos con app_metadata, luego con user_metadata
                         const userRole = user.app_metadata?.role || 
                                          user.user_metadata?.role || 'user';
                         currentUserRole = userRole;
@@ -895,7 +909,7 @@
                         console.log('METADATOS COMPLETOS (app_metadata):', user.app_metadata);
                         console.log('METADATOS COMPLETOS (user_metadata):', user.user_metadata);
                         
-                        // MODIFICACIÓN: Mostrar "Administrador Principal" con icono si es admin
+                        // Mostrar "Administrador Principal" con icono si es admin
                         if (userRole === 'admin' || userRole === 'super_admin') {
                             userNameElement.textContent = 'Administrador Principal';
                             adminIconContainer.innerHTML = '<i class="fas fa-user-shield text-danger ms-2" style="font-size: 1.2rem;"></i>';
@@ -1624,7 +1638,7 @@
                 }
                 
                 // Verificar si el usuario tiene permisos para editar
-                const userRole = data.session.user.user_metadata?.role || 'user';
+                const userRole = data.session.user.app_metadata?.role || data.session.user.user_metadata?.role || 'user';
                 console.log('ROL EN editPersonal:', userRole);
                 
                 // Si no es administrador, impedir la edición
@@ -1698,7 +1712,7 @@
                 }
                 
                 // Verificar el rol del usuario
-                const userRole = data.session.user.user_metadata?.role || 'user';
+                const userRole = data.session.user.app_metadata?.role || data.session.user.user_metadata?.role || 'user';
                 console.log('ROL EN deletePersonal:', userRole);
                 
                 // Si no es administrador, impedir la eliminación
@@ -1908,109 +1922,6 @@
             }
         }
         
-        // Configurar eventos
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                // Verificar la sesión inicial
-                await checkSession();
-                // Agregar listener para cambios de autenticación
-                supabaseClient.auth.onAuthStateChange((event, session) => {
-                    console.log('Cambio de estado de autenticación:', event);
-                    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-                        // Verificar la sesión nuevamente
-                        checkSession();
-                    }
-                });
-                // Configurar el evento de submit del formulario de login
-                if (loginForm) {
-                    loginForm.addEventListener('submit', login);
-                }
-                // Configurar el evento de submit del formulario de registro
-                if (registerForm) {
-                    registerForm.addEventListener('submit', register);
-                }
-                // Configurar el evento de submit del formulario de personal
-                if (personalForm) {
-                    personalForm.addEventListener('submit', savePersonal);
-                }
-                // Configurar el evento de subida de foto
-                const profilePictureUpload = document.getElementById('profile-picture-upload');
-                if (profilePictureUpload) {
-                    profilePictureUpload.addEventListener('change', handleProfilePictureUpload);
-                }
-                // Configurar botones de navegación
-                if (showRegisterBtn) {
-                    showRegisterBtn.addEventListener('click', showRegisterForm);
-                }
-                if (showLoginBtn) {
-                    showLoginBtn.addEventListener('click', showLoginForm);
-                }
-                if (logoutBtn) {
-                    logoutBtn.addEventListener('click', logout);
-                }
-                // Configurar controles de paginación de consulta
-                if (consultaFirstPageBtn) {
-                    consultaFirstPageBtn.addEventListener('click', () => goToConsultaPage(1));
-                }
-                if (consultaPrevPageBtn) {
-                    consultaPrevPageBtn.addEventListener('click', () => goToConsultaPage(consultaCurrentPage - 1));
-                }
-                if (consultaNextPageBtn) {
-                    consultaNextPageBtn.addEventListener('click', () => goToConsultaPage(consultaCurrentPage + 1));
-                }
-                if (consultaLastPageBtn) {
-                    consultaLastPageBtn.addEventListener('click', () => {
-                        const totalPages = Math.ceil(filteredConsultaData.length / consultaItemsPerPage);
-                        goToConsultaPage(totalPages);
-                    });
-                }
-                // Configurar búsqueda en consulta
-                if (consultaSearch) {
-                    consultaSearch.addEventListener('input', function() {
-                        const searchTerm = this.value.toLowerCase();
-                        if (!searchTerm) {
-                            // Si no hay término de búsqueda, mostrar todos los registros
-                            filteredConsultaData = [...allConsultaData];
-                        } else {
-                            // Filtrar los registros
-                            filteredConsultaData = allConsultaData.filter(personal => {
-                                // Convertir todos los campos a string y buscar en ellos
-                                return Object.values(personal).some(value => {
-                                    if (value === null || value === undefined) return false;
-                                    return value.toString().toLowerCase().includes(searchTerm);
-                                });
-                            });
-                        }
-                        // Reiniciar a la primera página
-                        consultaCurrentPage = 1;
-                        // Renderizar la primera página
-                        renderConsultaCurrentPage();
-                        updateConsultaPaginationControls();
-                    });
-                }
-                // Configurar botones de administración de desplegables
-                document.addEventListener('click', (e) => {
-                    const manageBtn = e.target.closest('.manage-dropdown');
-                    if (manageBtn) {
-                        const field = manageBtn.dataset.field;
-                        showManageDropdownModal(field);
-                    }
-                });
-                // Configurar botón para agregar opciones
-                document.getElementById('btn-add-option')?.addEventListener('click', addOption);
-                // Permitir agregar opciones con Enter en el campo de texto
-                document.getElementById('new-option-value')?.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        addOption();
-                    }
-                });
-                console.log('Sistema inicializado correctamente');
-            } catch (error) {
-                console.error('Error al inicializar el sistema:', error);
-                alert('Error al inicializar el sistema: ' + error.message);
-            }
-        });
-        
         // Función para inicializar Supabase
         function initSupabase() {
             try {
@@ -2038,8 +1949,130 @@
             }
         }
         
-        // Inicializar Supabase
-        initSupabase();
+        // Configurar eventos
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Inicializar Supabase PRIMERO
+                initSupabase();
+                
+                // Verificar la sesión inicial
+                await checkSession();
+                
+                // Agregar listener para cambios de autenticación
+                if (supabaseClient) {
+                    supabaseClient.auth.onAuthStateChange((event, session) => {
+                        console.log('Cambio de estado de autenticación:', event);
+                        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+                            // Verificar la sesión nuevamente
+                            checkSession();
+                        }
+                    });
+                }
+                
+                // Configurar el evento de submit del formulario de login
+                if (loginForm) {
+                    loginForm.addEventListener('submit', login);
+                }
+                
+                // Configurar el evento de submit del formulario de registro
+                if (registerForm) {
+                    registerForm.addEventListener('submit', register);
+                }
+                
+                // Configurar el evento de submit del formulario de personal
+                if (personalForm) {
+                    personalForm.addEventListener('submit', savePersonal);
+                }
+                
+                // Configurar el evento de subida de foto
+                const profilePictureUpload = document.getElementById('profile-picture-upload');
+                if (profilePictureUpload) {
+                    profilePictureUpload.addEventListener('change', handleProfilePictureUpload);
+                }
+                
+                // Configurar botones de navegación
+                if (showRegisterBtn) {
+                    showRegisterBtn.addEventListener('click', showRegisterForm);
+                }
+                
+                if (showLoginBtn) {
+                    showLoginBtn.addEventListener('click', showLoginForm);
+                }
+                
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', logout);
+                }
+                
+                // Configurar controles de paginación de consulta
+                if (consultaFirstPageBtn) {
+                    consultaFirstPageBtn.addEventListener('click', () => goToConsultaPage(1));
+                }
+                
+                if (consultaPrevPageBtn) {
+                    consultaPrevPageBtn.addEventListener('click', () => goToConsultaPage(consultaCurrentPage - 1));
+                }
+                
+                if (consultaNextPageBtn) {
+                    consultaNextPageBtn.addEventListener('click', () => goToConsultaPage(consultaCurrentPage + 1));
+                }
+                
+                if (consultaLastPageBtn) {
+                    consultaLastPageBtn.addEventListener('click', () => {
+                        const totalPages = Math.ceil(filteredConsultaData.length / consultaItemsPerPage);
+                        goToConsultaPage(totalPages);
+                    });
+                }
+                
+                // Configurar búsqueda en consulta
+                if (consultaSearch) {
+                    consultaSearch.addEventListener('input', function() {
+                        const searchTerm = this.value.toLowerCase();
+                        if (!searchTerm) {
+                            // Si no hay término de búsqueda, mostrar todos los registros
+                            filteredConsultaData = [...allConsultaData];
+                        } else {
+                            // Filtrar los registros
+                            filteredConsultaData = allConsultaData.filter(personal => {
+                                // Convertir todos los campos a string y buscar en ellos
+                                return Object.values(personal).some(value => {
+                                    if (value === null || value === undefined) return false;
+                                    return value.toString().toLowerCase().includes(searchTerm);
+                                });
+                            });
+                        }
+                        // Reiniciar a la primera página
+                        consultaCurrentPage = 1;
+                        // Renderizar la primera página
+                        renderConsultaCurrentPage();
+                        updateConsultaPaginationControls();
+                    });
+                }
+                
+                // Configurar botones de administración de desplegables
+                document.addEventListener('click', (e) => {
+                    const manageBtn = e.target.closest('.manage-dropdown');
+                    if (manageBtn) {
+                        const field = manageBtn.dataset.field;
+                        showManageDropdownModal(field);
+                    }
+                });
+                
+                // Configurar botón para agregar opciones
+                document.getElementById('btn-add-option')?.addEventListener('click', addOption);
+                
+                // Permitir agregar opciones con Enter en el campo de texto
+                document.getElementById('new-option-value')?.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        addOption();
+                    }
+                });
+                
+                console.log('Sistema inicializado correctamente');
+            } catch (error) {
+                console.error('Error al inicializar el sistema:', error);
+                alert('Error al inicializar el sistema: ' + error.message);
+            }
+        });
     </script>
 </body>
 </html>
