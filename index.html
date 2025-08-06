@@ -12,6 +12,9 @@
         :root {
             --primary-color: #003366;
             --secondary-color: #0066CC;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --super-admin-color: #8B0000;
         }
         body {
             background-color: #f5f7fa;
@@ -79,7 +82,8 @@
         .form-floating > label {
             padding: 1rem 0.75rem;
         }
-        .form-floating > .form-control {
+        .form-floating > .form-control,
+        .form-floating > .form-select {
             padding: 1rem 0.75rem;
         }
         .btn-primary {
@@ -89,6 +93,11 @@
             font-weight: 600;
             letter-spacing: 0.5px;
         }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 51, 102, 0.2);
+            background: linear-gradient(to right, #002244, #0055AA);
+        }
         .error-message {
             background-color: #fff5f5;
             border-left: 4px solid #dc3545;
@@ -96,6 +105,36 @@
             margin-bottom: 20px;
             border-radius: 0 4px 4px 0;
             display: none;
+        }
+        .panel-container {
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+            border: none;
+            overflow: hidden;
+        }
+        .card-header {
+            background: white;
+            border-bottom: 1px solid #eee;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+        }
+        .footer-line {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #ced4da, transparent);
+            margin-bottom: 15px;
         }
         .security-info {
             background: rgba(0, 51, 102, 0.05);
@@ -109,9 +148,64 @@
             color: var(--secondary-color);
             margin-right: 8px;
         }
-        .panel-container {
-            max-width: 1200px;
-            margin: 30px auto;
+        .role-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+            color: white;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+        .role-super-admin {
+            background-color: var(--super-admin-color);
+        }
+        .role-admin {
+            background-color: var(--secondary-color);
+        }
+        .role-user {
+            background-color: #28a745;
+        }
+        /* Pestañas de navegación */
+        .nav-tabs {
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 0;
+            padding: 12px 20px;
+            font-weight: 500;
+            color: #6c757d;
+            position: relative;
+        }
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--secondary-color);
+        }
+        .tab-content {
+            background: white;
+            border-radius: 0 0 12px 12px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+        }
+        .admin-only {
+            display: none;
+        }
+        @media (max-width: 576px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            .footer {
+                font-size: 16px;
+                padding: 20px 0;
+            }
         }
     </style>
 </head>
@@ -178,13 +272,68 @@
             </button>
         </div>
         
-        <!-- Panel Principal en Blanco -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0">Panel Principal</h5>
+        <!-- Pestañas de navegación -->
+        <ul class="nav nav-tabs" id="mainTabs">
+            <li class="nav-item">
+                <a class="nav-link active" id="panel-tab" data-bs-toggle="tab" href="#panel-content">Panel Principal</a>
+            </li>
+            <li class="nav-item admin-only">
+                <a class="nav-link" id="register-tab" data-bs-toggle="tab" href="#register-content">Registrar Personal</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="consulta-tab" data-bs-toggle="tab" href="#consulta-content">Consulta</a>
+            </li>
+        </ul>
+        
+        <!-- Contenido de las pestañas -->
+        <div class="tab-content">
+            <!-- Contenido del Panel Principal -->
+            <div class="tab-pane fade show active" id="panel-content">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">Panel Principal</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center py-5">
+                            <i class="fas fa-home" style="font-size: 4rem; color: #0066CC; opacity: 0.3;"></i>
+                            <h3 class="mt-4" style="color: #6c757d;">Panel Principal</h3>
+                            <p class="text-muted mt-2">Este es el panel principal del sistema</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body" style="min-height: 600px; background-color: #f8f9fa; border-radius: 0 0 12px 12px;">
-                <!-- Panel completamente en blanco sin contenido -->
+            
+            <!-- Contenido de Registrar Personal (solo para administradores) - AHORA VACÍO -->
+            <div class="tab-pane fade admin-only" id="register-content">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">Registrar Personal</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Pestaña completamente vacía como solicitaste -->
+                        <div class="text-center py-5">
+                            <i class="fas fa-user-plus" style="font-size: 4rem; color: #0066CC; opacity: 0.3;"></i>
+                            <h3 class="mt-4" style="color: #6c757d;">Registrar Personal</h3>
+                            <p class="text-muted mt-2">Esta pestaña está actualmente vacía</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contenido de Consulta -->
+            <div class="tab-pane fade" id="consulta-content">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">Consulta de Personal</h5>
+                    </div>
+                    <div class="card-body p-4 text-center">
+                        <div class="py-5">
+                            <i class="fas fa-search" style="font-size: 4rem; color: #6c757d; opacity: 0.3;"></i>
+                            <h3 class="mt-4" style="color: #6c757d;">Funcionalidad de Consulta</h3>
+                            <p class="text-muted mt-2">La funcionalidad de consulta está temporalmente deshabilitada.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -199,13 +348,14 @@
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // PASO CRÍTICO: Reemplaza estos valores con los de tu proyecto
-        const supabaseUrl = 'https://lppjafflhozcxlavkzpv.supabase.co'; // Ej: https://abcd123456789.supabase.co
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwcGphZmZsaG96Y3hsYXZrenB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzkwNjcsImV4cCI6MjA3MDAxNTA2N30.flI3AqJfa80ylGELcU4-l7JA3ly0oEGOtvmC9qaF1lU'; // Ej: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        // Configuración de Supabase (reemplaza estos valores con los de tu proyecto)
+        const supabaseUrl = 'https://TU_SUPABASE_URL.supabase.co';
+        const supabaseKey = 'TU_SUPABASE_ANON_KEY_AQUÍ';
         
         // Variables globales
         let supabaseClient = null;
         let isSupabaseConfigured = false;
+        let currentUserRole = 'user'; // Por defecto es usuario normal
         
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
@@ -225,7 +375,7 @@
                 errorText.textContent = message;
                 errorMessage.style.display = 'block';
             }
-            console.error('Error de autenticación:', message);
+            console.error('Error:', message);
         }
         
         // Función para ocultar mensajes de error
@@ -287,8 +437,9 @@
                     // Muestra el nombre del usuario
                     const user = data.session.user;
                     if (userNameElement && adminIconContainer) {
-                        // Verificar el rol del usuario
+                        // Verificar el rol del usuario (usando app_metadata primero)
                         const userRole = user.app_metadata?.role || user.user_metadata?.role || 'user';
+                        currentUserRole = userRole;
                         
                         // Mostrar "Administrador Principal" con icono si es admin
                         if (userRole === 'admin' || userRole === 'super_admin') {
@@ -296,14 +447,16 @@
                             adminIconContainer.innerHTML = '<i class="fas fa-user-shield text-danger ms-2" style="font-size: 1.2rem;"></i>';
                         } else {
                             // Manejo seguro de user_metadata para usuarios normales
-                            const fullName = user.user_metadata?.display_name || 
-                                            user.user_metadata?.full_name || 
+                            const fullName = user.user_metadata?.full_name || 
                                             user.user_metadata?.fullName || 
                                             user.user_metadata?.name ||
                                             user.email?.split('@')[0] || 'Usuario';
                             userNameElement.textContent = fullName;
                             adminIconContainer.innerHTML = '';
                         }
+                        
+                        // Aplicar restricciones según el rol
+                        applyRoleRestrictions(userRole);
                     }
                 } else {
                     console.log('No hay sesión activa');
@@ -321,6 +474,28 @@
                 console.error('Error al verificar sesión:', error);
                 showError('Error al verificar sesión: ' + error.message);
             }
+        }
+        
+        // Función para aplicar restricciones según el rol del usuario
+        function applyRoleRestrictions(role) {
+            console.log('Aplicando restricciones para rol:', role);
+            
+            // Si es administrador o super_admin, mostrar la pestaña de registro
+            if (role === 'admin' || role === 'super_admin') {
+                console.log('Usuario es ADMINISTRADOR o SUPER ADMINISTRADOR');
+                // Mostrar la pestaña de Registrar Personal
+                document.querySelectorAll('.admin-only').forEach(element => {
+                    element.style.display = 'block';
+                });
+                return;
+            }
+            
+            // Para usuarios normales:
+            console.log('Usuario es USUARIO NORMAL');
+            // Ocultar la pestaña de Registrar Personal
+            document.querySelectorAll('.admin-only').forEach(element => {
+                element.style.display = 'none';
+            });
         }
         
         // Función para iniciar sesión
@@ -385,6 +560,7 @@
                 if (userNameElement && adminIconContainer) {
                     // Verificar el rol del usuario
                     const userRole = data.user.app_metadata?.role || data.user.user_metadata?.role || 'user';
+                    currentUserRole = userRole;
                     
                     // Mostrar "Administrador Principal" con icono si es admin
                     if (userRole === 'admin' || userRole === 'super_admin') {
@@ -392,14 +568,16 @@
                         adminIconContainer.innerHTML = '<i class="fas fa-user-shield text-danger ms-2" style="font-size: 1.2rem;"></i>';
                     } else {
                         // Manejo seguro de user_metadata para usuarios normales
-                        const fullName = data.user.user_metadata?.display_name || 
-                                        data.user.user_metadata?.full_name || 
+                        const fullName = data.user.user_metadata?.full_name || 
                                         data.user.user_metadata?.fullName || 
                                         data.user.user_metadata?.name ||
                                         data.user.email?.split('@')[0] || 'Usuario';
                         userNameElement.textContent = fullName;
                         adminIconContainer.innerHTML = '';
                     }
+                    
+                    // Aplicar restricciones según el rol
+                    applyRoleRestrictions(userRole);
                 }
                 // Restaurar el estado del botón
                 loginSpinner.classList.add('d-none');
