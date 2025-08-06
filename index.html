@@ -123,6 +123,22 @@
             padding: 15px 20px;
             font-weight: 600;
         }
+        .profile-picture-container {
+            position: relative;
+            display: inline-block;
+        }
+        .profile-picture-container img {
+            border: 3px solid var(--secondary-color);
+            transition: all 0.3s ease;
+        }
+        .profile-picture-container:hover img {
+            transform: scale(1.03);
+        }
+        .upload-icon {
+            position: absolute;
+            bottom: 5px;
+            right: 35px;
+        }
         .footer {
             text-align: center;
             padding: 20px 0;
@@ -303,19 +319,92 @@
                 </div>
             </div>
             
-            <!-- Contenido de Registrar Personal (solo para administradores) - AHORA VACÍO -->
+            <!-- Contenido de Registrar Personal (solo para administradores) -->
             <div class="tab-pane fade admin-only" id="register-content">
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-white py-3">
-                        <h5 class="mb-0">Registrar Personal</h5>
+                        <h5 class="mb-0">Registro de Personal</h5>
                     </div>
                     <div class="card-body">
-                        <!-- Pestaña completamente vacía como solicitaste -->
-                        <div class="text-center py-5">
-                            <i class="fas fa-user-plus" style="font-size: 4rem; color: #0066CC; opacity: 0.3;"></i>
-                            <h3 class="mt-4" style="color: #6c757d;">Registrar Personal</h3>
-                            <p class="text-muted mt-2">Esta pestaña está actualmente vacía</p>
-                        </div>
+                        <form id="personal-form">
+                            <div class="row mb-4">
+                                <div class="col-md-4 text-center">
+                                    <div class="profile-picture-container mb-3 position-relative">
+                                        <img src="https://placehold.co/200x200/003366/white?text=Foto+Personal" 
+                                             alt="Foto del personal" 
+                                             class="img-fluid rounded-circle" 
+                                             id="profile-picture"
+                                             style="width: 180px; height: 180px; object-fit: cover;">
+                                        <div class="upload-icon" style="position: absolute; bottom: 5px; right: 35px;">
+                                            <label for="profile-picture-upload" class="btn btn-primary btn-sm rounded-circle p-2" 
+                                                   style="cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                                                <i class="fas fa-camera"></i>
+                                            </label>
+                                            <input type="file" id="profile-picture-upload" class="d-none" accept="image/*">
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small">Haga clic en el ícono para subir una foto</p>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="nombres" class="form-label">Nombres</label>
+                                            <input type="text" class="form-control" id="nombres" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="apellidos" class="form-label">Apellidos</label>
+                                            <input type="text" class="form-control" id="apellidos" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="cedula" class="form-label">Cédula de Identidad</label>
+                                            <input type="text" class="form-control" id="cedula" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edad" class="form-label">Edad</label>
+                                            <input type="number" class="form-control" id="edad" min="18" max="70">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="rango" class="form-label">Rango</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="rango" required>
+                                            <option value="">Seleccione...</option>
+                                            <option value="general">General</option>
+                                            <option value="coronel">Coronel</option>
+                                            <option value="teniente">Teniente</option>
+                                            <option value="sargento">Sargento</option>
+                                            <option value="cabomayor">Cabo Mayor</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="sexo" class="form-label">Sexo</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="sexo" required>
+                                            <option value="">Seleccione...</option>
+                                            <option value="masculino">Masculino</option>
+                                            <option value="femenino">Femenino</option>
+                                            <option value="otro">Otro</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="fecha-nacimiento" class="form-label">Fecha de Nacimiento</label>
+                                    <input type="date" class="form-control" id="fecha-nacimiento">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <!-- Botón para guardar -->
+                                <button type="submit" class="btn btn-primary py-2">
+                                    <i class="fas fa-save me-2"></i>Registrar Nuevo Personal
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -349,13 +438,14 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // Configuración de Supabase (reemplaza estos valores con los de tu proyecto)
-        const supabaseUrl = 'https://lppjafflhozcxlavkzpv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwcGphZmZsaG96Y3hsYXZrenB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzkwNjcsImV4cCI6MjA3MDAxNTA2N30.flI3AqJfa80ylGELcU4-l7JA3ly0oEGOtvmC9qaF1lU';
+        const supabaseUrl = 'https://TU_SUPABASE_URL.supabase.co';
+        const supabaseKey = 'TU_SUPABASE_ANON_KEY_AQUÍ';
         
         // Variables globales
         let supabaseClient = null;
         let isSupabaseConfigured = false;
         let currentUserRole = 'user'; // Por defecto es usuario normal
+        let isSaving = false;
         
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
@@ -366,6 +456,7 @@
         const loginText = document.getElementById('login-text');
         const logoutBtn = document.getElementById('logout-btn');
         const loginForm = document.getElementById('login-form');
+        const personalForm = document.getElementById('personal-form');
         const userNameElement = document.getElementById('user-name');
         const adminIconContainer = document.getElementById('admin-icon-container');
         
@@ -496,6 +587,116 @@
             document.querySelectorAll('.admin-only').forEach(element => {
                 element.style.display = 'none';
             });
+        }
+        
+        // Función para guardar un registro de personal
+        async function savePersonal(e) {
+            e.preventDefault();
+            
+            // Protección contra guardados duplicados
+            if (isSaving) {
+                console.log("Guardado ya en progreso, ignorando solicitud adicional");
+                return;
+            }
+            
+            try {
+                isSaving = true; // Activar el flag
+                
+                // Asegurar que hay una sesión válida
+                const isValid = await isSessionValid();
+                if (!isValid) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // Verificar el rol del usuario
+                const userRole = data.session.user.app_metadata?.role || data.session.user.user_metadata?.role || 'user';
+                
+                // Si no es administrador ni super_admin, impedir el registro
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    alert("No tiene permisos para registrar personal. Solo los administradores pueden registrar.");
+                    return;
+                }
+                
+                // Recoger los datos del formulario
+                const personal = {
+                    nombres: document.getElementById('nombres').value,
+                    apellidos: document.getElementById('apellidos').value,
+                    cedula: document.getElementById('cedula').value,
+                    edad: document.getElementById('edad').value,
+                    rango: document.getElementById('rango').value,
+                    sexo: document.getElementById('sexo').value,
+                    fecha_nacimiento: document.getElementById('fecha-nacimiento').value,
+                    foto: document.getElementById('profile-picture').src,
+                    fecha_registro: new Date().toISOString().split('T')[0],
+                    user_id: data.session.user.id,
+                    registrado_por: data.session.user.email?.split('@')[0] || 'Usuario'
+                };
+                
+                // Validación básica
+                if (!personal.nombres || !personal.apellidos || !personal.cedula || !personal.rango || !personal.sexo) {
+                    throw new Error("Por favor, complete todos los campos obligatorios");
+                }
+                
+                // Guardar en Supabase
+                const { error } = await supabaseClient
+                    .from('personal')
+                    .insert([personal]);
+                    
+                if (error) throw error;
+                
+                // Mostrar mensaje de éxito
+                alert('Registro de personal guardado exitosamente');
+                
+                // Limpiar el formulario
+                document.getElementById('nombres').value = '';
+                document.getElementById('apellidos').value = '';
+                document.getElementById('cedula').value = '';
+                document.getElementById('edad').value = '';
+                document.getElementById('rango').value = '';
+                document.getElementById('sexo').value = '';
+                document.getElementById('fecha-nacimiento').value = '';
+                document.getElementById('profile-picture').src = 'https://placehold.co/200x200/003366/white?text=Foto+Personal';
+                
+            } catch (error) {
+                console.error('Error al guardar registro de personal:', error);
+                alert(`Error al guardar: ${error.message}`);
+            } finally {
+                isSaving = false; // Desactivar el flag
+            }
+        }
+        
+        // Función para verificar si la sesión es válida
+        async function isSessionValid() {
+            try {
+                // Manejo seguro de la sesión
+                const { data, error } = await supabaseClient.auth.getSession();
+                if (error) {
+                    console.error('Error al obtener sesión:', error);
+                    return false;
+                }
+                return !!data?.session;
+            } catch (error) {
+                console.error('Error al verificar validez de sesión:', error);
+                return false;
+            }
+        }
+        
+        // Función para manejar la carga de foto
+        function handleProfilePictureUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile-picture').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
         }
         
         // Función para iniciar sesión
@@ -665,6 +866,17 @@
                 // Configurar el evento de submit del formulario de login
                 if (loginForm) {
                     loginForm.addEventListener('submit', login);
+                }
+                
+                // Configurar el evento de submit del formulario de personal
+                if (personalForm) {
+                    personalForm.addEventListener('submit', savePersonal);
+                }
+                
+                // Configurar el evento de subida de foto
+                const profilePictureUpload = document.getElementById('profile-picture-upload');
+                if (profilePictureUpload) {
+                    profilePictureUpload.addEventListener('change', handleProfilePictureUpload);
                 }
                 
                 // Configurar botón de cierre de sesión
