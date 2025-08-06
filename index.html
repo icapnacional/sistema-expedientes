@@ -1712,55 +1712,55 @@
             }
         }
         
-        // Función para registrar un usuario
-        async function register(e) {
-            e.preventDefault();
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            const fullName = document.getElementById('reg-name').value;
-            try {
-                hideError();
-                // Solo el administrador puede crear nuevos usuarios
-                // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) {
-                    throw new Error("Debe iniciar sesión para crear nuevos usuarios");
-                }
-                // CORRECCIÓN: Primero intentamos con app_metadata, luego con user_metadata
-                const userRole = data.session.user.app_metadata?.role || 
-                                 data.session.user.user_metadata?.role || 'user';
-                if (userRole !== 'admin' && userRole !== 'super_admin') {
-                    throw new Error("Solo los administradores pueden crear nuevos usuarios");
-                }
-                const {  signUpData, error } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                         {
-                            full_name: fullName,
-                            // CORRECCIÓN: Guardamos el rol en app_metadata
-                            role: 'user'
-                        }
-                    }
-                });
-                if (error) {
-                    throw error;
-                }
-                if (signUpData?.user) {
-                    console.log('Registro exitoso', signUpData);
-                    alert('¡Usuario creado exitosamente!');
-                    showLoginForm();
-                } else {
-                    console.log('Registro pendiente de confirmación', signUpData);
-                    alert('¡Usuario creado exitosamente! Revisa el correo para confirmar.');
-                    showLoginForm();
-                }
-            } catch (error) {
-                console.error('Error al registrar:', error);
-                alert('Error: ' + error.message);
-                return;
-            }
+// Función para registrar un usuario
+async function register(e) {
+    e.preventDefault();
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    const fullName = document.getElementById('reg-name').value;
+    try {
+        hideError();
+        // Solo el administrador puede crear nuevos usuarios
+        // Manejo seguro de la sesión
+        const { data, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !data?.session) {
+            throw new Error("Debe iniciar sesión para crear nuevos usuarios");
         }
+        // CORRECCIÓN: Primero intentamos con app_metadata, luego con user_metadata
+        const userRole = data.session.user.app_metadata?.role || 
+                         data.session.user.user_metadata?.role || 'user';
+        if (userRole !== 'admin' && userRole !== 'super_admin') {
+            throw new Error("Solo los administradores pueden crear nuevos usuarios");
+        }
+        const {  signUpData, error } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {  // CORRECCIÓN: Añadido "data:" aquí
+                    full_name: fullName,
+                    // CORRECCIÓN: Guardamos el rol en app_metadata
+                    role: 'user'
+                }
+            }
+        });
+        if (error) {
+            throw error;
+        }
+        if (signUpData?.user) {
+            console.log('Registro exitoso', signUpData);
+            alert('¡Usuario creado exitosamente!');
+            showLoginForm();
+        } else {
+            console.log('Registro pendiente de confirmación', signUpData);
+            alert('¡Usuario creado exitosamente! Revisa el correo para confirmar.');
+            showLoginForm();
+        }
+    } catch (error) {
+        console.error('Error al registrar:', error);
+        alert('Error: ' + error.message);
+        return;
+    }
+}
         
         // Función para iniciar sesión
         async function login(e) {
