@@ -199,13 +199,22 @@
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Configuración de Supabase (reemplaza estos valores después de crear tu proyecto)
-        const supabaseUrl = 'https://lppjafflhozcxlavkzpv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwcGphZmZsaG96Y3hsYXZrenB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzkwNjcsImV4cCI6MjA3MDAxNTA2N30.flI3AqJfa80ylGELcU4-l7JA3ly0oEGOtvmC9qaF1lU';
+        const supabaseUrl = 'https://lppjafflhozcxlavkzpv.supabase.co'; // ¡REEMPLAZA ESTO!
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwcGphZmZsaG96Y3hsYXZrenB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzkwNjcsImV4cCI6MjA3MDAxNTA2N30.flI3AqJfa80ylGELcU4-l7JA3ly0oEGOtvmC9qaF1lU'; // ¡REEMPLAZA ESTO!
         
-        // Inicialización de Supabase
-        const { createClient } = supabase;
-        const supabaseClient = createClient(supabaseUrl, supabaseKey);
+        // Inicialización de Supabase con manejo de errores mejorado
+        let supabaseClient;
+        try {
+            const { createClient } = supabase;
+            supabaseClient = createClient(supabaseUrl, supabaseKey);
+            console.log("Supabase inicializado correctamente");
+        } catch (error) {
+            console.error("Error al inicializar Supabase:", error);
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('error-text').textContent = 
+                "Error de configuración: Verifica que hayas reemplazado las credenciales de Supabase. " +
+                "Abre la consola del navegador (F12) para más detalles.";
+        }
         
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
@@ -224,6 +233,7 @@
                 errorText.textContent = message;
                 errorMessage.style.display = 'block';
             }
+            console.error('Error de autenticación:', message);
         }
         
         // Función para ocultar mensajes de error
@@ -264,6 +274,10 @@
         // Función para verificar la sesión
         async function checkSession() {
             try {
+                if (!supabaseClient) {
+                    throw new Error("Supabase no está inicializado. Verifica tus credenciales.");
+                }
+                
                 // Manejo seguro de la sesión
                 const { data, error } = await supabaseClient.auth.getSession();
                 if (error) {
@@ -271,6 +285,7 @@
                     throw error;
                 }
                 if (data?.session) {
+                    console.log('Sesión encontrada:', data.session);
                     // Usuario autenticado - muestra el panel principal
                     loginScreen.style.display = 'none';
                     mainPanel.style.display = 'block';
@@ -285,6 +300,7 @@
                         userNameElement.textContent = fullName;
                     }
                 } else {
+                    console.log('No hay sesión activa');
                     // Usuario no autenticado - muestra el login
                     loginScreen.style.display = 'block';
                     mainPanel.style.display = 'none';
@@ -309,10 +325,16 @@
             const rememberCredentials = document.getElementById('remember-credentials').checked;
             
             try {
+                if (!supabaseClient) {
+                    throw new Error("Supabase no está inicializado. Verifica tus credenciales.");
+                }
+                
                 hideError();
                 // Mostrar spinner de carga
                 loginSpinner.classList.remove('d-none');
                 loginText.textContent = 'Iniciando sesión...';
+                
+                console.log('Intentando iniciar sesión con:', email);
                 
                 // Intenta iniciar sesión
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -337,6 +359,8 @@
                     loginText.textContent = 'Iniciar Sesión';
                     return;
                 }
+                
+                console.log('Inicio de sesión exitoso', data);
                 
                 // Si el usuario quiere recordar sus credenciales, guarda el correo
                 if (rememberCredentials) {
@@ -372,6 +396,10 @@
         // Función para cerrar sesión
         async function logout() {
             try {
+                if (!supabaseClient) {
+                    throw new Error("Supabase no está inicializado. Verifica tus credenciales.");
+                }
+                
                 const { error } = await supabaseClient.auth.signOut();
                 if (error) throw error;
                 // Limpiar el correo recordado
@@ -392,25 +420,43 @@
         
         // Configurar eventos
         document.addEventListener('DOMContentLoaded', async () => {
-            // Verificar la sesión inicial
-            await checkSession();
+            console.log("Página cargada. Inicializando sistema...");
             
-            // Agregar listener para cambios de autenticación
-            supabaseClient.auth.onAuthStateChange((event, session) => {
-                if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-                    // Verificar la sesión nuevamente
-                    checkSession();
+            try {
+                // Verificar la sesión inicial
+                await checkSession();
+                
+                // Agregar listener para cambios de autenticación
+                if (supabaseClient) {
+                    supabaseClient.auth.onAuthStateChange((event, session) => {
+                        console.log('Cambio de estado de autenticación:', event);
+                        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+                            // Verificar la sesión nuevamente
+                            checkSession();
+                        }
+                    });
                 }
-            });
-            
-            // Configurar el evento de submit del formulario de login
-            if (loginForm) {
-                loginForm.addEventListener('submit', login);
-            }
-            
-            // Configurar botón de cierre de sesión
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', logout);
+                
+                // Configurar el evento de submit del formulario de login
+                if (loginForm) {
+                    loginForm.addEventListener('submit', login);
+                }
+                
+                // Configurar botón de cierre de sesión
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', logout);
+                }
+                
+                // Verificar si las credenciales están configuradas
+                if (supabaseUrl.includes('TU_SUPABASE_URL_AQUÍ') || 
+                    supabaseKey.includes('TU_SUPABASE_ANON_KEY_AQUÍ')) {
+                    showError("ERROR: Debes reemplazar las credenciales de Supabase. " +
+                             "Abre este archivo HTML en un editor de texto y reemplaza " +
+                             "los valores de supabaseUrl y supabaseKey con los de tu proyecto.");
+                }
+            } catch (error) {
+                console.error('Error crítico al inicializar el sistema:', error);
+                showError('Error crítico: ' + error.message);
             }
         });
     </script>
