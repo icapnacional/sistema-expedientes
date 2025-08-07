@@ -816,133 +816,125 @@
             }
         }
         
-        // CORRECCIÓN #3: Función para cargar la lista de usuarios
-        async function loadUsers() {
-            try {
-                // Verificar si Supabase está configurado
-                if (!isSupabaseConfigured) {
-                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
-                }
-                
-                // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) {
-                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
-                }
-                
-                // Obtener el rol del usuario
-                const userRole = data.session.user.app_metadata?.role || 
-                                 data.session.user.user_metadata?.role || 'user';
-                
-                // Verificar permisos
-                if (userRole !== 'super_admin') {
-                    throw new Error("Solo el administrador principal puede ver la lista de usuarios");
-                }
-                
-                // CORRECCIÓN #4: Consultar usuarios desde auth.users
-                const {  usersData, error } = await supabaseClient
-                    .from('users')
-                    .select('*');
-                
-                if (error) {
-                    console.error('Error al consultar usuarios:', error);
-                    throw error;
-                }
-                
-                // Limpiar la lista
-                usersList.innerHTML = '';
-                
-                if (usersData && usersData.length > 0) {
-                    usersData.forEach(user => {
-                        const row = document.createElement('tr');
-                        
-                        // Determinar el rol para mostrar
-                        let displayRole = 'Usuario';
-                        if (user.role === 'super_admin') {
-                            displayRole = 'Administrador Principal';
-                        } else if (user.role === 'admin') {
-                            displayRole = 'Administrador';
-                        }
-                        
-                        row.innerHTML = `
-                            <td>${user.full_name || 'Sin nombre'}</td>
-                            <td>${user.email}</td>
-                            <td>
-                                <span class="role-badge ${user.role === 'super_admin' ? 'role-super-admin' : user.role === 'admin' ? 'role-admin' : 'role-user'}">
-                                    ${displayRole}
-                                </span>
-                            </td>
-                            <td>
-                                ${user.role !== 'super_admin' ? 
-                                    `<button class="btn btn-sm btn-outline-danger delete-user" data-id="${user.id}">
-                                        <i class="fas fa-trash"></i>
-                                    </button>` : 
-                                    '<span class="text-muted">No permitido</span>'
-                                }
-                            </td>
-                        `;
-                        usersList.appendChild(row);
-                    });
+       async function loadUsers() {
+    try {
+        // Verificar si Supabase está configurado
+        if (!isSupabaseConfigured) {
+            throw new Error("Supabase no está configurado. Verifica tus credenciales.");
+        }
+        
+        // Manejo seguro de la sesión
+        const { data, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !data?.session) {
+            throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+        }
+        
+        // Obtener el rol del usuario
+        const user = data.session.user;
+        const userRole = user.app_metadata?.role || 
+                         user.user_metadata?.role || 'user';
+        
+        console.log('ROL DEL USUARIO ACTUAL:', userRole);
+        
+        // Verificar permisos
+        if (userRole !== 'super_admin') {
+            throw new Error("Solo el administrador principal puede ver la lista de usuarios");
+        }
+        
+        // Consultar usuarios desde la tabla personalizada
+        const { data: usersData, error } = await supabaseClient
+            .from('users')
+            .select('*');
+        
+        // Manejo específico de errores de permisos
+        if (error) {
+            console.error('Error al consultar usuarios:', error);
+            
+            // Si es un error de permisos, proporcionar un mensaje específico
+            if (error.code === '42501' || error.message.includes('permission denied')) {
+                throw new Error("Error de permisos: No tienes acceso a la tabla users. Verifica las políticas RLS y tu rol.");
+            }
+            
+            throw error;
+        }
+        
+        // Limpiar la lista
+        usersList.innerHTML = '';
+        
+        if (usersData && usersList) {
+            if (usersData.length > 0) {
+                usersData.forEach(user => {
+                    const row = document.createElement('tr');
                     
-                    // Configurar eventos para los botones de eliminación
-                    document.querySelectorAll('.delete-user').forEach(button => {
-                        button.addEventListener('click', function() {
-                            const id = this.getAttribute('data-id');
-                            deleteUser(id);
-                        });
-                    });
-                } else {
-                    // CORRECCIÓN #5: Agregar sincronización inicial si no hay usuarios
-                    const { data: authUsers, error: authError } = await supabaseClient
-                        .from('auth.users')
-                        .select('id, email, raw_user_meta_data');
-                    
-                    if (authError) {
-                        console.error('Error al consultar auth.users:', authError);
-                        throw authError;
+                    // Determinar el rol para mostrar
+                    let displayRole = 'Usuario';
+                    if (user.role === 'super_admin') {
+                        displayRole = 'Administrador Principal';
+                    } else if (user.role === 'admin') {
+                        displayRole = 'Administrador';
                     }
                     
-                    if (authUsers && authUsers.length > 0) {
-                        // Crear usuarios en la tabla pública
-                        const usersToInsert = authUsers.map(user => ({
-                            id: user.id,
-                            email: user.email,
-                            full_name: user.raw_user_meta_data?.full_name || '',
-                            role: user.raw_user_meta_data?.role || 'user'
-                        }));
-                        
-                        const { error: insertError } = await supabaseClient
-                            .from('users')
-                            .upsert(usersToInsert, { onConflict: 'id' });
-                        
-                        if (insertError) {
-                            console.error('Error al sincronizar usuarios:', insertError);
-                            throw insertError;
-                        }
-                        
-                        // Recargar la lista
-                        await loadUsers();
-                    } else {
-                        usersList.innerHTML = `
-                            <tr>
-                                <td colspan="4" class="text-center py-3 text-muted">
-                                    <i class="fas fa-inbox me-2"></i>No hay usuarios registrados
-                                </td>
-                            </tr>
-                        `;
-                    }
-                }
-            } catch (error) {
-                console.error('Error al cargar usuarios:', error);
+                    row.innerHTML = `
+                        <td>${user.full_name || 'Sin nombre'}</td>
+                        <td>${user.email}</td>
+                        <td>
+                            <span class="role-badge ${user.role === 'super_admin' ? 'role-super-admin' : user.role === 'admin' ? 'role-admin' : 'role-user'}">
+                                ${displayRole}
+                            </span>
+                        </td>
+                        <td>
+                            ${user.role !== 'super_admin' ? 
+                                `<button class="btn btn-sm btn-outline-danger delete-user" data-id="${user.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>` : 
+                                '<span class="text-muted">No permitido</span>'
+                            }
+                        </td>
+                    `;
+                    usersList.appendChild(row);
+                });
+                
+                // Configurar eventos para los botones de eliminación
+                document.querySelectorAll('.delete-user').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        deleteUser(id);
+                    });
+                });
+            } else {
                 usersList.innerHTML = `
                     <tr>
-                        <td colspan="4" class="text-center py-3 text-danger">
-                            <i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}
+                        <td colspan="4" class="text-center py-3 text-muted">
+                            <i class="fas fa-inbox me-2"></i>No hay usuarios registrados
                         </td>
                     </tr>
                 `;
             }
         }
+    } catch (error) {
+        console.error('Error al cargar usuarios:', error);
+        
+        // Mostrar mensaje específico para errores de permisos
+        if (error.message.includes('permission denied')) {
+            usersList.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center py-3 text-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>Error de permisos: ${error.message}
+                    </td>
+                </tr>
+            `;
+            showError(`Error de permisos: ${error.message}. Verifica que eres administrador principal y que las políticas RLS están configuradas correctamente.`);
+        } else {
+            usersList.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center py-3 text-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}
+                    </td>
+                </tr>
+            `;
+        }
+    }
+}
         
         // CORRECCIÓN #6: Función para eliminar un usuario
         async function deleteUser(id) {
