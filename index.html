@@ -346,31 +346,34 @@
                                  user.user_metadata?.role || 'user';
                 
                 console.log('ROL DEL USUARIO:', userRole);
-                
-                // Mostrar el rol en un badge
-                if (roleBadgeContainer) {
-                    roleBadgeContainer.innerHTML = '';
-                    const roleBadge = document.createElement('span');
-                    roleBadge.className = 'role-badge';
-                    
-                    if (userRole === 'super_admin') {
-                        roleBadge.textContent = 'Administrador Principal';
-                        roleBadge.classList.add('role-super-admin');
-                    } } else {
-                        roleBadgeContainer.textContent = 'Usuario';
-                        roleBadgeContainer.style.color = '#28a745'; 
-                        roleBadgeContainer.style.fontWeight = '600';
-                        roleBadgeContainer.style.marginLeft = '8px';
-                        return; 
-                        }
-                         roleBadgeContainer.appendChild(roleBadge);
-                }
-                
-                // Mostrar botón de crear administrador solo para super_admin
-                if (createAdminBtn) {
-                    createAdminBtn.style.display = userRole === 'super_admin' ? 'inline-block' : 'none';
-                }
-                
+        // Mostrar el rol en un badge
+if (roleBadgeContainer) {
+    roleBadgeContainer.innerHTML = '';
+    const roleBadge = document.createElement('span');
+    roleBadge.className = 'role-badge';
+    
+    if (userRole === 'super_admin') {
+        roleBadge.textContent = 'Administrador Principal';
+        roleBadge.classList.add('role-super-admin');
+    } else if (userRole === 'admin') {
+        roleBadge.textContent = 'Administrador';
+        roleBadge.classList.add('role-admin');
+    } else {
+        // Para usuarios normales - solo texto con color verde
+        roleBadgeContainer.textContent = 'Usuario';
+        roleBadgeContainer.style.color = '#28a745'; // Verde
+        roleBadgeContainer.style.fontWeight = '600';
+        roleBadgeContainer.style.marginLeft = '8px';
+        return; // Salir de la función aquí
+    }
+    
+    roleBadgeContainer.appendChild(roleBadge);
+}
+
+// Mostrar botón de crear administrador solo para super_admin
+if (createAdminBtn) {
+    createAdminBtn.style.display = userRole === 'super_admin' ? 'inline-block' : 'none';
+}
                 // Restaurar el estado del botón
                 loginSpinner.classList.add('d-none');
                 loginText.textContent = 'Iniciar Sesión';
