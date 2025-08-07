@@ -999,15 +999,15 @@
                     console.error('Error de autenticación:', error);
                     // Manejo específico de errores
                     let errorMessageText = 'Error: ' + error.message;
-                    if (error.message.includes('Invalid login credentials')) {
-                        errorMessageText = 'Credenciales inválidas. Verifique su correo y contraseña.';
-                    } else if (error.message.includes('Email not confirmed')) {
-                        errorMessageText = 'Correo no confirmado. Por favor, revise su bandeja de entrada y confirme su cuenta.';
-                    } else if (error.message.includes('Email rate limit exceeded')) {
-                        errorMessageText = 'Demasiados intentos. Por favor, intente más tarde.';
-                    } else if (error.message.includes('captcha')) {
-                        errorMessageText = 'Error de verificación CAPTCHA. Por favor, desactive el CAPTCHA en Supabase o contacte al administrador.';
-                    }
+                   if (error.message.includes('Invalid login credentials')) {
+    errorMessageText = 'Credenciales inválidas. Verifique su correo y contraseña.';
+} else if (error.message.includes('Email rate limit exceeded')) {
+    errorMessageText = 'Demasiados intentos. Por favor, intente más tarde.';
+} else if (error.message.includes('captcha')) {
+    errorMessageText = 'Error de verificación CAPTCHA. Por favor, desactive el CAPTCHA en Supabase o contacte al administrador.';
+} else {
+    errorMessageText = 'Credenciales inválidas. Verifique su correo y contraseña.';
+}
                     showError(errorMessageText);
                     // Restaurar el estado del botón
                     loginSpinner.classList.add('d-none');
