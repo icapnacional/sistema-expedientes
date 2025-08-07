@@ -740,16 +740,15 @@
         }
 
         // Registrar usuario en Supabase Auth
-        const { data: signUpData, error } = await supabaseClient.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-                data: {
-                    full_name: fullName,
-                    role: role
-                }
-            }
-        });
+   const { data: signUpData, error } = await supabaseClient.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+         {
+            full_name: fullName  // Solo datos seguros como nombre
+        }
+    }
+});
 
         if (error) {
             console.error('Error de Supabase:', error);
