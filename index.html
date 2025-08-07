@@ -1743,7 +1743,7 @@
                 // Actualizar el nombre del usuario
                 const userNameElement = document.getElementById('user-name');
                 const adminIconContainer = document.getElementById('admin-icon-container');
-                
+                let userRole = 'user';
                 if (userNameElement && adminIconContainer) {
                     // Verificar el rol del usuario
                     const userRole = data.user.app_metadata?.role || 
@@ -1821,8 +1821,8 @@
         function initSupabase() {
             try {
                 // Verificar si las credenciales son placeholders
-                if (supabaseUrl.includes('TU_SUPABASE_URL') || 
-                    supabaseKey.includes('TU_SUPABASE_ANON_KEY')) {
+                if (supabaseUrl.includes('https://lppjafflhozcxlavkzpv.supabase.co') || 
+                    supabaseKey.includes('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwcGphZmZsaG96Y3hsYXZrenB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzkwNjcsImV4cCI6MjA3MDAxNTA2N30.flI3AqJfa80ylGELcU4-l7JA3ly0oEGOtvmC9qaF1lU')) {
                     throw new Error("Debes reemplazar las credenciales de Supabase. Abre este archivo en un editor de texto y reemplaza los valores de supabaseUrl y supabaseKey con los de tu proyecto.");
                 }
                 
