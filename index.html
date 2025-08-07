@@ -672,14 +672,7 @@
                                 <button type="submit" class="btn btn-primary py-2">
                                     <i class="fas fa-save me-2"></i>Registrar Nuevo Personal
                                 </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Formulario de Registro -->
+                                  <!-- Formulario de Registro -->
 <form id="register-form" class="d-none mt-4">
     <h3 class="text-center mb-3">Crear Cuenta</h3>
     <div class="mb-3">
@@ -706,6 +699,14 @@
     </button>
     <button type="button" class="btn btn-link mt-2" id="show-login">¿Ya tienes cuenta? Inicia sesión</button>
 </form>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  
     
     <!-- Pie de página -->
     <div class="container mt-5 text-center text-muted">
@@ -789,7 +790,6 @@
                 console.warn("No se pudo limpiar el correo de localStorage");
             }
         }
-        // Función para registrar un usuario
 async function register(e) {
     e.preventDefault();
     const email = document.getElementById('reg-email').value;
@@ -797,15 +797,21 @@ async function register(e) {
     const fullName = document.getElementById('reg-name').value;
     try {
         hideError();
+        // Verificar sesión
         const { data, error: sessionError } = await supabaseClient.auth.getSession();
         if (sessionError || !data?.session) {
             throw new Error("Debe iniciar sesión para crear nuevos usuarios");
         }
+        
+        // Verificar rol del usuario actual
         const userRole = data.session.user.app_metadata?.role || 
                          data.session.user.user_metadata?.role || 'user';
+                         
         if (userRole !== 'admin' && userRole !== 'super_admin') {
             throw new Error("Solo los administradores pueden crear nuevos usuarios");
         }
+        
+        // Registro del nuevo usuario
         const { signUpData, error } = await supabaseClient.auth.signUp({
             email: email,
             password: password,
@@ -816,25 +822,9 @@ async function register(e) {
                 }
             }
         });
+        
         if (error) throw error;
-        if (signUpData?.user) {
-            console.log('Registro exitoso', signUpData);
-            alert('¡Usuario creado exitosamente!');
-            showLoginForm();
-        } else {
-            console.log('Registro pendiente de confirmación', signUpData);
-            alert('¡Usuario creado exitosamente! Revisa el correo para confirmar.');
-            showLoginForm();
-        }
-    } catch (error) {
-        console.error('Error al registrar:', error);
-        alert('Error: ' + error.message);
-        return;
-    }
-}
-        if (error) {
-            throw error;
-        }
+        
         if (signUpData?.user) {
             console.log('Registro exitoso', signUpData);
             alert('¡Usuario creado exitosamente!');
