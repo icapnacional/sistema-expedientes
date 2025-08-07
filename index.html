@@ -1743,95 +1743,99 @@
             }
         }
         
-        // Función para iniciar sesión
-        async function login(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const rememberCredentials = document.getElementById('remember-credentials').checked;
-            try {
-                hideError();
-                // Mostrar spinner de carga
-                loginSpinner.classList.remove('d-none');
-                loginText.textContent = 'Iniciando sesión...';
-                console.log('Intentando iniciar sesión con:', email);
-                // Intenta iniciar sesión
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-                if (error) {
-                    console.error('Error de autenticación:', error);
-                    // Manejo específico de errores
-                    let errorMessageText = 'Error: ' + error.message;
-                    if (error.message.includes('Invalid login credentials')) {
-                        errorMessageText = 'Credenciales inválidas. Verifique su correo y contraseña.';
-                    } else if (error.message.includes('Email not confirmed')) {
-                        errorMessageText = 'Correo no confirmado. Por favor, revise su bandeja de entrada y confirme su cuenta.';
-                    } else if (error.message.includes('Email rate limit exceeded')) {
-                        errorMessageText = 'Demasiados intentos. Por favor, intente más tarde.';
-                    } else if (error.message.includes('captcha')) {
-                        errorMessageText = 'Error de verificación CAPTCHA. Por favor, desactive el CAPTCHA en Supabase o contacte al administrador.';
-                    }
-                    showError(errorMessageText);
-                    // Restaurar el estado del botón
-                    loginSpinner.classList.add('d-none');
-                    loginText.textContent = 'Iniciar Sesión';
-                    return;
-                }
-                console.log('Inicio de sesión exitoso', data);
-                // Si el usuario quiere recordar sus credenciales, guarda el correo
-                if (rememberCredentials) {
-                    saveRememberedEmail(email);
-                } else {
-                    clearRememberedEmail();
-                }
-                // Si llegamos aquí, el inicio de sesión fue exitoso
-                loginScreen.style.display = 'none';
-                mainPanel.style.display = 'block';
-                // Actualizar el nombre del usuario
-                const userNameElement = document.getElementById('user-name');
-                const adminIconContainer = document.getElementById('admin-icon-container');
-                
-                if (userNameElement && adminIconContainer) {
-                    // Verificar el rol del usuario
-                    const userRole = data.user.app_metadata?.role || 
-                                     data.user.user_metadata?.role || 'user';
-                    currentUserRole = userRole;
-                    console.log('ROL DEL USUARIO:', userRole);
-                    console.log('METADATOS COMPLETOS (app_metadata):', data.user.app_metadata);
-                    console.log('METADATOS COMPLETOS (user_metadata):', data.user.user_metadata);
-                    
-                    // MODIFICACIÓN: Mostrar "Administrador Principal" con icono si es admin
-                    if (userRole === 'admin' || userRole === 'super_admin') {
-                        userNameElement.textContent = 'Administrador Principal';
-                        adminIconContainer.innerHTML = '<i class="fas fa-user-shield text-danger ms-2" style="font-size: 1.2rem;"></i>';
-                    } else {
-                        // Manejo seguro de user_metadata para usuarios normales
-                        const fullName = data.user.user_metadata?.full_name || 
-                                        data.user.user_metadata?.fullName || 
-                                        data.user.user_metadata?.name ||
-                                        data.user.email?.split('@')[0] || 'Usuario';
-                        userNameElement.textContent = fullName;
-                        adminIconContainer.innerHTML = '';
-                    }
-                }
-                // Aplicar restricciones según el rol
-                applyRoleRestrictions(userRole);
-                // Cargar los datos de consulta
-                await loadConsulta();
-                // Restaurar el estado del botón
-                loginSpinner.classList.add('d-none');
-                loginText.textContent = 'Iniciar Sesión';
-            } catch (error) {
-                console.error('Error inesperado al iniciar sesión:', error);
-                showError('Error inesperado: ' + error.message);
-                // Restaurar el estado del botón
-                loginSpinner.classList.add('d-none');
-                loginText.textContent = 'Iniciar Sesión';
+   // Función para iniciar sesión
+async function login(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const rememberCredentials = document.getElementById('remember-credentials').checked;
+    try {
+        hideError();
+        // Mostrar spinner de carga
+        loginSpinner.classList.remove('d-none');
+        loginText.textContent = 'Iniciando sesión...';
+        console.log('Intentando iniciar sesión con:', email);
+        // Intenta iniciar sesión
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+        if (error) {
+            console.error('Error de autenticación:', error);
+            // Manejo específico de errores
+            let errorMessageText = 'Error: ' + error.message;
+            if (error.message.includes('Invalid login credentials')) {
+                errorMessageText = 'Credenciales inválidas. Verifique su correo y contraseña.';
+            } else if (error.message.includes('Email not confirmed')) {
+                errorMessageText = 'Correo no confirmado. Por favor, revise su bandeja de entrada y confirme su cuenta.';
+            } else if (error.message.includes('Email rate limit exceeded')) {
+                errorMessageText = 'Demasiados intentos. Por favor, intente más tarde.';
+            } else if (error.message.includes('captcha')) {
+                errorMessageText = 'Error de verificación CAPTCHA. Por favor, desactive el CAPTCHA en Supabase o contacte al administrador.';
+            }
+            showError(errorMessageText);
+            // Restaurar el estado del botón
+            loginSpinner.classList.add('d-none');
+            loginText.textContent = 'Iniciar Sesión';
+            return;
+        }
+        console.log('Inicio de sesión exitoso', data);
+        // Si el usuario quiere recordar sus credenciales, guarda el correo
+        if (rememberCredentials) {
+            saveRememberedEmail(email);
+        } else {
+            clearRememberedEmail();
+        }
+        // Si llegamos aquí, el inicio de sesión fue exitoso
+        loginScreen.style.display = 'none';
+        mainPanel.style.display = 'block';
+        // Actualizar el nombre del usuario
+        const userNameElement = document.getElementById('user-name');
+        const adminIconContainer = document.getElementById('admin-icon-container');
+        
+        // DEFINIR userRole ANTES DEL BLOQUE IF PARA QUE ESTÉ DISPONIBLE
+        let userRole = 'user'; // Valor por defecto
+        
+        if (userNameElement && adminIconContainer && data?.user) {
+            // Verificar el rol del usuario
+            userRole = data.user.app_metadata?.role || 
+                       data.user.user_metadata?.role || 'user';
+            currentUserRole = userRole;
+            console.log('ROL DEL USUARIO:', userRole);
+            console.log('METADATOS COMPLETOS (app_metadata):', data.user.app_metadata);
+            console.log('METADATOS COMPLETOS (user_metadata):', data.user.user_metadata);
+            
+            // Mostrar "Administrador Principal" con icono si es admin
+            if (userRole === 'admin' || userRole === 'super_admin') {
+                userNameElement.textContent = 'Administrador Principal';
+                adminIconContainer.innerHTML = '<i class="fas fa-user-shield text-danger ms-2" style="font-size: 1.2rem;"></i>';
+            } else {
+                // Manejo seguro de user_metadata para usuarios normales
+                const fullName = data.user.user_metadata?.full_name || 
+                                data.user.user_metadata?.fullName || 
+                                data.user.user_metadata?.name ||
+                                data.user.email?.split('@')[0] || 'Usuario';
+                userNameElement.textContent = fullName;
+                adminIconContainer.innerHTML = '';
             }
         }
         
+        // Ahora userRole está definido y disponible
+        applyRoleRestrictions(userRole);
+        
+        // Cargar los datos de consulta
+        await loadConsulta();
+        // Restaurar el estado del botón
+        loginSpinner.classList.add('d-none');
+        loginText.textContent = 'Iniciar Sesión';
+    } catch (error) {
+        console.error('Error inesperado al iniciar sesión:', error);
+        showError('Error inesperado: ' + error.message);
+        // Restaurar el estado del botón
+        loginSpinner.classList.add('d-none');
+        loginText.textContent = 'Iniciar Sesión';
+    }
+}
         // Función para cerrar sesión
         async function logout() {
             try {
