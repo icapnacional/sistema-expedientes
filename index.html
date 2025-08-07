@@ -12,6 +12,9 @@
         :root {
             --primary-color: #003366;
             --secondary-color: #0066CC;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --super-admin-color: #8B0000;
         }
         body {
             background-color: #f5f7fa;
@@ -103,6 +106,36 @@
             border-radius: 0 4px 4px 0;
             display: none;
         }
+        .panel-container {
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+            border: none;
+            overflow: hidden;
+        }
+        .card-header {
+            background: white;
+            border-bottom: 1px solid #eee;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+        }
+        .footer-line {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #ced4da, transparent);
+            margin-bottom: 15px;
+        }
         .security-info {
             background: rgba(0, 51, 102, 0.05);
             border-left: 3px solid var(--secondary-color);
@@ -131,14 +164,60 @@
             text-transform: uppercase;
             font-size: 0.8rem;
         }
-       
-        .role-text-user {
-            color: #2DC41D; 
-            font-weight: 600;
-            margin-left: 8px;
-}
         .role-super-admin {
-            background-color: #8B0000;
+            background-color: var(--super-admin-color);
+        }
+        .role-admin {
+            background-color: var(--secondary-color);
+        }
+        .role-user {
+            background-color: #28a745;
+        }
+        /* Pestañas de navegación */
+        .nav-tabs {
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 0;
+            padding: 12px 20px;
+            font-weight: 500;
+            color: #6c757d;
+            position: relative;
+        }
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--secondary-color);
+        }
+        .tab-content {
+            background: white;
+            border-radius: 0 0 12px 12px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+        }
+        .admin-only {
+            display: none;
+        }
+        .super-admin-only {
+            display: none;
+        }
+        .user-only {
+            display: none;
+        }
+        @media (max-width: 576px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            .footer {
+                font-size: 16px;
+                padding: 20px 0;
+            }
         }
     </style>
 </head>
@@ -193,9 +272,9 @@
     </div>
     
     <!-- Panel Principal (oculto al inicio) -->
-    <div class="container" id="main-panel" style="display: none; max-width: 1200px; margin: 30px auto;">
+    <div class="container panel-container" id="main-panel" style="display: none;">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Bienvenido al Sistema <span id="user-name" class="text-primary"></span> <span id="role-badge-container"></span></h2>
+            <h2>Bienvenido, <span id="user-name" class="text-primary"></span> <span id="role-display"></span></h2>
             <button id="logout-btn" class="btn btn-outline-danger">
                 <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
             </button>
@@ -221,6 +300,11 @@
         </div>
     </div>
     
+    <!-- Pie de página -->
+    <div class="container mt-5 text-center text-muted">
+        <p>sistema de gestión de expedientes - todos los derechos reservados © 2025</p>
+    </div>
+    
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Supabase JS -->
@@ -244,7 +328,7 @@
         const logoutBtn = document.getElementById('logout-btn');
         const loginForm = document.getElementById('login-form');
         const userNameElement = document.getElementById('user-name');
-        const roleBadgeContainer = document.getElementById('role-badge-container');
+        const roleDisplay = document.getElementById('role-display');
         const createAdminBtn = document.getElementById('create-admin-btn');
         
         // Función para mostrar mensajes de error
@@ -284,6 +368,90 @@
                 return false;
             }
         }
+        
+        // Función para verificar la sesión
+        async function checkSession() {
+            try {
+                console.log('Verificando sesión...');
+                
+                // Verificar si Supabase está configurado
+                if (!isSupabaseConfigured) {
+                    console.error('Supabase no está configurado. Verifica tus credenciales.');
+                    showError('Supabase no está configurado. Verifica tus credenciales.');
+                    return;
+                }
+                
+                // Manejo seguro de la sesión
+                const { data, error } = await supabaseClient.auth.getSession();
+                if (error) {
+                    console.error('Error al obtener sesión:', error);
+                    throw error;
+                }
+                
+                if (data?.session) {
+                    console.log('Sesión encontrada:', data.session);
+                    // Usuario autenticado - muestra el panel principal
+                    loginScreen.style.display = 'none';
+                    mainPanel.style.display = 'block';
+                    
+                    // Muestra el nombre del usuario
+                    const user = data.session.user;
+                    if (userNameElement) {
+                        // Manejo seguro de user_metadata
+                        const fullName = user.user_metadata?.full_name || 
+                                        user.user_metadata?.fullName || 
+                                        user.user_metadata?.name ||
+                                        user.email?.split('@')[0] || 'Usuario';
+                        userNameElement.textContent = fullName;
+                    }
+                    
+                    // Verificar el rol del usuario
+                    const userRole = user.app_metadata?.role || 
+                                     user.user_metadata?.role || 'user';
+                    
+                    console.log('ROL DEL USUARIO:', userRole);
+                    
+                    // Mostrar el rol según el tipo de usuario
+                    if (roleDisplay) {
+                        roleDisplay.innerHTML = '';
+                        
+                        if (userRole === 'super_admin') {
+                            // Para super admin, mantener el badge rojo
+                            const roleBadge = document.createElement('span');
+                            roleBadge.className = 'role-badge role-super-admin';
+                            roleBadge.textContent = 'Administrador Principal';
+                            roleDisplay.appendChild(roleBadge);
+                        } else if (userRole === 'admin') {
+                            // Para admin, mantener el badge azul
+                            const roleBadge = document.createElement('span');
+                            roleBadge.className = 'role-badge role-admin';
+                            roleBadge.textContent = 'Administrador';
+                            roleDisplay.appendChild(roleBadge);
+                        } else {
+                            // Para usuario normal, solo mostrar la palabra "Usuario" en texto plano con color verde
+                            roleDisplay.textContent = 'Usuario';
+                            roleDisplay.style.color = '#28a745'; // Verde para usuarios normales
+                            roleDisplay.style.fontWeight = '600';
+                            roleDisplay.style.marginLeft = '8px';
+                        }
+                    }
+                    
+                    // Mostrar botón de crear administrador solo para super_admin
+                    if (createAdminBtn) {
+                        createAdminBtn.style.display = userRole === 'super_admin' ? 'inline-block' : 'none';
+                    }
+                } else {
+                    console.log('No hay sesión activa');
+                    // Usuario no autenticado - muestra el login
+                    loginScreen.style.display = 'block';
+                    mainPanel.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error al verificar sesión:', error);
+                showError('Error al verificar sesión: ' + error.message);
+            }
+        }
+        
         // Función para iniciar sesión
         async function login(e) {
             e.preventDefault();
@@ -295,13 +463,11 @@
                 loginSpinner.classList.remove('d-none');
                 loginText.textContent = 'Iniciando sesión...';
                 console.log('Intentando iniciar sesión con:', email);
-                
                 // Intenta iniciar sesión
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
-                
                 if (error) {
                     console.error('Error de autenticación:', error);
                     // Manejo específico de errores
@@ -321,16 +487,14 @@
                     loginText.textContent = 'Iniciar Sesión';
                     return;
                 }
-                
                 console.log('Inicio de sesión exitoso', data);
                 // Si llegamos aquí, el inicio de sesión fue exitoso
                 loginScreen.style.display = 'none';
                 mainPanel.style.display = 'block';
-                
                 // Muestra el nombre del usuario
                 const user = data.user;
                 if (userNameElement) {
-                    // Manejo seguro de user_metadata para usuarios normales
+                    // Manejo seguro de user_metadata
                     const fullName = user.user_metadata?.full_name || 
                                     user.user_metadata?.fullName || 
                                     user.user_metadata?.name ||
@@ -343,38 +507,40 @@
                                  user.user_metadata?.role || 'user';
                 
                 console.log('ROL DEL USUARIO:', userRole);
-        // Mostrar el rol en un badge
-if (roleBadgeContainer) {
-    roleBadgeContainer.innerHTML = '';
-    const roleBadge = document.createElement('span');
-    roleBadge.className = 'role-badge';
-    
-    if (userRole === 'super_admin') {
-        roleBadge.textContent = 'Administrador Principal';
-        roleBadge.classList.add('role-super-admin');
-    } else if (userRole === 'admin') {
-        roleBadge.textContent = 'Administrador';
-        roleBadge.classList.add('role-admin');
-    } else {
-        // Para usuarios normales - solo texto con color verde
-        roleBadgeContainer.textContent = 'Usuario';
-        roleBadgeContainer.style.color = '#28a745'; // Verde
-        roleBadgeContainer.style.fontWeight = '600';
-        roleBadgeContainer.style.marginLeft = '8px';
-        return; // Salir de la función aquí
-    }
-    
-    roleBadgeContainer.appendChild(roleBadge);
-}
-
-// Mostrar botón de crear administrador solo para super_admin
-if (createAdminBtn) {
-    createAdminBtn.style.display = userRole === 'super_admin' ? 'inline-block' : 'none';
-}
+                
+                // Mostrar el rol según el tipo de usuario
+                if (roleDisplay) {
+                    roleDisplay.innerHTML = '';
+                    
+                    if (userRole === 'super_admin') {
+                        // Para super admin, mantener el badge rojo
+                        const roleBadge = document.createElement('span');
+                        roleBadge.className = 'role-badge role-super-admin';
+                        roleBadge.textContent = 'Administrador Principal';
+                        roleDisplay.appendChild(roleBadge);
+                    } else if (userRole === 'admin') {
+                        // Para admin, mantener el badge azul
+                        const roleBadge = document.createElement('span');
+                        roleBadge.className = 'role-badge role-admin';
+                        roleBadge.textContent = 'Administrador';
+                        roleDisplay.appendChild(roleBadge);
+                    } else {
+                        // Para usuario normal, solo mostrar la palabra "Usuario" en texto plano con color verde
+                        roleDisplay.textContent = 'Usuario';
+                        roleDisplay.style.color = '#28a745'; // Verde para usuarios normales
+                        roleDisplay.style.fontWeight = '600';
+                        roleDisplay.style.marginLeft = '8px';
+                    }
+                }
+                
+                // Mostrar botón de crear administrador solo para super_admin
+                if (createAdminBtn) {
+                    createAdminBtn.style.display = userRole === 'super_admin' ? 'inline-block' : 'none';
+                }
+                
                 // Restaurar el estado del botón
                 loginSpinner.classList.add('d-none');
                 loginText.textContent = 'Iniciar Sesión';
-                
             } catch (error) {
                 console.error('Error inesperado al iniciar sesión:', error);
                 showError('Error inesperado: ' + error.message);
@@ -396,7 +562,7 @@ if (createAdminBtn) {
                 document.getElementById('email').value = '';
                 document.getElementById('password').value = '';
                 document.getElementById('user-name').textContent = '';
-                document.getElementById('role-badge-container').innerHTML = '';
+                document.getElementById('role-display').innerHTML = '';
             } catch (error) {
                 console.error('Error al cerrar sesión:', error);
                 alert('Error al cerrar sesión: ' + error.message);
@@ -439,6 +605,17 @@ if (createAdminBtn) {
                 // Verificar la sesión inicial
                 await checkSession();
                 
+                // Agregar listener para cambios de autenticación
+                if (supabaseClient) {
+                    supabaseClient.auth.onAuthStateChange((event, session) => {
+                        console.log('Cambio de estado de autenticación:', event);
+                        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+                            // Verificar la sesión nuevamente
+                            checkSession();
+                        }
+                    });
+                }
+                
                 // Configurar el evento de submit del formulario de login
                 if (loginForm) {
                     loginForm.addEventListener('submit', login);
@@ -449,7 +626,7 @@ if (createAdminBtn) {
                     logoutBtn.addEventListener('click', logout);
                 }
                 
-                console.log('Sistema de login inicializado correctamente');
+                console.log('Sistema inicializado correctamente');
             } catch (error) {
                 console.error('Error al inicializar el sistema:', error);
                 showError('Error al inicializar el sistema: ' + error.message);
