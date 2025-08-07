@@ -12,6 +12,9 @@
         :root {
             --primary-color: #003366;
             --secondary-color: #0066CC;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --super-admin-color: #8B0000;
         }
         body {
             background-color: #f5f7fa;
@@ -103,6 +106,52 @@
             border-radius: 0 4px 4px 0;
             display: none;
         }
+        .panel-container {
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+            border: none;
+            overflow: hidden;
+        }
+        .card-header {
+            background: white;
+            border-bottom: 1px solid #eee;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        .profile-picture-container {
+            position: relative;
+            display: inline-block;
+        }
+        .profile-picture-container img {
+            border: 3px solid var(--secondary-color);
+            transition: all 0.3s ease;
+        }
+        .profile-picture-container:hover img {
+            transform: scale(1.03);
+        }
+        .upload-icon {
+            position: absolute;
+            bottom: 5px;
+            right: 35px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+        }
+        .footer-line {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #ced4da, transparent);
+            margin-bottom: 15px;
+        }
         .security-info {
             background: rgba(0, 51, 102, 0.05);
             border-left: 3px solid var(--secondary-color);
@@ -120,6 +169,68 @@
             color: var(--secondary-color);
             margin-right: 8px;
             font-size: 1.1rem;
+        }
+        .role-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+            color: white;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+        .role-super-admin {
+            background-color: var(--super-admin-color);
+        }
+        .role-admin {
+            background-color: var(--secondary-color);
+        }
+        .role-user {
+            background-color: #28a745;
+        }
+        /* Pestañas de navegación */
+        .nav-tabs {
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 0;
+            padding: 12px 20px;
+            font-weight: 500;
+            color: #6c757d;
+            position: relative;
+        }
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--secondary-color);
+        }
+        .tab-content {
+            background: white;
+            border-radius: 0 0 12px 12px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+        }
+        .admin-only {
+            display: none;
+        }
+        .super-admin-only {
+            display: none;
+        }
+        @media (max-width: 576px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            .footer {
+                font-size: 16px;
+                padding: 20px 0;
+            }
         }
     </style>
 </head>
@@ -178,27 +289,125 @@
     </div>
     
     <!-- Panel Principal (oculto al inicio) -->
-    <div class="container" id="main-panel" style="display: none; max-width: 1200px; margin: 30px auto;">
+    <div class="container panel-container" id="main-panel" style="display: none;">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Bienvenido al Sistema <span id="user-name" class="text-primary"></span></h2>
+            <h2>Bienvenido, <span id="user-name" class="text-primary"></span> <span id="role-badge-container"></span></h2>
             <button id="logout-btn" class="btn btn-outline-danger">
                 <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
             </button>
         </div>
         
-        <!-- Panel Principal en Blanco -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0">Panel Principal</h5>
+        <!-- Pestañas de navegación -->
+        <ul class="nav nav-tabs" id="mainTabs">
+            <li class="nav-item">
+                <a class="nav-link active" id="panel-tab" data-bs-toggle="tab" href="#panel-content">Panel Principal</a>
+            </li>
+            <li class="nav-item super-admin-only">
+                <a class="nav-link" id="users-tab" data-bs-toggle="tab" href="#users-content">Gestión de Usuarios</a>
+            </li>
+            <li class="nav-item user-only">
+                <a class="nav-link" id="consulta-tab" data-bs-toggle="tab" href="#consulta-content">Consultas</a>
+            </li>
+        </ul>
+        
+        <!-- Contenido de las pestañas -->
+        <div class="tab-content">
+            <!-- Contenido del Panel Principal -->
+            <div class="tab-pane fade show active" id="panel-content">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">Panel Principal</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center py-5">
+                            <i class="fas fa-home" style="font-size: 4rem; color: #0066CC; opacity: 0.3;"></i>
+                            <h3 class="mt-4" style="color: #6c757d;">Panel Principal</h3>
+                            <p class="text-muted mt-2">Este es el panel principal del sistema</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="text-center py-5">
-                    <i class="fas fa-home" style="font-size: 4rem; color: #0066CC; opacity: 0.3;"></i>
-                    <h3 class="mt-4" style="color: #6c757d;">Panel Principal</h3>
-                    <p class="text-muted mt-2">Este es el panel principal del sistema</p>
+            
+            <!-- Contenido de Gestión de Usuarios (solo para super-admin) -->
+            <div class="tab-pane fade super-admin-only" id="users-content">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">Gestión de Usuarios</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="mb-4">Crear Nuevo Usuario</h5>
+                                <form id="register-form">
+                                    <div class="mb-3">
+                                        <label for="reg-name" class="form-label">Nombre Completo</label>
+                                        <input type="text" class="form-control" id="reg-name" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="reg-email" class="form-label">Correo Electrónico</label>
+                                        <input type="email" class="form-control" id="reg-email" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="reg-password" class="form-label">Contraseña</label>
+                                        <input type="password" class="form-control" id="reg-password" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="user-role" class="form-label">Rol</label>
+                                        <select class="form-select" id="user-role">
+                                            <option value="user">Usuario Normal</option>
+                                            <option value="admin">Administrador</option>
+                                            <option value="super_admin">Administrador Principal</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-user-plus me-2"></i>Crear Usuario
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="mb-4">Usuarios Registrados</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Nombre</th>
+                                                <th>Correo</th>
+                                                <th>Rol</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="users-list">
+                                            <!-- Los usuarios se cargarán aquí dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contenido de Consultas (solo para usuarios normales) -->
+            <div class="tab-pane fade user-only" id="consulta-content">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">Consultas</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="text-center py-5">
+                            <i class="fas fa-search" style="font-size: 4rem; color: #0066CC; opacity: 0.3;"></i>
+                            <h3 class="mt-4" style="color: #6c757d;">Consultas</h3>
+                            <p class="text-muted mt-2">Esta sección está en desarrollo</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+    
+    <!-- Pie de página -->
+    <div class="container mt-5 text-center text-muted">
+        <p>sistema de gestión de expedientes - todos los derechos reservados © 2025</p>
     </div>
     
     <!-- Bootstrap JS Bundle with Popper -->
@@ -209,10 +418,11 @@
         // Variables globales
         let supabaseClient = null;
         let isSupabaseConfigured = false;
+        let currentUserRole = 'user'; // Por defecto es usuario normal
         
         // Configuración de Supabase (REEMPLAZA CON TUS CREDENCIALES)
-        const supabaseUrl = 'https://rwigsdsyrhlaunyumbeg.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3aWdzZHN5cmhsYXVueXVtYmVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MzU3MjMsImV4cCI6MjA3MDExMTcyM30.1egn1FDR4Kv_k-lFGZce6rwNbBlNCuBIvyN7UArihaE';
+        const supabaseUrl = 'https://TU_SUPABASE_URL.supabase.co';
+        const supabaseKey = 'TU_SUPABASE_ANON_KEY_AQUÍ';
         
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
@@ -223,7 +433,10 @@
         const loginText = document.getElementById('login-text');
         const logoutBtn = document.getElementById('logout-btn');
         const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
         const userNameElement = document.getElementById('user-name');
+        const roleBadgeContainer = document.getElementById('role-badge-container');
+        const usersList = document.getElementById('users-list');
         
         // Función para mostrar mensajes de error
         function showError(message) {
@@ -312,41 +525,59 @@
                 
                 if (data?.session) {
                     console.log('Sesión encontrada:', data.session);
-                    
-                    // Verificar el rol del usuario
-                    const user = data.session.user;
-                    const userRole = user.app_metadata?.role || 
-                                     user.user_metadata?.role || 'user';
-                    
-                    console.log('ROL DEL USUARIO:', userRole);
-                    
-                    // Solo los administradores pueden acceder al panel
-                    if (userRole !== 'admin' && userRole !== 'super_admin') {
-                        console.log('Usuario no es administrador. Cerrando sesión.');
-                        await supabaseClient.auth.signOut();
-                        showError('Acceso denegado. Solo los administradores pueden acceder.');
-                        return;
-                    }
-                    
-                    // Usuario autenticado y es administrador - muestra el panel principal
+                    // Usuario autenticado - muestra el panel principal
                     loginScreen.style.display = 'none';
                     mainPanel.style.display = 'block';
                     
                     // Muestra el nombre del usuario
+                    const user = data.session.user;
                     if (userNameElement) {
-                        // Manejo seguro de user_metadata para usuarios normales
+                        // Manejo seguro de user_metadata
                         const fullName = user.user_metadata?.full_name || 
                                         user.user_metadata?.fullName || 
                                         user.user_metadata?.name ||
                                         user.email?.split('@')[0] || 'Usuario';
                         userNameElement.textContent = fullName;
                     }
+                    
+                    // Verificar el rol del usuario
+                    const userRole = user.app_metadata?.role || 
+                                     user.user_metadata?.role || 'user';
+                    currentUserRole = userRole;
+                    console.log('ROL DEL USUARIO:', userRole);
+                    
+                    // Mostrar el rol en un badge
+                    if (roleBadgeContainer) {
+                        roleBadgeContainer.innerHTML = '';
+                        const roleBadge = document.createElement('span');
+                        roleBadge.className = 'role-badge';
+                        
+                        if (userRole === 'super_admin') {
+                            roleBadge.textContent = 'Administrador Principal';
+                            roleBadge.classList.add('role-super-admin');
+                        } else if (userRole === 'admin') {
+                            roleBadge.textContent = 'Administrador';
+                            roleBadge.classList.add('role-admin');
+                        } else {
+                            roleBadge.textContent = 'Usuario';
+                            roleBadge.classList.add('role-user');
+                        }
+                        
+                        roleBadgeContainer.appendChild(roleBadge);
+                    }
+                    
+                    // Aplicar restricciones según el rol
+                    applyRoleRestrictions(userRole);
+                    
+                    // Si es super_admin, cargar la lista de usuarios
+                    if (userRole === 'super_admin') {
+                        await loadUsers();
+                    }
                 } else {
                     console.log('No hay sesión activa');
                     // Usuario no autenticado - muestra el login
                     loginScreen.style.display = 'block';
                     mainPanel.style.display = 'none';
-                    
                     // Rellenar el correo si está guardado
                     const rememberedEmail = getRememberedEmail();
                     if (rememberedEmail) {
@@ -357,6 +588,260 @@
             } catch (error) {
                 console.error('Error al verificar sesión:', error);
                 showError('Error al verificar sesión: ' + error.message);
+            }
+        }
+        
+        // Función para aplicar restricciones según el rol del usuario
+        function applyRoleRestrictions(role) {
+            console.log('Aplicando restricciones para rol:', role);
+            currentUserRole = role;
+            
+            // Ocultar todas las pestañas primero
+            document.querySelectorAll('.super-admin-only, .admin-only, .user-only').forEach(element => {
+                element.style.display = 'none';
+            });
+            
+            // Mostrar pestañas según el rol
+            if (role === 'super_admin') {
+                // Mostrar pestañas para super_admin
+                document.querySelectorAll('.super-admin-only').forEach(element => {
+                    element.style.display = 'block';
+                });
+                
+                // También mostrar pestañas para usuarios normales (si es necesario)
+                document.querySelectorAll('.user-only').forEach(element => {
+                    element.style.display = 'block';
+                });
+            } else if (role === 'admin') {
+                // Mostrar pestañas para administradores
+                document.querySelectorAll('.admin-only').forEach(element => {
+                    element.style.display = 'block';
+                });
+                
+                // También mostrar pestañas para usuarios normales (si es necesario)
+                document.querySelectorAll('.user-only').forEach(element => {
+                    element.style.display = 'block';
+                });
+            } else {
+                // Mostrar pestañas para usuarios normales
+                document.querySelectorAll('.user-only').forEach(element => {
+                    element.style.display = 'block';
+                });
+            }
+        }
+        
+        // Función para registrar un usuario (solo para super_admin)
+        async function register(e) {
+            e.preventDefault();
+            const fullName = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const role = document.getElementById('user-role').value;
+            
+            try {
+                hideError();
+                
+                // Verificar si Supabase está configurado
+                if (!isSupabaseConfigured) {
+                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
+                }
+                
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("Debe iniciar sesión para crear nuevos usuarios");
+                }
+                
+                // Obtener el rol del usuario
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
+                
+                // Verificar permisos
+                if (userRole !== 'super_admin') {
+                    throw new Error("Solo el administrador principal puede crear nuevos usuarios");
+                }
+                
+                // Registrar el nuevo usuario
+                const {  signUpData, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                         {
+                            full_name: fullName,
+                            role: role
+                        }
+                    }
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (signUpData?.user) {
+                    console.log('Registro exitoso', signUpData);
+                    // Limpiar el formulario
+                    document.getElementById('reg-name').value = '';
+                    document.getElementById('reg-email').value = '';
+                    document.getElementById('reg-password').value = '';
+                    document.getElementById('user-role').value = 'user';
+                    
+                    // Mostrar mensaje de éxito
+                    alert('¡Usuario creado exitosamente!');
+                    
+                    // Recargar la lista de usuarios
+                    await loadUsers();
+                }
+            } catch (error) {
+                console.error('Error al registrar usuario:', error);
+                showError(`Error al registrar usuario: ${error.message}`);
+            }
+        }
+        
+        // Función para cargar la lista de usuarios
+        async function loadUsers() {
+            try {
+                // Verificar si Supabase está configurado
+                if (!isSupabaseConfigured) {
+                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
+                }
+                
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // Obtener el rol del usuario
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
+                
+                // Verificar permisos
+                if (userRole !== 'super_admin') {
+                    throw new Error("Solo el administrador principal puede ver la lista de usuarios");
+                }
+                
+                // Consultar todos los usuarios
+                const {  usersData, error } = await supabaseClient
+                    .from('users')
+                    .select('*');
+                
+                if (error) {
+                    throw error;
+                }
+                
+                // Limpiar la lista
+                usersList.innerHTML = '';
+                
+                if (usersData && usersData.length > 0) {
+                    usersData.forEach(user => {
+                        const row = document.createElement('tr');
+                        
+                        // Determinar el rol para mostrar
+                        let displayRole = 'Usuario';
+                        if (user.role === 'super_admin') {
+                            displayRole = 'Administrador Principal';
+                        } else if (user.role === 'admin') {
+                            displayRole = 'Administrador';
+                        }
+                        
+                        row.innerHTML = `
+                            <td>${user.full_name || 'Sin nombre'}</td>
+                            <td>${user.email}</td>
+                            <td>
+                                <span class="role-badge ${user.role === 'super_admin' ? 'role-super-admin' : user.role === 'admin' ? 'role-admin' : 'role-user'}">
+                                    ${displayRole}
+                                </span>
+                            </td>
+                            <td>
+                                ${user.role !== 'super_admin' ? 
+                                    `<button class="btn btn-sm btn-outline-danger delete-user" data-id="${user.id}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>` : 
+                                    '<span class="text-muted">No permitido</span>'
+                                }
+                            </td>
+                        `;
+                        usersList.appendChild(row);
+                    });
+                    
+                    // Configurar eventos para los botones de eliminación
+                    document.querySelectorAll('.delete-user').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const id = this.getAttribute('data-id');
+                            deleteUser(id);
+                        });
+                    });
+                } else {
+                    usersList.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center py-3 text-muted">
+                                <i class="fas fa-inbox me-2"></i>No hay usuarios registrados
+                            </td>
+                        </tr>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error al cargar usuarios:', error);
+                usersList.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-3 text-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        // Función para eliminar un usuario
+        async function deleteUser(id) {
+            if (!confirm('¿Está seguro de que desea eliminar este usuario?')) {
+                return;
+            }
+            
+            try {
+                // Verificar si Supabase está configurado
+                if (!isSupabaseConfigured) {
+                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
+                }
+                
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // Obtener el rol del usuario
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
+                
+                // Verificar permisos
+                if (userRole !== 'super_admin') {
+                    throw new Error("Solo el administrador principal puede eliminar usuarios");
+                }
+                
+                // Eliminar el usuario de la tabla personalizada
+                const { error: deleteError } = await supabaseClient
+                    .from('users')
+                    .delete()
+                    .eq('id', id);
+                
+                if (deleteError) {
+                    throw deleteError;
+                }
+                
+                // También eliminar de la tabla de autenticación
+                const { error: authError } = await supabaseClient
+                    .from('auth.users')
+                    .delete()
+                    .eq('id', id);
+                
+                // Recargar la lista de usuarios
+                await loadUsers();
+                
+                alert('Usuario eliminado exitosamente');
+            } catch (error) {
+                console.error('Error al eliminar usuario:', error);
+                alert(`Error al eliminar usuario: ${error.message}`);
             }
         }
         
@@ -372,13 +857,11 @@
                 loginSpinner.classList.remove('d-none');
                 loginText.textContent = 'Iniciando sesión...';
                 console.log('Intentando iniciar sesión con:', email);
-                
                 // Intenta iniciar sesión
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
-                
                 if (error) {
                     console.error('Error de autenticación:', error);
                     // Manejo específico de errores
@@ -398,41 +881,20 @@
                     loginText.textContent = 'Iniciar Sesión';
                     return;
                 }
-                
                 console.log('Inicio de sesión exitoso', data);
-                
                 // Si el usuario quiere recordar sus credenciales, guarda el correo
                 if (rememberCredentials) {
                     saveRememberedEmail(email);
                 } else {
                     clearRememberedEmail();
                 }
-                
-                // Verificar el rol del usuario
-                const user = data.user;
-                const userRole = user.app_metadata?.role || 
-                                 user.user_metadata?.role || 'user';
-                
-                console.log('ROL DEL USUARIO:', userRole);
-                
-                // Solo los administradores pueden acceder al panel
-                if (userRole !== 'admin' && userRole !== 'super_admin') {
-                    console.log('Usuario no es administrador. Cerrando sesión.');
-                    await supabaseClient.auth.signOut();
-                    showError('Acceso denegado. Solo los administradores pueden acceder.');
-                    // Restaurar el estado del botón
-                    loginSpinner.classList.add('d-none');
-                    loginText.textContent = 'Iniciar Sesión';
-                    return;
-                }
-                
-                // Si llegamos aquí, el inicio de sesión fue exitoso y es un administrador
+                // Si llegamos aquí, el inicio de sesión fue exitoso
                 loginScreen.style.display = 'none';
                 mainPanel.style.display = 'block';
-                
                 // Muestra el nombre del usuario
+                const user = data.user;
                 if (userNameElement) {
-                    // Manejo seguro de user_metadata para usuarios normales
+                    // Manejo seguro de user_metadata
                     const fullName = user.user_metadata?.full_name || 
                                     user.user_metadata?.fullName || 
                                     user.user_metadata?.name ||
@@ -440,10 +902,43 @@
                     userNameElement.textContent = fullName;
                 }
                 
+                // Verificar el rol del usuario
+                const userRole = user.app_metadata?.role || 
+                                 user.user_metadata?.role || 'user';
+                currentUserRole = userRole;
+                console.log('ROL DEL USUARIO:', userRole);
+                
+                // Mostrar el rol en un badge
+                if (roleBadgeContainer) {
+                    roleBadgeContainer.innerHTML = '';
+                    const roleBadge = document.createElement('span');
+                    roleBadge.className = 'role-badge';
+                    
+                    if (userRole === 'super_admin') {
+                        roleBadge.textContent = 'Administrador Principal';
+                        roleBadge.classList.add('role-super-admin');
+                    } else if (userRole === 'admin') {
+                        roleBadge.textContent = 'Administrador';
+                        roleBadge.classList.add('role-admin');
+                    } else {
+                        roleBadge.textContent = 'Usuario';
+                        roleBadge.classList.add('role-user');
+                    }
+                    
+                    roleBadgeContainer.appendChild(roleBadge);
+                }
+                
+                // Aplicar restricciones según el rol
+                applyRoleRestrictions(userRole);
+                
+                // Si es super_admin, cargar la lista de usuarios
+                if (userRole === 'super_admin') {
+                    await loadUsers();
+                }
+                
                 // Restaurar el estado del botón
                 loginSpinner.classList.add('d-none');
                 loginText.textContent = 'Iniciar Sesión';
-                
             } catch (error) {
                 console.error('Error inesperado al iniciar sesión:', error);
                 showError('Error inesperado: ' + error.message);
@@ -468,6 +963,7 @@
                 document.getElementById('password').value = '';
                 document.getElementById('remember-credentials').checked = false;
                 document.getElementById('user-name').textContent = '';
+                document.getElementById('role-badge-container').innerHTML = '';
             } catch (error) {
                 console.error('Error al cerrar sesión:', error);
                 alert('Error al cerrar sesión: ' + error.message);
@@ -507,23 +1003,6 @@
                 // Inicializar Supabase
                 initSupabase();
                 
-                // Rellenar el correo si está guardado
-                const rememberedEmail = getRememberedEmail();
-                if (rememberedEmail) {
-                    document.getElementById('email').value = rememberedEmail;
-                    document.getElementById('remember-credentials').checked = true;
-                }
-                
-                // Configurar el evento de submit del formulario de login
-                if (loginForm) {
-                    loginForm.addEventListener('submit', login);
-                }
-                
-                // Configurar botón de logout
-                if (logoutBtn) {
-                    logoutBtn.addEventListener('click', logout);
-                }
-                
                 // Verificar la sesión inicial
                 await checkSession();
                 
@@ -538,7 +1017,22 @@
                     });
                 }
                 
-                console.log('Sistema de login inicializado correctamente');
+                // Configurar el evento de submit del formulario de login
+                if (loginForm) {
+                    loginForm.addEventListener('submit', login);
+                }
+                
+                // Configurar el evento de submit del formulario de registro
+                if (registerForm) {
+                    registerForm.addEventListener('submit', register);
+                }
+                
+                // Configurar botón de logout
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', logout);
+                }
+                
+                console.log('Sistema inicializado correctamente');
             } catch (error) {
                 console.error('Error al inicializar el sistema:', error);
                 showError('Error al inicializar el sistema: ' + error.message);
