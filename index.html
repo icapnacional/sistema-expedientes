@@ -776,28 +776,48 @@
                         errorMessage = 'Este correo electrónico ya está registrado';
                     }
                     throw new Error(errorMessage);
-                }
-                
                 if (signUpData?.user) {
-                    console.log('Registro exitoso', signUpData);
-                    
-                    // Limpiar el formulario
-                    document.getElementById('reg-name').value = '';
-                    document.getElementById('reg-email').value = '';
-                    document.getElementById('reg-password').value = '';
-                    document.getElementById('user-role').value = 'user';
-                    
-                    // Limpiar errores visuales
-                    showFieldError('reg-name', true);
-                    showFieldError('reg-email', true);
-                    showFieldError('reg-password', true);
-                    
-                    // Mostrar mensaje de éxito
-                    alert('¡Usuario creado exitosamente!');
-                    
-                    // Recargar la lista de usuarios
-                    await loadUsers();
-                } else {
+    console.log('Registro exitoso', signUpData);
+    const newUser = signUpData.user;
+
+    // === INSERTAR EN LA TABLA users ===
+    try {
+        const { error: insertError } = await supabaseClient
+            .from('users')
+            .insert([
+                {
+                    id: newUser.id,
+                    full_name: fullName,
+                    email: email,
+                    role: role
+                }
+            ]);
+
+        if (insertError) {
+            console.error('Error al insertar en tabla users:', insertError);
+            // Aunque falle, el usuario ya existe en auth, pero no en users
+            throw new Error(`Error al guardar usuario en la base de datos: ${insertError.message}`);
+        }
+    } catch (insertError) {
+        // Si falla la inserción, mostramos advertencia pero no revertimos (no se puede borrar de auth fácilmente)
+        alert('Usuario creado, pero hubo un error al guardarlo en la base de datos. Contacta al administrador.');
+        console.error('Error crítico:', insertError);
+        return; // Detener para que no limpie el formulario si hubo error
+    }
+
+    // === TODO BIEN: Limpiar y recargar ===
+    document.getElementById('reg-name').value = '';
+    document.getElementById('reg-email').value = '';
+    document.getElementById('reg-password').value = '';
+    document.getElementById('user-role').value = 'user';
+
+    showFieldError('reg-name', true);
+    showFieldError('reg-email', true);
+    showFieldError('reg-password', true);
+
+    alert('¡Usuario creado exitosamente!');
+    await loadUsers(); // Recargar lista
+} else {
                     console.log('Registro pendiente de confirmación', signUpData);
                     alert('¡Usuario creado exitosamente! Revisa el correo para confirmar.');
                 }
