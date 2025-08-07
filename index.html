@@ -259,83 +259,73 @@
     </div>
 
     <script type="module">
-        // Configuración de Supabase (¡REEMPLÁZALAS!)
+        // ============= CONFIGURACIÓN DE SUPABASE =============
+        // ⚠️ REEMPLAZA ESTOS VALORES CON LOS DE TU PROYECTO
         const supabaseUrl = 'https://tptiyqlgopoujierdacw.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwdGl5cWxnb3BvdWppZXJkYWN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NjY5MDIsImV4cCI6MjA3MDE0MjkwMn0.CuAron-2EMecpJNjHU_WhaGw93daplqKm-jj6V3JvGQ';
 
         let supabaseClient = null;
         let isSupabaseConfigured = false;
-        let currentUserRole = 'user';
 
-        // Inicializar Supabase
-        function initSupabase() {
+        // ============= INICIALIZACIÓN DE SUPABASE =============
+        async function initSupabase() {
             try {
                 if (supabaseUrl.includes('TU_SUPABASE_URL') || supabaseKey.includes('TU_SUPABASE_ANON_KEY')) {
-                    throw new Error("Debes reemplazar las credenciales de Supabase.");
+                    throw new Error("Reemplaza TU_SUPABASE_URL y TU_SUPABASE_ANON_KEY con tus credenciales reales.");
                 }
-                const { createClient } = supabase;
+                const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
                 supabaseClient = createClient(supabaseUrl, supabaseKey, {
-                    auth: {
-                        autoRefreshToken: true,
-                        persistSession: true,
-                        detectSessionInUrl: true
-                    }
+                    auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
                 });
                 isSupabaseConfigured = true;
-                console.log("Supabase inicializado correctamente");
+                console.log("✅ Supabase inicializado correctamente");
             } catch (error) {
-                console.error('Error al inicializar Supabase:', error);
-                showError('Error al conectar con la base de datos.');
+                console.error('❌ Error al inicializar Supabase:', error);
+                showError('No se pudo conectar con la base de datos.');
             }
         }
 
-        // Función para mostrar errores
+        // ============= FUNCIONES DE UI =============
         function showError(message) {
             const errorElement = document.getElementById('error-message');
             const errorText = document.getElementById('error-text');
-            errorText.textContent = message;
-            errorElement.style.display = 'block';
-            setTimeout(() => {
-                errorElement.style.display = 'none';
-            }, 5000);
-        }
-
-        // Función para validar campos
-        function showFieldError(field, isValid) {
-            const input = document.getElementById(field);
-            const errorElement = input.nextElementSibling;
-            if (input && errorElement && errorElement.classList.contains('validation-error')) {
-                if (!isValid) {
-                    input.classList.add('is-invalid');
-                } else {
-                    input.classList.remove('is-invalid');
-                }
+            if (errorText) errorText.textContent = message;
+            if (errorElement) {
+                errorElement.style.display = 'block';
+                setTimeout(() => { errorElement.style.display = 'none'; }, 5000);
             }
         }
 
-        // Validar formulario de registro
+        function showFieldError(fieldId, isValid) {
+            const input = document.getElementById(fieldId);
+            const errorDiv = input?.nextElementSibling;
+            if (input && errorDiv?.classList.contains('validation-error')) {
+                input.classList.toggle('is-invalid', !isValid);
+            }
+        }
+
         function validateRegistrationForm() {
             let isValid = true;
-            const regName = document.getElementById('reg-name');
-            const regEmail = document.getElementById('reg-email');
-            const regPassword = document.getElementById('reg-password');
+            const name = document.getElementById('reg-name');
+            const email = document.getElementById('reg-email');
+            const password = document.getElementById('reg-password');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-            if (!regName?.value || regName.value.trim().length < 2) {
+            if (!name?.value || name.value.trim().length < 2) {
                 showFieldError('reg-name', false);
                 isValid = false;
             } else {
                 showFieldError('reg-name', true);
             }
 
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!regEmail?.value || !emailRegex.test(regEmail.value)) {
+            if (!email?.value || !emailRegex.test(email.value)) {
                 showFieldError('reg-email', false);
                 isValid = false;
             } else {
                 showFieldError('reg-email', true);
             }
 
-            if (!regPassword?.value || regPassword.value.length < 6) {
+            if (!password?.value || password.value.length < 6) {
                 showFieldError('reg-password', false);
                 isValid = false;
             } else {
@@ -345,35 +335,7 @@
             return isValid;
         }
 
-        // Guardar correo recordado
-        function saveRememberedEmail(email) {
-            try {
-                localStorage.setItem('rememberedEmail', email);
-            } catch (e) {
-                console.warn("No se pudo guardar el correo.");
-            }
-        }
-
-        // Obtener correo recordado
-        function getRememberedEmail() {
-            try {
-                return localStorage.getItem('rememberedEmail') || '';
-            } catch (e) {
-                console.warn("No se pudo obtener el correo.");
-                return '';
-            }
-        }
-
-        // Limpiar correo recordado
-        function clearRememberedEmail() {
-            try {
-                localStorage.removeItem('rememberedEmail');
-            } catch (e) {
-                console.warn("No se pudo limpiar el correo.");
-            }
-        }
-
-        // Verificar sesión
+        // ============= GESTIÓN DE SESIÓN =============
         async function checkSession() {
             try {
                 if (!isSupabaseConfigured) {
@@ -383,71 +345,66 @@
 
                 const { data: sessionData, error } = await supabaseClient.auth.getSession();
                 if (error || !sessionData?.session) {
-                    document.getElementById('login-screen').style.display = 'block';
-                    document.getElementById('main-panel').style.display = 'none';
-                    const rememberedEmail = getRememberedEmail();
-                    if (rememberedEmail) {
-                        document.getElementById('email').value = rememberedEmail;
-                        document.getElementById('remember-credentials').checked = true;
-                    }
+                    showLoginScreen();
                     return;
                 }
 
                 const user = sessionData.session.user;
                 const userRole = user.app_metadata?.role || 'user';
+
                 document.getElementById('user-name-display').textContent = user.user_metadata?.full_name || user.email;
 
-                // Mostrar rol
                 const roleBadgeContainer = document.getElementById('role-badge-container');
-                let roleText = 'Usuario';
-                if (userRole === 'super_admin') roleText = 'Administrador Principal';
-                else if (userRole === 'admin') roleText = 'Administrador';
-                roleBadgeContainer.innerHTML = `<span class="role-badge role-${userRole.replace('_', '-')}">${roleText}</span>`;
+                roleBadgeContainer.innerHTML = '';
+                if (userRole === 'super_admin') roleBadgeContainer.innerHTML = '<span class="role-badge role-super-admin">Admin Principal</span>';
+                else if (userRole === 'admin') roleBadgeContainer.innerHTML = '<span class="role-badge role-admin">Administrador</span>';
 
                 applyRoleRestrictions(userRole);
-                if (userRole === 'super_admin') await loadUsers();
 
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-panel').style.display = 'block';
+                if (userRole === 'super_admin') {
+                    await loadUsers();
+                }
+
+                showMainPanel();
             } catch (error) {
-                showError('Error: ' + error.message);
+                showError('Error al verificar sesión: ' + error.message);
             }
         }
 
-        // Aplicar restricciones por rol
         function applyRoleRestrictions(role) {
-            document.querySelectorAll('.super-admin-only, .admin-only, .user-only').forEach(el => {
-                el.style.display = 'none';
-            });
-            document.querySelectorAll('.nav-link[data-bs-target]').forEach(tab => {
-                tab.style.display = 'none';
-            });
+            document.querySelectorAll('.super-admin-only, .admin-only, .user-only').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.nav-link[data-bs-target]').forEach(tab => tab.style.display = 'none');
 
             if (role === 'super_admin') {
-                document.querySelectorAll('.super-admin-only, .admin-only, .user-only').forEach(el => {
-                    el.style.display = 'block';
-                });
-                document.querySelectorAll('.nav-link').forEach(tab => {
-                    tab.style.display = 'block';
-                });
+                document.querySelectorAll('.super-admin-only, .admin-only, .user-only').forEach(el => el.style.display = 'block');
+                document.querySelectorAll('.nav-link').forEach(tab => tab.style.display = 'block');
             } else if (role === 'admin') {
-                document.querySelectorAll('.admin-only, .user-only').forEach(el => {
-                    el.style.display = 'block';
-                });
-                document.querySelectorAll('.nav-link[data-bs-target="#register-personal"]').forEach(tab => {
-                    tab.style.display = 'block';
-                });
+                document.querySelectorAll('.admin-only, .user-only').forEach(el => el.style.display = 'block');
+                document.querySelectorAll('.nav-link[data-bs-target="#register-personal"]').forEach(tab => tab.style.display = 'block');
                 document.getElementById('consulta-tab').classList.add('active');
             } else {
-                document.querySelectorAll('.user-only').forEach(el => {
-                    el.style.display = 'block';
-                });
+                document.querySelectorAll('.user-only').forEach(el => el.style.display = 'block');
                 document.getElementById('consulta-tab').style.display = 'block';
                 document.getElementById('consulta-tab').classList.add('active');
             }
         }
 
-        // Registrar usuario
+        function showLoginScreen() {
+            document.getElementById('login-screen').style.display = 'block';
+            document.getElementById('main-panel').style.display = 'none';
+            const rememberedEmail = getRememberedEmail();
+            if (rememberedEmail) {
+                document.getElementById('email').value = rememberedEmail;
+                document.getElementById('remember-credentials').checked = true;
+            }
+        }
+
+        function showMainPanel() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-panel').style.display = 'block';
+        }
+
+        // ============= GESTIÓN DE USUARIOS =============
         async function register(e) {
             e.preventDefault();
             try {
@@ -460,9 +417,7 @@
                 const password = document.getElementById('reg-password').value;
                 const role = document.getElementById('user-role').value;
 
-                if (!isSupabaseConfigured) {
-                    throw new Error("Supabase no está configurado.");
-                }
+                if (!isSupabaseConfigured) throw new Error("Supabase no está configurado.");
 
                 const { data: sessionData } = await supabaseClient.auth.getSession();
                 const userRole = sessionData?.session?.user?.app_metadata?.role;
@@ -474,33 +429,28 @@
                     email,
                     password,
                     options: {
-                         {
-                            full_name: fullName
-                        }
+                        data: { full_name: fullName }
                     }
                 });
 
                 if (error) throw error;
-
-                const newUser = signUpData?.user;
-                if (!newUser) throw new Error("No se creó el usuario.");
+                if (!signUpData?.user) throw new Error("No se creó el usuario.");
 
                 const { error: insertError } = await supabaseClient.from('users').insert([{
-                    id: newUser.id,
+                    id: signUpData.user.id,
                     full_name: fullName,
                     email: email,
                     role: role
                 }]);
 
-                if (insertError) {
+                if (insertError && !insertError.message.includes('duplicate key')) {
                     console.error('Error al insertar en users:', insertError);
-                    alert('Usuario creado, pero hubo un error al guardarlo.');
+                    alert('Usuario creado, pero hubo un error al guardarlo. Contacta al admin.');
                 }
 
                 document.getElementById('reg-name').value = '';
                 document.getElementById('reg-email').value = '';
                 document.getElementById('reg-password').value = '';
-                document.getElementById('user-role').value = 'user';
                 ['reg-name', 'reg-email', 'reg-password'].forEach(f => showFieldError(f, true));
 
                 alert('¡Usuario creado exitosamente!');
@@ -511,7 +461,6 @@
             }
         }
 
-        // Cargar usuarios
         async function loadUsers() {
             try {
                 const { data: usersData, error } = await supabaseClient.from('users').select('*');
@@ -520,10 +469,8 @@
                 const usersList = document.getElementById('users-list');
                 usersList.innerHTML = '';
 
-                if (usersData.length === 0) {
-                    usersList.innerHTML = `
-                        <tr><td colspan="4" class="text-center py-3 text-muted">No hay usuarios registrados</td></tr>
-                    `;
+                if (!usersData || usersData.length === 0) {
+                    usersList.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-muted">No hay usuarios registrados</td></tr>`;
                     return;
                 }
 
@@ -555,13 +502,10 @@
                 });
             } catch (error) {
                 console.error('Error al cargar usuarios:', error);
-                document.getElementById('users-list').innerHTML = `
-                    <tr><td colspan="4" class="text-center py-3 text-danger">Error: ${error.message}</td></tr>
-                `;
+                document.getElementById('users-list').innerHTML = `<tr><td colspan="4" class="text-center py-3 text-danger">Error: ${error.message}</td></tr>`;
             }
         }
 
-        // Eliminar usuario
         async function deleteUser(id) {
             if (!confirm('¿Eliminar este usuario?')) return;
             try {
@@ -574,7 +518,7 @@
             }
         }
 
-        // Iniciar sesión
+        // ============= INICIO Y CIERRE DE SESIÓN =============
         async function login(e) {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -591,9 +535,9 @@
                 if (error) throw error;
 
                 if (rememberCredentials) {
-                    saveRememberedEmail(email);
+                    try { localStorage.setItem('rememberedEmail', email); } catch (e) {}
                 } else {
-                    clearRememberedEmail();
+                    try { localStorage.removeItem('rememberedEmail'); } catch (e) {}
                 }
 
                 loginSpinner.classList.add('d-none');
@@ -602,31 +546,25 @@
             } catch (error) {
                 loginSpinner.classList.add('d-none');
                 loginText.textContent = 'Iniciar Sesión';
-                let errorMessage = 'Credenciales inválidas. Verifique su correo y contraseña.';
-                showError(errorMessage);
+                showError('Credenciales inválidas. Verifique su correo y contraseña.');
             }
         }
 
-        // Cerrar sesión
         async function logout() {
             try {
                 await supabaseClient.auth.signOut();
-                clearRememberedEmail();
-                document.getElementById('login-screen').style.display = 'block';
-                document.getElementById('main-panel').style.display = 'none';
-                document.getElementById('email').value = '';
-                document.getElementById('password').value = '';
-                document.getElementById('remember-credentials').checked = false;
+                try { localStorage.removeItem('rememberedEmail'); } catch (e) {}
+                document.getElementById('user-name-display').textContent = '';
+                document.getElementById('role-badge-container').innerHTML = '';
+                showLoginScreen();
             } catch (error) {
                 alert('Error al cerrar sesión: ' + error.message);
             }
         }
 
-        // Inicialización
+        // ============= INICIALIZACIÓN =============
         document.addEventListener('DOMContentLoaded', async () => {
-            const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
-            window.supabase = { createClient };
-            initSupabase();
+            await initSupabase();
 
             const loginForm = document.getElementById('login-form');
             const registerForm = document.getElementById('register-form');
