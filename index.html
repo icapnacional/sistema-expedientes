@@ -630,13 +630,13 @@
             }
         }
         
-       // Función para registrar un usuario (solo para super_admin)
+      // ✅ CORRECCIÓN - Función register corregida
 async function register(e) {
     e.preventDefault();
     const fullName = document.getElementById('reg-name').value;
     const email = document.getElementById('reg-email').value;
     const password = document.getElementById('reg-password').value;
-    const role = document.getElementById('user-role').value || 'user'; // Asegurar valor por defecto
+    const role = document.getElementById('user-role').value || 'user';
     
     try {
         hideError();
@@ -661,12 +661,12 @@ async function register(e) {
             throw new Error("Solo el administrador principal puede crear nuevos usuarios");
         }
         
-        // Registrar el nuevo usuario
-        const { data: signUpData, error } = await supabaseClient.auth.signUp({
+        // ✅ CORRECCIÓN CRÍTICA: Los metadatos van dentro de "data"
+        const {  signUpData, error } = await supabaseClient.auth.signUp({
             email: email,
             password: password,
             options: {
-                data: {  // ¡CORRECCIÓN CRÍTICA! Los metadatos van dentro de "data"
+                data: {  // ¡ESTO ES LO QUE FALTA!
                     full_name: fullName,
                     role: role
                 }
@@ -696,7 +696,6 @@ async function register(e) {
         showError(`Error al registrar usuario: ${error.message}`);
     }
 }
-        
         // Función para cargar la lista de usuarios
         async function loadUsers() {
             try {
