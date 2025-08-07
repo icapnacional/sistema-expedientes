@@ -106,6 +106,15 @@
             border-radius: 0 4px 4px 0;
             display: none;
         }
+        .validation-error {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        .is-invalid + .validation-error {
+            display: block;
+        }
         .panel-container {
             max-width: 1200px;
             margin: 30px auto;
@@ -345,14 +354,17 @@
                                     <div class="mb-3">
                                         <label for="reg-name" class="form-label">Nombre Completo</label>
                                         <input type="text" class="form-control" id="reg-name" required>
+                                        <div class="validation-error">El nombre completo es requerido</div>
                                     </div>
                                     <div class="mb-3">
                                         <label for="reg-email" class="form-label">Correo Electrónico</label>
                                         <input type="email" class="form-control" id="reg-email" required>
+                                        <div class="validation-error">El correo electrónico es inválido</div>
                                     </div>
                                     <div class="mb-3">
                                         <label for="reg-password" class="form-label">Contraseña</label>
                                         <input type="password" class="form-control" id="reg-password" required>
+                                        <div class="validation-error">La contraseña debe tener al menos 6 caracteres</div>
                                     </div>
                                     <div class="mb-3 super-admin-only">
                                         <label for="user-role" class="form-label">Rol</label>
@@ -424,8 +436,8 @@
         let currentUserRole = 'user'; // Por defecto es usuario normal
         
         // Configuración de Supabase (REEMPLAZA CON TUS CREDENCIALES)
-        const supabaseUrl = 'https://rwigsdsyrhlaunyumbeg.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3aWdzZHN5cmhsYXVueXVtYmVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MzU3MjMsImV4cCI6MjA3MDExMTcyM30.1egn1FDR4Kv_k-lFGZce6rwNbBlNCuBIvyN7UArihaE';
+        const supabaseUrl = 'https://TU_SUPABASE_URL.supabase.co';
+        const supabaseKey = 'TU_SUPABASE_ANON_KEY_AQUÍ';
         
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
@@ -441,6 +453,11 @@
         const roleBadgeContainer = document.getElementById('role-badge-container');
         const usersList = document.getElementById('users-list');
         
+        // Campos de registro
+        const regName = document.getElementById('reg-name');
+        const regEmail = document.getElementById('reg-email');
+        const regPassword = document.getElementById('reg-password');
+        
         // Función para mostrar mensajes de error
         function showError(message) {
             if (errorText && errorMessage) {
@@ -455,6 +472,52 @@
             if (errorMessage) {
                 errorMessage.style.display = 'none';
             }
+        }
+        
+        // Función para mostrar error en campo específico
+        function showFieldError(field, isValid) {
+            const input = document.getElementById(field);
+            const errorElement = input.nextElementSibling;
+            
+            if (input && errorElement && errorElement.classList.contains('validation-error')) {
+                if (!isValid) {
+                    input.classList.add('is-invalid');
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            }
+        }
+        
+        // Función para validar formulario de registro
+        function validateRegistrationForm() {
+            let isValid = true;
+            
+            // Validar nombre
+            if (!regName?.value || regName.value.trim().length < 2) {
+                showFieldError('reg-name', false);
+                isValid = false;
+            } else {
+                showFieldError('reg-name', true);
+            }
+            
+            // Validar email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!regEmail?.value || !emailRegex.test(regEmail.value)) {
+                showFieldError('reg-email', false);
+                isValid = false;
+            } else {
+                showFieldError('reg-email', true);
+            }
+            
+            // Validar contraseña
+            if (!regPassword?.value || regPassword.value.length < 6) {
+                showFieldError('reg-password', false);
+                isValid = false;
+            } else {
+                showFieldError('reg-password', true);
+            }
+            
+            return isValid;
         }
         
         // Función para guardar el correo recordado
@@ -639,6 +702,11 @@
             console.log('Iniciando proceso de registro...');
             
             try {
+                // Validar formulario
+                if (!validateRegistrationForm()) {
+                    throw new Error("Por favor, corrija los errores en el formulario");
+                }
+                
                 // Obtener valores del formulario
                 const fullName = document.getElementById('reg-name')?.value;
                 const email = document.getElementById('reg-email')?.value;
@@ -646,11 +714,6 @@
                 const role = document.getElementById('user-role')?.value || 'user';
                 
                 console.log('Datos del formulario:', { fullName, email, role });
-                
-                // Validar campos requeridos
-                if (!fullName || !email || !password) {
-                    throw new Error("Por favor, complete todos los campos requeridos");
-                }
                 
                 // Verificar si Supabase está configurado
                 if (!isSupabaseConfigured) {
@@ -689,7 +752,7 @@
                     email: email,
                     password: password,
                     options: {
-                        data: {  // ¡CRUCIAL! Los metadatos van dentro de "data"
+                         {  // ¡CORRECTO! Sin espacio extra después de los dos puntos
                             full_name: fullName,
                             role: role
                         }
@@ -700,7 +763,19 @@
                 
                 if (error) {
                     console.error('Error de Supabase:', error);
-                    throw error;
+                    // Manejo específico de errores
+                    let errorMessage = 'Error al registrar usuario';
+                    if (error.message.includes('invalid email')) {
+                        showFieldError('reg-email', false);
+                        errorMessage = 'El formato del correo electrónico es inválido';
+                    } else if (error.message.includes('weak password')) {
+                        showFieldError('reg-password', false);
+                        errorMessage = 'La contraseña es demasiado débil (mínimo 6 caracteres)';
+                    } else if (error.message.includes('already registered')) {
+                        showFieldError('reg-email', false);
+                        errorMessage = 'Este correo electrónico ya está registrado';
+                    }
+                    throw new Error(errorMessage);
                 }
                 
                 if (signUpData?.user) {
@@ -711,6 +786,11 @@
                     document.getElementById('reg-email').value = '';
                     document.getElementById('reg-password').value = '';
                     document.getElementById('user-role').value = 'user';
+                    
+                    // Limpiar errores visuales
+                    showFieldError('reg-name', true);
+                    showFieldError('reg-email', true);
+                    showFieldError('reg-password', true);
                     
                     // Mostrar mensaje de éxito
                     alert('¡Usuario creado exitosamente!');
@@ -736,101 +816,135 @@
             }
         }
         
-async function loadUsers() {
-    try {
-        // Verificar si Supabase está configurado
-        if (!isSupabaseConfigured) {
-            throw new Error("Supabase no está configurado. Verifica tus credenciales.");
-        }
-        
-        // Manejo seguro de la sesión
-        const { data, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError || !data?.session) {
-            throw new Error("No hay sesión activa. Por favor, inicie sesión.");
-        }
-        
-        // Obtener el rol del usuario
-        const userRole = data.session.user.app_metadata?.role || 
-                         data.session.user.user_metadata?.role || 'user';
-        
-        // Verificar permisos
-        if (userRole !== 'super_admin') {
-            throw new Error("Solo el administrador principal puede ver la lista de usuarios");
-        }
-        
-        // Consultar usuarios desde la tabla personalizada
-        const { data: usersData, error } = await supabaseClient
-            .from('users')
-            .select('*');
-        
-        if (error) {
-            console.error('Error al cargar usuarios:', error);
-            throw error;
-        }
-        
-        // Limpiar la lista
-        usersList.innerHTML = '';
-        
-        if (usersData && usersData.length > 0) {
-            usersData.forEach(user => {
-                const row = document.createElement('tr');
-                
-                // Determinar el rol para mostrar
-                let displayRole = 'Usuario';
-                if (user.role === 'super_admin') {
-                    displayRole = 'Administrador Principal';
-                } else if (user.role === 'admin') {
-                    displayRole = 'Administrador';
+        // CORRECCIÓN #3: Función para cargar la lista de usuarios
+        async function loadUsers() {
+            try {
+                // Verificar si Supabase está configurado
+                if (!isSupabaseConfigured) {
+                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
                 }
                 
-                row.innerHTML = `
-                    <td>${user.full_name || 'Sin nombre'}</td>
-                    <td>${user.email}</td>
-                    <td>
-                        <span class="role-badge ${user.role === 'super_admin' ? 'role-super-admin' : user.role === 'admin' ? 'role-admin' : 'role-user'}">
-                            ${displayRole}
-                        </span>
-                    </td>
-                    <td>
-                        ${user.role !== 'super_admin' ? 
-                            `<button class="btn btn-sm btn-outline-danger delete-user" data-id="${user.id}">
-                                <i class="fas fa-trash"></i>
-                            </button>` : 
-                            '<span class="text-muted">No permitido</span>'
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // Obtener el rol del usuario
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
+                
+                // Verificar permisos
+                if (userRole !== 'super_admin') {
+                    throw new Error("Solo el administrador principal puede ver la lista de usuarios");
+                }
+                
+                // CORRECCIÓN #4: Consultar usuarios desde auth.users
+                const {  usersData, error } = await supabaseClient
+                    .from('users')
+                    .select('*');
+                
+                if (error) {
+                    console.error('Error al consultar usuarios:', error);
+                    throw error;
+                }
+                
+                // Limpiar la lista
+                usersList.innerHTML = '';
+                
+                if (usersData && usersData.length > 0) {
+                    usersData.forEach(user => {
+                        const row = document.createElement('tr');
+                        
+                        // Determinar el rol para mostrar
+                        let displayRole = 'Usuario';
+                        if (user.role === 'super_admin') {
+                            displayRole = 'Administrador Principal';
+                        } else if (user.role === 'admin') {
+                            displayRole = 'Administrador';
                         }
-                    </td>
+                        
+                        row.innerHTML = `
+                            <td>${user.full_name || 'Sin nombre'}</td>
+                            <td>${user.email}</td>
+                            <td>
+                                <span class="role-badge ${user.role === 'super_admin' ? 'role-super-admin' : user.role === 'admin' ? 'role-admin' : 'role-user'}">
+                                    ${displayRole}
+                                </span>
+                            </td>
+                            <td>
+                                ${user.role !== 'super_admin' ? 
+                                    `<button class="btn btn-sm btn-outline-danger delete-user" data-id="${user.id}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>` : 
+                                    '<span class="text-muted">No permitido</span>'
+                                }
+                            </td>
+                        `;
+                        usersList.appendChild(row);
+                    });
+                    
+                    // Configurar eventos para los botones de eliminación
+                    document.querySelectorAll('.delete-user').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const id = this.getAttribute('data-id');
+                            deleteUser(id);
+                        });
+                    });
+                } else {
+                    // CORRECCIÓN #5: Agregar sincronización inicial si no hay usuarios
+                    const { data: authUsers, error: authError } = await supabaseClient
+                        .from('auth.users')
+                        .select('id, email, raw_user_meta_data');
+                    
+                    if (authError) {
+                        console.error('Error al consultar auth.users:', authError);
+                        throw authError;
+                    }
+                    
+                    if (authUsers && authUsers.length > 0) {
+                        // Crear usuarios en la tabla pública
+                        const usersToInsert = authUsers.map(user => ({
+                            id: user.id,
+                            email: user.email,
+                            full_name: user.raw_user_meta_data?.full_name || '',
+                            role: user.raw_user_meta_data?.role || 'user'
+                        }));
+                        
+                        const { error: insertError } = await supabaseClient
+                            .from('users')
+                            .upsert(usersToInsert, { onConflict: 'id' });
+                        
+                        if (insertError) {
+                            console.error('Error al sincronizar usuarios:', insertError);
+                            throw insertError;
+                        }
+                        
+                        // Recargar la lista
+                        await loadUsers();
+                    } else {
+                        usersList.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="text-center py-3 text-muted">
+                                    <i class="fas fa-inbox me-2"></i>No hay usuarios registrados
+                                </td>
+                            </tr>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error al cargar usuarios:', error);
+                usersList.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-3 text-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}
+                        </td>
+                    </tr>
                 `;
-                usersList.appendChild(row);
-            });
-            
-            // Configurar eventos para los botones de eliminación
-            document.querySelectorAll('.delete-user').forEach(button => {
-                button.addEventListener('click', function() {
-                    const id = this.getAttribute('data-id');
-                    deleteUser(id);
-                });
-            });
-        } else {
-            usersList.innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center py-3 text-muted">
-                        <i class="fas fa-inbox me-2"></i>No hay usuarios registrados
-                    </td>
-                </tr>
-            `;
+            }
         }
-    } catch (error) {
-        console.error('Error al cargar usuarios:', error);
-        usersList.innerHTML = `
-            <tr>
-                <td colspan="4" class="text-center py-3 text-danger">
-                    <i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}
-                </td>
-            </tr>
-        `;
-    }
-}
-        // CORRECCIÓN #5: Función para eliminar un usuario
+        
+        // CORRECCIÓN #6: Función para eliminar un usuario
         async function deleteUser(id) {
             if (!confirm('¿Está seguro de que desea eliminar este usuario?')) {
                 return;
@@ -857,7 +971,7 @@ async function loadUsers() {
                     throw new Error("Solo el administrador principal puede eliminar usuarios");
                 }
                 
-                // CORRECCIÓN #6: Eliminar el usuario de la tabla users
+                // CORRECCIÓN #7: Eliminar el usuario de la tabla users
                 const { error: deleteError } = await supabaseClient
                     .from('users')
                     .delete()
@@ -1054,7 +1168,7 @@ async function loadUsers() {
                     loginForm.addEventListener('submit', login);
                 }
                 
-                // CORRECCIÓN #7: Configurar el evento de submit del formulario de registro
+                // CORRECCIÓN #8: Configurar el evento de submit del formulario de registro
                 if (registerForm) {
                     registerForm.addEventListener('submit', async (e) => {
                         try {
@@ -1062,6 +1176,32 @@ async function loadUsers() {
                         } catch (error) {
                             console.error('Error capturado en el evento:', error);
                             showError(`Error inesperado: ${error.message}`);
+                        }
+                    });
+                    
+                    // Validación en tiempo real
+                    document.getElementById('reg-name')?.addEventListener('input', () => {
+                        if (regName.value.trim().length >= 2) {
+                            showFieldError('reg-name', true);
+                        } else {
+                            showFieldError('reg-name', false);
+                        }
+                    });
+                    
+                    document.getElementById('reg-email')?.addEventListener('input', () => {
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (emailRegex.test(regEmail.value)) {
+                            showFieldError('reg-email', true);
+                        } else {
+                            showFieldError('reg-email', false);
+                        }
+                    });
+                    
+                    document.getElementById('reg-password')?.addEventListener('input', () => {
+                        if (regPassword.value.length >= 6) {
+                            showFieldError('reg-password', true);
+                        } else {
+                            showFieldError('reg-password', false);
                         }
                     });
                 } else {
