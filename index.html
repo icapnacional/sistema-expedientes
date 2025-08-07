@@ -260,6 +260,56 @@
                 padding: 20px 0;
             }
         }
+        /* Estilos mejorados para los botones de administración de desplegables */
+.input-group .manage-dropdown {
+    border-radius: 0 4px 4px 0;
+    padding: 0.125rem 0.5rem;
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    border-left: none;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+/* Efecto hover más suave */
+.input-group:hover .manage-dropdown {
+    opacity: 1;
+    background-color: #dde0e3;
+}
+
+/* Efecto cuando el select está enfocado */
+.input-group .form-select:focus ~ .manage-dropdown {
+    opacity: 1;
+    background-color: #d0e3ff;
+    border-left-color: #86b7fe;
+}
+
+/* Estilo más pequeño y discreto para los iconos */
+.manage-dropdown i {
+    color: #495057;
+    font-size: 0.8rem;
+}
+
+/* Transición suave para el ícono */
+.manage-dropdown i {
+    transition: transform 0.2s ease;
+}
+
+.manage-dropdown:hover i {
+    transform: scale(1.1);
+    color: #0066CC;
+}
+
+/* Estilos responsivos para pantallas pequeñas */
+@media (max-width: 768px) {
+    .input-group .manage-dropdown {
+        padding: 0.125rem 0.4rem;
+    }
+    
+    .manage-dropdown i {
+        font-size: 0.75rem;
+    }
+}
     </style>
 </head>
 <body>
@@ -352,299 +402,300 @@
                 </div>
             </div>
             
-            <!-- Contenido de Registrar Personal (solo para administradores) -->
-            <div class="tab-pane fade admin-only" id="registrar-personal-content">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="mb-0">Registrar Personal</h5>
+           <!-- Contenido de Registrar Personal (solo para administradores) -->
+<div class="tab-pane fade admin-only" id="registrar-personal-content">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0"><i class="fas fa-user-plus me-2 text-primary"></i>Registro de Personal</h5>
+        </div>
+        <div class="card-body">
+            <form id="personal-form">
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <!-- Foto -->
+                        <div class="text-center mb-4">
+                            <div class="profile-picture-container position-relative d-inline-block">
+                                <img id="profile-picture" src="https://via.placeholder.com/150" class="profile-picture rounded-circle" alt="Foto de perfil">
+                                <div class="upload-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" title="Subir foto">
+                                    <i class="fas fa-camera"></i>
+                                    <input type="file" id="profile-picture-upload" accept="image/*" class="d-none">
+                                </div>
+                            </div>
+                            <p class="text-muted small mt-2">Haga clic en el ícono para subir una foto</p>
+                        </div>
+                        
+                        <!-- Nombres y Apellidos en una sola fila -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label for="nombres" class="form-label small fw-bold">Nombres <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" id="nombres" required>
+                                <div class="validation-error">Los nombres son requeridos</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="apellidos" class="form-label small fw-bold">Apellidos <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" id="apellidos" required>
+                                <div class="validation-error">Los apellidos son requeridos</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cédula y Edad en una sola fila -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label for="cedula" class="form-label small fw-bold">Cédula <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" id="cedula" required>
+                                <div class="validation-error">La cédula es requerida</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edad" class="form-label small fw-bold">Edad</label>
+                                <input type="number" class="form-control form-control-sm" id="edad" min="18" max="100">
+                                <div class="validation-error">La edad debe ser entre 18 y 100 años</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Rango y Sexo en una sola fila -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label for="rango" class="form-label small fw-bold">Rango <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select form-select-sm" id="rango" required>
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="rango" title="Editar opciones">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                </div>
+                                <div class="validation-error">El rango es requerido</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="sexo" class="form-label small fw-bold">Sexo <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select form-select-sm" id="sexo" required>
+                                        <option value="">Seleccione</option>
+                                        <option value="Masculino">Masculino</option>
+                                        <option value="Femenino">Femenino</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="sexo" title="Editar opciones">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                </div>
+                                <div class="validation-error">El sexo es requerido</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Fecha de Nacimiento -->
+                        <div class="mb-3">
+                            <label for="fecha-nacimiento" class="form-label small fw-bold">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control form-control-sm" id="fecha-nacimiento" required>
+                            <div class="validation-error">La fecha de nacimiento es requerida</div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <form id="personal-form">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <!-- Foto -->
-                                    <div class="mb-4 text-center">
-                                        <div class="profile-picture-container">
-                                            <img id="profile-picture" src="https://via.placeholder.com/150" class="profile-picture" alt="Foto de perfil">
-                                            <div class="upload-icon" title="Subir foto">
-                                                <i class="fas fa-camera"></i>
-                                                <input type="file" id="profile-picture-upload" accept="image/*" class="d-none">
-                                            </div>
-                                        </div>
-                                        <p class="text-muted mt-2">Haga clic en el ícono para subir una foto</p>
-                                    </div>
-                                    
-                                    <!-- Nombres -->
-                                    <div class="mb-3">
-                                        <label for="nombres" class="form-label">Nombres</label>
-                                        <input type="text" class="form-control" id="nombres" required>
-                                        <div class="validation-error">Los nombres son requeridos</div>
-                                    </div>
-                                    
-                                    <!-- Apellidos -->
-                                    <div class="mb-3">
-                                        <label for="apellidos" class="form-label">Apellidos</label>
-                                        <input type="text" class="form-control" id="apellidos" required>
-                                        <div class="validation-error">Los apellidos son requeridos</div>
-                                    </div>
-                                    
-                                    <!-- Edad -->
-                                    <div class="mb-3">
-                                        <label for="edad" class="form-label">Edad</label>
-                                        <input type="number" class="form-control" id="edad" min="18" max="100">
-                                        <div class="validation-error">La edad debe ser entre 18 y 100 años</div>
-                                    </div>
-                                    
-                                    <!-- Rango -->
-                                    <div class="mb-3">
-                                        <label for="rango" class="form-label">Rango</label>
-                                        <select class="form-select" id="rango" required>
-                                            <option value="">Seleccione un rango</option>
-                                        </select>
-                                        <div class="d-flex justify-content-between mt-1">
-                                            <small class="text-muted">Rangos disponibles</small>
-                                            <i class="fas fa-cog dropdown-management manage-dropdown" data-field="rango" title="Administrar opciones"></i>
-                                        </div>
-                                        <div class="validation-error">El rango es requerido</div>
-                                    </div>
-                                    
-                                    <!-- Sexo -->
-                                    <div class="mb-3">
-                                        <label for="sexo" class="form-label">Sexo</label>
-                                        <select class="form-select" id="sexo" required>
-                                            <option value="">Seleccione un sexo</option>
-                                            <option value="Masculino">Masculino</option>
-                                            <option value="Femenino">Femenino</option>
-                                        </select>
-                                        <div class="validation-error">El sexo es requerido</div>
-                                    </div>
-                                    
-                                    <!-- Cédula de Identidad -->
-                                    <div class="mb-3">
-                                        <label for="cedula" class="form-label">Cédula de Identidad</label>
-                                        <input type="text" class="form-control" id="cedula" required>
-                                        <div class="validation-error">La cédula es requerida</div>
-                                    </div>
-                                    
-                                    <!-- Fecha de Nacimiento -->
-                                    <div class="mb-3">
-                                        <label for="fecha-nacimiento" class="form-label">Fecha de Nacimiento</label>
-                                        <input type="date" class="form-control" id="fecha-nacimiento" required>
-                                        <div class="validation-error">La fecha de nacimiento es requerida</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-8">
-                                    <!-- Fecha de Inicio -->
-                                    <div class="mb-3">
-                                        <label for="fecha-inicio" class="form-label">Fecha de Inicio</label>
-                                        <input type="date" class="form-control" id="fecha-inicio" required>
-                                        <div class="validation-error">La fecha de inicio es requerida</div>
-                                    </div>
-                                    
-                                    <!-- Tipo de Expediente -->
-                                    <div class="mb-3">
-                                        <label for="tipo-expediente" class="form-label">Tipo de Expediente</label>
-                                        <select class="form-select" id="tipo-expediente" required>
-                                            <option value="">Seleccione un tipo de expediente</option>
-                                        </select>
-                                        <div class="d-flex justify-content-between mt-1">
-                                            <small class="text-muted">Tipos de expediente disponibles</small>
-                                            <i class="fas fa-cog dropdown-management manage-dropdown" data-field="tipo-expediente" title="Administrar opciones"></i>
-                                        </div>
-                                        <div class="validation-error">El tipo de expediente es requerido</div>
-                                    </div>
-                                    
-                                    <!-- ICAP (Oficina) -->
-                                    <div class="mb-3">
-                                        <label for="icap" class="form-label">ICAP (Oficina)</label>
-                                        <select class="form-select" id="icap" required>
-                                            <option value="">Seleccione un ICAP</option>
-                                        </select>
-                                        <div class="d-flex justify-content-between mt-1">
-                                            <small class="text-muted">Oficinas ICAP disponibles</small>
-                                            <i class="fas fa-cog dropdown-management manage-dropdown" data-field="icap" title="Administrar opciones"></i>
-                                        </div>
-                                        <div class="validation-error">El ICAP es requerido</div>
-                                    </div>
-                                    
-                                    <!-- Condición del Funcionario en el Caso -->
-                                    <div class="mb-3">
-                                        <label for="condicion-funcionario" class="form-label">Condición del Funcionario en el Caso</label>
-                                        <select class="form-select" id="condicion-funcionario" required>
-                                            <option value="">Seleccione una condición</option>
-                                        </select>
-                                        <div class="d-flex justify-content-between mt-1">
-                                            <small class="text-muted">Condiciones disponibles</small>
-                                            <i class="fas fa-cog dropdown-management manage-dropdown" data-field="condicion-funcionario" title="Administrar opciones"></i>
-                                        </div>
-                                        <div class="validation-error">La condición del funcionario es requerida</div>
-                                    </div>
-                                    
-                                    <!-- Año -->
-                                    <div class="mb-3">
-                                        <label for="anio" class="form-label">Año</label>
-                                        <select class="form-select" id="anio" required>
-                                            <option value="">Seleccione un año</option>
-                                        </select>
-                                        <div class="validation-error">El año es requerido</div>
-                                    </div>
-                                    
-                                    <!-- Servicio donde Labora el Funcionario -->
-                                    <div class="mb-3">
-                                        <label for="servicio-labora" class="form-label">Servicio donde Labora el Funcionario</label>
-                                        <select class="form-select" id="servicio-labora" required>
-                                            <option value="">Seleccione un servicio</option>
-                                        </select>
-                                        <div class="d-flex justify-content-between mt-1">
-                                            <small class="text-muted">Servicios disponibles</small>
-                                            <i class="fas fa-cog dropdown-management manage-dropdown" data-field="servicio-labora" title="Administrar opciones"></i>
-                                        </div>
-                                        <div class="validation-error">El servicio es requerido</div>
-                                    </div>
-                                    
-                                    <!-- Tipo de Falta -->
-                                    <div class="mb-3">
-                                        <label for="tipo-falta" class="form-label">Tipo de Falta</label>
-                                        <select class="form-select" id="tipo-falta" required>
-                                            <option value="">Seleccione un tipo de falta</option>
-                                        </select>
-                                        <div class="d-flex justify-content-between mt-1">
-                                            <small class="text-muted">Tipos de falta disponibles</small>
-                                            <i class="fas fa-cog dropdown-management manage-dropdown" data-field="tipo-falta" title="Administrar opciones"></i>
-                                        </div>
-                                        <div class="validation-error">El tipo de falta es requerido</div>
-                                    </div>
-                                    
-                                    <!-- Origen de la Falta -->
-                                    <div class="mb-3">
-                                        <label for="origen-falta" class="form-label">Origen de la Falta</label>
-                                        <select class="form-select" id="origen-falta" required>
-                                            <option value="">Seleccione un origen de falta</option>
-                                        </select>
-                                        <div class="d-flex justify-content-between mt-1">
-                                            <small class="text-muted">Orígenes de falta disponibles</small>
-                                            <i class="fas fa-cog dropdown-management manage-dropdown" data-field="origen-falta" title="Administrar opciones"></i>
-                                        </div>
-                                        <div class="validation-error">El origen de la falta es requerido</div>
-                                    </div>
-                                    
-                                    <!-- Falta -->
-                                    <div class="mb-3">
-                                        <label for="falta" class="form-label">Falta</label>
-                                        <select class="form-select" id="falta" required>
-                                            <option value="">Seleccione una falta</option>
-                                        </select>
-                                        <div class="d-flex justify-content-between mt-1">
-                                            <small class="text-muted">Faltas disponibles</small>
-                                            <i class="fas fa-cog dropdown-management manage-dropdown" data-field="falta" title="Administrar opciones"></i>
-                                        </div>
-                                        <div class="validation-error">La falta es requerida</div>
-                                    </div>
-                                    
-                                    <!-- Denunciante -->
-                                    <div class="mb-3">
-                                        <label for="denunciante" class="form-label">Denunciante</label>
-                                        <select class="form-select" id="denunciante" required>
-                                            <option value="">Seleccione un denunciante</option>
-                                        </select>
-                                        <div class="d-flex justify-content-between mt-1">
-                                            <small class="text-muted">Denunciantes disponibles</small>
-                                            <i class="fas fa-cog dropdown-management manage-dropdown" data-field="denunciante" title="Administrar opciones"></i>
-                                        </div>
-                                        <div class="validation-error">El denunciante es requerido</div>
-                                    </div>
-                                    
-                                    <!-- Funcionario Detenido -->
-                                    <div class="mb-3">
-                                        <label for="detenido" class="form-label">Funcionario Detenido</label>
-                                        <select class="form-select" id="detenido" required>
-                                            <option value="">Seleccione si está detenido</option>
-                                            <option value="Sí">Sí</option>
-                                            <option value="No">No</option>
-                                        </select>
-                                        <div class="validation-error">La condición de detención es requerida</div>
-                                    </div>
-                                    
-                                    <!-- Estatus -->
-                                    <div class="mb-3">
-                                        <label for="estatus" class="form-label">Estatus</label>
-                                        <select class="form-select" id="estatus" required>
-                                            <option value="">Seleccione un estatus</option>
-                                        </select>
-                                        <div class="d-flex justify-content-between mt-1">
-                                            <small class="text-muted">Estatus disponibles</small>
-                                            <i class="fas fa-cog dropdown-management manage-dropdown" data-field="estatus" title="Administrar opciones"></i>
-                                        </div>
-                                        <div class="validation-error">El estatus es requerido</div>
-                                    </div>
-                                    
-                                    <!-- Decisión -->
-                                    <div class="mb-3">
-                                        <label for="decision" class="form-label">Decisión</label>
-                                        <select class="form-select" id="decision" required>
-                                            <option value="">Seleccione una decisión</option>
-                                        </select>
-                                        <div class="d-flex justify-content-between mt-1">
-                                            <small class="text-muted">Decisiones disponibles</small>
-                                            <i class="fas fa-cog dropdown-management manage-dropdown" data-field="decision" title="Administrar opciones"></i>
-                                        </div>
-                                        <div class="validation-error">La decisión es requerida</div>
-                                    </div>
-                                    
-                                    <!-- Campos solo lectura -->
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="expediente-penal" class="form-label">Expediente Penal</label>
-                                                <input type="text" class="form-control" id="expediente-penal" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="expediente-numero" class="form-label">Expediente Número</label>
-                                                <input type="text" class="form-control" id="expediente-numero" readonly>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="resena-caso" class="form-label">Reseña del Caso</label>
-                                        <textarea class="form-control" id="resena-caso" rows="3" readonly></textarea>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="causa" class="form-label">Causa</label>
-                                        <textarea class="form-control" id="causa" rows="2" readonly></textarea>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="registrado-por" class="form-label">Registrado por Sustanciador</label>
-                                                <input type="text" class="form-control" id="registrado-por" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="remision" class="form-label">Remisión</label>
-                                                <input type="text" class="form-control" id="remision" readonly>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                    
+                    <div class="col-md-8">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="fecha-inicio" class="form-label small fw-bold">Fecha de Inicio <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control form-control-sm" id="fecha-inicio" required>
+                                <div class="validation-error">La fecha de inicio es requerida</div>
                             </div>
-                            
-                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                                <button type="reset" class="btn btn-secondary">Limpiar Formulario</button>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>Guardar Expediente
-                                </button>
+                            <div class="col-md-6">
+                                <label for="tipo-expediente" class="form-label small fw-bold">Tipo de Expediente <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select form-select-sm" id="tipo-expediente" required>
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="tipo-expediente" title="Editar opciones">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                </div>
+                                <div class="validation-error">El tipo de expediente es requerido</div>
                             </div>
-                        </form>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="icap" class="form-label small fw-bold">ICAP (Oficina) <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select form-select-sm" id="icap" required>
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="icap" title="Editar opciones">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                </div>
+                                <div class="validation-error">El ICAP es requerido</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="condicion-funcionario" class="form-label small fw-bold">Condición en el Caso <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select form-select-sm" id="condicion-funcionario" required>
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="condicion-funcionario" title="Editar opciones">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                </div>
+                                <div class="validation-error">La condición es requerida</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="anio" class="form-label small fw-bold">Año <span class="text-danger">*</span></label>
+                                <select class="form-select form-select-sm" id="anio" required>
+                                    <option value="">Seleccione</option>
+                                </select>
+                                <div class="validation-error">El año es requerido</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="servicio-labora" class="form-label small fw-bold">Servicio Labora <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select form-select-sm" id="servicio-labora" required>
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="servicio-labora" title="Editar opciones">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                </div>
+                                <div class="validation-error">El servicio es requerido</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="tipo-falta" class="form-label small fw-bold">Tipo de Falta <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select form-select-sm" id="tipo-falta" required>
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="tipo-falta" title="Editar opciones">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                </div>
+                                <div class="validation-error">El tipo de falta es requerido</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="origen-falta" class="form-label small fw-bold">Origen de la Falta <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select form-select-sm" id="origen-falta" required>
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="origen-falta" title="Editar opciones">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                </div>
+                                <div class="validation-error">El origen es requerido</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="falta" class="form-label small fw-bold">Falta <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select form-select-sm" id="falta" required>
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="falta" title="Editar opciones">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                </div>
+                                <div class="validation-error">La falta es requerida</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="denunciante" class="form-label small fw-bold">Denunciante <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select form-select-sm" id="denunciante" required>
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="denunciante" title="Editar opciones">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                </div>
+                                <div class="validation-error">El denunciante es requerido</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label for="detenido" class="form-label small fw-bold">Detenido <span class="text-danger">*</span></label>
+                                <select class="form-select form-select-sm" id="detenido" required>
+                                    <option value="">Seleccione</option>
+                                    <option value="Sí">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                                <div class="validation-error">La condición es requerida</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="estatus" class="form-label small fw-bold">Estatus <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select form-select-sm" id="estatus" required>
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="estatus" title="Editar opciones">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                </div>
+                                <div class="validation-error">El estatus es requerido</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="decision" class="form-label small fw-bold">Decisión <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select form-select-sm" id="decision" required>
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="decision" title="Editar opciones">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                </div>
+                                <div class="validation-error">La decisión es requerida</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="expediente-penal" class="form-label small fw-bold">Expediente Penal</label>
+                                <input type="text" class="form-control form-control-sm" id="expediente-penal" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="expediente-numero" class="form-label small fw-bold">Expediente Número</label>
+                                <input type="text" class="form-control form-control-sm" id="expediente-numero" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="resena-caso" class="form-label small fw-bold">Reseña del Caso</label>
+                            <textarea class="form-control form-control-sm" id="resena-caso" rows="2" readonly></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="causa" class="form-label small fw-bold">Causa</label>
+                            <textarea class="form-control form-control-sm" id="causa" rows="2" readonly></textarea>
+                        </div>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="registrado-por" class="form-label small fw-bold">Registrado por Sustanciador</label>
+                                <input type="text" class="form-control form-control-sm" id="registrado-por" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="remision" class="form-label small fw-bold">Remisión</label>
+                                <input type="text" class="form-control form-control-sm" id="remision" readonly>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 pt-3 border-top">
+                    <button type="reset" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-redo me-1"></i>Limpiar
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4">
+                        <i class="fas fa-save me-1"></i>Guardar Expediente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
             
             <!-- Contenido de Consultas (solo para usuarios normales) -->
             <div class="tab-pane fade user-only" id="consulta-content">
