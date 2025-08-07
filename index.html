@@ -871,10 +871,13 @@
                     const userNameElement = document.getElementById('user-name');
                     const adminIconContainer = document.getElementById('admin-icon-container');
                     
+                    // DEFINIR userRole ANTES DEL BLOQUE IF PARA QUE ESTÉ DISPONIBLE
+                    let userRole = 'user'; // Valor por defecto
+                    
                     if (userNameElement && adminIconContainer) {
                         // CORRECCIÓN: Primero intentamos con app_metadata, luego con user_metadata
-                        const userRole = user.app_metadata?.role || 
-                                         user.user_metadata?.role || 'user';
+                        userRole = user.app_metadata?.role || 
+                                   user.user_metadata?.role || 'user';
                         currentUserRole = userRole;
                         console.log('ROL DEL USUARIO:', userRole);
                         console.log('METADATOS COMPLETOS (app_metadata):', user.app_metadata);
@@ -893,12 +896,13 @@
                             userNameElement.textContent = fullName;
                             adminIconContainer.innerHTML = '';
                         }
-                        
-                        // Aplicar restricciones según el rol
-                        applyRoleRestrictions(userRole);
-                        // Carga los registros de consulta
-                        await loadConsulta();
                     }
+                    
+                    // Ahora userRole está definido y disponible
+                    applyRoleRestrictions(userRole);
+                    
+                    // Carga los registros de consulta
+                    await loadConsulta();
                 } else {
                     console.log('No hay sesión activa');
                     // Usuario no autenticado - muestra el login
@@ -961,7 +965,7 @@
                 }
                 
                 // Consultar las opciones desde Supabase
-                const {  optionsData, error } = await supabaseClient
+                const { data: optionsData, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
                     .eq('field_name', field)
@@ -999,8 +1003,17 @@
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
+                // CORRECCIÓN: Obtener el rol desde el JWT
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
+                
+                // Verificar el rol del usuario
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    throw new Error("Solo los administradores pueden administrar opciones");
+                }
+                
                 // Obtener opciones globales y del usuario
-                const {  optionsData, error } = await supabaseClient
+                const { data: optionsData, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
                     .eq('field_name', field)
@@ -1066,32 +1079,38 @@
         
         // Función para mostrar el modal de administración
         async function showManageDropdownModal(field) {
-            // Verificar si el usuario tiene permisos para administrar desplegables
-            // Manejo seguro de la sesión
-            const { data, error: sessionError } = await supabaseClient.auth.getSession();
-            if (sessionError || !data?.session) {
-                alert("No hay sesión activa. Por favor, inicie sesión.");
-                return;
+            try {
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // CORRECCIÓN: Obtener el rol desde el JWT
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
+                
+                // Verificar el rol del usuario
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    throw new Error("Solo los administradores pueden administrar opciones");
+                }
+                
+                // Actualizar variable global para saber qué campo estamos editando
+                currentDropdownField = field;
+                
+                // Actualizar título del modal
+                document.getElementById('dropdown-field-name').textContent = field.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                
+                // Crear y mostrar el modal
+                const manageDropdownModal = new bootstrap.Modal(document.getElementById('manageDropdownModal'));
+                manageDropdownModal.show();
+                
+                // Cargar opciones existentes
+                await loadDropdownOptionsForManagement(field);
+            } catch (error) {
+                console.error('Error al mostrar modal de administración:', error);
+                alert(`Error: ${error.message}`);
             }
-            
-            const userRole = data.session.user.app_metadata?.role || data.session.user.user_metadata?.role || 'user';
-            if (userRole !== 'admin' && userRole !== 'super_admin') {
-                alert("No tiene permisos para administrar opciones. Solo los administradores pueden realizar esta acción.");
-                return;
-            }
-            
-            // Actualizar variable global para saber qué campo estamos editando
-            currentDropdownField = field;
-            
-            // Actualizar título del modal
-            document.getElementById('dropdown-field-name').textContent = field.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            
-            // Crear y mostrar el modal
-            const manageDropdownModal = new bootstrap.Modal(document.getElementById('manageDropdownModal'));
-            manageDropdownModal.show();
-            
-            // Cargar opciones existentes
-            await loadDropdownOptionsForManagement(field);
         }
         
         // Función para agregar una nueva opción
@@ -1110,6 +1129,15 @@
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // CORRECCIÓN: Obtener el rol desde el JWT
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
+                
+                // Verificar el rol del usuario
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    throw new Error("Solo los administradores pueden agregar opciones");
                 }
                 
                 // Verificar si es edición o creación
@@ -1151,21 +1179,36 @@
         // Función para editar una opción
         async function editOption(id) {
             try {
-                const { data, error } = await supabaseClient
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // CORRECCIÓN: Obtener el rol desde el JWT
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
+                
+                // Verificar el rol del usuario
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    throw new Error("Solo los administradores pueden editar opciones");
+                }
+                
+                const { data: optionData, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
                     .eq('id', id)
                     .single();
                 
                 if (error) throw error;
-                if (!data) {
+                if (!optionData) {
                     throw new Error('Opción no encontrada');
                 }
                 
                 // Rellenar el formulario de nueva opción con los datos de edición
-                document.getElementById('new-option-value').value = data.option_value;
-                document.getElementById('new-option-label').value = data.option_label;
-                document.getElementById('new-option-global').checked = data.is_global;
+                document.getElementById('new-option-value').value = optionData.option_value;
+                document.getElementById('new-option-label').value = optionData.option_label;
+                document.getElementById('new-option-global').checked = optionData.is_global;
                 
                 // Establecer el ID de edición
                 editingOptionId = id;
@@ -1183,6 +1226,21 @@
         // Función para guardar una opción editada
         async function saveEditedOption() {
             try {
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // CORRECCIÓN: Obtener el rol desde el JWT
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
+                
+                // Verificar el rol del usuario
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    throw new Error("Solo los administradores pueden editar opciones");
+                }
+                
                 const newValue = document.getElementById('new-option-value').value.trim();
                 const newLabel = document.getElementById('new-option-label').value.trim();
                 const isGlobal = document.getElementById('new-option-global').checked;
@@ -1227,6 +1285,21 @@
             }
             
             try {
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // CORRECCIÓN: Obtener el rol desde el JWT
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
+                
+                // Verificar el rol del usuario
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    throw new Error("Solo los administradores pueden eliminar opciones");
+                }
+                
                 const { error } = await supabaseClient
                     .from('dropdown_options')
                     .delete()
@@ -1389,7 +1462,7 @@
                     setTimeout(() => reject(new Error("Tiempo de espera agotado. Por favor, intente de nuevo.")), 10000)
                 );
                 
-                const {  consultaData, error } = await Promise.race([
+                const { data: consultaData, error } = await Promise.race([
                     query.order('fecha_registro', { ascending: false }),
                     timeoutPromise
                 ]);
@@ -1461,8 +1534,9 @@
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // Verificar el rol del usuario
-                const userRole = data.session.user.app_metadata?.role || data.session.user.user_metadata?.role || 'user';
+                // CORRECCIÓN: Obtener el rol desde el JWT
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
                 
                 // Si no es administrador ni super_admin, impedir el registro
                 if (userRole !== 'admin' && userRole !== 'super_admin') {
@@ -1581,8 +1655,18 @@
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
+                // CORRECCIÓN: Obtener el rol desde el JWT
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
+                
+                // Si no es administrador, impedir la edición
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    alert("No tiene permisos para editar registros. Solo los administradores pueden editar.");
+                    return;
+                }
+                
                 // Obtener el registro
-                const {  personalData, error } = await supabaseClient
+                const { data: personalData, error } = await supabaseClient
                     .from('personal')
                     .select('*')
                     .eq('id', id)
@@ -1591,16 +1675,6 @@
                 if (error) throw error;
                 if (!personalData) {
                     throw new Error('Registro no encontrado');
-                }
-                
-                // Verificar si el usuario tiene permisos para editar
-                const userRole = data.session.user.app_metadata?.role || data.session.user.user_metadata?.role || 'user';
-                console.log('ROL EN editPersonal:', userRole);
-                
-                // Si no es administrador, impedir la edición
-                if (userRole !== 'admin' && userRole !== 'super_admin') {
-                    alert("No tiene permisos para editar registros. Solo los administradores pueden editar.");
-                    return;
                 }
                 
                 // Rellenar el formulario con los datos del registro
@@ -1667,9 +1741,9 @@
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
-                // Verificar el rol del usuario
-                const userRole = data.session.user.app_metadata?.role || data.session.user.user_metadata?.role || 'user';
-                console.log('ROL EN deletePersonal:', userRole);
+                // CORRECCIÓN: Obtener el rol desde el JWT
+                const userRole = data.session.user.app_metadata?.role || 
+                                 data.session.user.user_metadata?.role || 'user';
                 
                 // Si no es administrador, impedir la eliminación
                 if (userRole !== 'admin' && userRole !== 'super_admin') {
@@ -1743,11 +1817,14 @@
                 // Actualizar el nombre del usuario
                 const userNameElement = document.getElementById('user-name');
                 const adminIconContainer = document.getElementById('admin-icon-container');
-                let userRole = 'user';
+                
+                // DEFINIR userRole ANTES DEL BLOQUE IF PARA QUE ESTÉ DISPONIBLE
+                let userRole = 'user'; // Valor por defecto
+                
                 if (userNameElement && adminIconContainer) {
                     // Verificar el rol del usuario
-                    const userRole = data.user.app_metadata?.role || 
-                                     data.user.user_metadata?.role || 'user';
+                    userRole = data.user.app_metadata?.role || 
+                               data.user.user_metadata?.role || 'user';
                     currentUserRole = userRole;
                     console.log('ROL DEL USUARIO:', userRole);
                     console.log('METADATOS COMPLETOS (app_metadata):', data.user.app_metadata);
@@ -1767,8 +1844,10 @@
                         adminIconContainer.innerHTML = '';
                     }
                 }
-                // Aplicar restricciones según el rol
+                
+                // Ahora userRole está definido y disponible
                 applyRoleRestrictions(userRole);
+                
                 // Cargar los datos de consulta
                 await loadConsulta();
                 // Restaurar el estado del botón
@@ -1821,8 +1900,8 @@
         function initSupabase() {
             try {
                 // Verificar si las credenciales son placeholders
-                if (supabaseUrl.includes('https://lppjafflhozcxlavkzpv.supabase.co')
-                    supabaseKey.includes('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwcGphZmZsaG96Y3hsYXZrenB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MzkwNjcsImV4cCI6MjA3MDAxNTA2N30.flI3AqJfa80ylGELcU4-l7JA3ly0oEGOtvmC9qaF1lU')) {
+                if (supabaseUrl.includes('TU_SUPABASE_URL') || 
+                    supabaseKey.includes('TU_SUPABASE_ANON_KEY')) {
                     throw new Error("Debes reemplazar las credenciales de Supabase. Abre este archivo en un editor de texto y reemplaza los valores de supabaseUrl y supabaseKey con los de tu proyecto.");
                 }
                 
