@@ -244,12 +244,46 @@
         .user-only {
             display: none;
         }
-        .dropdown-management {
-            display: inline-block;
-            margin-left: 5px;
-            cursor: pointer;
-            color: var(--secondary-color);
+        /* Estilos mejorados para los botones de administración de desplegables */
+        .input-group .manage-dropdown {
+            border-radius: 0 4px 4px 0;
+            padding: 0.125rem 0.5rem;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-left: none;
+            opacity: 0.7;
+            transition: all 0.2s ease;
         }
+
+        /* Efecto hover más suave */
+        .input-group:hover .manage-dropdown {
+            opacity: 1;
+            background-color: #dde0e3;
+        }
+
+        /* Efecto cuando el select está enfocado */
+        .input-group .form-select:focus ~ .manage-dropdown {
+            opacity: 1;
+            background-color: #d0e3ff;
+            border-left-color: #86b7fe;
+        }
+
+        /* Estilo más pequeño y discreto para los iconos */
+        .manage-dropdown i {
+            color: #495057;
+            font-size: 0.8rem;
+        }
+
+        /* Transición suave para el ícono */
+        .manage-dropdown i {
+            transition: transform 0.2s ease;
+        }
+
+        .manage-dropdown:hover i {
+            transform: scale(1.1);
+            color: #0066CC;
+        }
+        
         @media (max-width: 576px) {
             .login-container {
                 padding: 30px 20px;
@@ -260,56 +294,6 @@
                 padding: 20px 0;
             }
         }
-        /* Estilos mejorados para los botones de administración de desplegables */
-.input-group .manage-dropdown {
-    border-radius: 0 4px 4px 0;
-    padding: 0.125rem 0.5rem;
-    background-color: #e9ecef;
-    border: 1px solid #ced4da;
-    border-left: none;
-    opacity: 0.7;
-    transition: all 0.2s ease;
-}
-
-/* Efecto hover más suave */
-.input-group:hover .manage-dropdown {
-    opacity: 1;
-    background-color: #dde0e3;
-}
-
-/* Efecto cuando el select está enfocado */
-.input-group .form-select:focus ~ .manage-dropdown {
-    opacity: 1;
-    background-color: #d0e3ff;
-    border-left-color: #86b7fe;
-}
-
-/* Estilo más pequeño y discreto para los iconos */
-.manage-dropdown i {
-    color: #495057;
-    font-size: 0.8rem;
-}
-
-/* Transición suave para el ícono */
-.manage-dropdown i {
-    transition: transform 0.2s ease;
-}
-
-.manage-dropdown:hover i {
-    transform: scale(1.1);
-    color: #0066CC;
-}
-
-/* Estilos responsivos para pantallas pequeñas */
-@media (max-width: 768px) {
-    .input-group .manage-dropdown {
-        padding: 0.125rem 0.4rem;
-    }
-    
-    .manage-dropdown i {
-        font-size: 0.75rem;
-    }
-}
     </style>
 </head>
 <body>
@@ -402,300 +386,300 @@
                 </div>
             </div>
             
-           <!-- Contenido de Registrar Personal (solo para administradores) -->
-<div class="tab-pane fade admin-only" id="registrar-personal-content">
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white py-3">
-            <h5 class="mb-0"><i class="fas fa-user-plus me-2 text-primary"></i>Registro de Personal</h5>
-        </div>
-        <div class="card-body">
-            <form id="personal-form">
-                <div class="row">
-                    <div class="col-md-4 mb-4">
-                        <!-- Foto -->
-                        <div class="text-center mb-4">
-                            <div class="profile-picture-container position-relative d-inline-block">
-                                <img id="profile-picture" src="https://via.placeholder.com/150" class="profile-picture rounded-circle" alt="Foto de perfil">
-                                <div class="upload-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" title="Subir foto">
-                                    <i class="fas fa-camera"></i>
-                                    <input type="file" id="profile-picture-upload" accept="image/*" class="d-none">
-                                </div>
-                            </div>
-                            <p class="text-muted small mt-2">Haga clic en el ícono para subir una foto</p>
-                        </div>
-                        
-                        <!-- Nombres y Apellidos en una sola fila -->
-                        <div class="row g-2 mb-3">
-                            <div class="col-md-6">
-                                <label for="nombres" class="form-label small fw-bold">Nombres <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-sm" id="nombres" required>
-                                <div class="validation-error">Los nombres son requeridos</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="apellidos" class="form-label small fw-bold">Apellidos <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-sm" id="apellidos" required>
-                                <div class="validation-error">Los apellidos son requeridos</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Cédula y Edad en una sola fila -->
-                        <div class="row g-2 mb-3">
-                            <div class="col-md-6">
-                                <label for="cedula" class="form-label small fw-bold">Cédula <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-sm" id="cedula" required>
-                                <div class="validation-error">La cédula es requerida</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="edad" class="form-label small fw-bold">Edad</label>
-                                <input type="number" class="form-control form-control-sm" id="edad" min="18" max="100">
-                                <div class="validation-error">La edad debe ser entre 18 y 100 años</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Rango y Sexo en una sola fila -->
-                        <div class="row g-2 mb-3">
-                            <div class="col-md-6">
-                                <label for="rango" class="form-label small fw-bold">Rango <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <select class="form-select form-select-sm" id="rango" required>
-                                        <option value="">Seleccione</option>
-                                    </select>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="rango" title="Editar opciones">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
-                                </div>
-                                <div class="validation-error">El rango es requerido</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="sexo" class="form-label small fw-bold">Sexo <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <select class="form-select form-select-sm" id="sexo" required>
-                                        <option value="">Seleccione</option>
-                                        <option value="Masculino">Masculino</option>
-                                        <option value="Femenino">Femenino</option>
-                                    </select>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="sexo" title="Editar opciones">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
-                                </div>
-                                <div class="validation-error">El sexo es requerido</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Fecha de Nacimiento -->
-                        <div class="mb-3">
-                            <label for="fecha-nacimiento" class="form-label small fw-bold">Fecha de Nacimiento <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control form-control-sm" id="fecha-nacimiento" required>
-                            <div class="validation-error">La fecha de nacimiento es requerida</div>
-                        </div>
+            <!-- Contenido de Registrar Personal (solo para administradores) -->
+            <div class="tab-pane fade admin-only" id="registrar-personal-content">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0"><i class="fas fa-user-plus me-2 text-primary"></i>Registro de Personal</h5>
                     </div>
-                    
-                    <div class="col-md-8">
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label for="fecha-inicio" class="form-label small fw-bold">Fecha de Inicio <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control form-control-sm" id="fecha-inicio" required>
-                                <div class="validation-error">La fecha de inicio es requerida</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="tipo-expediente" class="form-label small fw-bold">Tipo de Expediente <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <select class="form-select form-select-sm" id="tipo-expediente" required>
-                                        <option value="">Seleccione</option>
-                                    </select>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="tipo-expediente" title="Editar opciones">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
+                    <div class="card-body">
+                        <form id="personal-form">
+                            <div class="row">
+                                <div class="col-md-4 mb-4">
+                                    <!-- Foto -->
+                                    <div class="text-center mb-4">
+                                        <div class="profile-picture-container position-relative d-inline-block">
+                                            <img id="profile-picture" src="https://via.placeholder.com/150" class="profile-picture rounded-circle" alt="Foto de perfil">
+                                            <div class="upload-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" title="Subir foto">
+                                                <i class="fas fa-camera"></i>
+                                                <input type="file" id="profile-picture-upload" accept="image/*" class="d-none">
+                                            </div>
+                                        </div>
+                                        <p class="text-muted small mt-2">Haga clic en el ícono para subir una foto</p>
+                                    </div>
+                                    
+                                    <!-- Nombres y Apellidos en una sola fila -->
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-md-6">
+                                            <label for="nombres" class="form-label small fw-bold">Nombres <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control form-control-sm" id="nombres" required>
+                                            <div class="validation-error">Los nombres son requeridos</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="apellidos" class="form-label small fw-bold">Apellidos <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control form-control-sm" id="apellidos" required>
+                                            <div class="validation-error">Los apellidos son requeridos</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Cédula y Edad en una sola fila -->
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-md-6">
+                                            <label for="cedula" class="form-label small fw-bold">Cédula <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control form-control-sm" id="cedula" required>
+                                            <div class="validation-error">La cédula es requerida</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="edad" class="form-label small fw-bold">Edad</label>
+                                            <input type="number" class="form-control form-control-sm" id="edad" min="18" max="100">
+                                            <div class="validation-error">La edad debe ser entre 18 y 100 años</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Rango y Sexo en una sola fila -->
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-md-6">
+                                            <label for="rango" class="form-label small fw-bold">Rango <span class="text-danger">*</span></label>
+                                            <div class="input-group input-group-sm">
+                                                <select class="form-select form-select-sm" id="rango" required>
+                                                    <option value="">Seleccione</option>
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="rango" title="Editar opciones">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+                                            </div>
+                                            <div class="validation-error">El rango es requerido</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="sexo" class="form-label small fw-bold">Sexo <span class="text-danger">*</span></label>
+                                            <div class="input-group input-group-sm">
+                                                <select class="form-select form-select-sm" id="sexo" required>
+                                                    <option value="">Seleccione</option>
+                                                    <option value="Masculino">Masculino</option>
+                                                    <option value="Femenino">Femenino</option>
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="sexo" title="Editar opciones">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+                                            </div>
+                                            <div class="validation-error">El sexo es requerido</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Fecha de Nacimiento -->
+                                    <div class="mb-3">
+                                        <label for="fecha-nacimiento" class="form-label small fw-bold">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control form-control-sm" id="fecha-nacimiento" required>
+                                        <div class="validation-error">La fecha de nacimiento es requerida</div>
+                                    </div>
                                 </div>
-                                <div class="validation-error">El tipo de expediente es requerido</div>
-                            </div>
-                        </div>
-                        
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label for="icap" class="form-label small fw-bold">ICAP (Oficina) <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <select class="form-select form-select-sm" id="icap" required>
-                                        <option value="">Seleccione</option>
-                                    </select>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="icap" title="Editar opciones">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
+                                
+                                <div class="col-md-8">
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <label for="fecha-inicio" class="form-label small fw-bold">Fecha de Inicio <span class="text-danger">*</span></label>
+                                            <input type="date" class="form-control form-control-sm" id="fecha-inicio" required>
+                                            <div class="validation-error">La fecha de inicio es requerida</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="tipo-expediente" class="form-label small fw-bold">Tipo de Expediente <span class="text-danger">*</span></label>
+                                            <div class="input-group input-group-sm">
+                                                <select class="form-select form-select-sm" id="tipo-expediente" required>
+                                                    <option value="">Seleccione</option>
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="tipo-expediente" title="Editar opciones">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+                                            </div>
+                                            <div class="validation-error">El tipo de expediente es requerido</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <label for="icap" class="form-label small fw-bold">ICAP (Oficina) <span class="text-danger">*</span></label>
+                                            <div class="input-group input-group-sm">
+                                                <select class="form-select form-select-sm" id="icap" required>
+                                                    <option value="">Seleccione</option>
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="icap" title="Editar opciones">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+                                            </div>
+                                            <div class="validation-error">El ICAP es requerido</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="condicion-funcionario" class="form-label small fw-bold">Condición en el Caso <span class="text-danger">*</span></label>
+                                            <div class="input-group input-group-sm">
+                                                <select class="form-select form-select-sm" id="condicion-funcionario" required>
+                                                    <option value="">Seleccione</option>
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="condicion-funcionario" title="Editar opciones">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+                                            </div>
+                                            <div class="validation-error">La condición es requerida</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <label for="anio" class="form-label small fw-bold">Año <span class="text-danger">*</span></label>
+                                            <select class="form-select form-select-sm" id="anio" required>
+                                                <option value="">Seleccione</option>
+                                            </select>
+                                            <div class="validation-error">El año es requerido</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="servicio-labora" class="form-label small fw-bold">Servicio Labora <span class="text-danger">*</span></label>
+                                            <div class="input-group input-group-sm">
+                                                <select class="form-select form-select-sm" id="servicio-labora" required>
+                                                    <option value="">Seleccione</option>
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="servicio-labora" title="Editar opciones">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+                                            </div>
+                                            <div class="validation-error">El servicio es requerido</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <label for="tipo-falta" class="form-label small fw-bold">Tipo de Falta <span class="text-danger">*</span></label>
+                                            <div class="input-group input-group-sm">
+                                                <select class="form-select form-select-sm" id="tipo-falta" required>
+                                                    <option value="">Seleccione</option>
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="tipo-falta" title="Editar opciones">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+                                            </div>
+                                            <div class="validation-error">El tipo de falta es requerido</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="origen-falta" class="form-label small fw-bold">Origen de la Falta <span class="text-danger">*</span></label>
+                                            <div class="input-group input-group-sm">
+                                                <select class="form-select form-select-sm" id="origen-falta" required>
+                                                    <option value="">Seleccione</option>
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="origen-falta" title="Editar opciones">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+                                            </div>
+                                            <div class="validation-error">El origen es requerido</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <label for="falta" class="form-label small fw-bold">Falta <span class="text-danger">*</span></label>
+                                            <div class="input-group input-group-sm">
+                                                <select class="form-select form-select-sm" id="falta" required>
+                                                    <option value="">Seleccione</option>
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="falta" title="Editar opciones">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+                                            </div>
+                                            <div class="validation-error">La falta es requerida</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="denunciante" class="form-label small fw-bold">Denunciante <span class="text-danger">*</span></label>
+                                            <div class="input-group input-group-sm">
+                                                <select class="form-select form-select-sm" id="denunciante" required>
+                                                    <option value="">Seleccione</option>
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="denunciante" title="Editar opciones">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+                                            </div>
+                                            <div class="validation-error">El denunciante es requerido</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-4">
+                                            <label for="detenido" class="form-label small fw-bold">Detenido <span class="text-danger">*</span></label>
+                                            <select class="form-select form-select-sm" id="detenido" required>
+                                                <option value="">Seleccione</option>
+                                                <option value="Sí">Sí</option>
+                                                <option value="No">No</option>
+                                            </select>
+                                            <div class="validation-error">La condición es requerida</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="estatus" class="form-label small fw-bold">Estatus <span class="text-danger">*</span></label>
+                                            <div class="input-group input-group-sm">
+                                                <select class="form-select form-select-sm" id="estatus" required>
+                                                    <option value="">Seleccione</option>
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="estatus" title="Editar opciones">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+                                            </div>
+                                            <div class="validation-error">El estatus es requerido</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="decision" class="form-label small fw-bold">Decisión <span class="text-danger">*</span></label>
+                                            <div class="input-group input-group-sm">
+                                                <select class="form-select form-select-sm" id="decision" required>
+                                                    <option value="">Seleccione</option>
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="decision" title="Editar opciones">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+                                            </div>
+                                            <div class="validation-error">La decisión es requerida</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <label for="expediente-penal" class="form-label small fw-bold">Expediente Penal</label>
+                                            <input type="text" class="form-control form-control-sm" id="expediente-penal" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="expediente-numero" class="form-label small fw-bold">Expediente Número</label>
+                                            <input type="text" class="form-control form-control-sm" id="expediente-numero" readonly>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="resena-caso" class="form-label small fw-bold">Reseña del Caso</label>
+                                        <textarea class="form-control form-control-sm" id="resena-caso" rows="2" readonly></textarea>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="causa" class="form-label small fw-bold">Causa</label>
+                                        <textarea class="form-control form-control-sm" id="causa" rows="2" readonly></textarea>
+                                    </div>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="registrado-por" class="form-label small fw-bold">Registrado por Sustanciador</label>
+                                            <input type="text" class="form-control form-control-sm" id="registrado-por" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="remision" class="form-label small fw-bold">Remisión</label>
+                                            <input type="text" class="form-control form-control-sm" id="remision" readonly>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="validation-error">El ICAP es requerido</div>
                             </div>
-                            <div class="col-md-6">
-                                <label for="condicion-funcionario" class="form-label small fw-bold">Condición en el Caso <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <select class="form-select form-select-sm" id="condicion-funcionario" required>
-                                        <option value="">Seleccione</option>
-                                    </select>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="condicion-funcionario" title="Editar opciones">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
-                                </div>
-                                <div class="validation-error">La condición es requerida</div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 pt-3 border-top">
+                                <button type="reset" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-redo me-1"></i>Limpiar
+                                </button>
+                                <button type="submit" class="btn btn-primary btn-sm px-4">
+                                    <i class="fas fa-save me-1"></i>Guardar Expediente
+                                </button>
                             </div>
-                        </div>
-                        
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label for="anio" class="form-label small fw-bold">Año <span class="text-danger">*</span></label>
-                                <select class="form-select form-select-sm" id="anio" required>
-                                    <option value="">Seleccione</option>
-                                </select>
-                                <div class="validation-error">El año es requerido</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="servicio-labora" class="form-label small fw-bold">Servicio Labora <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <select class="form-select form-select-sm" id="servicio-labora" required>
-                                        <option value="">Seleccione</option>
-                                    </select>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="servicio-labora" title="Editar opciones">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
-                                </div>
-                                <div class="validation-error">El servicio es requerido</div>
-                            </div>
-                        </div>
-                        
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label for="tipo-falta" class="form-label small fw-bold">Tipo de Falta <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <select class="form-select form-select-sm" id="tipo-falta" required>
-                                        <option value="">Seleccione</option>
-                                    </select>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="tipo-falta" title="Editar opciones">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
-                                </div>
-                                <div class="validation-error">El tipo de falta es requerido</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="origen-falta" class="form-label small fw-bold">Origen de la Falta <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <select class="form-select form-select-sm" id="origen-falta" required>
-                                        <option value="">Seleccione</option>
-                                    </select>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="origen-falta" title="Editar opciones">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
-                                </div>
-                                <div class="validation-error">El origen es requerido</div>
-                            </div>
-                        </div>
-                        
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label for="falta" class="form-label small fw-bold">Falta <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <select class="form-select form-select-sm" id="falta" required>
-                                        <option value="">Seleccione</option>
-                                    </select>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="falta" title="Editar opciones">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
-                                </div>
-                                <div class="validation-error">La falta es requerida</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="denunciante" class="form-label small fw-bold">Denunciante <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <select class="form-select form-select-sm" id="denunciante" required>
-                                        <option value="">Seleccione</option>
-                                    </select>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="denunciante" title="Editar opciones">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
-                                </div>
-                                <div class="validation-error">El denunciante es requerido</div>
-                            </div>
-                        </div>
-                        
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-4">
-                                <label for="detenido" class="form-label small fw-bold">Detenido <span class="text-danger">*</span></label>
-                                <select class="form-select form-select-sm" id="detenido" required>
-                                    <option value="">Seleccione</option>
-                                    <option value="Sí">Sí</option>
-                                    <option value="No">No</option>
-                                </select>
-                                <div class="validation-error">La condición es requerida</div>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="estatus" class="form-label small fw-bold">Estatus <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <select class="form-select form-select-sm" id="estatus" required>
-                                        <option value="">Seleccione</option>
-                                    </select>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="estatus" title="Editar opciones">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
-                                </div>
-                                <div class="validation-error">El estatus es requerido</div>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="decision" class="form-label small fw-bold">Decisión <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <select class="form-select form-select-sm" id="decision" required>
-                                        <option value="">Seleccione</option>
-                                    </select>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="decision" title="Editar opciones">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
-                                </div>
-                                <div class="validation-error">La decisión es requerida</div>
-                            </div>
-                        </div>
-                        
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label for="expediente-penal" class="form-label small fw-bold">Expediente Penal</label>
-                                <input type="text" class="form-control form-control-sm" id="expediente-penal" readonly>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="expediente-numero" class="form-label small fw-bold">Expediente Número</label>
-                                <input type="text" class="form-control form-control-sm" id="expediente-numero" readonly>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="resena-caso" class="form-label small fw-bold">Reseña del Caso</label>
-                            <textarea class="form-control form-control-sm" id="resena-caso" rows="2" readonly></textarea>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="causa" class="form-label small fw-bold">Causa</label>
-                            <textarea class="form-control form-control-sm" id="causa" rows="2" readonly></textarea>
-                        </div>
-                        
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="registrado-por" class="form-label small fw-bold">Registrado por Sustanciador</label>
-                                <input type="text" class="form-control form-control-sm" id="registrado-por" readonly>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="remision" class="form-label small fw-bold">Remisión</label>
-                                <input type="text" class="form-control form-control-sm" id="remision" readonly>
-                            </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
-                
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 pt-3 border-top">
-                    <button type="reset" class="btn btn-outline-secondary btn-sm">
-                        <i class="fas fa-redo me-1"></i>Limpiar
-                    </button>
-                    <button type="submit" class="btn btn-primary btn-sm px-4">
-                        <i class="fas fa-save me-1"></i>Guardar Expediente
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+            </div>
             
             <!-- Contenido de Consultas (solo para usuarios normales) -->
             <div class="tab-pane fade user-only" id="consulta-content">
@@ -717,7 +701,7 @@
     
     <!-- Modal para administrar opciones de desplegables -->
     <div class="modal fade" id="manageDropdownModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Administrar Opciones</h5>
@@ -725,19 +709,39 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="new-option" class="form-label">Nueva Opción</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="new-option" placeholder="Ingrese una nueva opción">
-                            <button class="btn btn-primary" id="add-option-btn">Agregar</button>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label for="new-option-value" class="form-label">Valor</label>
+                                <input type="text" class="form-control" id="new-option-value" placeholder="Ingrese un valor">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="new-option-label" class="form-label">Etiqueta</label>
+                                <input type="text" class="form-control" id="new-option-label" placeholder="Ingrese una etiqueta">
+                            </div>
                         </div>
                     </div>
-                    <h6 class="mb-3">Opciones existentes:</h6>
-                    <ul class="list-group" id="options-list">
-                        <!-- Las opciones se cargarán dinámicamente -->
-                    </ul>
+                    <div class="mb-3">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Valor</th>
+                                        <th>Etiqueta</th>
+                                        <th class="text-end">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="options-list">
+                                    <!-- Las opciones se cargarán dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="btn-add-option">
+                        <i class="fas fa-plus me-1"></i>Agregar Opción
+                    </button>
                 </div>
             </div>
         </div>
@@ -758,10 +762,11 @@
         let isSupabaseConfigured = false;
         let currentUserRole = 'user'; // Por defecto es usuario normal
         let currentDropdownField = '';
+        let editingOptionId = null;
         
         // Configuración de Supabase (REEMPLAZA CON TUS CREDENCIALES)
-        const supabaseUrl = 'https://tptiyqlgopoujierdacw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwdGl5cWxnb3BvdWppZXJkYWN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NjY5MDIsImV4cCI6MjA3MDE0MjkwMn0.CuAron-2EMecpJNjHU_WhaGw93daplqKm-jj6V3JvGQ';
+        const supabaseUrl = 'https://TU_SUPABASE_URL.supabase.co';
+        const supabaseKey = 'TU_SUPABASE_ANON_KEY_AQUÍ';
         
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
@@ -812,9 +817,10 @@
         
         // Modal de administración
         const manageDropdownModal = new bootstrap.Modal(document.getElementById('manageDropdownModal'));
-        const newOptionInput = document.getElementById('new-option');
-        const addOptionBtn = document.getElementById('add-option-btn');
+        const newOptionValue = document.getElementById('new-option-value');
+        const newOptionLabel = document.getElementById('new-option-label');
         const optionsList = document.getElementById('options-list');
+        const btnAddOption = document.getElementById('btn-add-option');
         
         // Función para mostrar mensajes de error
         function showError(message) {
@@ -1026,7 +1032,7 @@
         // Función para cargar opciones de desplegables
         async function loadDropdownOptions(field) {
             try {
-                const {  options, error } = await supabaseClient
+                const { data, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('option')
                     .eq('field', field)
@@ -1043,8 +1049,8 @@
                 }
                 
                 // Añadir las nuevas opciones
-                if (options && options.length > 0) {
-                    options.forEach(option => {
+                if (data && data.length > 0) {
+                    data.forEach(option => {
                         const optionElement = document.createElement('option');
                         optionElement.value = option.option;
                         optionElement.textContent = option.option;
@@ -1056,42 +1062,12 @@
             }
         }
         
-        // Función para mostrar el modal de administración de desplegables
-        async function showManageDropdownModal(field) {
-            // Verificar si el usuario tiene permisos para administrar desplegables
-            const { data, error: sessionError } = await supabaseClient.auth.getSession();
-            if (sessionError || !data?.session) {
-                alert("No hay sesión activa. Por favor, inicie sesión.");
-                return;
-            }
-            
-            const userRole = data.session.user.app_metadata?.role || 
-                             data.session.user.user_metadata?.role || 'user';
-            
-            if (userRole !== 'admin' && userRole !== 'super_admin') {
-                alert("No tiene permisos para administrar opciones de desplegables.");
-                return;
-            }
-            
-            currentDropdownField = field;
-            
-            // Actualizar título del modal
-            document.querySelector('#manageDropdownModal .modal-title').textContent = 
-                `Administrar Opciones: ${field.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
-            
-            // Cargar opciones existentes
-            await loadOptionsForField(field);
-            
-            // Mostrar modal
-            manageDropdownModal.show();
-        }
-        
-        // Función para cargar opciones para un campo específico
-        async function loadOptionsForField(field) {
+        // Función para cargar opciones para administración
+        async function loadDropdownOptionsForManagement(field) {
             try {
-                const {  options, error } = await supabaseClient
+                const { data, error } = await supabaseClient
                     .from('dropdown_options')
-                    .select('id, option')
+                    .select('*')
                     .eq('field', field)
                     .order('option');
                 
@@ -1100,72 +1076,221 @@
                 // Limpiar lista
                 optionsList.innerHTML = '';
                 
-                if (options && options.length > 0) {
-                    options.forEach(option => {
-                        const li = document.createElement('li');
-                        li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                        li.innerHTML = `
-                            ${option.option}
-                            <button class="btn btn-sm btn-outline-danger delete-option" data-id="${option.id}">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                if (data && data.length > 0) {
+                    data.forEach(option => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${option.option}</td>
+                            <td>${option.option}</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary edit-option me-1" data-id="${option.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-option" data-id="${option.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
                         `;
-                        optionsList.appendChild(li);
+                        optionsList.appendChild(row);
                     });
                     
-                    // Configurar eventos para los botones de eliminación
+                    // Configurar eventos para los botones
+                    document.querySelectorAll('.edit-option').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const id = this.getAttribute('data-id');
+                            editOption(id);
+                        });
+                    });
+                    
                     document.querySelectorAll('.delete-option').forEach(button => {
                         button.addEventListener('click', function() {
                             const id = this.getAttribute('data-id');
-                            deleteDropdownOption(id);
+                            deleteOption(id);
                         });
                     });
                 } else {
-                    optionsList.innerHTML = '<li class="list-group-item text-center text-muted">No hay opciones disponibles</li>';
+                    optionsList.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center py-3 text-muted">
+                                <i class="fas fa-inbox me-2"></i>No hay opciones definidas
+                            </td>
+                        </tr>
+                    `;
                 }
+                
+                return data;
             } catch (error) {
-                console.error(`Error al cargar opciones para ${field}:`, error);
-                alert(`Error al cargar opciones: ${error.message}`);
+                console.error(`Error al cargar opciones para administración de ${field}:`, error);
+                return [];
             }
         }
         
-        // Función para agregar una opción a un desplegable
-        async function addDropdownOption() {
-            const newOption = newOptionInput.value.trim();
+        // Función para mostrar el modal de administración
+        async function showManageDropdownModal(field) {
+            try {
+                // Verificar si Supabase está configurado
+                if (!isSupabaseConfigured) {
+                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
+                }
+                
+                // Manejo seguro de la sesión
+                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !sessionData?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // Obtener el rol del usuario
+                const userRole = sessionData.session.user.app_metadata?.role || 
+                                 sessionData.session.user.user_metadata?.role || 'user';
+                
+                // Verificar el rol del usuario
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    throw new Error("Solo los administradores pueden administrar opciones");
+                }
+                
+                currentDropdownField = field;
+                
+                // Mostrar modal
+                manageDropdownModal.show();
+                
+                // Cargar opciones existentes
+                await loadDropdownOptionsForManagement(field);
+                
+                // Limpiar campos de edición
+                newOptionValue.value = '';
+                newOptionLabel.value = '';
+                editingOptionId = null;
+            } catch (error) {
+                console.error('Error al mostrar modal de administración:', error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+        
+        // Función para agregar una nueva opción
+        async function addOption() {
+            const newValue = newOptionValue.value.trim();
+            const newLabel = newOptionLabel.value.trim();
             
-            if (!newOption) {
-                alert("Por favor, ingrese una opción válida.");
+            if (!newValue || !newLabel) {
+                alert('Por favor, complete ambos campos');
                 return;
             }
             
             try {
+                // Manejo seguro de la sesión
+                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !sessionData?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // Obtener el rol del usuario
+                const userRole = sessionData.session.user.app_metadata?.role || 
+                                 sessionData.session.user.user_metadata?.role || 'user';
+                
+                // Verificar el rol del usuario
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    throw new Error("Solo los administradores pueden agregar opciones");
+                }
+                
+                // Crear nueva opción
+                const newOption = {
+                    field: currentDropdownField,
+                    option: newLabel,
+                    created_at: new Date().toISOString()
+                };
+                
+                // Insertar en Supabase
                 const { error } = await supabaseClient
                     .from('dropdown_options')
-                    .insert([{ field: currentDropdownField, option: newOption }]);
+                    .insert([newOption]);
                 
                 if (error) throw error;
                 
-                // Limpiar input
-                newOptionInput.value = '';
+                // Limpiar campos
+                newOptionValue.value = '';
+                newOptionLabel.value = '';
                 
                 // Recargar opciones
-                await loadOptionsForField(currentDropdownField);
+                await loadDropdownOptionsForManagement(currentDropdownField);
                 
-                // Actualizar el desplegable en el formulario
+                // Actualizar el desplegable principal
                 await loadDropdownOptions(currentDropdownField);
+                
+                alert('Opción agregada exitosamente');
             } catch (error) {
                 console.error('Error al agregar opción:', error);
                 alert(`Error al agregar opción: ${error.message}`);
             }
         }
         
-        // Función para eliminar una opción de un desplegable
-        async function deleteDropdownOption(id) {
+        // Función para editar una opción
+        async function editOption(id) {
+            try {
+                // Manejo seguro de la sesión
+                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !sessionData?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // Obtener el rol del usuario
+                const userRole = sessionData.session.user.app_metadata?.role || 
+                                 sessionData.session.user.user_metadata?.role || 'user';
+                
+                // Verificar el rol del usuario
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    throw new Error("Solo los administradores pueden editar opciones");
+                }
+                
+                const { data, error } = await supabaseClient
+                    .from('dropdown_options')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                
+                if (error) throw error;
+                if (!data) {
+                    throw new Error('Opción no encontrada');
+                }
+                
+                // Rellenar el formulario de nueva opción con los datos de edición
+                newOptionValue.value = data.option;
+                newOptionLabel.value = data.option;
+                
+                // Establecer el ID de edición
+                editingOptionId = id;
+                
+                // Desplazar al formulario
+                newOptionValue.scrollIntoView({ behavior: 'smooth' });
+                
+                alert('Ahora edite los valores y haga clic en "Agregar Opción" para guardar los cambios');
+            } catch (error) {
+                console.error('Error al editar opción:', error);
+                alert(`Error al editar opción: ${error.message}`);
+            }
+        }
+        
+        // Función para eliminar una opción
+        async function deleteOption(id) {
             if (!confirm('¿Está seguro de que desea eliminar esta opción?')) {
                 return;
             }
             
             try {
+                // Manejo seguro de la sesión
+                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !sessionData?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                // Obtener el rol del usuario
+                const userRole = sessionData.session.user.app_metadata?.role || 
+                                 sessionData.session.user.user_metadata?.role || 'user';
+                
+                // Verificar el rol del usuario
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    throw new Error("Solo los administradores pueden eliminar opciones");
+                }
+                
                 const { error } = await supabaseClient
                     .from('dropdown_options')
                     .delete()
@@ -1174,10 +1299,12 @@
                 if (error) throw error;
                 
                 // Recargar opciones
-                await loadOptionsForField(currentDropdownField);
+                await loadDropdownOptionsForManagement(currentDropdownField);
                 
-                // Actualizar el desplegable en el formulario
+                // Actualizar el desplegable principal
                 await loadDropdownOptions(currentDropdownField);
+                
+                alert('Opción eliminada exitosamente');
             } catch (error) {
                 console.error('Error al eliminar opción:', error);
                 alert(`Error al eliminar opción: ${error.message}`);
@@ -1200,13 +1327,13 @@
                 }
                 
                 // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) {
+                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !sessionData?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
                 
                 // Obtener el rol del usuario
-                const user = data.session.user;
+                const user = sessionData.session.user;
                 const userRole = user.app_metadata?.role || 
                                  user.user_metadata?.role || 'user';
                 
@@ -1657,15 +1784,43 @@
                 // Configurar botones de administración de desplegables
                 document.querySelectorAll('.manage-dropdown').forEach(button => {
                     button.addEventListener('click', function() {
-                        const field = this.getAttribute('data-field');
-                        showManageDropdownModal(field);
+                        const field = this.closest('.input-group')?.previousElementSibling?.id || 
+                                     this.parentElement.previousElementSibling?.id;
+                        if (field) {
+                            showManageDropdownModal(field);
+                        }
                     });
                 });
                 
-                // Configurar botón para añadir opciones
-                if (addOptionBtn) {
-                    addOptionBtn.addEventListener('click', addDropdownOption);
+                // Configurar botón para agregar opciones
+                if (btnAddOption) {
+                    btnAddOption.addEventListener('click', addOption);
                 }
+                
+                // Permitir agregar opciones con Enter en el campo de texto
+                if (newOptionValue) {
+                    newOptionValue.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            addOption();
+                        }
+                    });
+                }
+                
+                if (newOptionLabel) {
+                    newOptionLabel.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            addOption();
+                        }
+                    });
+                }
+                
+                // Configurar el evento de ocultar el modal
+                document.getElementById('manageDropdownModal')?.addEventListener('hidden.bs.modal', function() {
+                    // Limpiar campos al cerrar el modal
+                    if (newOptionValue) newOptionValue.value = '';
+                    if (newOptionLabel) newOptionLabel.value = '';
+                    editingOptionId = null;
+                });
                 
                 // Inicializar el campo de año
                 initializeYearField();
