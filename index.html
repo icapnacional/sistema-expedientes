@@ -630,71 +630,72 @@
             }
         }
         
-        // Función para registrar un usuario (solo para super_admin)
-        async function register(e) {
-            e.preventDefault();
-            const fullName = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            const role = document.getElementById('user-role').value;
-            
-            try {
-                hideError();
-                
-                // Verificar si Supabase está configurado
-                if (!isSupabaseConfigured) {
-                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
-                }
-                
-                // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) {
-                    throw new Error("Debe iniciar sesión para crear nuevos usuarios");
-                }
-                
-                // Obtener el rol del usuario
-                const userRole = data.session.user.app_metadata?.role || 
-                                 data.session.user.user_metadata?.role || 'user';
-                
-                // Verificar permisos
-                if (userRole !== 'super_admin') {
-                    throw new Error("Solo el administrador principal puede crear nuevos usuarios");
-                }
-                
-                // Registrar el nuevo usuario
-                const {  signUpData, error } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        
-                            full_name: fullName,
-                            role: role
-                        }
-                });
-                
-                if (error) {
-                    throw error;
-                }
-                
-                if (signUpData?.user) {
-                    console.log('Registro exitoso', signUpData);
-                    // Limpiar el formulario
-                    document.getElementById('reg-name').value = '';
-                    document.getElementById('reg-email').value = '';
-                    document.getElementById('reg-password').value = '';
-                    document.getElementById('user-role').value = 'user';
-                    
-                    // Mostrar mensaje de éxito
-                    alert('¡Usuario creado exitosamente!');
-                    
-                    // Recargar la lista de usuarios
-                    await loadUsers();
-                }
-            } catch (error) {
-                console.error('Error al registrar usuario:', error);
-                showError(`Error al registrar usuario: ${error.message}`);
-            }
+       // Función para registrar un usuario (solo para super_admin)
+async function register(e) {
+    e.preventDefault();
+    const fullName = document.getElementById('reg-name').value;
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    const role = document.getElementById('user-role').value || 'user'; // Asegurar valor por defecto
+    
+    try {
+        hideError();
+        
+        // Verificar si Supabase está configurado
+        if (!isSupabaseConfigured) {
+            throw new Error("Supabase no está configurado. Verifica tus credenciales.");
         }
+        
+        // Manejo seguro de la sesión
+        const { data, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !data?.session) {
+            throw new Error("Debe iniciar sesión para crear nuevos usuarios");
+        }
+        
+        // Obtener el rol del usuario
+        const userRole = data.session.user.app_metadata?.role || 
+                         data.session.user.user_metadata?.role || 'user';
+        
+        // Verificar permisos
+        if (userRole !== 'super_admin') {
+            throw new Error("Solo el administrador principal puede crear nuevos usuarios");
+        }
+        
+        // Registrar el nuevo usuario
+        const { data: signUpData, error } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {  // ¡CORRECCIÓN CRÍTICA! Los metadatos van dentro de "data"
+                    full_name: fullName,
+                    role: role
+                }
+            }
+        });
+        
+        if (error) {
+            throw error;
+        }
+        
+        if (signUpData?.user) {
+            console.log('Registro exitoso', signUpData);
+            // Limpiar el formulario
+            document.getElementById('reg-name').value = '';
+            document.getElementById('reg-email').value = '';
+            document.getElementById('reg-password').value = '';
+            document.getElementById('user-role').value = 'user';
+            
+            // Mostrar mensaje de éxito
+            alert('¡Usuario creado exitosamente!');
+            
+            // Recargar la lista de usuarios
+            await loadUsers();
+        }
+    } catch (error) {
+        console.error('Error al registrar usuario:', error);
+        showError(`Error al registrar usuario: ${error.message}`);
+    }
+}
         
         // Función para cargar la lista de usuarios
         async function loadUsers() {
