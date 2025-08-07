@@ -1714,17 +1714,16 @@
                 if (userRole !== 'admin' && userRole !== 'super_admin') {
                     throw new Error("Solo los administradores pueden crear nuevos usuarios");
                 }
-                const {  signUpData, error } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                         {  // CORRECCIÓN: Añadido "" aquí
-                            full_name: fullName,
-                            // CORRECCIÓN: Guardamos el rol en app_metadata
-                            role: 'user'
-                        }
-                    }
-                });
+             const { signUpData, error } = await supabaseClient.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+        data: {  // Añade "data: " aquí
+            full_name: fullName,
+            role: 'user'
+        }
+    }
+});
                 if (error) {
                     throw error;
                 }
