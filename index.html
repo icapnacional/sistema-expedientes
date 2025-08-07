@@ -695,7 +695,6 @@
                 });
             }
         }
-        
         // CORRECCIÓN #1: Función para registrar un usuario (solo para super_admin)
         async function register(e) {
             e.preventDefault();
@@ -835,47 +834,37 @@
                 }
             }
         }
-        
-      async function loadUsers() {
+   async function loadUsers() {
     try {
         // Verificar si Supabase está configurado
         if (!isSupabaseConfigured) {
             throw new Error("Supabase no está configurado. Verifica tus credenciales.");
         }
-        
         // Manejo seguro de la sesión
-        const { data, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError || !data?.session) {
+        const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !sessionData?.session) {
             throw new Error("No hay sesión activa. Por favor, inicie sesión.");
         }
-        
-        const user = data.session.user;
-        
+        const user = sessionData.session.user;
         // Mostrar información de depuración
         console.log('=== INFORMACIÓN DE DEPURACIÓN ===');
         console.log('ID del usuario:', user.id);
         console.log('App metadata:', JSON.stringify(user.app_metadata, null, 2));
         console.log('User metadata:', JSON.stringify(user.user_metadata, null, 2));
-        
         // Verificar el rol del usuario
         const userRole = user.app_metadata?.role || 
                          user.user_metadata?.role || 'user';
-        
         console.log('ROL DEL USUARIO:', userRole);
-        
         // Verificar permisos
         if (userRole !== 'super_admin') {
             throw new Error("Solo el administrador principal puede ver la lista de usuarios");
         }
-        
         // Consultar usuarios desde la tabla personalizada
-        const {  usersData, error } = await supabaseClient
+        const { data: usersData, error } = await supabaseClient
             .from('users')
             .select('*');
-        
         if (error) {
             console.error('Error al consultar usuarios:', error);
-            // Verificar si es un error de permisos específico
             if (error.code === '42501' || error.message.includes('permission denied')) {
                 console.error('=== ERROR DE PERMISOS DETECTADO ===');
                 console.error('Posibles causas:');
@@ -886,14 +875,11 @@
             }
             throw error;
         }
-        
         // Limpiar la lista
         usersList.innerHTML = '';
-        
         if (usersData && usersData.length > 0) {
             usersData.forEach(user => {
                 const row = document.createElement('tr');
-                
                 // Determinar el rol para mostrar
                 let displayRole = 'Usuario';
                 if (user.role === 'super_admin') {
@@ -901,7 +887,6 @@
                 } else if (user.role === 'admin') {
                     displayRole = 'Administrador';
                 }
-                
                 row.innerHTML = `
                     <td>${user.full_name || 'Sin nombre'}</td>
                     <td>${user.email}</td>
@@ -921,7 +906,6 @@
                 `;
                 usersList.appendChild(row);
             });
-            
             // Configurar eventos para los botones de eliminación
             document.querySelectorAll('.delete-user').forEach(button => {
                 button.addEventListener('click', function() {
