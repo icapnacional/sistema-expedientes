@@ -630,55 +630,79 @@
             }
         }
         
-      // ✅ CORRECCIÓN - Función register corregida
+    // Función para registrar un usuario (solo para super_admin)
 async function register(e) {
     e.preventDefault();
-    const fullName = document.getElementById('reg-name').value;
-    const email = document.getElementById('reg-email').value;
-    const password = document.getElementById('reg-password').value;
-    const role = document.getElementById('user-role').value || 'user';
+    console.log('Iniciando proceso de registro...');
     
     try {
-        hideError();
+        // Obtener valores del formulario
+        const fullName = document.getElementById('reg-name')?.value;
+        const email = document.getElementById('reg-email')?.value;
+        const password = document.getElementById('reg-password')?.value;
+        const role = document.getElementById('user-role')?.value || 'user';
+        
+        console.log('Datos del formulario:', { fullName, email, role });
+        
+        // Validar campos requeridos
+        if (!fullName || !email || !password) {
+            throw new Error("Por favor, complete todos los campos requeridos");
+        }
         
         // Verificar si Supabase está configurado
         if (!isSupabaseConfigured) {
+            console.error('Supabase no está configurado');
             throw new Error("Supabase no está configurado. Verifica tus credenciales.");
         }
         
         // Manejo seguro de la sesión
         const { data, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError || !data?.session) {
+        if (sessionError) {
+            console.error('Error de sesión:', sessionError);
+            throw new Error(`Error de sesión: ${sessionError.message}`);
+        }
+        
+        if (!data?.session) {
+            console.error('No hay sesión activa');
             throw new Error("Debe iniciar sesión para crear nuevos usuarios");
         }
         
         // Obtener el rol del usuario
-        const userRole = data.session.user.app_metadata?.role || 
-                         data.session.user.user_metadata?.role || 'user';
+        const user = data.session.user;
+        const userRole = user.app_metadata?.role || 
+                         user.user_metadata?.role || 'user';
+        
+        console.log('ROL DEL USUARIO ACTUAL:', userRole);
         
         // Verificar permisos
         if (userRole !== 'super_admin') {
+            console.error('Usuario no autorizado:', userRole);
             throw new Error("Solo el administrador principal puede crear nuevos usuarios");
         }
         
-        // ✅ CORRECCIÓN CRÍTICA: Los metadatos van dentro de "data"
+        // Registrar el nuevo usuario
+        console.log('Enviando solicitud de registro a Supabase...');
         const {  signUpData, error } = await supabaseClient.auth.signUp({
             email: email,
             password: password,
             options: {
-                data: {  // ¡ESTO ES LO QUE FALTA!
+                 {  // ¡CRUCIAL! Los metadatos van dentro de "data"
                     full_name: fullName,
                     role: role
                 }
             }
         });
         
+        console.log('Respuesta de Supabase:', { signUpData, error });
+        
         if (error) {
+            console.error('Error de Supabase:', error);
             throw error;
         }
         
         if (signUpData?.user) {
             console.log('Registro exitoso', signUpData);
+            
             // Limpiar el formulario
             document.getElementById('reg-name').value = '';
             document.getElementById('reg-email').value = '';
@@ -690,10 +714,22 @@ async function register(e) {
             
             // Recargar la lista de usuarios
             await loadUsers();
+        } else {
+            console.log('Registro pendiente de confirmación', signUpData);
+            alert('¡Usuario creado exitosamente! Revisa el correo para confirmar.');
         }
     } catch (error) {
-        console.error('Error al registrar usuario:', error);
-        showError(`Error al registrar usuario: ${error.message}`);
+        console.error('Error DETALLADO al registrar usuario:', error);
+        showError(`Error al registrar usuario: ${error.message || 'Error desconocido'}`);
+        
+        // Mostrar más detalles en la consola
+        if (error instanceof Error) {
+            console.error('Detalles del error:', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            });
+        }
     }
 }
         // Función para cargar la lista de usuarios
