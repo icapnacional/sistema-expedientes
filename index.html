@@ -816,7 +816,7 @@
             }
         }
         
-       async function loadUsers() {
+      async function loadUsers() {
     try {
         // Verificar si Supabase está configurado
         if (!isSupabaseConfigured) {
@@ -829,12 +829,19 @@
             throw new Error("No hay sesión activa. Por favor, inicie sesión.");
         }
         
-        // Obtener el rol del usuario
         const user = data.session.user;
+        
+        // Mostrar información de depuración
+        console.log('=== INFORMACIÓN DE DEPURACIÓN ===');
+        console.log('ID del usuario:', user.id);
+        console.log('App metadata:', JSON.stringify(user.app_metadata, null, 2));
+        console.log('User metadata:', JSON.stringify(user.user_metadata, null, 2));
+        
+        // Verificar el rol del usuario
         const userRole = user.app_metadata?.role || 
                          user.user_metadata?.role || 'user';
         
-        console.log('ROL DEL USUARIO ACTUAL:', userRole);
+        console.log('ROL DEL USUARIO:', userRole);
         
         // Verificar permisos
         if (userRole !== 'super_admin') {
@@ -842,97 +849,85 @@
         }
         
         // Consultar usuarios desde la tabla personalizada
-        const { data: usersData, error } = await supabaseClient
+        const {  usersData, error } = await supabaseClient
             .from('users')
             .select('*');
         
-        // Manejo específico de errores de permisos
         if (error) {
             console.error('Error al consultar usuarios:', error);
-            
-            // Si es un error de permisos, proporcionar un mensaje específico
+            // Verificar si es un error de permisos específico
             if (error.code === '42501' || error.message.includes('permission denied')) {
-                throw new Error("Error de permisos: No tienes acceso a la tabla users. Verifica las políticas RLS y tu rol.");
+                console.error('=== ERROR DE PERMISOS DETECTADO ===');
+                console.error('Posibles causas:');
+                console.error('1. El rol no está configurado en app_metadata (no user_metadata)');
+                console.error('2. Las políticas RLS están mal configuradas');
+                console.error('3. El token JWT no ha sido actualizado después de cambiar los metadatos');
+                throw new Error("Error de permisos: Verifica que eres administrador principal y que las políticas RLS están configuradas correctamente.");
             }
-            
             throw error;
         }
         
         // Limpiar la lista
         usersList.innerHTML = '';
         
-        if (usersData && usersList) {
-            if (usersData.length > 0) {
-                usersData.forEach(user => {
-                    const row = document.createElement('tr');
-                    
-                    // Determinar el rol para mostrar
-                    let displayRole = 'Usuario';
-                    if (user.role === 'super_admin') {
-                        displayRole = 'Administrador Principal';
-                    } else if (user.role === 'admin') {
-                        displayRole = 'Administrador';
-                    }
-                    
-                    row.innerHTML = `
-                        <td>${user.full_name || 'Sin nombre'}</td>
-                        <td>${user.email}</td>
-                        <td>
-                            <span class="role-badge ${user.role === 'super_admin' ? 'role-super-admin' : user.role === 'admin' ? 'role-admin' : 'role-user'}">
-                                ${displayRole}
-                            </span>
-                        </td>
-                        <td>
-                            ${user.role !== 'super_admin' ? 
-                                `<button class="btn btn-sm btn-outline-danger delete-user" data-id="${user.id}">
-                                    <i class="fas fa-trash"></i>
-                                </button>` : 
-                                '<span class="text-muted">No permitido</span>'
-                            }
-                        </td>
-                    `;
-                    usersList.appendChild(row);
-                });
+        if (usersData && usersData.length > 0) {
+            usersData.forEach(user => {
+                const row = document.createElement('tr');
                 
-                // Configurar eventos para los botones de eliminación
-                document.querySelectorAll('.delete-user').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        deleteUser(id);
-                    });
-                });
-            } else {
-                usersList.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-center py-3 text-muted">
-                            <i class="fas fa-inbox me-2"></i>No hay usuarios registrados
-                        </td>
-                    </tr>
-                `;
-            }
-        }
-    } catch (error) {
-        console.error('Error al cargar usuarios:', error);
-        
-        // Mostrar mensaje específico para errores de permisos
-        if (error.message.includes('permission denied')) {
-            usersList.innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center py-3 text-danger">
-                        <i class="fas fa-exclamation-circle me-2"></i>Error de permisos: ${error.message}
+                // Determinar el rol para mostrar
+                let displayRole = 'Usuario';
+                if (user.role === 'super_admin') {
+                    displayRole = 'Administrador Principal';
+                } else if (user.role === 'admin') {
+                    displayRole = 'Administrador';
+                }
+                
+                row.innerHTML = `
+                    <td>${user.full_name || 'Sin nombre'}</td>
+                    <td>${user.email}</td>
+                    <td>
+                        <span class="role-badge ${user.role === 'super_admin' ? 'role-super-admin' : user.role === 'admin' ? 'role-admin' : 'role-user'}">
+                            ${displayRole}
+                        </span>
                     </td>
-                </tr>
-            `;
-            showError(`Error de permisos: ${error.message}. Verifica que eres administrador principal y que las políticas RLS están configuradas correctamente.`);
+                    <td>
+                        ${user.role !== 'super_admin' ? 
+                            `<button class="btn btn-sm btn-outline-danger delete-user" data-id="${user.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>` : 
+                            '<span class="text-muted">No permitido</span>'
+                        }
+                    </td>
+                `;
+                usersList.appendChild(row);
+            });
+            
+            // Configurar eventos para los botones de eliminación
+            document.querySelectorAll('.delete-user').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    deleteUser(id);
+                });
+            });
         } else {
             usersList.innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-center py-3 text-danger">
-                        <i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}
+                    <td colspan="4" class="text-center py-3 text-muted">
+                        <i class="fas fa-inbox me-2"></i>No hay usuarios registrados
                     </td>
                 </tr>
             `;
         }
+    } catch (error) {
+        console.error('Error al cargar usuarios:', error);
+        usersList.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center py-3 text-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}
+                </td>
+            </tr>
+        `;
+        showError(`Error: ${error.message}`);
     }
 }
         
