@@ -222,6 +222,9 @@
         .super-admin-only {
             display: none;
         }
+        .user-only {
+            display: none;
+        }
         @media (max-width: 576px) {
             .login-container {
                 padding: 30px 20px;
@@ -351,7 +354,7 @@
                                         <label for="reg-password" class="form-label">Contraseña</label>
                                         <input type="password" class="form-control" id="reg-password" required>
                                     </div>
-                                    <div class="mb-3">
+                                    <div class="mb-3 super-admin-only">
                                         <label for="user-role" class="form-label">Rol</label>
                                         <select class="form-select" id="user-role">
                                             <option value="user">Usuario Normal</option>
@@ -421,8 +424,8 @@
         let currentUserRole = 'user'; // Por defecto es usuario normal
         
         // Configuración de Supabase (REEMPLAZA CON TUS CREDENCIALES)
-        const supabaseUrl = 'https://rwigsdsyrhlaunyumbeg.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3aWdzZHN5cmhsYXVueXVtYmVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MzU3MjMsImV4cCI6MjA3MDExMTcyM30.1egn1FDR4Kv_k-lFGZce6rwNbBlNCuBIvyN7UArihaE';
+        const supabaseUrl = 'https://TU_SUPABASE_URL.supabase.co';
+        const supabaseKey = 'TU_SUPABASE_ANON_KEY_AQUÍ';
         
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
@@ -608,7 +611,7 @@
                     element.style.display = 'block';
                 });
                 
-                // También mostrar pestañas para usuarios normales (si es necesario)
+                // También mostrar pestañas para usuarios normales
                 document.querySelectorAll('.user-only').forEach(element => {
                     element.style.display = 'block';
                 });
@@ -618,7 +621,7 @@
                     element.style.display = 'block';
                 });
                 
-                // También mostrar pestañas para usuarios normales (si es necesario)
+                // También mostrar pestañas para usuarios normales
                 document.querySelectorAll('.user-only').forEach(element => {
                     element.style.display = 'block';
                 });
@@ -630,109 +633,110 @@
             }
         }
         
-    // Función para registrar un usuario (solo para super_admin)
-async function register(e) {
-    e.preventDefault();
-    console.log('Iniciando proceso de registro...');
-    
-    try {
-        // Obtener valores del formulario
-        const fullName = document.getElementById('reg-name')?.value;
-        const email = document.getElementById('reg-email')?.value;
-        const password = document.getElementById('reg-password')?.value;
-        const role = document.getElementById('user-role')?.value || 'user';
-        
-        console.log('Datos del formulario:', { fullName, email, role });
-        
-        // Validar campos requeridos
-        if (!fullName || !email || !password) {
-            throw new Error("Por favor, complete todos los campos requeridos");
-        }
-        
-        // Verificar si Supabase está configurado
-        if (!isSupabaseConfigured) {
-            console.error('Supabase no está configurado');
-            throw new Error("Supabase no está configurado. Verifica tus credenciales.");
-        }
-        
-        // Manejo seguro de la sesión
-        const { data, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError) {
-            console.error('Error de sesión:', sessionError);
-            throw new Error(`Error de sesión: ${sessionError.message}`);
-        }
-        
-        if (!data?.session) {
-            console.error('No hay sesión activa');
-            throw new Error("Debe iniciar sesión para crear nuevos usuarios");
-        }
-        
-        // Obtener el rol del usuario
-        const user = data.session.user;
-        const userRole = user.app_metadata?.role || 
-                         user.user_metadata?.role || 'user';
-        
-        console.log('ROL DEL USUARIO ACTUAL:', userRole);
-        
-        // Verificar permisos
-        if (userRole !== 'super_admin') {
-            console.error('Usuario no autorizado:', userRole);
-            throw new Error("Solo el administrador principal puede crear nuevos usuarios");
-        }
-        
-        // Registrar el nuevo usuario
-        console.log('Enviando solicitud de registro a Supabase...');
-        const {  signUpData, error } = await supabaseClient.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-                 {  // ¡CRUCIAL! Los metadatos van dentro de "data"
-                    full_name: fullName,
-                    role: role
+        // CORRECCIÓN #1: Función para registrar un usuario (solo para super_admin)
+        async function register(e) {
+            e.preventDefault();
+            console.log('Iniciando proceso de registro...');
+            
+            try {
+                // Obtener valores del formulario
+                const fullName = document.getElementById('reg-name')?.value;
+                const email = document.getElementById('reg-email')?.value;
+                const password = document.getElementById('reg-password')?.value;
+                const role = document.getElementById('user-role')?.value || 'user';
+                
+                console.log('Datos del formulario:', { fullName, email, role });
+                
+                // Validar campos requeridos
+                if (!fullName || !email || !password) {
+                    throw new Error("Por favor, complete todos los campos requeridos");
+                }
+                
+                // Verificar si Supabase está configurado
+                if (!isSupabaseConfigured) {
+                    console.error('Supabase no está configurado');
+                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
+                }
+                
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError) {
+                    console.error('Error de sesión:', sessionError);
+                    throw new Error(`Error de sesión: ${sessionError.message}`);
+                }
+                
+                if (!data?.session) {
+                    console.error('No hay sesión activa');
+                    throw new Error("Debe iniciar sesión para crear nuevos usuarios");
+                }
+                
+                // Obtener el rol del usuario
+                const user = data.session.user;
+                const userRole = user.app_metadata?.role || 
+                                 user.user_metadata?.role || 'user';
+                
+                console.log('ROL DEL USUARIO ACTUAL:', userRole);
+                
+                // Verificar permisos
+                if (userRole !== 'super_admin') {
+                    console.error('Usuario no autorizado:', userRole);
+                    throw new Error("Solo el administrador principal puede crear nuevos usuarios");
+                }
+                
+                // CORRECCIÓN #2: Estructura CORRECTA para los metadatos
+                console.log('Enviando solicitud de registro a Supabase...');
+                const { data: signUpData, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {  // ¡CRUCIAL! Los metadatos van dentro de "data"
+                            full_name: fullName,
+                            role: role
+                        }
+                    }
+                });
+                
+                console.log('Respuesta de Supabase:', { signUpData, error });
+                
+                if (error) {
+                    console.error('Error de Supabase:', error);
+                    throw error;
+                }
+                
+                if (signUpData?.user) {
+                    console.log('Registro exitoso', signUpData);
+                    
+                    // Limpiar el formulario
+                    document.getElementById('reg-name').value = '';
+                    document.getElementById('reg-email').value = '';
+                    document.getElementById('reg-password').value = '';
+                    document.getElementById('user-role').value = 'user';
+                    
+                    // Mostrar mensaje de éxito
+                    alert('¡Usuario creado exitosamente!');
+                    
+                    // Recargar la lista de usuarios
+                    await loadUsers();
+                } else {
+                    console.log('Registro pendiente de confirmación', signUpData);
+                    alert('¡Usuario creado exitosamente! Revisa el correo para confirmar.');
+                }
+            } catch (error) {
+                console.error('Error DETALLADO al registrar usuario:', error);
+                showError(`Error al registrar usuario: ${error.message || 'Error desconocido'}`);
+                
+                // Mostrar más detalles en la consola
+                if (error instanceof Error) {
+                    console.error('Detalles del error:', {
+                        name: error.name,
+                        message: error.message,
+                        stack: error.stack
+                    });
                 }
             }
-        });
-        
-        console.log('Respuesta de Supabase:', { signUpData, error });
-        
-        if (error) {
-            console.error('Error de Supabase:', error);
-            throw error;
         }
         
-        if (signUpData?.user) {
-            console.log('Registro exitoso', signUpData);
-            
-            // Limpiar el formulario
-            document.getElementById('reg-name').value = '';
-            document.getElementById('reg-email').value = '';
-            document.getElementById('reg-password').value = '';
-            document.getElementById('user-role').value = 'user';
-            
-            // Mostrar mensaje de éxito
-            alert('¡Usuario creado exitosamente!');
-            
-            // Recargar la lista de usuarios
-            await loadUsers();
-        } else {
-            console.log('Registro pendiente de confirmación', signUpData);
-            alert('¡Usuario creado exitosamente! Revisa el correo para confirmar.');
-        }
-    } catch (error) {
-        console.error('Error DETALLADO al registrar usuario:', error);
-        showError(`Error al registrar usuario: ${error.message || 'Error desconocido'}`);
-        
-        // Mostrar más detalles en la consola
-        if (error instanceof Error) {
-            console.error('Detalles del error:', {
-                name: error.name,
-                message: error.message,
-                stack: error.stack
-            });
-        }
-    }
-}
-        // Función para cargar la lista de usuarios
+        // CORRECCIÓN #3: Función para cargar la lista de usuarios
         async function loadUsers() {
             try {
                 // Verificar si Supabase está configurado
@@ -755,12 +759,13 @@ async function register(e) {
                     throw new Error("Solo el administrador principal puede ver la lista de usuarios");
                 }
                 
-                // Consultar todos los usuarios
-                const {  usersData, error } = await supabaseClient
+                // CORRECCIÓN #4: Consultar usuarios desde auth.users
+                const { data: usersData, error } = await supabaseClient
                     .from('users')
                     .select('*');
                 
                 if (error) {
+                    console.error('Error al consultar usuarios:', error);
                     throw error;
                 }
                 
@@ -827,7 +832,7 @@ async function register(e) {
             }
         }
         
-        // Función para eliminar un usuario
+        // CORRECCIÓN #5: Función para eliminar un usuario
         async function deleteUser(id) {
             if (!confirm('¿Está seguro de que desea eliminar este usuario?')) {
                 return;
@@ -854,7 +859,7 @@ async function register(e) {
                     throw new Error("Solo el administrador principal puede eliminar usuarios");
                 }
                 
-                // Eliminar el usuario de la tabla personalizada
+                // CORRECCIÓN #6: Eliminar el usuario de la tabla users
                 const { error: deleteError } = await supabaseClient
                     .from('users')
                     .delete()
@@ -863,12 +868,6 @@ async function register(e) {
                 if (deleteError) {
                     throw deleteError;
                 }
-                
-                // También eliminar de la tabla de autenticación
-                const { error: authError } = await supabaseClient
-                    .from('auth.users')
-                    .delete()
-                    .eq('id', id);
                 
                 // Recargar la lista de usuarios
                 await loadUsers();
@@ -1057,9 +1056,18 @@ async function register(e) {
                     loginForm.addEventListener('submit', login);
                 }
                 
-                // Configurar el evento de submit del formulario de registro
+                // CORRECCIÓN #7: Configurar el evento de submit del formulario de registro
                 if (registerForm) {
-                    registerForm.addEventListener('submit', register);
+                    registerForm.addEventListener('submit', async (e) => {
+                        try {
+                            await register(e);
+                        } catch (error) {
+                            console.error('Error capturado en el evento:', error);
+                            showError(`Error inesperado: ${error.message}`);
+                        }
+                    });
+                } else {
+                    console.error('No se encontró el formulario de registro');
                 }
                 
                 // Configurar botón de logout
