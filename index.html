@@ -765,8 +765,8 @@
         let editingOptionId = null;
         
         // Configuración de Supabase (REEMPLAZA CON TUS CREDENCIALES)
-        const supabaseUrl = 'https://tptiyqlgopoujierdacw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwdGl5cWxnb3BvdWppZXJkYWN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NjY5MDIsImV4cCI6MjA3MDE0MjkwMn0.CuAron-2EMecpJNjHU_WhaGw93daplqKm-jj6V3JvGQ';
+        const supabaseUrl = 'https://TU_SUPABASE_URL.supabase.co';
+        const supabaseKey = 'TU_SUPABASE_ANON_KEY_AQUÍ';
         
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
@@ -1125,68 +1125,87 @@
             }
         }
         
-      // Función para mostrar el modal de administración de desplegables
-async function showManageDropdownModal(field) {
-    try {
-        // Verificar si Supabase está configurado
-        if (!isSupabaseConfigured) {
-            throw new Error("Supabase no está configurado. Verifica tus credenciales.");
+        // Función para verificar el rol del usuario
+        async function checkUserRole() {
+            try {
+                // Verificar si Supabase está configurado
+                if (!isSupabaseConfigured) {
+                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
+                }
+                
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                const user = data.session.user;
+                const userRole = user.app_metadata?.role || 
+                                 user.user_metadata?.role || 'user';
+                
+                console.log('ROL ACTUAL:', userRole);
+                console.log('APP METADATA COMPLETO:', user.app_metadata);
+                console.log('USER METADATA COMPLETO:', user.user_metadata);
+                
+                return {
+                    role: userRole,
+                    user: user
+                };
+            } catch (error) {
+                console.error('Error al verificar rol de usuario:', error);
+                return {
+                    role: 'user',
+                    user: null
+                };
+            }
         }
         
-        // Manejo seguro de la sesión
-        const { data, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError || !data?.session) {
-            throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+        // Función para mostrar el modal de administración
+        async function showManageDropdownModal(field) {
+            try {
+                // Verificar si Supabase está configurado
+                if (!isSupabaseConfigured) {
+                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
+                }
+                
+                // Verificar el rol del usuario
+                const { role, user } = await checkUserRole();
+                
+                // Si no es admin o super_admin, mostrar advertencia detallada
+                if (role !== 'admin' && role !== 'super_admin') {
+                    console.error('=== ERROR DE ROL DETECTADO ===');
+                    console.error('El usuario NO tiene el rol de administrador configurado correctamente');
+                    console.error('Posibles causas:');
+                    console.error('1. El rol está en user_metadata en lugar de app_metadata');
+                    console.error('2. El formato JSON es incorrecto (usa comillas dobles)');
+                    console.error('3. No has reiniciado la sesión después de cambiar los metadatos');
+                    console.error('4. Las políticas RLS están mal configuradas');
+                    
+                    alert("No tiene permisos para administrar opciones de desplegables.\n\n" +
+                          "Verifica que:\n" +
+                          "1. El rol está en app_metadata (NO user_metadata)\n" +
+                          "2. El formato JSON es correcto (comillas dobles)\n" +
+                          "3. Has reiniciado la sesión después de cambiar los metadatos\n" +
+                          "4. Las políticas RLS están configuradas correctamente");
+                    return;
+                }
+                
+                currentDropdownField = field;
+                
+                // Actualizar título del modal
+                document.querySelector('#manageDropdownModal .modal-title').textContent = 
+                    `Administrar Opciones: ${field.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
+                
+                // Cargar opciones existentes
+                await loadDropdownOptionsForManagement(field);
+                
+                // Mostrar modal
+                manageDropdownModal.show();
+            } catch (error) {
+                console.error('Error al mostrar modal de administración:', error);
+                alert(`Error al mostrar modal: ${error.message}`);
+            }
         }
-        
-        const user = data.session.user;
-        
-        // Mostrar información detallada para depuración
-        console.log('=== DEPURACIÓN DE ROL ===');
-        console.log('ID del usuario:', user.id);
-        console.log('app_metadata completo:', user.app_metadata);
-        console.log('user_metadata completo:', user.user_metadata);
-        console.log('Rol detectado:', user.app_metadata?.role || user.user_metadata?.role || 'user');
-        
-        // Verificar el rol del usuario - ¡CRUCIAL! Usar app_metadata primero
-        const userRole = user.app_metadata?.role || 
-                         user.user_metadata?.role || 'user';
-        
-        // Si no es admin o super_admin, mostrar advertencia detallada
-        if (userRole !== 'admin' && userRole !== 'super_admin') {
-            console.error('=== ERROR DE ROL DETECTADO ===');
-            console.error('El usuario NO tiene el rol de administrador configurado correctamente');
-            console.error('Posibles causas:');
-            console.error('1. El rol está en user_metadata en lugar de app_metadata');
-            console.error('2. El formato JSON es incorrecto (usa comillas dobles)');
-            console.error('3. No has reiniciado la sesión después de cambiar los metadatos');
-            console.error('4. Las políticas RLS están mal configuradas');
-            
-            alert("No tiene permisos para administrar opciones de desplegables.\n\n" +
-                  "Verifica que:\n" +
-                  "1. El rol está en app_metadata (NO user_metadata)\n" +
-                  "2. El formato JSON es correcto (comillas dobles)\n" +
-                  "3. Has reiniciado la sesión después de cambiar los metadatos\n" +
-                  "4. Las políticas RLS están configuradas correctamente");
-            return;
-        }
-        
-        currentDropdownField = field;
-        
-        // Actualizar título del modal
-        document.querySelector('#manageDropdownModal .modal-title').textContent = 
-            `Administrar Opciones: ${field.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
-        
-        // Cargar opciones existentes
-        await loadDropdownOptionsForManagement(field);
-        
-        // Mostrar modal
-        manageDropdownModal.show();
-    } catch (error) {
-        console.error('Error al mostrar modal de administración:', error);
-        alert(`Error al mostrar modal: ${error.message}`);
-    }
-}
         
         // Función para agregar una nueva opción
         async function addOption() {
@@ -1199,26 +1218,18 @@ async function showManageDropdownModal(field) {
             }
             
             try {
-                // Manejo seguro de la sesión
-                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !sessionData?.session) {
-                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
-                }
-                
-                // Obtener el rol del usuario
-                const userRole = sessionData.session.user.app_metadata?.role || 
-                                 sessionData.session.user.user_metadata?.role || 'user';
+                // Verificar el rol del usuario
+                const { role } = await checkUserRole();
                 
                 // Verificar el rol del usuario
-                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                if (role !== 'admin' && role !== 'super_admin') {
                     throw new Error("Solo los administradores pueden agregar opciones");
                 }
                 
                 // Crear nueva opción
                 const newOption = {
                     field: currentDropdownField,
-                    option: newLabel,
-                    created_at: new Date().toISOString()
+                    option: newLabel
                 };
                 
                 // Insertar en Supabase
@@ -1248,18 +1259,11 @@ async function showManageDropdownModal(field) {
         // Función para editar una opción
         async function editOption(id) {
             try {
-                // Manejo seguro de la sesión
-                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !sessionData?.session) {
-                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
-                }
-                
-                // Obtener el rol del usuario
-                const userRole = sessionData.session.user.app_metadata?.role || 
-                                 sessionData.session.user.user_metadata?.role || 'user';
+                // Verificar el rol del usuario
+                const { role } = await checkUserRole();
                 
                 // Verificar el rol del usuario
-                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                if (role !== 'admin' && role !== 'super_admin') {
                     throw new Error("Solo los administradores pueden editar opciones");
                 }
                 
@@ -1298,18 +1302,11 @@ async function showManageDropdownModal(field) {
             }
             
             try {
-                // Manejo seguro de la sesión
-                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !sessionData?.session) {
-                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
-                }
-                
-                // Obtener el rol del usuario
-                const userRole = sessionData.session.user.app_metadata?.role || 
-                                 sessionData.session.user.user_metadata?.role || 'user';
+                // Verificar el rol del usuario
+                const { role } = await checkUserRole();
                 
                 // Verificar el rol del usuario
-                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                if (role !== 'admin' && role !== 'super_admin') {
                     throw new Error("Solo los administradores pueden eliminar opciones");
                 }
                 
@@ -1349,7 +1346,7 @@ async function showManageDropdownModal(field) {
                 }
                 
                 // Manejo seguro de la sesión
-                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                const {  sessionData, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !sessionData?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
@@ -1803,31 +1800,87 @@ async function showManageDropdownModal(field) {
                     profilePictureUpload.click();
                 });
                 
-               // Configurar botones de administración de desplegables
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.manage-dropdown').forEach(button => {
-        button.addEventListener('click', function() {
-            // Intentar obtener el campo de diferentes formas
-            let field = this.getAttribute('data-field');
-            
-            // Si no tiene data-field, buscar en el select anterior
-            if (!field) {
-                const select = this.closest('.input-group')?.previousElementSibling || 
-                              this.parentElement.previousElementSibling;
-                if (select && select.id) {
-                    field = select.id;
-                }
-            }
-            
-            if (field) {
-                showManageDropdownModal(field);
-            } else {
-                console.error('No se pudo determinar el campo para el botón de administración');
-                alert('Error: No se pudo identificar el campo. Por favor, contacte al administrador.');
-            }
-        });
-    });
-});
+                // Configurar botones de administración de desplegables
+                document.querySelectorAll('.manage-dropdown').forEach(button => {
+                    // Eliminar cualquier listener existente
+                    const newButton = button.cloneNode(true);
+                    button.parentNode.replaceChild(newButton, button);
+                    
+                    // Configurar el nuevo listener
+                    newButton.addEventListener('click', async function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        try {
+                            // Verificar si Supabase está configurado
+                            if (!isSupabaseConfigured) {
+                                throw new Error("Supabase no está configurado. Verifica tus credenciales.");
+                            }
+                            
+                            // Manejo seguro de la sesión
+                            const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                            if (sessionError || !data?.session) {
+                                throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                            }
+                            
+                            const user = data.session.user;
+                            console.log('Usuario actual:', user);
+                            
+                            // Verificar el rol del usuario
+                            const userRole = user.app_metadata?.role || 
+                                             user.user_metadata?.role || 'user';
+                            console.log('ROL ACTUAL:', userRole);
+                            
+                            // Si no es admin o super_admin, mostrar advertencia
+                            if (userRole !== 'admin' && userRole !== 'super_admin') {
+                                alert("No tienes permisos para administrar opciones de desplegables");
+                                return;
+                            }
+                            
+                            // Intentar obtener el campo de diferentes formas
+                            let field = this.getAttribute('data-field');
+                            
+                            // Si no tiene data-field, buscar en el select anterior
+                            if (!field) {
+                                const selectGroup = this.closest('.input-group');
+                                if (selectGroup) {
+                                    const select = selectGroup.previousElementSibling;
+                                    if (select && select.id) {
+                                        field = select.id;
+                                    }
+                                }
+                            }
+                            
+                            if (!field) {
+                                // Último intento: buscar en el padre
+                                const parent = this.closest('.mb-3, .row');
+                                if (parent) {
+                                    const label = parent.querySelector('label');
+                                    if (label && label.htmlFor) {
+                                        field = label.htmlFor;
+                                    }
+                                }
+                            }
+                            
+                            if (field) {
+                                console.log('Campo identificado:', field);
+                                currentDropdownField = field;
+                                
+                                // Cargar opciones para el campo
+                                await loadDropdownOptionsForManagement(field);
+                                
+                                // Mostrar modal
+                                manageDropdownModal.show();
+                            } else {
+                                console.error('No se pudo determinar el campo para el botón de administración');
+                                alert('Error: No se pudo identificar el campo. Por favor, contacte al administrador.');
+                            }
+                        } catch (error) {
+                            console.error('Error al procesar clic:', error);
+                            alert(`Error: ${error.message}`);
+                        }
+                    });
+                });
                 
                 // Configurar botón para agregar opciones
                 if (btnAddOption) {
