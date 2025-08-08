@@ -1126,86 +1126,122 @@
         }
         
         // Función para verificar el rol del usuario
-        async function checkUserRole() {
-            try {
-                // Verificar si Supabase está configurado
-                if (!isSupabaseConfigured) {
-                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
-                }
-                
-                // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) {
-                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
-                }
-                
-                const user = data.session.user;
-                const userRole = user.app_metadata?.role || 
-                                 user.user_metadata?.role || 'user';
-                
-                console.log('ROL ACTUAL:', userRole);
-                console.log('APP METADATA COMPLETO:', user.app_metadata);
-                console.log('USER METADATA COMPLETO:', user.user_metadata);
-                
-                return {
-                    role: userRole,
-                    user: user
-                };
-            } catch (error) {
-                console.error('Error al verificar rol de usuario:', error);
-                return {
-                    role: 'user',
-                    user: null
-                };
-            }
+async function checkUserRole() {
+    try {
+        // Verificar si Supabase está configurado
+        if (!isSupabaseConfigured) {
+            throw new Error("Supabase no está configurado. Verifica tus credenciales.");
         }
         
-        // Función para mostrar el modal de administración
-        async function showManageDropdownModal(field) {
-            try {
-                // Verificar si Supabase está configurado
-                if (!isSupabaseConfigured) {
-                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
-                }
-                
-                // Verificar el rol del usuario
-                const { role, user } = await checkUserRole();
-                
-                // Si no es admin o super_admin, mostrar advertencia detallada
-                if (role !== 'admin' && role !== 'super_admin') {
-                    console.error('=== ERROR DE ROL DETECTADO ===');
-                    console.error('El usuario NO tiene el rol de administrador configurado correctamente');
-                    console.error('Posibles causas:');
-                    console.error('1. El rol está en user_metadata en lugar de app_metadata');
-                    console.error('2. El formato JSON es incorrecto (usa comillas dobles)');
-                    console.error('3. No has reiniciado la sesión después de cambiar los metadatos');
-                    console.error('4. Las políticas RLS están mal configuradas');
-                    
-                    alert("No tiene permisos para administrar opciones de desplegables.\n\n" +
-                          "Verifica que:\n" +
-                          "1. El rol está en app_metadata (NO user_metadata)\n" +
-                          "2. El formato JSON es correcto (comillas dobles)\n" +
-                          "3. Has reiniciado la sesión después de cambiar los metadatos\n" +
-                          "4. Las políticas RLS están configuradas correctamente");
-                    return;
-                }
-                
-                currentDropdownField = field;
-                
-                // Actualizar título del modal
-                document.querySelector('#manageDropdownModal .modal-title').textContent = 
-                    `Administrar Opciones: ${field.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
-                
-                // Cargar opciones existentes
-                await loadDropdownOptionsForManagement(field);
-                
-                // Mostrar modal
-                manageDropdownModal.show();
-            } catch (error) {
-                console.error('Error al mostrar modal de administración:', error);
-                alert(`Error al mostrar modal: ${error.message}`);
-            }
+        // Manejo seguro de la sesión
+        const { data, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !data?.session) {
+            throw new Error("No hay sesión activa. Por favor, inicie sesión.");
         }
+        
+        const user = data.session.user;
+        const userId = user.id;
+        
+        // Intentar obtener el rol desde la tabla users
+        const { data: userData, error: userError } = await supabaseClient
+            .from('users')
+            .select('role')
+            .eq('id', userId)
+            .single();
+        
+        if (userError || !userData) {
+            // Si hay error, intentar obtener el rol desde auth.users
+            const userRole = user.app_metadata?.role || 
+                             user.user_metadata?.role || 'user';
+            console.log('ROL OBTENIDO DE AUTH.USERS:', userRole);
+            return {
+                role: userRole,
+                source: 'auth'
+            };
+        }
+        
+        console.log('ROL OBTENIDO DE PUBLIC.USERS:', userData.role);
+        return {
+            role: userData.role,
+            source: 'public'
+        };
+    } catch (error) {
+        console.error('Error al verificar rol de usuario:', error);
+        return {
+            role: 'user',
+            source: 'error'
+        };
+    }
+}
+
+// Función para mostrar el modal de administración
+async function showManageDropdownModal(field) {
+    try {
+        // Verificar si Supabase está configurado
+        if (!isSupabaseConfigured) {
+            throw new Error("Supabase no está configurado. Verifica tus credenciales.");
+        }
+        
+        // Verificar el rol del usuario
+        const { role } = await checkUserRole();
+        
+        // Si no es admin o super_admin, mostrar advertencia
+        if (role !== 'admin' && role !== 'super_admin') {
+            alert("No tiene permisos para administrar opciones de desplegables");
+            return;
+        }
+        
+        currentDropdownField = field;
+        
+        // Actualizar título del modal
+        document.querySelector('#manageDropdownModal .modal-title').textContent = 
+            `Administrar Opciones: ${field.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
+        
+        // Cargar opciones existentes
+        await loadDropdownOptionsForManagement(field);
+        
+        // Mostrar modal
+        manageDropdownModal.show();
+    } catch (error) {
+        console.error('Error al mostrar modal de administración:', error);
+        alert(`Error al mostrar modal: ${error.message}`);
+    }
+}
+
+// Función para eliminar una opción
+async function deleteOption(id) {
+    if (!confirm('¿Está seguro de que desea eliminar esta opción?')) {
+        return;
+    }
+    
+    try {
+        // Verificar el rol del usuario
+        const { role } = await checkUserRole();
+        
+        // Verificar el rol del usuario
+        if (role !== 'admin' && role !== 'super_admin') {
+            throw new Error("Solo los administradores pueden eliminar opciones");
+        }
+        
+        const { error } = await supabaseClient
+            .from('dropdown_options')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+        
+        // Recargar opciones
+        await loadDropdownOptionsForManagement(currentDropdownField);
+        
+        // Actualizar el desplegable principal
+        await loadDropdownOptions(currentDropdownField);
+        
+        alert('Opción eliminada exitosamente');
+    } catch (error) {
+        console.error('Error al eliminar opción:', error);
+        alert(`Error al eliminar opción: ${error.message}`);
+    }
+}
         
         // Función para agregar una nueva opción
         async function addOption() {
@@ -1474,91 +1510,90 @@
             }
         }
         
-        // Función para verificar la sesión
-        async function checkSession() {
-            try {
-                console.log('Verificando sesión...');
-                
-                // Verificar si Supabase está configurado
-                if (!isSupabaseConfigured) {
-                    console.error('Supabase no está configurado. Verifica tus credenciales.');
-                    showError('Supabase no está configurado. Verifica tus credenciales.');
-                    return;
-                }
-                
-                // Manejo seguro de la sesión
-                const { data, error } = await supabaseClient.auth.getSession();
-                if (error) {
-                    console.error('Error al obtener sesión:', error);
-                    throw error;
-                }
-                
-                if (data?.session) {
-                    console.log('Sesión encontrada:', data.session);
-                    // Usuario autenticado - muestra el panel principal
-                    loginScreen.style.display = 'none';
-                    mainPanel.style.display = 'block';
-                    
-                    // Muestra el nombre del usuario
-                    const user = data.session.user;
-                    if (userNameElement) {
-                        // Manejo seguro de user_metadata
-                        const fullName = user.user_metadata?.full_name || 
-                                        user.user_metadata?.fullName || 
-                                        user.user_metadata?.name ||
-                                        user.email?.split('@')[0] || 'Usuario';
-                        userNameElement.textContent = fullName;
-                    }
-                    
-                    // Verificar el rol del usuario
-                    const userRole = user.app_metadata?.role || 
-                                     user.user_metadata?.role || 'user';
-                    currentUserRole = userRole;
-                    console.log('ROL DEL USUARIO:', userRole);
-                    
-                    // Mostrar el rol según el tipo de usuario
-                    if (roleDisplay) {
-                        roleDisplay.innerHTML = '';
-                        
-                        if (userRole === 'super_admin') {
-                            // Para super admin, mantener el badge rojo
-                            const roleBadge = document.createElement('span');
-                            roleBadge.className = 'role-badge role-super-admin';
-                            roleBadge.textContent = 'Administrador Principal';
-                            roleDisplay.appendChild(roleBadge);
-                        } else if (userRole === 'admin') {
-                            // Para admin, mantener el badge azul
-                            const roleBadge = document.createElement('span');
-                            roleBadge.className = 'role-badge role-admin';
-                            roleBadge.textContent = 'Administrador';
-                            roleDisplay.appendChild(roleBadge);
-                        } else {
-                            // Para usuario normal, solo mostrar la palabra "Usuario" en texto plano con color verde
-                            roleDisplay.textContent = 'Usuario';
-                            roleDisplay.style.color = '#28a745'; // Verde para usuarios normales
-                            roleDisplay.style.fontWeight = '600';
-                            roleDisplay.style.marginLeft = '8px';
-                        }
-                    }
-                    
-                    // Aplicar restricciones según el rol
-                    applyRoleRestrictions(userRole);
-                    
-                    // Si es super_admin, cargar la lista de usuarios
-                    if (userRole === 'super_admin') {
-                        // Aquí iría la función para cargar usuarios si la tuvieras
-                    }
-                } else {
-                    console.log('No hay sesión activa');
-                    // Usuario no autenticado - muestra el login
-                    loginScreen.style.display = 'block';
-                    mainPanel.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error al verificar sesión:', error);
-                showError('Error al verificar sesión: ' + error.message);
-            }
+       // Función para verificar la sesión
+async function checkSession() {
+    try {
+        console.log('Verificando sesión...');
+        
+        // Verificar si Supabase está configurado
+        if (!isSupabaseConfigured) {
+            console.error('Supabase no está configurado. Verifica tus credenciales.');
+            showError('Supabase no está configurado. Verifica tus credenciales.');
+            return;
         }
+        
+        // Manejo seguro de la sesión
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) {
+            console.error('Error al obtener sesión:', error);
+            throw error;
+        }
+        
+        if (data?.session) {
+            console.log('Sesión encontrada:', data.session);
+            // Usuario autenticado - muestra el panel principal
+            loginScreen.style.display = 'none';
+            mainPanel.style.display = 'block';
+            
+            // Muestra el nombre del usuario
+            const user = data.session.user;
+            if (userNameElement) {
+                // Manejo seguro de user_metadata
+                const fullName = user.user_metadata?.full_name || 
+                                user.user_metadata?.fullName || 
+                                user.user_metadata?.name ||
+                                user.email?.split('@')[0] || 'Usuario';
+                userNameElement.textContent = fullName;
+            }
+            
+            // Verificar el rol del usuario
+            const { role } = await checkUserRole();
+            currentUserRole = role;
+            console.log('ROL DEL USUARIO:', role);
+            
+            // Mostrar el rol según el tipo de usuario
+            if (roleDisplay) {
+                roleDisplay.innerHTML = '';
+                
+                if (role === 'super_admin') {
+                    // Para super admin, mantener el badge rojo
+                    const roleBadge = document.createElement('span');
+                    roleBadge.className = 'role-badge role-super-admin';
+                    roleBadge.textContent = 'Administrador Principal';
+                    roleDisplay.appendChild(roleBadge);
+                } else if (role === 'admin') {
+                    // Para admin, mantener el badge azul
+                    const roleBadge = document.createElement('span');
+                    roleBadge.className = 'role-badge role-admin';
+                    roleBadge.textContent = 'Administrador';
+                    roleDisplay.appendChild(roleBadge);
+                } else {
+                    // Para usuario normal, solo mostrar la palabra "Usuario" en texto plano con color verde
+                    roleDisplay.textContent = 'Usuario';
+                    roleDisplay.style.color = '#28a745'; // Verde para usuarios normales
+                    roleDisplay.style.fontWeight = '600';
+                    roleDisplay.style.marginLeft = '8px';
+                }
+            }
+            
+            // Aplicar restricciones según el rol
+            applyRoleRestrictions(role);
+            
+            // Si es super_admin, cargar la lista de usuarios
+            if (role === 'super_admin') {
+                // Aquí iría la función para cargar usuarios si la tuvieras
+            }
+        } else {
+            console.log('No hay sesión activa');
+            // Usuario no autenticado - muestra el login
+            loginScreen.style.display = 'block';
+            mainPanel.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error al verificar sesión:', error);
+        showError('Error al verificar sesión: ' + error.message);
+    }
+}
         
         // Función para aplicar restricciones según el rol del usuario
         function applyRoleRestrictions(role) {
