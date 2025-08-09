@@ -1,431 +1,270 @@
-		<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión de Personal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .form-section {
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            background-color: #f9fafb;
-        }
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #1f2937;
-        }
-        .form-input, .form-select, .form-textarea {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
-            transition: border-color 0.2s;
-        }
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-        .readonly {
-            background-color: #f3f4f6;
-            cursor: not-allowed;
-        }
-        .hidden {
-            display: none;
-        }
-        .login-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .card {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Gestión de Expedientes</title>
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+:root {
+--primary-color: #003366;
+--secondary-color: #0066CC;
+--light-color: #f8f9fa;
+--dark-color: #212529;
+}
+body {
+background-color: #f5f7fa;
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+min-height: 100vh;
+}
+.login-container {
+max-width: 450px;
+margin: 20px auto 50px;
+background: white;
+border-radius: 15px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+overflow: hidden;
+}
+.header {
+background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+color: white;
+padding: 25px 20px;
+text-align: center;
+margin-bottom: 15px;
+}
+.centered-title {
+color: white;
+font-size: 2.5rem;
+font-weight: 700;
+letter-spacing: 1px;
+margin-bottom: 10px;
+text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+position: relative;
+display: inline-block;
+padding: 0 20px;
+}
+.centered-title:after {
+content: "";
+position: absolute;
+bottom: -8px;
+left: 50%;
+transform: translateX(-50%);
+width: 80px;
+height: 3px;
+background: linear-gradient(to right, white, rgba(255, 255, 255, 0.5));
+border-radius: 1.5px;
+}
+.centered-subtitle {
+color: rgba(255, 255, 255, 0.92);
+font-size: 1.25rem;
+font-weight: 400;
+max-width: 700px;
+margin: 0 auto;
+padding: 0 15px;
+opacity: 0.9;
+letter-spacing: 0.3px;
+line-height: 1.5;
+text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.logo-container {
+padding: 15px 0;
+text-align: center;
+}
+.logo-container img {
+max-width: 200px;
+height: auto;
+max-height: 80px;
+}
+.form-floating > label {
+padding: 1rem 0.75rem;
+}
+.form-floating > .form-control,
+.form-floating > .form-select {
+padding: 1rem 0.75rem;
+}
+.btn-primary {
+background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+border: none;
+padding: 0.75rem 0;
+font-weight: 600;
+letter-spacing: 0.5px;
+}
+.btn-primary:hover {
+transform: translateY(-2px);
+box-shadow: 0 5px 15px rgba(0, 51, 102, 0.2);
+background: linear-gradient(to right, #002244, #0055AA);
+}
+.error-message {
+background-color: #fff5f5;
+border-left: 4px solid #dc3545;
+padding: 10px 15px;
+margin-bottom: 20px;
+border-radius: 0 4px 4px 0;
+display: none;
+}
+.validation-error {
+color: #dc3545;
+font-size: 0.875em;
+margin-top: 0.25rem;
+display: none;
+}
+.is-invalid + .validation-error {
+display: block;
+}
+.security-info {
+background: rgba(0, 51, 102, 0.05);
+border-left: 3px solid var(--secondary-color);
+padding: 12px 20px;
+border-radius: 8px;
+margin-top: 20px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 14px;
+color: #6c757d;
+text-align: center;
+}
+.security-icon {
+color: var(--secondary-color);
+margin-right: 8px;
+font-size: 1.1rem;
+}
+@media (max-width: 576px) {
+.login-container {
+padding: 30px 20px;
+margin: 20px;
+}
+}
+</style>
 </head>
-<body class="bg-gray-100">
-    <!-- Login Page -->
-    <div id="loginPage" class="min-h-screen flex items-center justify-center login-container">
-        <div class="max-w-md w-full space-y-8 p-10 bg-white rounded-xl card">
-            <div class="text-center">
-                <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
-                    Iniciar Sesión
-                </h2>
-                <p class="mt-2 text-sm text-gray-600">
-                    Accede al sistema de gestión de personal
-                </p>
-            </div>
-            <form id="loginForm" class="mt-8 space-y-6">
-                <div class="rounded-md shadow-sm -space-y-px">
-                    <div class="form-group">
-                        <label for="username" class="form-label">Usuario</label>
-                        <input id="username" name="username" type="text" required class="form-input" placeholder="Ingrese su usuario">
-                    </div>
-                    <div class="form-group">
-                        <label for="password" class="form-label">Contraseña</label>
-                        <input id="password" name="password" type="password" required class="form-input" placeholder="Ingrese su contraseña">
-                    </div>
-                </div>
+<body>
+<!-- Header con título centrado -->
+<div class="header" id="main-title-section">
+<h1 class="centered-title">SISTEMA DE GESTIÓN DE EXPEDIENTES</h1>
+<p class="centered-subtitle">Inicie sesión para acceder al sistema</p>
+</div>
+<!-- Pantalla de Login -->
+<div class="container" id="login-screen">
+<div class="login-container">
+<div class="card border-0">
+<div class="card-body p-4">
+<!-- Contenedor del logo -->
+<div class="logo-container text-center mb-4">
+<img src="https://raw.githubusercontent.com/gamakingrock/sistema-expedientes/main/images/policia-nacional-bolivariana.png"
+alt="Logo Policía Nacional Bolivariana"
+class="img-fluid">
+</div>
+<h2 class="card-title text-center mb-4">Iniciar Sesión</h2>
+<div id="error-message" class="error-message">
+<i class="fas fa-exclamation-circle me-2"></i><span id="error-text"></span>
+</div>
+<form id="login-form">
+<div class="mb-3">
+<div class="form-floating">
+<input type="email" class="form-control" id="email" required>
+<label for="email"><i class="fas fa-envelope me-2"></i>Correo electrónico</label>
+</div>
+</div>
+<div class="mb-3">
+<div class="form-floating">
+<input type="password" class="form-control" id="password" required>
+<label for="password"><i class="fas fa-lock me-2"></i>Contraseña</label>
+</div>
+</div>
+<button type="submit" class="btn btn-primary w-100">
+<span id="login-spinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
+<span id="login-text">Iniciar Sesión</span>
+</button>
+</form>
+</div>
+</div>
+<!-- Información de seguridad -->
+<div class="security-info">
+<i class="fas fa-shield-alt security-icon"></i>
+<span class="security-text">Su información está protegida con encriptación de extremo a extremo</span>
+</div>
+</div>
+</div>
 
-                <div>
-                    <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
-                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                            <i class="fas fa-sign-in-alt text-indigo-300"></i>
-                        </span>
-                        Iniciar Sesión
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Elementos del DOM
+const loginForm = document.getElementById('login-form');
+const errorMessage = document.getElementById('error-message');
+const errorText = document.getElementById('error-text');
+const loginSpinner = document.getElementById('login-spinner');
+const loginText = document.getElementById('login-text');
 
-    <!-- Main Dashboard -->
-    <div id="dashboard" class="hidden">
-        <!-- Header -->
-        <header class="bg-white shadow">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                <h1 class="text-2xl font-bold text-gray-900">Sistema de Gestión de Personal</h1>
-                <div class="flex items-center space-x-4">
-                    <span id="currentUser" class="text-gray-700 font-medium"></span>
-                    <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors duration-200 flex items-center">
-                        <i class="fas fa-sign-out-alt mr-2"></i>
-                        Cerrar Sesión
-                    </button>
-                </div>
-            </div>
-        </header>
+// Función para mostrar mensajes de error
+function showError(message) {
+if (errorText && errorMessage) {
+errorText.textContent = message;
+errorMessage.style.display = 'block';
+}
+}
 
-        <!-- Navigation -->
-        <nav class="bg-gray-800 text-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex space-x-8">
-                    <a href="#" class="py-4 px-3 font-medium hover:bg-gray-700 rounded-t-md">Inicio</a>
-                    <a href="#" id="registerPersonalLink" class="py-4 px-3 font-medium hover:bg-gray-700 rounded-t-md hidden">Registrar Personal</a>
-                </div>
-            </div>
-        </nav>
+// Función para ocultar mensajes de error
+function hideError() {
+if (errorMessage) {
+errorMessage.style.display = 'none';
+}
+}
 
-        <!-- Main Content -->
-        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <div id="homeContent" class="px-4 py-6 sm:px-0">
-                <div class="border-4 border-dashed border-gray-200 rounded-lg p-8 text-center">
-                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Bienvenido al Sistema de Gestión de Personal</h2>
-                    <p class="text-gray-600">Seleccione una opción del menú para comenzar.</p>
-                </div>
-            </div>
+// Función para iniciar sesión (simulada)
+async function login(e) {
+e.preventDefault();
+const email = document.getElementById('email').value;
+const password = document.getElementById('password').value;
 
-            <!-- Registrar Personal Form -->
-            <div id="registerPersonalForm" class="hidden px-4 py-6 sm:px-0">
-                <div class="md:grid md:grid-cols-2 md:gap-6">
-                    <div class="md:col-span-1">
-                        <div class="px-4 sm:px-0">
-                            <h3 class="text-lg font-medium leading-6 text-gray-900">Información del Funcionario</h3>
-                            <p class="mt-1 text-sm text-gray-600">Ingrese los datos personales del funcionario.</p>
-                        </div>
-                    </div>
-                    <div class="mt-5 md:mt-0 md:col-span-1">
-                        <form id="personalForm">
-                            <div class="form-section">
-                                <div class="form-group">
-                                    <label class="form-label">Foto</label>
-                                    <input type="file" accept="image/*" class="form-input">
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Nombres</label>
-                                        <input type="text" class="form-input" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Apellidos</label>
-                                        <input type="text" class="form-input" required>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Edad</label>
-                                        <input type="number" class="form-input" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Rango</label>
-                                        <input type="text" class="form-input" required>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Sexo</label>
-                                        <select class="form-select" required>
-                                            <option value="">Seleccione</option>
-                                            <option value="masculino">Masculino</option>
-                                            <option value="femenino">Femenino</option>
-                                            <option value="otro">Otro</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Cédula de Identidad</label>
-                                        <input type="text" class="form-input" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Fecha de Nacimiento</label>
-                                    <input type="date" class="form-input" required>
-                                </div>
-                            </div>
+try {
+hideError();
 
-                            <div class="form-section">
-                                <h4 class="text-md font-medium text-gray-900 mb-4">Detalles del Caso</h4>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Fecha de Inicio</label>
-                                        <input type="date" class="form-input" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Tipo de Expediente</label>
-                                        <select class="form-select" required>
-                                            <option value="">Seleccione</option>
-                                            <option value="disciplinario">Disciplinario</option>
-                                            <option value="penal">Penal</option>
-                                            <option value="administrativo">Administrativo</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">ICAP (Oficina)</label>
-                                        <input type="text" class="form-input" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Condición del Funcionario en el Caso</label>
-                                        <select class="form-select" required>
-                                            <option value="">Seleccione</option>
-                                            <option value="investigado">Investigado</option>
-                                            <option value="detenido">Detenido</option>
-                                            <option value="procesado">Procesado</option>
-                                            <option value="condenado">Condenado</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Año</label>
-                                        <input type="number" class="form-input" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Servicio donde Labora el Funcionario</label>
-                                        <input type="text" class="form-input" required>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Tipo de Falta</label>
-                                        <select class="form-select" required>
-                                            <option value="">Seleccione</option>
-                                            <option value="leve">Leve</option>
-                                            <option value="grave">Grave</option>
-                                            <option value="muy_grave">Muy Grave</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Origen de la Falta</label>
-                                        <select class="form-select" required>
-                                            <option value="">Seleccione</option>
-                                            <option value="interna">Interna</option>
-                                            <option value="externa">Externa</option>
-                                            <option value="ciudadano">Denuncia Ciudadana</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Falta</label>
-                                    <input type="text" class="form-input" required>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Denunciante</label>
-                                        <input type="text" class="form-input">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Funcionario Detenido</label>
-                                        <select class="form-select">
-                                            <option value="">Seleccione</option>
-                                            <option value="si">Sí</option>
-                                            <option value="no">No</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Estatus</label>
-                                        <select class="form-select" required>
-                                            <option value="">Seleccione</option>
-                                            <option value="abierto">Abierto</option>
-                                            <option value="en_proceso">En Proceso</option>
-                                            <option value="cerrado">Cerrado</option>
-                                            <option value="archivado">Archivado</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Decisión</label>
-                                        <select class="form-select" required>
-                                            <option value="">Seleccione</option>
-                                            <option value="sancion">Sanción</option>
-                                            <option value="absolucion">Absolución</option>
-                                            <option value="sobreseimiento">Sobreseimiento</option>
-                                            <option value="otros">Otros</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
+// Mostrar spinner de carga
+loginSpinner.classList.remove('d-none');
+loginText.textContent = 'Iniciando sesión...';
 
-                            <div class="form-section">
-                                <h4 class="text-md font-medium text-gray-900 mb-4">Información de Solo Lectura</h4>
-                                <div class="form-group">
-                                    <label class="form-label">Expediente Penal</label>
-                                    <input type="text" class="form-input readonly" readonly>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Reseña del Caso</label>
-                                    <textarea class="form-textarea readonly" rows="4" readonly></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Causa</label>
-                                    <input type="text" class="form-input readonly" readonly>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Registrado por Sustanciador</label>
-                                    <input type="text" class="form-input readonly" readonly>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Remisión</label>
-                                        <input type="text" class="form-input readonly" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Expediente Número</label>
-                                        <input type="text" class="form-input readonly" readonly>
-                                    </div>
-                                </div>
-                            </div>
+// Simular validación
+if (!email || !password) {
+throw new Error("Por favor, complete todos los campos");
+}
 
-                            <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
-                                <button type="button" id="cancelBtn" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md mr-2 transition-colors duration-200">
-                                    Cancelar
-                                </button>
-                                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200">
-                                    Guardar Registro
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+if (!email.includes('@')) {
+throw new Error("El formato del correo electrónico es inválido");
+}
 
-    <script>
-        // Simulación de base de datos
-        const users = [
-            { username: 'admin', password: 'admin123', role: 'admin' },
-            { username: 'usuario', password: 'user123', role: 'user' }
-        ];
+// Simular delay de la llamada al servidor
+await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Elementos del DOM
-        const loginPage = document.getElementById('loginPage');
-        const dashboard = document.getElementById('dashboard');
-        const loginForm = document.getElementById('loginForm');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const registerPersonalLink = document.getElementById('registerPersonalLink');
-        const currentUser = document.getElementById('currentUser');
-        const personalForm = document.getElementById('personalForm');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const registerPersonalForm = document.getElementById('registerPersonalForm');
-        const homeContent = document.getElementById('homeContent');
+// Simular éxito
+alert("Inicio de sesión exitoso");
 
-        // Manejo del login
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            const user = users.find(u => u.username === username && u.password === password);
-            
-            if (user) {
-                loginPage.classList.add('hidden');
-                dashboard.classList.remove('hidden');
-                currentUser.textContent = `Usuario: ${username} (${user.role})`;
-                
-                // Mostrar u ocultar opciones según el rol
-                if (user.role === 'admin') {
-                    registerPersonalLink.classList.remove('hidden');
-                } else {
-                    registerPersonalLink.classList.add('hidden');
-                }
-                
-                // Limpiar campos
-                loginForm.reset();
-            } else {
-                alert('Usuario o contraseña incorrectos');
-            }
-        });
+// Restaurar el estado del botón
+loginSpinner.classList.add('d-none');
+loginText.textContent = 'Iniciar Sesión';
 
-        // Manejo del logout
-        logoutBtn.addEventListener('click', function() {
-            dashboard.classList.add('hidden');
-            loginPage.classList.remove('hidden');
-            registerPersonalForm.classList.add('hidden');
-            homeContent.classList.remove('hidden');
-            loginForm.reset();
-        });
+// Limpiar campos
+document.getElementById('email').value = '';
+document.getElementById('password').value = '';
 
-        // Navegación
-        registerPersonalLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            homeContent.classList.add('hidden');
-            registerPersonalForm.classList.remove('hidden');
-        });
+} catch (error) {
+// Mostrar error
+showError(error.message);
 
-        cancelBtn.addEventListener('click', function() {
-            registerPersonalForm.classList.add('hidden');
-            homeContent.classList.remove('hidden');
-            personalForm.reset();
-        });
+// Restaurar el estado del botón
+loginSpinner.classList.add('d-none');
+loginText.textContent = 'Iniciar Sesión';
+}
+}
 
-        // Manejo del formulario de registro
-        personalForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Aquí iría la lógica para guardar los datos
-            // En una implementación real, se enviarían a una API
-            
-            alert('Registro guardado exitosamente');
-            personalForm.reset();
-            
-            // Regresar al inicio
-            registerPersonalForm.classList.add('hidden');
-            homeContent.classList.remove('hidden');
-        });
-
-        // Prevenir el envío del formulario de login con Enter
-        document.getElementById('username').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('password').focus();
-            }
-        });
-
-        document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                loginForm.dispatchEvent(new Event('submit'));
-            }
-        });
-    </script>
-</body>
+// Configurar evento de submit
+document.addEventListener('DOMContentLoaded', () => {
+if (loginForm) {
+loginForm.addEventListener('submit', login);
+}
+});
+</script></body>
 </html>
