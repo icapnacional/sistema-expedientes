@@ -1,270 +1,319 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema de Gestión de Expedientes</title>
-<!-- Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<style>
-:root {
---primary-color: #003366;
---secondary-color: #0066CC;
---light-color: #f8f9fa;
---dark-color: #212529;
-}
-body {
-background-color: #f5f7fa;
-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-min-height: 100vh;
-}
-.login-container {
-max-width: 450px;
-margin: 20px auto 50px;
-background: white;
-border-radius: 15px;
-box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-overflow: hidden;
-}
-.header {
-background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-color: white;
-padding: 25px 20px;
-text-align: center;
-margin-bottom: 15px;
-}
-.centered-title {
-color: white;
-font-size: 2.5rem;
-font-weight: 700;
-letter-spacing: 1px;
-margin-bottom: 10px;
-text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-position: relative;
-display: inline-block;
-padding: 0 20px;
-}
-.centered-title:after {
-content: "";
-position: absolute;
-bottom: -8px;
-left: 50%;
-transform: translateX(-50%);
-width: 80px;
-height: 3px;
-background: linear-gradient(to right, white, rgba(255, 255, 255, 0.5));
-border-radius: 1.5px;
-}
-.centered-subtitle {
-color: rgba(255, 255, 255, 0.92);
-font-size: 1.25rem;
-font-weight: 400;
-max-width: 700px;
-margin: 0 auto;
-padding: 0 15px;
-opacity: 0.9;
-letter-spacing: 0.3px;
-line-height: 1.5;
-text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-.logo-container {
-padding: 15px 0;
-text-align: center;
-}
-.logo-container img {
-max-width: 200px;
-height: auto;
-max-height: 80px;
-}
-.form-floating > label {
-padding: 1rem 0.75rem;
-}
-.form-floating > .form-control,
-.form-floating > .form-select {
-padding: 1rem 0.75rem;
-}
-.btn-primary {
-background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-border: none;
-padding: 0.75rem 0;
-font-weight: 600;
-letter-spacing: 0.5px;
-}
-.btn-primary:hover {
-transform: translateY(-2px);
-box-shadow: 0 5px 15px rgba(0, 51, 102, 0.2);
-background: linear-gradient(to right, #002244, #0055AA);
-}
-.error-message {
-background-color: #fff5f5;
-border-left: 4px solid #dc3545;
-padding: 10px 15px;
-margin-bottom: 20px;
-border-radius: 0 4px 4px 0;
-display: none;
-}
-.validation-error {
-color: #dc3545;
-font-size: 0.875em;
-margin-top: 0.25rem;
-display: none;
-}
-.is-invalid + .validation-error {
-display: block;
-}
-.security-info {
-background: rgba(0, 51, 102, 0.05);
-border-left: 3px solid var(--secondary-color);
-padding: 12px 20px;
-border-radius: 8px;
-margin-top: 20px;
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 14px;
-color: #6c757d;
-text-align: center;
-}
-.security-icon {
-color: var(--secondary-color);
-margin-right: 8px;
-font-size: 1.1rem;
-}
-@media (max-width: 576px) {
-.login-container {
-padding: 30px 20px;
-margin: 20px;
-}
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Expedientes</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #003366;
+            --secondary-color: #0066CC;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+        }
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        .login-container {
+            max-width: 450px;
+            margin: 20px auto 50px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .centered-title {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            position: relative;
+            display: inline-block;
+            padding: 0 20px;
+        }
+        .centered-title:after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(to right, white, rgba(255, 255, 255, 0.5));
+            border-radius: 1.5px;
+        }
+        .centered-subtitle {
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 1.25rem;
+            font-weight: 400;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 15px;
+            opacity: 0.9;
+            letter-spacing: 0.3px;
+            line-height: 1.5;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        .logo-container {
+            padding: 15px 0;
+            text-align: center;
+        }
+        .logo-container img {
+            max-width: 200px;
+            height: auto;
+            max-height: 80px;
+        }
+        .form-floating > label {
+            padding: 1rem 0.75rem;
+        }
+        .form-floating > .form-control,
+        .form-floating > .form-select {
+            padding: 1rem 0.75rem;
+        }
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border: none;
+            padding: 0.75rem 0;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 51, 102, 0.2);
+            background: linear-gradient(to right, #002244, #0055AA);
+        }
+        .error-message {
+            background-color: #fff5f5;
+            border-left: 4px solid #dc3545;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-radius: 0 4px 4px 0;
+            display: none;
+        }
+        .validation-error {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        .is-invalid + .validation-error {
+            display: block;
+        }
+        .security-info {
+            background: rgba(0, 51, 102, 0.05);
+            border-left: 3px solid var(--secondary-color);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #6c757d;
+            text-align: center;
+        }
+        .security-icon {
+            color: var(--secondary-color);
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+        @media (max-width: 576px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-<!-- Header con título centrado -->
-<div class="header" id="main-title-section">
-<h1 class="centered-title">SISTEMA DE GESTIÓN DE EXPEDIENTES</h1>
-<p class="centered-subtitle">Inicie sesión para acceder al sistema</p>
-</div>
-<!-- Pantalla de Login -->
-<div class="container" id="login-screen">
-<div class="login-container">
-<div class="card border-0">
-<div class="card-body p-4">
-<!-- Contenedor del logo -->
-<div class="logo-container text-center mb-4">
-<img src="https://raw.githubusercontent.com/gamakingrock/sistema-expedientes/main/images/policia-nacional-bolivariana.png"
-alt="Logo Policía Nacional Bolivariana"
-class="img-fluid">
-</div>
-<h2 class="card-title text-center mb-4">Iniciar Sesión</h2>
-<div id="error-message" class="error-message">
-<i class="fas fa-exclamation-circle me-2"></i><span id="error-text"></span>
-</div>
-<form id="login-form">
-<div class="mb-3">
-<div class="form-floating">
-<input type="email" class="form-control" id="email" required>
-<label for="email"><i class="fas fa-envelope me-2"></i>Correo electrónico</label>
-</div>
-</div>
-<div class="mb-3">
-<div class="form-floating">
-<input type="password" class="form-control" id="password" required>
-<label for="password"><i class="fas fa-lock me-2"></i>Contraseña</label>
-</div>
-</div>
-<button type="submit" class="btn btn-primary w-100">
-<span id="login-spinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
-<span id="login-text">Iniciar Sesión</span>
-</button>
-</form>
-</div>
-</div>
-<!-- Información de seguridad -->
-<div class="security-info">
-<i class="fas fa-shield-alt security-icon"></i>
-<span class="security-text">Su información está protegida con encriptación de extremo a extremo</span>
-</div>
-</div>
-</div>
+    <!-- Header con título centrado -->
+    <div class="header" id="main-title-section">
+        <h1 class="centered-title">SISTEMA DE GESTIÓN DE EXPEDIENTES</h1>
+        <p class="centered-subtitle">Inicie sesión para acceder al sistema</p>
+    </div>
+    <!-- Pantalla de Login -->
+    <div class="container" id="login-screen">
+        <div class="login-container">
+            <div class="card border-0">
+                <div class="card-body p-4">
+                    <!-- Contenedor del logo -->
+                    <div class="logo-container text-center mb-4">
+                        <img src="https://raw.githubusercontent.com/gamakingrock/sistema-expedientes/main/images/policia-nacional-bolivariana.png" 
+                             alt="Logo Policía Nacional Bolivariana" 
+                             class="img-fluid">
+                    </div>
+                    <h2 class="card-title text-center mb-4">Iniciar Sesión</h2>
+                    <div id="error-message" class="error-message">
+                        <i class="fas fa-exclamation-circle me-2"></i><span id="error-text"></span>
+                    </div>
+                    <form id="login-form">
+                        <div class="mb-3">
+                            <div class="form-floating">
+                                <input type="email" class="form-control" id="email" required>
+                                <label for="email"><i class="fas fa-envelope me-2"></i>Correo electrónico</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-floating">
+                                <input type="password" class="form-control" id="password" required>
+                                <label for="password"><i class="fas fa-lock me-2"></i>Contraseña</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <span id="login-spinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
+                            <span id="login-text">Iniciar Sesión</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <!-- Información de seguridad -->
+            <div class="security-info">
+                <i class="fas fa-shield-alt security-icon"></i>
+                <span class="security-text">Su información está protegida con encriptación de extremo a extremo</span>
+            </div>
+        </div>
+    </div>
 
-<!-- Bootstrap JS Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-// Elementos del DOM
-const loginForm = document.getElementById('login-form');
-const errorMessage = document.getElementById('error-message');
-const errorText = document.getElementById('error-text');
-const loginSpinner = document.getElementById('login-spinner');
-const loginText = document.getElementById('login-text');
-
-// Función para mostrar mensajes de error
-function showError(message) {
-if (errorText && errorMessage) {
-errorText.textContent = message;
-errorMessage.style.display = 'block';
-}
-}
-
-// Función para ocultar mensajes de error
-function hideError() {
-if (errorMessage) {
-errorMessage.style.display = 'none';
-}
-}
-
-// Función para iniciar sesión (simulada)
-async function login(e) {
-e.preventDefault();
-const email = document.getElementById('email').value;
-const password = document.getElementById('password').value;
-
-try {
-hideError();
-
-// Mostrar spinner de carga
-loginSpinner.classList.remove('d-none');
-loginText.textContent = 'Iniciando sesión...';
-
-// Simular validación
-if (!email || !password) {
-throw new Error("Por favor, complete todos los campos");
-}
-
-if (!email.includes('@')) {
-throw new Error("El formato del correo electrónico es inválido");
-}
-
-// Simular delay de la llamada al servidor
-await new Promise(resolve => setTimeout(resolve, 1000));
-
-// Simular éxito
-alert("Inicio de sesión exitoso");
-
-// Restaurar el estado del botón
-loginSpinner.classList.add('d-none');
-loginText.textContent = 'Iniciar Sesión';
-
-// Limpiar campos
-document.getElementById('email').value = '';
-document.getElementById('password').value = '';
-
-} catch (error) {
-// Mostrar error
-showError(error.message);
-
-// Restaurar el estado del botón
-loginSpinner.classList.add('d-none');
-loginText.textContent = 'Iniciar Sesión';
-}
-}
-
-// Configurar evento de submit
-document.addEventListener('DOMContentLoaded', () => {
-if (loginForm) {
-loginForm.addEventListener('submit', login);
-}
-});
-</script></body>
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuración de Supabase (¡REEMPLAZA CON TUS CREDENCIALES!)
+        const supabaseUrl = 'https://stwriaubepeugobgyxjt.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+        
+        // Variables globales
+        let supabaseClient = null;
+        let isSupabaseConfigured = false;
+        
+        // Elementos del DOM
+        const loginForm = document.getElementById('login-form');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+        const loginSpinner = document.getElementById('login-spinner');
+        const loginText = document.getElementById('login-text');
+        
+        // Función para mostrar mensajes de error
+        function showError(message) {
+            if (errorText && errorMessage) {
+                errorText.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+            console.error('Error:', message);
+        }
+        
+        // Función para ocultar mensajes de error
+        function hideError() {
+            if (errorMessage) {
+                errorMessage.style.display = 'none';
+            }
+        }
+        
+        // Función para inicializar Supabase
+        function initSupabase() {
+            try {
+                // Verificar si las credenciales son placeholders
+                if (supabaseUrl.includes('TU_URL_DE_SUPABASE') || 
+                    supabaseKey.includes('TU_CLAVE_ANONIMA')) {
+                    throw new Error("Debes reemplazar las credenciales de Supabase. Abre este archivo en un editor de texto y reemplaza los valores de supabaseUrl y supabaseKey con los de tu proyecto.");
+                }
+                
+                // Inicializar Supabase
+                const { createClient } = supabase;
+                supabaseClient = createClient(supabaseUrl, supabaseKey);
+                isSupabaseConfigured = true;
+                console.log("Supabase inicializado correctamente");
+            } catch (error) {
+                console.error("Error al inicializar Supabase:", error);
+                showError("Error de configuración: " + error.message);
+            }
+        }
+        
+        // Función para iniciar sesión
+        async function login(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                hideError();
+                
+                // Mostrar spinner de carga
+                loginSpinner.classList.remove('d-none');
+                loginText.textContent = 'Iniciando sesión...';
+                
+                // Verificar si Supabase está configurado
+                if (!isSupabaseConfigured) {
+                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
+                }
+                
+                // Intentar iniciar sesión
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) {
+                    console.error('Error de autenticación:', error);
+                    
+                    // Manejo específico de errores
+                    let errorMessageText = 'Error: ' + error.message;
+                    if (error.message.includes('Invalid login credentials')) {
+                        errorMessageText = 'Credenciales inválidas. Verifique su correo y contraseña.';
+                    } else if (error.message.includes('Email not confirmed')) {
+                        errorMessageText = 'Correo no confirmado. Por favor, revise su bandeja de entrada y confirme su cuenta.';
+                    } else if (error.message.includes('Email rate limit exceeded')) {
+                        errorMessageText = 'Demasiados intentos. Por favor, intente más tarde.';
+                    }
+                    
+                    throw new Error(errorMessageText);
+                }
+                
+                // Login exitoso
+                console.log('Inicio de sesión exitoso', data);
+                alert("Inicio de sesión exitoso. ¡Bienvenido!");
+                
+                // Limpiar campos
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
+                
+            } catch (error) {
+                // Mostrar error
+                showError(error.message);
+                console.error('Error al iniciar sesión:', error);
+            } finally {
+                // Restaurar el estado del botón
+                loginSpinner.classList.add('d-none');
+                loginText.textContent = 'Iniciar Sesión';
+            }
+        }
+        
+        // Configurar evento de submit
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar Supabase
+            initSupabase();
+            
+            // Configurar evento de submit
+            if (loginForm) {
+                loginForm.addEventListener('submit', login);
+            }
+        });
+    </script>
+</body>
 </html>
