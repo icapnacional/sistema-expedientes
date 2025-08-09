@@ -1343,7 +1343,7 @@ async function showManageDropdownModal(field) {
             }
         }
         
-       // Función para eliminar una opción
+     // Función para eliminar una opción (CORREGIDA - SOLUCIÓN DEFINITIVA)
 async function deleteOption(id) {
     if (!confirm('¿Está seguro de que desea eliminar esta opción?')) {
         return;
@@ -1355,15 +1355,28 @@ async function deleteOption(id) {
             throw new Error("Supabase no está configurado. Verifica tus credenciales.");
         }
         
-        // Manejo seguro de la sesión
-        const {  sessionData, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError || !sessionData?.session) {
+        // Manejo SEGURO y CORRECTO de la sesión
+        const { data, error: sessionError } = await supabaseClient.auth.getSession();
+        
+        // Verificación CORRECTA de la sesión
+        if (sessionError) {
+            throw new Error(`Error de sesión: ${sessionError.message}`);
+        }
+        
+        if (!data || !data.session) {
             throw new Error("No hay sesión activa. Por favor, inicie sesión.");
         }
         
-        // Verificar el rol del usuario
-        const userRole = sessionData.session.user.app_metadata?.role || 
-                         sessionData.session.user.user_metadata?.role || 'user';
+        // Obtener el usuario de la sesión
+        const user = data.session.user;
+        
+        // Verificar el rol del usuario (USANDO app_metadata PRIMERO)
+        const userRole = user.app_metadata?.role || 
+                         user.user_metadata?.role || 'user';
+        
+        console.log('ROL ACTUAL:', userRole);
+        console.log('APP METADATA COMPLETO:', user.app_metadata);
+        console.log('USER METADATA COMPLETO:', user.user_metadata);
         
         // Si no es admin o super_admin, mostrar advertencia
         if (userRole !== 'admin' && userRole !== 'super_admin') {
@@ -1376,7 +1389,10 @@ async function deleteOption(id) {
             .delete()
             .eq('id', id);
         
-        if (error) throw error;
+        if (error) {
+            console.error('Error detallado al eliminar:', error);
+            throw error;
+        }
         
         // Recargar opciones
         await loadDropdownOptionsForManagement(currentDropdownField);
@@ -2022,7 +2038,17 @@ async function deleteOption(id) {
                         }
                     });
                 }
-                
+                // Agregar listener para cambios de autenticación
+if (supabaseClient) {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        console.log('Cambio de estado de autenticación:', event, session);
+        if (event === 'SIGNED_OUT') {
+            // Redirigir al login si se cierra sesión
+            loginScreen.style.display = 'block';
+            mainPanel.style.display = 'none';
+        }
+    });
+}
                 // Configurar el evento de submit del formulario de login
                 if (loginForm) {
                     loginForm.addEventListener('submit', login);
