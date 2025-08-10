@@ -1602,112 +1602,90 @@ async function checkUserRole() {
                 return false;
             }
         }
-        // Función para verificar la sesión
-        async function checkSession() {
-            try {
-                console.log('Verificando sesión...');
-                // Verificar si Supabase está configurado
-                if (!isSupabaseConfigured) {
-                    console.error('Supabase no está configurado. Verifica tus credenciales.');
-                    showError('Supabase no está configurado. Verifica tus credenciales.');
-                    return;
-                }
-                // Manejo seguro de la sesión
-                const { data, error } = await supabaseClient.auth.getSession();
-                if (error) {
-                    console.error('Error al obtener sesión:', error);
-                    throw error;
-                }
-                if (data?.session) {
-                    console.log('Sesión encontrada:', data.session);
-                    // Usuario autenticado - muestra el panel principal
-                    loginScreen.style.display = 'none';
-                    mainPanel.style.display = 'block';
-                    // Muestra el nombre del usuario
-                    const user = data.session.user;
-                    if (userNameElement) {
-                        // Primero intentar obtener el nombre de la tabla users
-                        const { data: userData, error: userError } = await supabaseClient
-                            .from('users')
-                            .select('full_name')
-                            .eq('id', user.id)
-                            .single();
-                        if (!userError && userData?.full_name) {
-                            userNameElement.textContent = userData.full_name;
-                        } else {
-                            // Manejo seguro de user_metadata
-                            const fullName = user.user_metadata?.full_name || 
-                                            user.user_metadata?.fullName || 
-                                            user.user_metadata?.name ||
-                                            user.email?.split('@')[0] || 'Usuario';
-                            userNameElement.textContent = fullName;
-                            console.log('--- DIAGNÓSTICO DE ROL ---');
-console.log('ID del usuario:', user.id);
-console.log('Email del usuario:', user.email);
-
-// Verificar directamente en la tabla users
-const { data: directUserData, error: directUserError } = await supabaseClient
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-if (directUserError) {
-    console.error('ERROR AL CONSULTAR TABLA USERS:', directUserError);
-} else {
-    console.log('ROL DIRECTO DE TABLA USERS:', directUserData?.role);
-}
-
-// Verificar metadatos
-console.log('App metadata:', user.app_metadata);
-console.log('User metadata:', user.user_metadata);
-console.log('-------------------------');
-                        }
-                    }
-                    // Verificar el rol del usuario
-                    const { role } = await checkUserRole();
-                    currentUserRole = role;
-                    console.log('ROL DEL USUARIO:', role);
-                    // Mostrar el rol según el tipo de usuario
-                    if (roleDisplay) {
-                        roleDisplay.innerHTML = '';
-                        if (role === 'super_admin') {
-                            // Para super admin, mantener el badge rojo
-                            const roleBadge = document.createElement('span');
-                            roleBadge.className = 'role-badge role-super-admin';
-                            roleBadge.textContent = 'Administrador Principal';
-                            roleDisplay.appendChild(roleBadge);
-                        } else if (role === 'admin') {
-                            // Para admin, mantener el badge azul
-                            const roleBadge = document.createElement('span');
-                            roleBadge.className = 'role-badge role-admin';
-                            roleBadge.textContent = 'Administrador';
-                            roleDisplay.appendChild(roleBadge);
-                        } else {
-                            // Para usuario normal, solo mostrar la palabra "Usuario" en texto plano con color verde
-                            roleDisplay.textContent = 'Usuario';
-                            roleDisplay.style.color = '#28a745'; // Verde para usuarios normales
-                            roleDisplay.style.fontWeight = '600';
-                            roleDisplay.style.marginLeft = '8px';
-                        }
-                    }
-                    // Aplicar restricciones según el rol
-                    applyRoleRestrictions(role);
-                    // Si es super_admin, cargar la lista de usuarios
-                    if (role === 'super_admin') {
-                        await loadUsers();
-                    }
-                } else {
-                    console.log('No hay sesión activa');
-                    // Usuario no autenticado - muestra el login
-                    loginScreen.style.display = 'block';
-                    mainPanel.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error al verificar sesión:', error);
-                showError('Error al verificar sesión: ' + error.message);
-            }
+       async function checkSession() {
+    try {
+        console.log('Verificando sesión...');
+        // Verificar si Supabase está configurado
+        if (!isSupabaseConfigured) {
+            console.error('Supabase no está configurado. Verifica tus credenciales.');
+            showError('Supabase no está configurado. Verifica tus credenciales.');
+            return;
         }
+        // Manejo seguro de la sesión
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) {
+            console.error('Error al obtener sesión:', error);
+            throw error;
+        }
+        if (data?.session) {
+            console.log('Sesión encontrada:', data.session);
+            // Usuario autenticado - muestra el panel principal
+            loginScreen.style.display = 'none';
+            mainPanel.style.display = 'block';
+            // Muestra el nombre del usuario
+            const user = data.session.user;
+            if (userNameElement) {
+                // Primero intentar obtener el nombre de la tabla users
+                const { data: userData, error: userError } = await supabaseClient
+                    .from('public.users') // ¡USAR ESQUEMA CORRECTO!
+                    .select('full_name')
+                    .eq('id', user.id)
+                    .single();
+                if (!userError && userData?.full_name) {
+                    userNameElement.textContent = userData.full_name;
+                } else {
+                    // Manejo seguro de user_metadata
+                    const fullName = user.user_metadata?.full_name || 
+                                    user.user_metadata?.fullName || 
+                                    user.user_metadata?.name ||
+                                    user.email?.split('@')[0] || 'Usuario';
+                    userNameElement.textContent = fullName;
+                }
+            }
+            // Verificar el rol del usuario
+            const { role } = await checkUserRole();
+            currentUserRole = role;
+            console.log('ROL DEL USUARIO:', role);
+            // Mostrar el rol según el tipo de usuario
+            if (roleDisplay) {
+                roleDisplay.innerHTML = '';
+                if (role === 'super_admin') {
+                    // Para super admin, mantener el badge rojo
+                    const roleBadge = document.createElement('span');
+                    roleBadge.className = 'role-badge role-super-admin';
+                    roleBadge.textContent = 'Administrador Principal';
+                    roleDisplay.appendChild(roleBadge);
+                } else if (role === 'admin') {
+                    // Para admin, mantener el badge azul
+                    const roleBadge = document.createElement('span');
+                    roleBadge.className = 'role-badge role-admin';
+                    roleBadge.textContent = 'Administrador';
+                    roleDisplay.appendChild(roleBadge);
+                } else {
+                    // Para usuario normal, solo mostrar la palabra "Usuario" en texto plano con color verde
+                    roleDisplay.textContent = 'Usuario';
+                    roleDisplay.style.color = '#28a745'; // Verde para usuarios normales
+                    roleDisplay.style.fontWeight = '600';
+                    roleDisplay.style.marginLeft = '8px';
+                }
+            }
+            // Aplicar restricciones según el rol
+            applyRoleRestrictions(role);
+            // Si es super_admin, cargar la lista de usuarios
+            if (role === 'super_admin') {
+                await loadUsers();
+            }
+        } else {
+            console.log('No hay sesión activa');
+            // Usuario no autenticado - muestra el login
+            loginScreen.style.display = 'block';
+            mainPanel.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error al verificar sesión:', error);
+        showError('Error al verificar sesión: ' + error.message);
+    }
+}
       // Función CORREGIDA para aplicar restricciones según el rol
 function applyRoleRestrictions(role) {
     console.log('APLICANDO RESTRICCIONES - ROL ACTUAL:', role);
