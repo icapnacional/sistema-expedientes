@@ -1148,62 +1148,39 @@
             }
         }
         
-       // Función para verificar el rol del usuario (CORREGIDA)
-        async function checkUserRole() {
-            try {
-                // Verificar si Supabase está configurado
-                if (!isSupabaseConfigured) {
-                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
-                }
+  async function checkUserRole() {
+    try {
+        if (!isSupabaseConfigured) {
+            throw new Error("Supabase no está configurado.");
+        }
+        
+        const { data } = await supabaseClient.auth.getSession();
+        if (!data.session) {
+            return { role: 'user' };
+        }
+        
+        // Priorizar app_metadata
+        const userRole = data.session.user.app_metadata?.role || 'user';
+        
+        // Si no hay rol en app_metadata, buscar en la tabla users
+        if (userRole === 'user') {
+            const { data: userData } = await supabaseClient
+                .from('users')
+                .select('role')
+                .eq('id', data.session.user.id)
+                .single();
                 
-                // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) {
-                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
-                }
-                
-                const user = data.session.user;
-                
-                // 1. PRIMERO: Intentar obtener el rol directamente de la tabla users (MÉTODO MÁS CONFIABLE)
-                const { data: userData, error: userError } = await supabaseClient
-                    .from('users')
-                    .select('role')
-                    .eq('id', user.id)
-                    .single();
-                    
-                if (!userError && userData?.role) {
-                    console.log('ROL ENCONTRADO EN TABLA USERS:', userData.role);
-                    return {
-                        role: userData.role,
-                        user: user
-                    };
-                }
-                // 2. SEGUNDO: Si no está en tabla users, buscar en los metadatos
-                let userRole = user.app_metadata?.role || user.user_metadata?.role;
-                
-                if (userRole) {
-                    console.log('ROL ENCONTRADO EN METADATOS:', userRole);
-                    return {
-                        role: userRole,
-                        user: user
-                    };
-                }
-                
-                // 3. TERCERO: Si no se encontró, usar 'user' como valor por defecto
-                console.log('ROL NO ENCONTRADO, USANDO VALOR POR DEFECTO: user');
-                return {
-                    role: 'user',
-                    user: user
-                };
-            } catch (error) {
-                console.error('Error CRÍTICO al verificar rol de usuario:', error);
-                return {
-                    role: 'user',
-                    user: null
-                };
+            if (userData) {
+                userRole = userData.role;
             }
         }
         
+        return { role: userRole };
+    } catch (error) {
+        console.error('Error al verificar rol:', error);
+        return { role: 'user' };
+    }
+}
         // Función para mostrar el modal de administración
         async function showManageDropdownModal(field) {
             try {
