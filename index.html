@@ -1115,7 +1115,7 @@
                 return [];
             }
         }
-// Función para verificar el rol del usuario (SOLO TABLA USERS)
+// Función CORREGIDA para verificar el rol del usuario
 async function checkUserRole() {
     try {
         // Verificar si Supabase está configurado
@@ -1123,34 +1123,49 @@ async function checkUserRole() {
             throw new Error("Supabase no está configurado. Verifica tus credenciales.");
         }
         
-        // Obtener la sesión actual
+        // Manejo seguro de la sesión
         const { data, error: sessionError } = await supabaseClient.auth.getSession();
         if (sessionError || !data?.session) {
             throw new Error("No hay sesión activa. Por favor, inicie sesión.");
         }
         
-        // Obtener el rol directamente de la tabla users
+        const user = data.session.user;
+        console.log('Usuario actual de la sesión:', user);
+        
+        // 1. Primero: Intentar obtener el rol directamente de la tabla users (MÉTODO MÁS CONFIABLE)
         const { data: userData, error: userError } = await supabaseClient
             .from('users')
             .select('role')
-            .eq('id', data.session.user.id)
+            .eq('id', user.id)
             .single();
             
-        if (userError) {
-            console.error("Error al obtener rol de la tabla users:", userError);
-            return { role: 'user', user: data.session.user };
+        if (!userError && userData?.role) {
+            console.log('ROL ENCONTRADO EN TABLA USERS:', userData.role);
+            return {
+                role: userData.role,
+                user: user
+            };
         }
         
-        // Si no hay rol definido, usar 'user' como predeterminado
-        const userRole = userData?.role || 'user';
+        // 2. Segundo: Si no está en tabla users, buscar en los metadatos
+        let userRole = user.app_metadata?.role || user.user_metadata?.role;
         
-        console.log('ROL DEL USUARIO (desde tabla users):', userRole);
+        if (userRole) {
+            console.log('ROL ENCONTRADO EN METADATOS:', userRole);
+            return {
+                role: userRole,
+                user: user
+            };
+        }
+        
+        // 3. Tercero: Si no se encontró, usar 'user' como valor por defecto
+        console.log('ROL NO ENCONTRADO, USANDO VALOR POR DEFECTO: user');
         return {
-            role: userRole,
-            user: data.session.user
+            role: 'user',
+            user: user
         };
     } catch (error) {
-        console.error('Error al verificar rol de usuario:', error);
+        console.error('Error CRÍTICO al verificar rol de usuario:', error);
         return {
             role: 'user',
             user: null
@@ -1626,6 +1641,27 @@ async function checkUserRole() {
                                             user.user_metadata?.name ||
                                             user.email?.split('@')[0] || 'Usuario';
                             userNameElement.textContent = fullName;
+                            console.log('--- DIAGNÓSTICO DE ROL ---');
+console.log('ID del usuario:', user.id);
+console.log('Email del usuario:', user.email);
+
+// Verificar directamente en la tabla users
+const { data: directUserData, error: directUserError } = await supabaseClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+if (directUserError) {
+    console.error('ERROR AL CONSULTAR TABLA USERS:', directUserError);
+} else {
+    console.log('ROL DIRECTO DE TABLA USERS:', directUserData?.role);
+}
+
+// Verificar metadatos
+console.log('App metadata:', user.app_metadata);
+console.log('User metadata:', user.user_metadata);
+console.log('-------------------------');
                         }
                     }
                     // Verificar el rol del usuario
@@ -1672,32 +1708,49 @@ async function checkUserRole() {
                 showError('Error al verificar sesión: ' + error.message);
             }
         }
-        // Función para aplicar restricciones según el rol del usuario
-        function applyRoleRestrictions(role) {
-            console.log('Aplicando restricciones para rol:', role);
-            currentUserRole = role;
-            // Ocultar todas las pestañas primero
-            document.querySelectorAll('.super-admin-only, .admin-only, .user-only').forEach(element => {
-                element.style.display = 'none';
-            });
-            // Mostrar pestañas según el rol
-            if (role === 'super_admin') {
-                // Mostrar TODAS las pestañas para super_admin
-                document.querySelectorAll('.super-admin-only, .admin-only, .user-only').forEach(element => {
-                    element.style.display = 'block';
-                });
-            } else if (role === 'admin') {
-                // Mostrar pestañas para administradores
-                document.querySelectorAll('.admin-only, .user-only').forEach(element => {
-                    element.style.display = 'block';
-                });
-            } else {
-                // Mostrar solo pestañas para usuarios normales
-                document.querySelectorAll('.user-only').forEach(element => {
-                    element.style.display = 'block';
-                });
-            }
+      // Función CORREGIDA para aplicar restricciones según el rol
+function applyRoleRestrictions(role) {
+    console.log('APLICANDO RESTRICCIONES - ROL ACTUAL:', role);
+    currentUserRole = role;
+    
+    // Primero ocultar TODAS las pestañas
+    document.querySelectorAll('.super-admin-only, .admin-only, .user-only').forEach(element => {
+        element.style.display = 'none';
+    });
+    
+    // Mostrar pestañas según el rol
+    if (role === 'super_admin') {
+        console.log('MOSTRANDO TODAS LAS PESTAÑAS PARA SUPER_ADMIN');
+        document.querySelectorAll('.super-admin-only, .admin-only, .user-only').forEach(element => {
+            element.style.display = 'block';
+        });
+    } else if (role === 'admin') {
+        console.log('MOSTRANDO PESTAÑAS PARA ADMIN');
+        document.querySelectorAll('.admin-only, .user-only').forEach(element => {
+            element.style.display = 'block';
+        });
+    } else {
+        console.log('MOSTRANDO SOLO PESTAÑAS PARA USUARIO');
+        document.querySelectorAll('.user-only').forEach(element => {
+            element.style.display = 'block';
+        });
+    }
+    
+    // Actualizar visualización del rol en la interfaz
+    if (roleDisplay) {
+        roleDisplay.innerHTML = '';
+        if (role === 'super_admin') {
+            roleDisplay.innerHTML = '<span class="role-badge role-super-admin">Administrador Principal</span>';
+        } else if (role === 'admin') {
+            roleDisplay.innerHTML = '<span class="role-badge role-admin">Administrador</span>';
+        } else {
+            roleDisplay.textContent = 'Usuario';
+            roleDisplay.style.color = '#28a745';
+            roleDisplay.style.fontWeight = '600';
+            roleDisplay.style.marginLeft = '8px';
         }
+    }
+}
         // Función para iniciar sesión
         async function login(e) {
             e.preventDefault();
