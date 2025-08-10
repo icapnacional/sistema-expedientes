@@ -279,7 +279,7 @@
             color: #0066CC;
         }
         @media (max-width: 576px) {
-            .login-container {
+            .-container {
                 padding: 30px 20px;
                 margin: 20px;
             }
@@ -1740,65 +1740,39 @@ function applyRoleRestrictions(role) {
         }
     }
 }
-        // Función para iniciar sesión
-        async function login(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            try {
-                hideError();
-                // Mostrar spinner de carga
-                loginSpinner.classList.remove('d-none');
-                loginText.textContent = 'Iniciando sesión...';
-                console.log('Intentando iniciar sesión con:', email);
-                // Intenta iniciar sesión
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-                if (error) {
-                    console.error('Error de autenticación:', error);
-                    // Manejo específico de errores
-                    let errorMessageText = 'Error: ' + error.message;
-                    if (error.message.includes('Invalid login credentials')) {
-                        errorMessageText = 'Credenciales inválidas. Verifique su correo y contraseña.';
-                    } else if (error.message.includes('Email not confirmed')) {
-                        errorMessageText = 'Correo no confirmado. Por favor, revise su bandeja de entrada y confirme su cuenta.';
-                    } else if (error.message.includes('Email rate limit exceeded')) {
-                        errorMessageText = 'Demasiados intentos. Por favor, intente más tarde.';
-                    } else if (error.message.includes('captcha')) {
-                        errorMessageText = 'Error de verificación CAPTCHA. Por favor, desactive el CAPTCHA en Supabase o contacte al administrador.';
-                    }
-                    showError(errorMessageText);
-                    // Restaurar el estado del botón
-                    loginSpinner.classList.add('d-none');
-                    loginText.textContent = 'Iniciar Sesión';
-                    return;
-                }
-                console.log('Inicio de sesión exitoso', data);
-                // Si llegamos aquí, el inicio de sesión fue exitoso
-                loginScreen.style.display = 'none';
-                mainPanel.style.display = 'block';
-                // Muestra el nombre del usuario
-                const user = data.user;
-                if (userNameElement) {
-                    // Primero intentar obtener el nombre de la tabla users
-                    const { data: userData, error: userError } = await supabaseClient
-                        .from('users')
-                        .select('full_name')
-                        .eq('id', user.id)
-                        .single();
-                    if (!userError && userData?.full_name) {
-                        userNameElement.textContent = userData.full_name;
-                    } else {
-                        // Manejo seguro de user_metadata
-                        const fullName = user.user_metadata?.full_name || 
-                                        user.user_metadata?.fullName || 
-                                        user.user_metadata?.name ||
-                                        user.email?.split('@')[0] || 'Usuario';
-                        userNameElement.textContent = fullName;
-                    }
-                }
+       // Función para iniciar sesión (simulada)
+async function login(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    try {
+        hideError();
+        // Mostrar spinner de carga
+        loginSpinner.classList.remove('d-none');
+        loginText.textContent = 'Iniciando sesión...';
+        // Simular validación
+        if (!email || !password) {
+            throw new Error("Por favor, complete todos los campos");
+        }
+        if (!email.includes('@')) {
+            throw new Error("El formato del correo electrónico es inválido");
+        }
+        // Simular delay de la llamada al servidor
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Simular éxito
+        alert("Inicio de sesión exitoso");
+    } catch (error) {
+        // Mostrar error
+        showError(error.message);
+    } finally {
+        // Restaurar el estado del botón en cualquier caso
+        loginSpinner.classList.add('d-none');
+        loginText.textContent = 'Iniciar Sesión';
+        // Limpiar campos
+        document.getElementById('email').value = '';
+        document.getElementById('password').value = '';
+    }
+}
                 // Verificar el rol del usuario
                 const { role } = await checkUserRole();
                 currentUserRole = role;
