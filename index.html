@@ -1115,34 +1115,48 @@
                 return [];
             }
         }
-        // Función para verificar el rol del usuario
-        async function checkUserRole() {
-            try {
-                // Verificar si Supabase está configurado
-                if (!isSupabaseConfigured) {
-                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
-                }
-                // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) {
-                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
-                }
-                const user = data.session.user;
-                const userRole = user.app_metadata?.role || 
-                                 user.user_metadata?.role || 'user';
-                console.log('ROL DEL USUARIO:', userRole);
-                return {
-                    role: userRole,
-                    user: user
-                };
-            } catch (error) {
-                console.error('Error al verificar rol de usuario:', error);
-                return {
-                    role: 'user',
-                    user: null
-                };
-            }
+// Función para verificar el rol del usuario (SOLO TABLA USERS)
+async function checkUserRole() {
+    try {
+        // Verificar si Supabase está configurado
+        if (!isSupabaseConfigured) {
+            throw new Error("Supabase no está configurado. Verifica tus credenciales.");
         }
+        
+        // Obtener la sesión actual
+        const { data, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !data?.session) {
+            throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+        }
+        
+        // Obtener el rol directamente de la tabla users
+        const { data: userData, error: userError } = await supabaseClient
+            .from('users')
+            .select('role')
+            .eq('id', data.session.user.id)
+            .single();
+            
+        if (userError) {
+            console.error("Error al obtener rol de la tabla users:", userError);
+            return { role: 'user', user: data.session.user };
+        }
+        
+        // Si no hay rol definido, usar 'user' como predeterminado
+        const userRole = userData?.role || 'user';
+        
+        console.log('ROL DEL USUARIO (desde tabla users):', userRole);
+        return {
+            role: userRole,
+            user: data.session.user
+        };
+    } catch (error) {
+        console.error('Error al verificar rol de usuario:', error);
+        return {
+            role: 'user',
+            user: null
+        };
+    }
+}
         // Función para mostrar el modal de administración
         async function showManageDropdownModal(field) {
             try {
