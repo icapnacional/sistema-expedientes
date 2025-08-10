@@ -1062,61 +1062,67 @@
             }
         }
         
-        // Función para cargar opciones de desplegables
-    async function loadDropdownOptions(field) {
-    try {
-        console.log('Cargando opciones para desplegable:', field);
-        
-        const { data, error } = await supabaseClient
-            .from('dropdown_options')
-            .select('option')
-            .eq('field', field)
-            .order('option');
-            
-        if (error) {
-            console.error(`Error al cargar opciones para ${field}:`, error);
-            throw error;
+        // Función para cargar opciones de desplegables (CORREGIDA)
+        async function loadDropdownOptions(field) {
+            try {
+                console.log(`[DIAGNÓSTICO] Cargando opciones para el campo: ${field}`);
+                
+                const { data, error } = await supabaseClient
+                    .from('dropdown_options')
+                    .select('option')
+                    .eq('field', field)
+                    .order('option');
+                    
+                if (error) {
+                    console.error(`Error al cargar opciones para ${field}:`, error);
+                    throw error;
+                }
+                
+                console.log(`Opciones encontradas para ${field}:`, data);
+                
+                const selectElement = document.getElementById(field);
+                if (!selectElement) {
+                    console.error(`Elemento no encontrado: ${field}`);
+                    return;
+                }
+                
+                // Limpiar opciones existentes (excepto la primera)
+                while (selectElement.options.length > 1) {
+                    selectElement.remove(1);
+                }
+                
+                // Añadir las nuevas opciones
+                if (data && data.length > 0) {
+                    data.forEach(option => {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option.option;
+                        optionElement.textContent = option.option;
+                        selectElement.appendChild(optionElement);
+                    });
+                    console.log(`Se agregaron ${data.length} opciones a ${field}`);
+                } else {
+                    console.log(`No se encontraron opciones para ${field}`);
+                }
+            } catch (error) {
+                console.error(`Error al cargar opciones para ${field}:`, error);
+            }
         }
         
-        console.log(`Opciones encontradas para ${field}:`, data);
-        
-        const selectElement = document.getElementById(field);
-        if (!selectElement) {
-            console.error(`Elemento no encontrado: ${field}`);
-            return;
-        }
-        
-        // Limpiar opciones existentes (excepto la primera)
-        while (selectElement.options.length > 1) {
-            selectElement.remove(1);
-        }
-        
-        // Añadir las nuevas opciones
-        if (data && data.length > 0) {
-            data.forEach(option => {
-                const optionElement = document.createElement('option');
-                optionElement.value = option.option;
-                optionElement.textContent = option.option;
-                selectElement.appendChild(optionElement);
-            });
-            console.log(`Se agregaron ${data.length} opciones a ${field}`);
-        } else {
-            console.log(`No se encontraron opciones para ${field}`);
-        }
-    } catch (error) {
-        console.error(`Error al cargar opciones para ${field}:`, error);
-    }
-}
-        
-        // Función para cargar opciones para administración
+        // Función para cargar opciones para administración (CORREGIDA)
         async function loadDropdownOptionsForManagement(field) {
             try {
+                console.log(`[DIAGNÓSTICO] Cargando opciones para administración del campo: ${field}`);
+                
                 const { data, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
                     .eq('field', field)
                     .order('option');
+                    
                 if (error) throw error;
+                
+                console.log(`Opciones encontradas para administración de ${field}:`, data);
+                
                 // Limpiar lista
                 optionsList.innerHTML = '';
                 if (data && data.length > 0) {
@@ -1165,40 +1171,64 @@
             }
         }
         
-  async function checkUserRole() {
-    try {
-        if (!isSupabaseConfigured) {
-            throw new Error("Supabase no está configurado.");
-        }
-        
-        const { data } = await supabaseClient.auth.getSession();
-        if (!data.session) {
-            return { role: 'user' };
-        }
-        
-        // Priorizar app_metadata
-        const userRole = data.session.user.app_metadata?.role || 'user';
-        
-        // Si no hay rol en app_metadata, buscar en la tabla users
-        if (userRole === 'user') {
-            const { data: userData } = await supabaseClient
-                .from('users')
-                .select('role')
-                .eq('id', data.session.user.id)
-                .single();
+        // Función para verificar el rol del usuario (CORREGIDA)
+        async function checkUserRole() {
+            try {
+                // Verificar si Supabase está configurado
+                if (!isSupabaseConfigured) {
+                    throw new Error("Supabase no está configurado. Verifica tus credenciales.");
+                }
                 
-            if (userData) {
-                userRole = userData.role;
+                // Manejo seguro de la sesión
+                const { data, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !data?.session) {
+                    throw new Error("No hay sesión activa. Por favor, inicie sesión.");
+                }
+                
+                const user = data.session.user;
+                
+                // 1. PRIMERO: Intentar obtener el rol directamente de la tabla users (MÉTODO MÁS CONFIABLE)
+                const { data: userData, error: userError } = await supabaseClient
+                    .from('users')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+                    
+                if (!userError && userData?.role) {
+                    console.log('ROL ENCONTRADO EN TABLA USERS:', userData.role);
+                    return {
+                        role: userData.role,
+                        user: user
+                    };
+                }
+                
+                // 2. SEGUNDO: Si no está en tabla users, buscar en los metadatos
+                let userRole = user.app_metadata?.role || user.user_metadata?.role;
+                
+                if (userRole) {
+                    console.log('ROL ENCONTRADO EN METADATOS:', userRole);
+                    return {
+                        role: userRole,
+                        user: user
+                    };
+                }
+                
+                // 3. TERCERO: Si no se encontró, usar 'user' como valor por defecto
+                console.log('ROL NO ENCONTRADO, USANDO VALOR POR DEFECTO: user');
+                return {
+                    role: 'user',
+                    user: user
+                };
+            } catch (error) {
+                console.error('Error CRÍTICO al verificar rol de usuario:', error);
+                return {
+                    role: 'user',
+                    user: null
+                };
             }
         }
         
-        return { role: userRole };
-    } catch (error) {
-        console.error('Error al verificar rol:', error);
-        return { role: 'user' };
-    }
-}
-        // Función para mostrar el modal de administración
+        // Función para mostrar el modal de administración (CORREGIDA)
         async function showManageDropdownModal(field) {
             try {
                 // Verificar si Supabase está configurado
@@ -1215,11 +1245,14 @@
                 }
                 
                 currentDropdownField = field;
+                
                 // Actualizar título del modal
                 document.querySelector('#manageDropdownModal .modal-title').textContent = 
                     `Administrar Opciones: ${field.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
+                
                 // Cargar opciones existentes
                 await loadDropdownOptionsForManagement(field);
+                
                 // Mostrar modal
                 manageDropdownModal.show();
             } catch (error) {
@@ -1228,54 +1261,66 @@
             }
         }
         
-    async function addOption() {
-    const newValue = newOptionValue.value.trim();
-    const newLabel = newOptionLabel.value.trim();
-    if (!newValue || !newLabel) {
-        alert('Por favor, complete ambos campos');
-        return;
-    }
-    try {
-        // Verificar el rol del usuario
-        const { role } = await checkUserRole();
-        if (role !== 'admin' && role !== 'super_admin') {
-            throw new Error("Solo los administradores pueden agregar opciones");
+        // Función para agregar una nueva opción (CORREGIDA)
+        async function addOption() {
+            const newValue = newOptionValue.value.trim();
+            const newLabel = newOptionLabel.value.trim();
+            if (!newValue || !newLabel) {
+                alert('Por favor, complete ambos campos');
+                return;
+            }
+            try {
+                // Verificar el rol del usuario
+                const { role } = await checkUserRole();
+                // Verificar el rol del usuario
+                if (role !== 'admin' && role !== 'super_admin') {
+                    throw new Error("Solo los administradores pueden agregar opciones");
+                }
+                
+                // Crear nueva opción
+                const newOption = {
+                    field: currentDropdownField,
+                    option: newLabel
+                };
+                
+                // Insertar en Supabase
+                const { error } = await supabaseClient
+                    .from('dropdown_options')
+                    .insert([newOption]);
+                if (error) throw error;
+                
+                // Mostrar mensaje de éxito
+                alert('Opción agregada exitosamente');
+                
+                // Recargar opciones para el modal
+                console.log(`Recargando opciones para administración de: ${currentDropdownField}`);
+                await loadDropdownOptionsForManagement(currentDropdownField);
+                
+                // Recargar opciones para el desplegable principal
+                console.log(`Recargando opciones para desplegable principal: ${currentDropdownField}`);
+                await loadDropdownOptions(currentDropdownField);
+                
+                // Forzar recarga de TODOS los desplegables para asegurar consistencia
+                console.log('Forzando recarga de todos los desplegables...');
+                const allDropdowns = [
+                    'rango', 'sexo', 'tipo-expediente', 'icap', 'condicion-funcionario',
+                    'servicio-labora', 'tipo-falta', 'origen-falta', 'falta',
+                    'denunciante', 'estatus', 'decision'
+                ];
+                
+                for (const dropdown of allDropdowns) {
+                    console.log(`Recargando desplegable: ${dropdown}`);
+                    await loadDropdownOptions(dropdown);
+                }
+                
+                // Limpiar campos
+                newOptionValue.value = '';
+                newOptionLabel.value = '';
+            } catch (error) {
+                console.error('Error al agregar opción:', error);
+                alert(`Error al agregar opción: ${error.message}`);
+            }
         }
-        
-        // Crear nueva opción
-        const newOption = {
-            field: currentDropdownField,
-            option: newLabel
-        };
-        
-        // Insertar en Supabase
-        const { error } = await supabaseClient
-            .from('dropdown_options')
-            .insert([newOption]);
-        if (error) throw error;
-        
-        // Mostrar mensaje de éxito
-        alert('Opción agregada exitosamente');
-        
-        // Recargar opciones CON LOGS DE DIAGNÓSTICO
-        console.log('Recargando opciones para:', currentDropdownField);
-        
-        // Recargar opciones para el modal
-        const managementData = await loadDropdownOptionsForManagement(currentDropdownField);
-        console.log('Opciones para administración:', managementData);
-        
-        // Recargar opciones para el desplegable principal
-        const dropdownData = await loadDropdownOptions(currentDropdownField);
-        console.log('Opciones para desplegable:', dropdownData);
-        
-        // Limpiar campos
-        newOptionValue.value = '';
-        newOptionLabel.value = '';
-    } catch (error) {
-        console.error('Error al agregar opción:', error);
-        alert(`Error al agregar opción: ${error.message}`);
-    }
-}
         
         // Función para editar una opción
         async function editOption(id) {
@@ -1346,6 +1391,18 @@
                 await loadDropdownOptionsForManagement(currentDropdownField);
                 // Actualizar el desplegable principal
                 await loadDropdownOptions(currentDropdownField);
+                
+                // Forzar recarga de TODOS los desplegables para asegurar consistencia
+                const allDropdowns = [
+                    'rango', 'sexo', 'tipo-expediente', 'icap', 'condicion-funcionario',
+                    'servicio-labora', 'tipo-falta', 'origen-falta', 'falta',
+                    'denunciante', 'estatus', 'decision'
+                ];
+                
+                for (const dropdown of allDropdowns) {
+                    await loadDropdownOptions(dropdown);
+                }
+                
                 alert('Opción eliminada exitosamente');
             } catch (error) {
                 console.error('Error al eliminar opción:', error);
@@ -1717,6 +1774,8 @@
                     if (role === 'super_admin') {
                         await loadUsers();
                     }
+                    // Inicializar todos los desplegables
+                    await initializeDropdowns();
                 } else {
                     console.log('No hay sesión activa');
                     // Usuario no autenticado - muestra el login
@@ -1726,6 +1785,33 @@
             } catch (error) {
                 console.error('Error al verificar sesión:', error);
                 showError('Error al verificar sesión: ' + error.message);
+            }
+        }
+        
+        // Función para inicializar todos los desplegables
+        async function initializeDropdowns() {
+            try {
+                console.log('--- INICIALIZANDO TODOS LOS DESPLEGABLES ---');
+                
+                // Lista de todos los campos de desplegables
+                const dropdownFields = [
+                    'rango', 'sexo', 'tipo-expediente', 'icap', 'condicion-funcionario',
+                    'servicio-labora', 'tipo-falta', 'origen-falta', 'falta',
+                    'denunciante', 'estatus', 'decision'
+                ];
+                
+                // Cargar opciones para todos los desplegables
+                for (const field of dropdownFields) {
+                    console.log(`Cargando opciones para: ${field}`);
+                    await loadDropdownOptions(field);
+                }
+                
+                // Inicializar el campo de año
+                initializeYearField();
+                
+                console.log('--- INICIALIZACIÓN DE DESPLEGABLES COMPLETADA ---');
+            } catch (error) {
+                console.error('Error al inicializar desplegables:', error);
             }
         }
         
@@ -1850,6 +1936,8 @@
                 if (role === 'super_admin') {
                     await loadUsers();
                 }
+                // Inicializar todos los desplegables
+                await initializeDropdowns();
                 // Restaurar el estado del botón
                 loginSpinner.classList.add('d-none');
                 loginText.textContent = 'Iniciar Sesión';
@@ -2050,17 +2138,8 @@
                     if (newOptionLabel) newOptionLabel.value = '';
                     editingOptionId = null;
                 });
-                // Inicializar el campo de año
-                initializeYearField();
-                // Cargar opciones para todos los desplegables
-                const dropdownFields = [
-                    'rango', 'tipo-expediente', 'icap', 'condicion-funcionario',
-                    'servicio-labora', 'tipo-falta', 'origen-falta', 'falta',
-                    'denunciante', 'estatus', 'decision'
-                ];
-                for (const field of dropdownFields) {
-                    await loadDropdownOptions(field);
-                }
+                // Inicializar todos los desplegables
+                await initializeDropdowns();
                 console.log('Sistema inicializado correctamente');
             } catch (error) {
                 console.error('Error al inicializar el sistema:', error);
