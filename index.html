@@ -428,7 +428,7 @@
                                     <!-- Rango y Sexo en una sola fila -->
                                     <div class="row g-2 mb-3">
                                         <div class="col-md-6">
-                                            <label for="rango" class="form-label small fw-bold">rango <span class="text-danger">*</span></label>
+                                            <label for="rango" class="form-label small fw-bold">Rango <span class="text-danger">*</span></label>
                                             <div class="input-group input-group-sm">
                                                 <select class="form-select form-select-sm" id="rango" required>
                                                     <option value="">Seleccione</option>
@@ -831,7 +831,7 @@
         
         // Campos de expediente
         const fechaInicio = document.getElementById('fecha-inicio');
-        const tipoExpediente = document.getElementById('tipo_expediente');
+        const tipoExpediente = document.getElementById('tipo-expediente');
         const icap = document.getElementById('icap');
         const condicionFuncionario = document.getElementById('condicion-funcionario');
         const anio = document.getElementById('anio');
@@ -1262,44 +1262,65 @@
         }
         
         // Función para agregar una nueva opción (CORREGIDA)
-       async function addOption() {
-    const newValue = newOptionValue.value.trim();
-    const newLabel = newOptionLabel.value.trim();
-    if (!newValue || !newLabel) {
-        alert('Por favor, complete ambos campos');
-        return;
-    }
-    try {
-        // ... [verificación de roles] ...
-        
-        // Insertar en Supabase
-        const { error } = await supabaseClient
-            .from('dropdown_options')
-            .insert([{
-                field: currentDropdownField,
-                option: newLabel
-            }]);
-        if (error) throw error;
-        
-        // Forzar recarga de TODOS los desplegables
-        const allDropdowns = [
-            'rango', 'sexo', 'tipo-expediente', 'icap', 'condicion-funcionario',
-            'servicio-labora', 'tipo-falta', 'origen-falta', 'falta',
-            'denunciante', 'estatus', 'decision'
-        ];
-        
-        for (const dropdown of allDropdowns) {
-            await loadDropdownOptions(dropdown);
+        async function addOption() {
+            const newValue = newOptionValue.value.trim();
+            const newLabel = newOptionLabel.value.trim();
+            if (!newValue || !newLabel) {
+                alert('Por favor, complete ambos campos');
+                return;
+            }
+            try {
+                // Verificar el rol del usuario
+                const { role } = await checkUserRole();
+                // Verificar el rol del usuario
+                if (role !== 'admin' && role !== 'super_admin') {
+                    throw new Error("Solo los administradores pueden agregar opciones");
+                }
+                
+                // Crear nueva opción
+                const newOption = {
+                    field: currentDropdownField,
+                    option: newLabel
+                };
+                
+                // Insertar en Supabase
+                const { error } = await supabaseClient
+                    .from('dropdown_options')
+                    .insert([newOption]);
+                if (error) throw error;
+                
+                // Mostrar mensaje de éxito
+                alert('Opción agregada exitosamente');
+                
+                // Recargar opciones para el modal
+                console.log(`Recargando opciones para administración de: ${currentDropdownField}`);
+                await loadDropdownOptionsForManagement(currentDropdownField);
+                
+                // Recargar opciones para el desplegable principal
+                console.log(`Recargando opciones para desplegable principal: ${currentDropdownField}`);
+                await loadDropdownOptions(currentDropdownField);
+                
+                // Forzar recarga de TODOS los desplegables para asegurar consistencia
+                console.log('Forzando recarga de todos los desplegables...');
+                const allDropdowns = [
+                    'rango', 'sexo', 'tipo-expediente', 'icap', 'condicion-funcionario',
+                    'servicio-labora', 'tipo-falta', 'origen-falta', 'falta',
+                    'denunciante', 'estatus', 'decision'
+                ];
+                
+                for (const dropdown of allDropdowns) {
+                    console.log(`Recargando desplegable: ${dropdown}`);
+                    await loadDropdownOptions(dropdown);
+                }
+                
+                // Limpiar campos
+                newOptionValue.value = '';
+                newOptionLabel.value = '';
+            } catch (error) {
+                console.error('Error al agregar opción:', error);
+                alert(`Error al agregar opción: ${error.message}`);
+            }
         }
-        
-        alert('Opción agregada exitosamente');
-        newOptionValue.value = '';
-        newOptionLabel.value = '';
-    } catch (error) {
-        console.error('Error al agregar opción:', error);
-        alert(`Error al agregar opción: ${error.message}`);
-    }
-}
         
         // Función para editar una opción
         async function editOption(id) {
@@ -1683,7 +1704,6 @@
         async function checkSession() {
             try {
                 console.log('--- INICIO DE VERIFICACIÓN DE SESIÓN ---');
-                 console.log('ROL ACTUAL DESDE METADATOS:', user.app_metadata?.role);
                 // Verificar si Supabase está configurado
                 if (!isSupabaseConfigured) {
                     console.error('Supabase no está configurado. Verifica tus credenciales.');
