@@ -1,637 +1,4302 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión de Expedientes</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #003366;
-            --secondary-color: #0066CC;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --super-admin-color: #8B0000;
-        }
-        body {
-            background-color: #f5f7fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-        }
-        .login-container {
-            max-width: 450px;
-            margin: 20px auto 50px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 25px 20px;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        .centered-title {
-            color: white;
-            font-size: 2.5rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-            position: relative;
-            display: inline-block;
-            padding: 0 20px;
-        }
-        .centered-title:after {
-            content: "";
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 3px;
-            background: linear-gradient(to right, white, rgba(255, 255, 255, 0.5));
-            border-radius: 1.5px;
-        }
-        .centered-subtitle {
-            color: rgba(255, 255, 255, 0.92);
-            font-size: 1.25rem;
-            font-weight: 400;
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 0 15px;
-            opacity: 0.9;
-            letter-spacing: 0.3px;
-            line-height: 1.5;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-        }
-        .logo-container {
-            padding: 15px 0;
-            text-align: center;
-        }
-        .logo-container img {
-            max-width: 200px;
-            height: auto;
-            max-height: 80px;
-        }
-        .form-floating > label {
-            padding: 1rem 0.75rem;
-        }
-        .form-floating > .form-control,
-        .form-floating > .form-select {
-            padding: 1rem 0.75rem;
-        }
-        .btn-primary {
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-            border: none;
-            padding: 0.75rem 0;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 51, 102, 0.2);
-            background: linear-gradient(to right, #002244, #0055AA);
-        }
-        .error-message {
-            background-color: #fff5f5;
-            border-left: 4px solid #dc3545;
-            padding: 10px 15px;
-            margin-bottom: 20px;
-            border-radius: 0 4px 4px 0;
-            display: none;
-        }
-        .panel-container {
-            max-width: 1200px;
-            margin: 30px auto;
-        }
-        .card {
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            margin-bottom: 25px;
-            border: none;
-            overflow: hidden;
-        }
-        .card-header {
-            background: white;
-            border-bottom: 1px solid #eee;
-            padding: 15px 20px;
-            font-weight: 600;
-        }
-        .footer {
-            text-align: center;
-            padding: 20px 0;
-            color: #6c757d;
-            font-size: 14px;
-            margin-top: 40px;
-            border-top: 1px solid #eee;
-        }
-        .footer-line {
-            height: 1px;
-            background: linear-gradient(to right, transparent, #ced4da, transparent);
-            margin-bottom: 15px;
-        }
-        .security-info {
-            background: rgba(0, 51, 102, 0.05);
-            border-left: 3px solid var(--secondary-color);
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            color: #6c757d;
-            text-align: center;
-        }
-        .security-icon {
-            color: var(--secondary-color);
-            margin-right: 8px;
-            font-size: 1.1rem;
-        }
-        .role-badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-weight: 600;
-            margin-left: 10px;
-            color: white;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-        }
-        .role-super-admin {
-            background-color: var(--super-admin-color);
-        }
-        .role-admin {
-            background-color: var(--secondary-color);
-        }
-        .role-user {
-            background-color: #28a745;
-        }
-        /* Pestañas de navegación */
-        .nav-tabs {
-            border-bottom: 1px solid #dee2e6;
-            margin-bottom: 20px;
-        }
-        .nav-tabs .nav-link {
-            border: none;
-            border-radius: 0;
-            padding: 12px 20px;
-            font-weight: 500;
-            color: #6c757d;
-            position: relative;
-        }
-        .nav-tabs .nav-link:hover {
-            color: var(--primary-color);
-        }
-        .nav-tabs .nav-link.active {
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--secondary-color);
-        }
-        .tab-content {
-            background: white;
-            border-radius: 0 0 12px 12px;
-            padding: 20px;
-            border: 1px solid #dee2e6;
-            border-top: none;
-        }
-        .admin-only {
-            display: none;
-        }
-        .super-admin-only {
-            display: none;
-        }
-        .user-only {
-            display: none;
-        }
-        @media (max-width: 576px) {
-            .login-container {
-                padding: 30px 20px;
-                margin: 20px;
-            }
-            .footer {
-                font-size: 16px;
-                padding: 20px 0;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Header con título centrado -->
-    <div class="header" id="main-title-section">
-        <h1 class="centered-title">SISTEMA DE GESTIÓN DE EXPEDIENTES</h1>
-        <p class="centered-subtitle">Inicie sesión para acceder al sistema</p>
-    </div>
-    
-    <!-- Pantalla de Login -->
-    <div class="container" id="login-screen">
-        <div class="login-container">
-            <div class="card border-0">
-                <div class="card-body p-4">
-                    <!-- Contenedor del logo -->
-                    <div class="logo-container text-center mb-4">
-                        <img src="https://raw.githubusercontent.com/gamakingrock/sistema-expedientes/main/images/policia-nacional-bolivariana.png" 
-                             alt="Logo Policía Nacional Bolivariana" 
-                             class="img-fluid">
-                    </div>
-                    <h2 class="card-title text-center mb-4">Iniciar Sesión</h2>
-                    <div id="error-message" class="error-message">
-                        <i class="fas fa-exclamation-circle me-2"></i><span id="error-text"></span>
-                    </div>
-                    <form id="login-form">
-                        <div class="mb-3">
-                            <div class="form-floating">
-                                <input type="email" class="form-control" id="email" required>
-                                <label for="email"><i class="fas fa-envelope me-2"></i>Correo electrónico</label>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-floating">
-                                <input type="password" class="form-control" id="password" required>
-                                <label for="password"><i class="fas fa-lock me-2"></i>Contraseña</label>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <span id="login-spinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
-                            <span id="login-text">Iniciar Sesión</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-            <!-- Información de seguridad -->
-            <div class="security-info">
-                <i class="fas fa-shield-alt security-icon"></i>
-                <span class="security-text">Su información está protegida con encriptación de extremo a extremo</span>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Panel Principal (oculto al inicio) -->
-    <div class="container panel-container" id="main-panel" style="display: none;">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Bienvenido, <span id="user-name" class="text-primary"></span> <span id="role-display"></span></h2>
-            <button id="logout-btn" class="btn btn-outline-danger">
-                <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
-            </button>
-        </div>
+**<!DOCTYPE html>**
+
+**<html lang="es">**
+
+**<head>**
+
+    **<meta charset="UTF-8">**
+
+    **<meta name="viewport" content="width=device-width, initial-scale=1.0">**
+
+    **<title>Sistema de Gestión de Expedientes</title>**
+
+    **<!-- Bootstrap 5 CSS -->**
+
+    **<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">**
+
+    **<!-- Font Awesome -->**
+
+    **<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">**
+
+    **<style>**
+
+        **:root {**
+
+            **--primary-color: #003366;**
+
+            **--secondary-color: #0066CC;**
+
+            **--super-admin-color: #8B0000;**
+
+            **--light-color: #f8f9fa;**
+
+            **--dark-color: #212529;**
+
+        **}**
+
+        **body {**
+
+            **background-color: #f5f7fa;**
+
+            **font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;**
+
+            **min-height: 100vh;**
+
+        **}**
+
+        **.login-container {**
+
+            **max-width: 450px;**
+
+            **margin: 20px auto 50px;**
+
+            **background: white;**
+
+            **border-radius: 15px;**
+
+            **box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);**
+
+            **overflow: hidden;**
+
+        **}**
+
+        **.header {**
+
+            **background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));**
+
+            **color: white;**
+
+            **padding: 25px 20px;**
+
+            **text-align: center;**
+
+            **margin-bottom: 15px;**
+
+        **}**
+
+        **.centered-title {**
+
+            **color: white;**
+
+            **font-size: 2.5rem;**
+
+            **font-weight: 700;**
+
+            **letter-spacing: 1px;**
+
+            **margin-bottom: 10px;**
+
+            **text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);**
+
+            **position: relative;**
+
+            **display: inline-block;**
+
+            **padding: 0 20px;**
+
+        **}**
+
+        **.centered-title:after {**
+
+            **content: "";**
+
+            **position: absolute;**
+
+            **bottom: -8px;**
+
+            **left: 50%;**
+
+            **transform: translateX(-50%);**
+
+            **width: 80px;**
+
+            **height: 3px;**
+
+            **background: linear-gradient(to right, white, rgba(255, 255, 255, 0.5));**
+
+            **border-radius: 1.5px;**
+
+        **}**
+
+        **.centered-subtitle {**
+
+            **color: rgba(255, 255, 255, 0.92);**
+
+            **font-size: 1.25rem;**
+
+            **font-weight: 400;**
+
+            **max-width: 700px;**
+
+            **margin: 0 auto;**
+
+            **padding: 0 15px;**
+
+            **opacity: 0.9;**
+
+            **letter-spacing: 0.3px;**
+
+            **line-height: 1.5;**
+
+            **text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);**
+
+        **}**
+
+        **.logo-container {**
+
+            **padding: 15px 0;**
+
+            **text-align: center;**
+
+        **}**
+
+        **.logo-container img {**
+
+            **max-width: 200px;**
+
+            **height: auto;**
+
+            **max-height: 80px;**
+
+        **}**
+
+        **.form-floating > label {**
+
+            **padding: 1rem 0.75rem;**
+
+        **}**
+
+        **.form-floating > .form-control,**
+
+        **.form-floating > .form-select {**
+
+            **padding: 1rem 0.75rem;**
+
+        **}**
+
+        **.btn-primary {**
+
+            **background: linear-gradient(to right, var(--primary-color), var(--secondary-color));**
+
+            **border: none;**
+
+            **padding: 0.75rem 0;**
+
+            **font-weight: 600;**
+
+            **letter-spacing: 0.5px;**
+
+        **}**
+
+        **.btn-primary:hover {**
+
+            **transform: translateY(-2px);**
+
+            **box-shadow: 0 5px 15px rgba(0, 51, 102, 0.2);**
+
+            **background: linear-gradient(to right, #002244, #0055AA);**
+
+        **}**
+
+        **.error-message {**
+
+            **background-color: #fff5f5;**
+
+            **border-left: 4px solid #dc3545;**
+
+            **padding: 10px 15px;**
+
+            **margin-bottom: 20px;**
+
+            **border-radius: 0 4px 4px 0;**
+
+            **display: none;**
+
+        **}**
+
+        **.validation-error {**
+
+            **color: #dc3545;**
+
+            **font-size: 0.875em;**
+
+            **margin-top: 0.25rem;**
+
+            **display: none;**
+
+        **}**
+
+        **.is-invalid + .validation-error {**
+
+            **display: block;**
+
+        **}**
+
+        **.panel-container {**
+
+            **max-width: 1200px;**
+
+            **margin: 30px auto;**
+
+        **}**
+
+        **.card {**
+
+            **border-radius: 12px;**
+
+            **box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);**
+
+            **margin-bottom: 25px;**
+
+            **border: none;**
+
+            **overflow: hidden;**
+
+        **}**
+
+        **.card-header {**
+
+            **background: white;**
+
+            **border-bottom: 1px solid #eee;**
+
+            **padding: 15px 20px;**
+
+            **font-weight: 600;**
+
+        **}**
+
+        **.profile-picture-container {**
+
+            **position: relative;**
+
+            **display: inline-block;**
+
+            **margin-bottom: 15px;**
+
+        **}**
+
+        **.profile-picture {**
+
+            **width: 150px;**
+
+            **height: 150px;**
+
+            **border-radius: 50%;**
+
+            **object-fit: cover;**
+
+            **border: 3px solid var(--secondary-color);**
+
+        **}**
+
+        **.upload-icon {**
+
+            **position: absolute;**
+
+            **bottom: 5px;**
+
+            **right: 5px;**
+
+            **background: var(--secondary-color);**
+
+            **color: white;**
+
+            **width: 30px;**
+
+            **height: 30px;**
+
+            **border-radius: 50%;**
+
+            **display: flex;**
+
+            **align-items: center;**
+
+            **justify-content: center;**
+
+            **cursor: pointer;**
+
+        **}**
+
+        **.footer {**
+
+            **text-align: center;**
+
+            **padding: 20px 0;**
+
+            **color: #6c757d;**
+
+            **font-size: 14px;**
+
+            **margin-top: 40px;**
+
+            **border-top: 1px solid #eee;**
+
+        **}**
+
+        **.footer-line {**
+
+            **height: 1px;**
+
+            **background: linear-gradient(to right, transparent, #ced4da, transparent);**
+
+            **margin-bottom: 15px;**
+
+        **}**
+
+        **.security-info {**
+
+            **background: rgba(0, 51, 102, 0.05);**
+
+            **border-left: 3px solid var(--secondary-color);**
+
+            **padding: 12px 20px;**
+
+            **border-radius: 8px;**
+
+            **margin-top: 20px;**
+
+            **display: flex;**
+
+            **align-items: center;**
+
+            **justify-content: center;**
+
+            **font-size: 14px;**
+
+            **color: #6c757d;**
+
+            **text-align: center;**
+
+        **}**
+
+        **.security-icon {**
+
+            **color: var(--secondary-color);**
+
+            **margin-right: 8px;**
+
+            **font-size: 1.1rem;**
+
+        **}**
+
+        **.role-badge {**
+
+            **display: inline-block;**
+
+            **padding: 3px 10px;**
+
+            **border-radius: 12px;**
+
+            **font-weight: 600;**
+
+            **margin-left: 10px;**
+
+            **color: white;**
+
+            **text-transform: uppercase;**
+
+            **font-size: 0.8rem;**
+
+        **}**
+
+        **.role-super-admin {**
+
+            **background-color: var(--super-admin-color);**
+
+        **}**
+
+        **.role-admin {**
+
+            **background-color: var(--secondary-color);**
+
+        **}**
+
+        **.role-user {**
+
+            **background-color: #28a745;**
+
+        **}**
+
+        **/\* Pestañas de navegación \*/**
+
+        **.nav-tabs {**
+
+            **border-bottom: 1px solid #dee2e6;**
+
+            **margin-bottom: 20px;**
+
+        **}**
+
+        **.nav-tabs .nav-link {**
+
+            **border: none;**
+
+            **border-radius: 0;**
+
+            **padding: 12px 20px;**
+
+            **font-weight: 500;**
+
+            **color: #6c757d;**
+
+            **position: relative;**
+
+        **}**
+
+        **.nav-tabs .nav-link:hover {**
+
+            **color: var(--primary-color);**
+
+        **}**
+
+        **.nav-tabs .nav-link.active {**
+
+            **color: var(--primary-color);**
+
+            **border-bottom: 3px solid var(--secondary-color);**
+
+        **}**
+
+        **.tab-content {**
+
+            **background: white;**
+
+            **border-radius: 0 0 12px 12px;**
+
+            **padding: 20px;**
+
+            **border: 1px solid #dee2e6;**
+
+            **border-top: none;**
+
+        **}**
+
+        **.admin-only {**
+
+            **display: none;**
+
+        **}**
+
+        **.super-admin-only {**
+
+            **display: none;**
+
+        **}**
+
+        **.user-only {**
+
+            **display: none;**
+
+        **}**
+
+        **/\* Estilos mejorados para los botones de administración de desplegables \*/**
+
+        **.input-group .manage-dropdown {**
+
+            **border-radius: 0 4px 4px 0;**
+
+            **padding: 0.125rem 0.5rem;**
+
+            **background-color: #e9ecef;**
+
+            **border: 1px solid #ced4da;**
+
+            **border-left: none;**
+
+            **opacity: 0.7;**
+
+            **transition: all 0.2s ease;**
+
+        **}**
+
+        **/\* Efecto hover más suave \*/**
+
+        **.input-group:hover .manage-dropdown {**
+
+            **opacity: 1;**
+
+            **background-color: #dde0e3;**
+
+        **}**
+
+        **/\* Efecto cuando el select está enfocado \*/**
+
+        **.input-group .form-select:focus ~ .manage-dropdown {**
+
+            **opacity: 1;**
+
+            **background-color: #d0e3ff;**
+
+            **border-left-color: #86b7fe;**
+
+        **}**
+
+        **/\* Estilo más pequeño y discreto para los iconos \*/**
+
+        **.manage-dropdown i {**
+
+            **color: #495057;**
+
+            **font-size: 0.8rem;**
+
+        **}**
+
+        **/\* Transición suave para el ícono \*/**
+
+        **.manage-dropdown i {**
+
+            **transition: transform 0.2s ease;**
+
+        **}**
+
+        **.manage-dropdown:hover i {**
+
+            **transform: scale(1.1);**
+
+            **color: #0066CC;**
+
+        **}**
+
+        **@media (max-width: 576px) {**
+
+            **.login-container {**
+
+                **padding: 30px 20px;**
+
+                **margin: 20px;**
+
+            **}**
+
+            **.footer {**
+
+                **font-size: 16px;**
+
+                **padding: 20px 0;**
+
+            **}**
+
+        **}**
+
+    **</style>**
+
+**</head>**
+
+**<body>**
+
+    **<!-- Header con título centrado -->**
+
+    **<div class="header" id="main-title-section">**
+
+        **<h1 class="centered-title">SISTEMA DE GESTIÓN DE EXPEDIENTES</h1>**
+
+        **<p class="centered-subtitle">Inicie sesión para acceder al sistema</p>**
+
+    **</div>**
+
+    **<!-- Pantalla de Login -->**
+
+    **<div class="container" id="login-screen">**
+
+        **<div class="login-container">**
+
+            **<div class="card border-0">**
+
+                **<div class="card-body p-4">**
+
+                    **<!-- Contenedor del logo -->**
+
+                    **<div class="logo-container text-center mb-4">**
+
+                        **<img src="https://raw.githubusercontent.com/gamakingrock/sistema-expedientes/main/images/policia-nacional-bolivariana.png"** 
+
+                             **alt="Logo Policía Nacional Bolivariana"** 
+
+                             **class="img-fluid">**
+
+                    **</div>**
+
+                    **<h2 class="card-title text-center mb-4">Iniciar Sesión</h2>**
+
+                    **<div id="error-message" class="error-message">**
+
+                        **<i class="fas fa-exclamation-circle me-2"></i><span id="error-text"></span>**
+
+                    **</div>**
+
+                    **<form id="login-form">**
+
+                        **<div class="mb-3">**
+
+                            **<div class="form-floating">**
+
+                                **<input type="email" class="form-control" id="email" required autocomplete="current-password">**
+
+                                **<label for="email"><i class="fas fa-envelope me-2"></i>Correo electrónico</label>**
+
+                            **</div>**
+
+                        **</div>**
+
+                        **<div class="mb-3">**
+
+                            **<div class="form-floating">**
+
+                                **<input type="password" class="form-control" id="password" required autocomplete="current-password">**
+
+                                **<label for="password"><i class="fas fa-lock me-2"></i>Contraseña</label>**
+
+                            **</div>**
+
+                        **</div>**
+
+                        **<button type="submit" class="btn btn-primary w-100">**
+
+                            **<span id="login-spinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>**
+
+                            **<span id="login-text">Iniciar Sesión</span>**
+
+                        **</button>**
+
+                    **</form>**
+
+                **</div>**
+
+            **</div>**
+
+            **<!-- Información de seguridad -->**
+
+            **<div class="security-info">**
+
+                **<i class="fas fa-shield-alt security-icon"></i>**
+
+                **<span class="security-text">Su información está protegida con encriptación de extremo a extremo</span>**
+
+            **</div>**
+
+        **</div>**
+
+    **</div>**
+
+    **<!-- Panel Principal (oculto al inicio) -->**
+
+    **<div class="container panel-container" id="main-panel" style="display: none;">**
+
+        **<div class="d-flex justify-content-between align-items-center mb-4">**
+
+            **<h2>Bienvenido, <span id="user-name" class="text-primary"></span> <span id="role-display"></span></h2>**
+
+            **<button id="logout-btn" class="btn btn-outline-danger">**
+
+                **<i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión**
+
+            **</button>**
+
+        **</div>**
+
+        **<!-- Pestañas de navegación -->**
+
+        **<ul class="nav nav-tabs" id="mainTabs">**
+
+            **<li class="nav-item">**
+
+                **<a class="nav-link active" id="panel-tab" data-bs-toggle="tab" href="#panel-content">Panel Principal</a>**
+
+            **</li>**
+
+            **<li class="nav-item admin-only">**
+
+                **<a class="nav-link" id="registrar-personal-tab" data-bs-toggle="tab" href="#registrar-personal-content">Registrar Personal</a>**
+
+            **</li>**
+
+            **<li class="nav-item user-only">**
+
+                **<a class="nav-link" id="consulta-tab" data-bs-toggle="tab" href="#consulta-content">Consultas</a>**
+
+            **</li>**
+
+            **<li class="nav-item super-admin-only">**
+
+                **<a class="nav-link" id="users-tab" data-bs-toggle="tab" href="#users-content">Gestión de Usuarios</a>**
+
+            **</li>**
+
+        **</ul>**
+
+        **<!-- Contenido de las pestañas -->**
+
+        **<div class="tab-content">**
+
+            **<!-- Contenido del Panel Principal -->**
+
+            **<div class="tab-pane fade show active" id="panel-content">**
+
+                **<div class="card shadow-sm mb-4">**
+
+                    **<div class="card-header bg-white py-3">**
+
+                        **<h5 class="mb-0">Panel Principal</h5>**
+
+                    **</div>**
+
+                    **<div class="card-body">**
+
+                        **<div class="text-center py-5">**
+
+                            **<i class="fas fa-home" style="font-size: 4rem; color: #0066CC; opacity: 0.3;"></i>**
+
+                            **<h3 class="mt-4" style="color: #6c757d;">Panel Principal</h3>**
+
+                            **<p class="text-muted mt-2">Este es el panel principal del sistema</p>**
+
+                        **</div>**
+
+                    **</div>**
+
+                **</div>**
+
+            **</div>**
+
+            **<!-- Contenido de Registrar Personal (solo para administradores) -->**
+
+            **<div class="tab-pane fade admin-only" id="registrar-personal-content">**
+
+                **<div class="card shadow-sm mb-4">**
+
+                    **<div class="card-header bg-white py-3">**
+
+                        **<h5 class="mb-0"><i class="fas fa-user-plus me-2 text-primary"></i>Registro de Personal</h5>**
+
+                    **</div>**
+
+                    **<div class="card-body">**
+
+                        **<form id="personal-form">**
+
+                            **<div class="row">**
+
+                                **<div class="col-md-4 mb-4">**
+
+                                    **<!-- Foto -->**
+
+                                    **<div class="text-center mb-4">**
+
+                                        **<div class="profile-picture-container position-relative d-inline-block">**
+
+                                            **<img id="profile-picture" src="https://via.placeholder.com/150" class="profile-picture rounded-circle" alt="Foto de perfil">**
+
+                                            **<div class="upload-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" title="Subir foto">**
+
+                                                **<i class="fas fa-camera"></i>**
+
+                                                **<input type="file" id="profile-picture-upload" accept="image/\*" class="d-none">**
+
+                                            **</div>**
+
+                                        **</div>**
+
+                                        **<p class="text-muted small mt-2">Haga clic en el ícono para subir una foto</p>**
+
+                                    **</div>**
+
+                                    **<!-- Nombres y Apellidos en una sola fila -->**
+
+                                    **<div class="row g-2 mb-3">**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="nombres" class="form-label small fw-bold">Nombres <span class="text-danger">\*</span></label>**
+
+                                            **<input type="text" class="form-control form-control-sm" id="nombres" required>**
+
+                                            **<div class="validation-error">Los nombres son requeridos</div>**
+
+                                        **</div>**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="apellidos" class="form-label small fw-bold">Apellidos <span class="text-danger">\*</span></label>**
+
+                                            **<input type="text" class="form-control form-control-sm" id="apellidos" required>**
+
+                                            **<div class="validation-error">Los apellidos son requeridos</div>**
+
+                                        **</div>**
+
+                                    **</div>**
+
+                                    **<!-- Cédula y Edad en una sola fila -->**
+
+                                    **<div class="row g-2 mb-3">**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="cedula" class="form-label small fw-bold">Cédula <span class="text-danger">\*</span></label>**
+
+                                            **<input type="text" class="form-control form-control-sm" id="cedula" required>**
+
+                                            **<div class="validation-error">La cédula es requerida</div>**
+
+                                        **</div>**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="edad" class="form-label small fw-bold">Edad</label>**
+
+                                            **<input type="number" class="form-control form-control-sm" id="edad" min="18" max="100">**
+
+                                            **<div class="validation-error">La edad debe ser entre 18 y 100 años</div>**
+
+                                        **</div>**
+
+                                    **</div>**
+
+                                    **<!-- Rango y Sexo en una sola fila -->**
+
+                                    **<div class="row g-2 mb-3">**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="rango" class="form-label small fw-bold">Rango <span class="text-danger">\*</span></label>**
+
+                                            **<div class="input-group input-group-sm">**
+
+                                                **<select class="form-select form-select-sm" id="rango" required>**
+
+                                                    **<option value="">Seleccione</option>**
+
+                                                **</select>**
+
+                                                **<button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="rango" title="Editar opciones">**
+
+                                                    **<i class="fas fa-pen"></i>**
+
+                                                **</button>**
+
+                                            **</div>**
+
+                                            **<div class="validation-error">El rango es requerido</div>**
+
+                                        **</div>**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="sexo" class="form-label small fw-bold">Sexo <span class="text-danger">\*</span></label>**
+
+                                            **<div class="input-group input-group-sm">**
+
+                                                **<select class="form-select form-select-sm" id="sexo" required>**
+
+                                                    **<option value="">Seleccione</option>**
+
+                                                    **<option value="Masculino">Masculino</option>**
+
+                                                    **<option value="Femenino">Femenino</option>**
+
+                                                **</select>**
+
+                                                **<button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="sexo" title="Editar opciones">**
+
+                                                    **<i class="fas fa-pen"></i>**
+
+                                                **</button>**
+
+                                            **</div>**
+
+                                            **<div class="validation-error">El sexo es requerido</div>**
+
+                                        **</div>**
+
+                                    **</div>**
+
+                                    **<!-- Fecha de Nacimiento -->**
+
+                                    **<div class="mb-3">**
+
+                                        **<label for="fecha-nacimiento" class="form-label small fw-bold">Fecha de Nacimiento <span class="text-danger">\*</span></label>**
+
+                                        **<input type="date" class="form-control form-control-sm" id="fecha-nacimiento" required>**
+
+                                        **<div class="validation-error">La fecha de nacimiento es requerida</div>**
+
+                                    **</div>**
+
+                                **</div>**
+
+                                **<div class="col-md-8">**
+
+                                    **<div class="row g-3 mb-4">**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="fecha-inicio" class="form-label small fw-bold">Fecha de Inicio <span class="text-danger">\*</span></label>**
+
+                                            **<input type="date" class="form-control form-control-sm" id="fecha-inicio" required>**
+
+                                            **<div class="validation-error">La fecha de inicio es requerida</div>**
+
+                                        **</div>**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="tipo-expediente" class="form-label small fw-bold">Tipo de Expediente <span class="text-danger">\*</span></label>**
+
+                                            **<div class="input-group input-group-sm">**
+
+                                                **<select class="form-select form-select-sm" id="tipo-expediente" required>**
+
+                                                    **<option value="">Seleccione</option>**
+
+                                                **</select>**
+
+                                                **<button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="tipo-expediente" title="Editar opciones">**
+
+                                                    **<i class="fas fa-pen"></i>**
+
+                                                **</button>**
+
+                                            **</div>**
+
+                                            **<div class="validation-error">El tipo de expediente es requerido</div>**
+
+                                        **</div>**
+
+                                    **</div>**
+
+                                    **<div class="row g-3 mb-4">**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="icap" class="form-label small fw-bold">ICAP (Oficina) <span class="text-danger">\*</span></label>**
+
+                                            **<div class="input-group input-group-sm">**
+
+                                                **<select class="form-select form-select-sm" id="icap" required>**
+
+                                                    **<option value="">Seleccione</option>**
+
+                                                **</select>**
+
+                                                **<button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="icap" title="Editar opciones">**
+
+                                                    **<i class="fas fa-pen"></i>**
+
+                                                **</button>**
+
+                                            **</div>**
+
+                                            **<div class="validation-error">El ICAP es requerido</div>**
+
+                                        **</div>**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="condicion-funcionario" class="form-label small fw-bold">Condición en el Caso <span class="text-danger">\*</span></label>**
+
+                                            **<div class="input-group input-group-sm">**
+
+                                                **<select class="form-select form-select-sm" id="condicion-funcionario" required>**
+
+                                                    **<option value="">Seleccione</option>**
+
+                                                **</select>**
+
+                                                **<button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="condicion-funcionario" title="Editar opciones">**
+
+                                                    **<i class="fas fa-pen"></i>**
+
+                                                **</button>**
+
+                                            **</div>**
+
+                                            **<div class="validation-error">La condición es requerida</div>**
+
+                                        **</div>**
+
+                                    **</div>**
+
+                                    **<div class="row g-3 mb-4">**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="anio" class="form-label small fw-bold">Año <span class="text-danger">\*</span></label>**
+
+                                            **<select class="form-select form-select-sm" id="anio" required>**
+
+                                                **<option value="">Seleccione</option>**
+
+                                            **</select>**
+
+                                            **<div class="validation-error">El año es requerido</div>**
+
+                                        **</div>**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="servicio-labora" class="form-label small fw-bold">Servicio Labora <span class="text-danger">\*</span></label>**
+
+                                            **<div class="input-group input-group-sm">**
+
+                                                **<select class="form-select form-select-sm" id="servicio-labora" required>**
+
+                                                    **<option value="">Seleccione</option>**
+
+                                                **</select>**
+
+                                                **<button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="servicio-labora" title="Editar opciones">**
+
+                                                    **<i class="fas fa-pen"></i>**
+
+                                                **</button>**
+
+                                            **</div>**
+
+                                            **<div class="validation-error">El servicio es requerido</div>**
+
+                                        **</div>**
+
+                                    **</div>**
+
+                                    **<div class="row g-3 mb-4">**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="tipo-falta" class="form-label small fw-bold">Tipo de Falta <span class="text-danger">\*</span></label>**
+
+                                            **<div class="input-group input-group-sm">**
+
+                                                **<select class="form-select form-select-sm" id="tipo-falta" required>**
+
+                                                    **<option value="">Seleccione</option>**
+
+                                                **</select>**
+
+                                                **<button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="tipo-falta" title="Editar opciones">**
+
+                                                    **<i class="fas fa-pen"></i>**
+
+                                                **</button>**
+
+                                            **</div>**
+
+                                            **<div class="validation-error">El tipo de falta es requerido</div>**
+
+                                        **</div>**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="origen-falta" class="form-label small fw-bold">Origen de la Falta <span class="text-danger">\*</span></label>**
+
+                                            **<div class="input-group input-group-sm">**
+
+                                                **<select class="form-select form-select-sm" id="origen-falta" required>**
+
+                                                    **<option value="">Seleccione</option>**
+
+                                                **</select>**
+
+                                                **<button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="origen-falta" title="Editar opciones">**
+
+                                                    **<i class="fas fa-pen"></i>**
+
+                                                **</button>**
+
+                                            **</div>**
+
+                                            **<div class="validation-error">El origen es requerido</div>**
+
+                                        **</div>**
+
+                                    **</div>**
+
+                                    **<div class="row g-3 mb-4">**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="falta" class="form-label small fw-bold">Falta <span class="text-danger">\*</span></label>**
+
+                                            **<div class="input-group input-group-sm">**
+
+                                                **<select class="form-select form-select-sm" id="falta" required>**
+
+                                                    **<option value="">Seleccione</option>**
+
+                                                **</select>**
+
+                                                **<button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="falta" title="Editar opciones">**
+
+                                                    **<i class="fas fa-pen"></i>**
+
+                                                **</button>**
+
+                                            **</div>**
+
+                                            **<div class="validation-error">La falta es requerida</div>**
+
+                                        **</div>**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="denunciante" class="form-label small fw-bold">Denunciante <span class="text-danger">\*</span></label>**
+
+                                            **<div class="input-group input-group-sm">**
+
+                                                **<select class="form-select form-select-sm" id="denunciante" required>**
+
+                                                    **<option value="">Seleccione</option>**
+
+                                                **</select>**
+
+                                                **<button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="denunciante" title="Editar opciones">**
+
+                                                    **<i class="fas fa-pen"></i>**
+
+                                                **</button>**
+
+                                            **</div>**
+
+                                            **<div class="validation-error">El denunciante es requerido</div>**
+
+                                        **</div>**
+
+                                    **</div>**
+
+                                    **<div class="row g-3 mb-4">**
+
+                                        **<div class="col-md-4">**
+
+                                            **<label for="detenido" class="form-label small fw-bold">Detenido <span class="text-danger">\*</span></label>**
+
+                                            **<select class="form-select form-select-sm" id="detenido" required>**
+
+                                                **<option value="">Seleccione</option>**
+
+                                                **<option value="Sí">Sí</option>**
+
+                                                **<option value="No">No</option>**
+
+                                            **</select>**
+
+                                            **<div class="validation-error">La condición es requerida</div>**
+
+                                        **</div>**
+
+                                        **<div class="col-md-4">**
+
+                                            **<label for="estatus" class="form-label small fw-bold">Estatus <span class="text-danger">\*</span></label>**
+
+                                            **<div class="input-group input-group-sm">**
+
+                                                **<select class="form-select form-select-sm" id="estatus" required>**
+
+                                                    **<option value="">Seleccione</option>**
+
+                                                **</select>**
+
+                                                **<button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="estatus" title="Editar opciones">**
+
+                                                    **<i class="fas fa-pen"></i>**
+
+                                                **</button>**
+
+                                            **</div>**
+
+                                            **<div class="validation-error">El estatus es requerido</div>**
+
+                                        **</div>**
+
+                                        **<div class="col-md-4">**
+
+                                            **<label for="decision" class="form-label small fw-bold">Decisión <span class="text-danger">\*</span></label>**
+
+                                            **<div class="input-group input-group-sm">**
+
+                                                **<select class="form-select form-select-sm" id="decision" required>**
+
+                                                    **<option value="">Seleccione</option>**
+
+                                                **</select>**
+
+                                                **<button type="button" class="btn btn-sm btn-outline-secondary manage-dropdown" data-field="decision" title="Editar opciones">**
+
+                                                    **<i class="fas fa-pen"></i>**
+
+                                                **</button>**
+
+                                            **</div>**
+
+                                            **<div class="validation-error">La decisión es requerida</div>**
+
+                                        **</div>**
+
+                                    **</div>**
+
+                                    **<div class="row g-3 mb-4">**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="expediente-penal" class="form-label small fw-bold">Expediente Penal</label>**
+
+                                            **<input type="text" class="form-control form-control-sm" id="expediente-penal" readonly>**
+
+                                        **</div>**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="expediente-numero" class="form-label small fw-bold">Expediente Número</label>**
+
+                                            **<input type="text" class="form-control form-control-sm" id="expediente-numero" readonly>**
+
+                                        **</div>**
+
+                                    **</div>**
+
+                                    **<div class="mb-3">**
+
+                                        **<label for="resena-caso" class="form-label small fw-bold">Reseña del Caso</label>**
+
+                                        **<textarea class="form-control form-control-sm" id="resena-caso" rows="2" readonly></textarea>**
+
+                                    **</div>**
+
+                                    **<div class="mb-3">**
+
+                                        **<label for="causa" class="form-label small fw-bold">Causa</label>**
+
+                                        **<textarea class="form-control form-control-sm" id="causa" rows="2" readonly></textarea>**
+
+                                    **</div>**
+
+                                    **<div class="row g-3">**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="registrado-por" class="form-label small fw-bold">Registrado por Sustanciador</label>**
+
+                                            **<input type="text" class="form-control form-control-sm" id="registrado-por" readonly>**
+
+                                        **</div>**
+
+                                        **<div class="col-md-6">**
+
+                                            **<label for="remision" class="form-label small fw-bold">Remisión</label>**
+
+                                            **<input type="text" class="form-control form-control-sm" id="remision" readonly>**
+
+                                        **</div>**
+
+                                    **</div>**
+
+                                **</div>**
+
+                            **</div>**
+
+                            **<div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 pt-3 border-top">**
+
+                                **<button type="reset" class="btn btn-outline-secondary btn-sm">**
+
+                                    **<i class="fas fa-redo me-1"></i>Limpiar**
+
+                                **</button>**
+
+                                **<button type="submit" class="btn btn-primary btn-sm px-4">**
+
+                                    **<i class="fas fa-save me-1"></i>Guardar Expediente**
+
+                                **</button>**
+
+                            **</div>**
+
+                        **</form>**
+
+                    **</div>**
+
+                **</div>**
+
+            **</div>**
+
+            **<!-- Contenido de Consultas (solo para usuarios normales) -->**
+
+            **<div class="tab-pane fade user-only" id="consulta-content">**
+
+                **<div class="card shadow-sm">**
+
+                    **<div class="card-header bg-white py-3">**
+
+                        **<h5 class="mb-0">Consultas</h5>**
+
+                    **</div>**
+
+                    **<div class="card-body p-4">**
+
+                        **<div class="text-center py-5">**
+
+                            **<i class="fas fa-search" style="font-size: 4rem; color: #0066CC; opacity: 0.3;"></i>**
+
+                            **<h3 class="mt-4" style="color: #6c757d;">Consultas</h3>**
+
+                            **<p class="text-muted mt-2">Esta sección está en desarrollo</p>**
+
+                        **</div>**
+
+                    **</div>**
+
+                **</div>**
+
+            **</div>**
+
+            **<!-- Contenido de Gestión de Usuarios (solo para super-admin) -->**
+
+            **<div class="tab-pane fade super-admin-only" id="users-content">**
+
+                **<div class="card shadow-sm mb-4">**
+
+                    **<div class="card-header bg-white py-3">**
+
+                        **<h5 class="mb-0">Gestión de Usuarios</h5>**
+
+                    **</div>**
+
+                    **<div class="card-body">**
+
+                        **<div class="row">**
+
+                            **<div class="col-md-6">**
+
+                                **<h5 class="mb-4">Crear Nuevo Usuario</h5>**
+
+                                **<form id="register-form">**
+
+                                    **<div class="mb-3">**
+
+                                        **<label for="reg-name" class="form-label">Nombre Completo</label>**
+
+                                        **<input type="text" class="form-control" id="reg-name" required>**
+
+                                    **</div>**
+
+                                    **<div class="mb-3">**
+
+                                        **<label for="reg-email" class="form-label">Correo Electrónico</label>**
+
+                                        **<input type="email" class="form-control" id="reg-email" required autocomplete="email">**
+
+                                    **</div>**
+
+                                    **<div class="mb-3">**
+
+                                        **<label for="reg-password" class="form-label">Contraseña</label>**
+
+                                        **<input type="password" class="form-control" id="reg-password" required autocomplete="new-password">**
+
+                                    **</div>**
+
+                                    **<div class="mb-3">**
+
+                                        **<label for="user-role" class="form-label">Rol</label>**
+
+                                        **<select class="form-select" id="user-role" required>**
+
+                                            **<option value="user">Usuario</option>**
+
+                                            **<option value="admin">Administrador</option>**
+
+                                            **<option value="super\_admin">Super Administrador</option>**
+
+                                        **</select>**
+
+                                    **</div>**
+
+                                    **<button type="submit" class="btn btn-primary w-100">**
+
+                                        **<i class="fas fa-user-plus me-2"></i>Crear Usuario**
+
+                                    **</button>**
+
+                                **</form>**
+
+                            **</div>**
+
+                            **<div class="col-md-6">**
+
+                                **<h5 class="mb-4">Usuarios Registrados</h5>**
+
+                                **<div class="table-responsive">**
+
+                                    **<table class="table table-hover">**
+
+                                        **<thead>**
+
+                                            **<tr>**
+
+                                                **<th>Nombre</th>**
+
+                                                **<th>Correo</th>**
+
+                                                **<th>Rol</th>**
+
+                                                **<th class="text-end">Acciones</th>**
+
+                                            **</tr>**
+
+                                        **</thead>**
+
+                                        **<tbody id="users-list">**
+
+                                            **<!-- Los usuarios se cargarán dinámicamente -->**
+
+                                        **</tbody>**
+
+                                    **</table>**
+
+                                **</div>**
+
+                            **</div>**
+
+                        **</div>**
+
+                    **</div>**
+
+                **</div>**
+
+            **</div>**
+
+        **</div>**
+
+    **</div>**
+
+    **<!-- Modal para administrar opciones de desplegables -->**
+
+    **<div class="modal fade" id="manageDropdownModal" tabindex="-1" aria-hidden="true">**
+
+        **<div class="modal-dialog modal-lg">**
+
+            **<div class="modal-content">**
+
+                **<div class="modal-header">**
+
+                    **<h5 class="modal-title">Administrar Opciones</h5>**
+
+                    **<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>**
+
+                **</div>**
+
+                **<div class="modal-body">**
+
+                    **<div class="mb-3">**
+
+                        **<div class="row g-2">**
+
+                            **<div class="col-md-6">**
+
+                                **<label for="new-option-value" class="form-label">Valor</label>**
+
+                                **<input type="text" class="form-control" id="new-option-value" placeholder="Ingrese un valor">**
+
+                            **</div>**
+
+                            **<div class="col-md-6">**
+
+                                **<label for="new-option-label" class="form-label">Etiqueta</label>**
+
+                                **<input type="text" class="form-control" id="new-option-label" placeholder="Ingrese una etiqueta">**
+
+                            **</div>**
+
+                        **</div>**
+
+                    **</div>**
+
+                    **<div class="mb-3">**
+
+                        **<div class="table-responsive">**
+
+                            **<table class="table table-hover">**
+
+                                **<thead>**
+
+                                    **<tr>**
+
+                                        **<th>Valor</th>**
+
+                                        **<th>Etiqueta</th>**
+
+                                        **<th class="text-end">Acciones</th>**
+
+                                    **</tr>**
+
+                                **</thead>**
+
+                                **<tbody id="options-list">**
+
+                                    **<!-- Las opciones se cargarán dinámicamente -->**
+
+                                **</tbody>**
+
+                            **</table>**
+
+                        **</div>**
+
+                    **</div>**
+
+                **</div>**
+
+                **<div class="modal-footer">**
+
+                    **<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>**
+
+                    **<button type="button" class="btn btn-primary" id="btn-add-option">**
+
+                        **<i class="fas fa-plus me-1"></i>Agregar Opción**
+
+                    **</button>**
+
+                **</div>**
+
+            **</div>**
+
+        **</div>**
+
+    **</div>**
+
+    **<!-- Pie de página -->**
+
+    **<div class="container mt-5 text-center text-muted">**
+
+        **<p>sistema de gestión de expedientes - todos los derechos reservados © 2025</p>**
+
+    **</div>**
+
+    **<!-- Bootstrap JS Bundle with Popper -->**
+
+    **<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>**
+
+    **<!-- Supabase JS -->**
+
+    **<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>**
+
+    **<script>**
+
+        **// Variables globales**
+
+        **let supabaseClient = null;**
+
+        **let isSupabaseConfigured = false;**
+
+        **let currentUserRole = 'user'; // Por defecto es usuario normal**
+
+        **let currentDropdownField = '';**
+
+        **let editingOptionId = null;**
+
         
-        <!-- Panel Principal en Blanco -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0">Panel Principal</h5>
-            </div>
-            <div class="card-body">
-                <div class="text-center py-5">
-                    <i class="fas fa-home" style="font-size: 4rem; color: #0066CC; opacity: 0.3;"></i>
-                    <h3 class="mt-4" style="color: #6c757d;">Panel Principal</h3>
-                    <p class="text-muted mt-2">Este es el panel principal del sistema</p>
-                    <p class="mt-3">
-                        <button id="create-admin-btn" class="btn btn-outline-primary d-none">
-                            <i class="fas fa-user-plus me-2"></i>Crear Administrador
-                        </button>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Pie de página -->
-    <div class="container mt-5 text-center text-muted">
-        <p>sistema de gestión de expedientes - todos los derechos reservados © 2025</p>
-    </div>
-    
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // Variables globales
-        let supabaseClient = null;
-        let isSupabaseConfigured = false;
+
+        **// CONFIGURACIÓN DE SUPABASE - ¡REEMPLAZA CON TUS CREDENCIALES!**
+
+        **// PASOS:**
+
+        **// 1. Ve a tu proyecto en Supabase**
+
+        **// 2. En "Settings" > "API", copia "Project URL" y "anon" key**
+
+        **// 3. Pega aquí los valores CORRECTOS**
+
+        **const supabaseUrl = 'https://stwriaubepeugobgyxjt.supabase.co'; // ¡REEMPLAZA ESTO!**
+
+        **const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8\_CRR2O1g'; // ¡REEMPLAZA ESTO!**
+
         
-        // Configuración de Supabase (REEMPLAZA CON TUS CREDENCIALES)
-        const supabaseUrl = 'https://stwriaubepeugobgyxjt.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+
+        **// Elementos del DOM**
+
+        **const loginScreen = document.getElementById('login-screen');**
+
+        **const mainPanel = document.getElementById('main-panel');**
+
+        **const errorMessage = document.getElementById('error-message');**
+
+        **const errorText = document.getElementById('error-text');**
+
+        **const loginSpinner = document.getElementById('login-spinner');**
+
+        **const loginText = document.getElementById('login-text');**
+
+        **const logoutBtn = document.getElementById('logout-btn');**
+
+        **const loginForm = document.getElementById('login-form');**
+
+        **const registerForm = document.getElementById('register-form');**
+
+        **const userNameElement = document.getElementById('user-name');**
+
+        **const roleDisplay = document.getElementById('role-display');**
+
+        **const usersList = document.getElementById('users-list');**
+
+        **const personalForm = document.getElementById('personal-form');**
+
         
-        // Elementos del DOM
-        const loginScreen = document.getElementById('login-screen');
-        const mainPanel = document.getElementById('main-panel');
-        const errorMessage = document.getElementById('error-message');
-        const errorText = document.getElementById('error-text');
-        const loginSpinner = document.getElementById('login-spinner');
-        const loginText = document.getElementById('login-text');
-        const logoutBtn = document.getElementById('logout-btn');
-        const loginForm = document.getElementById('login-form');
-        const userNameElement = document.getElementById('user-name');
-        const roleDisplay = document.getElementById('role-display');
-        const createAdminBtn = document.getElementById('create-admin-btn');
+
+        **// Campos de personal**
+
+        **const profilePicture = document.getElementById('profile-picture');**
+
+        **const profilePictureUpload = document.getElementById('profile-picture-upload');**
+
+        **const nombres = document.getElementById('nombres');**
+
+        **const apellidos = document.getElementById('apellidos');**
+
+        **const edad = document.getElementById('edad');**
+
+        **const rango = document.getElementById('rango');**
+
+        **const sexo = document.getElementById('sexo');**
+
+        **const cedula = document.getElementById('cedula');**
+
+        **const fechaNacimiento = document.getElementById('fecha-nacimiento');**
+
         
-        // Función para mostrar mensajes de error
-        function showError(message) {
-            if (errorText && errorMessage) {
-                errorText.textContent = message;
-                errorMessage.style.display = 'block';
-            }
-            console.error('Error:', message);
-        }
+
+        **// Campos de expediente**
+
+        **const fechaInicio = document.getElementById('fecha-inicio');**
+
+        **const tipoExpediente = document.getElementById('tipo-expediente');**
+
+        **const icap = document.getElementById('icap');**
+
+        **const condicionFuncionario = document.getElementById('condicion-funcionario');**
+
+        **const anio = document.getElementById('anio');**
+
+        **const servicioLabora = document.getElementById('servicio-labora');**
+
+        **const tipoFalta = document.getElementById('tipo-falta');**
+
+        **const origenFalta = document.getElementById('origen-falta');**
+
+        **const falta = document.getElementById('falta');**
+
+        **const denunciante = document.getElementById('denunciante');**
+
+        **const detenido = document.getElementById('detenido');**
+
+        **const estatus = document.getElementById('estatus');**
+
+        **const decision = document.getElementById('decision');**
+
         
-        // Función para ocultar mensajes de error
-        function hideError() {
-            if (errorMessage) {
-                errorMessage.style.display = 'none';
-            }
-        }
+
+        **// Campos solo lectura**
+
+        **const expedientePenal = document.getElementById('expediente-penal');**
+
+        **const resenaCaso = document.getElementById('resena-caso');**
+
+        **const causa = document.getElementById('causa');**
+
+        **const registradoPor = document.getElementById('registrado-por');**
+
+        **const remision = document.getElementById('remision');**
+
+        **const expedienteNumero = document.getElementById('expediente-numero');**
+
         
-        // Función para verificar si la sesión es válida
-        async function isSessionValid() {
-            try {
-                // Verificar si Supabase está configurado
-                if (!isSupabaseConfigured) {
-                    console.error('Supabase no está configurado. Verifica tus credenciales.');
-                    return false;
-                }
+
+        **// Modal de administración**
+
+        **const manageDropdownModal = new bootstrap.Modal(document.getElementById('manageDropdownModal'));**
+
+        **const newOptionValue = document.getElementById('new-option-value');**
+
+        **const newOptionLabel = document.getElementById('new-option-label');**
+
+        **const optionsList = document.getElementById('options-list');**
+
+        **const btnAddOption = document.getElementById('btn-add-option');**
+
+        
+
+        **// Función para mostrar mensajes de error**
+
+        **function showError(message) {**
+
+            **if (errorText \&\& errorMessage) {**
+
+                **errorText.textContent = message;**
+
+                **errorMessage.style.display = 'block';**
+
+            **}**
+
+            **console.error('Error:', message);**
+
+        **}**
+
+        
+
+        **// Función para ocultar mensajes de error**
+
+        **function hideError() {**
+
+            **if (errorMessage) {**
+
+                **errorMessage.style.display = 'none';**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para mostrar error en campo específico**
+
+        **function showFieldError(field, isValid) {**
+
+            **const input = document.getElementById(field);**
+
+            **const errorElement = input.nextElementSibling;**
+
+            **if (input \&\& errorElement \&\& errorElement.classList.contains('validation-error')) {**
+
+                **if (!isValid) {**
+
+                    **input.classList.add('is-invalid');**
+
+                **} else {**
+
+                    **input.classList.remove('is-invalid');**
+
+                **}**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para validar formulario de personal**
+
+        **function validatePersonalForm() {**
+
+            **let isValid = true;**
+
+            
+
+            **// Validar nombres**
+
+            **if (!nombres?.value || nombres.value.trim().length < 2) {**
+
+                **showFieldError('nombres', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('nombres', true);**
+
+            **}**
+
+            
+
+            **// Validar apellidos**
+
+            **if (!apellidos?.value || apellidos.value.trim().length < 2) {**
+
+                **showFieldError('apellidos', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('apellidos', true);**
+
+            **}**
+
+            
+
+            **// Validar cédula**
+
+            **if (!cedula?.value || cedula.value.trim().length < 5) {**
+
+                **showFieldError('cedula', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('cedula', true);**
+
+            **}**
+
+            
+
+            **// Validar rango**
+
+            **if (!rango?.value) {**
+
+                **showFieldError('rango', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('rango', true);**
+
+            **}**
+
+            
+
+            **// Validar sexo**
+
+            **if (!sexo?.value) {**
+
+                **showFieldError('sexo', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('sexo', true);**
+
+            **}**
+
+            
+
+            **// Validar fecha de inicio**
+
+            **if (!fechaInicio?.value) {**
+
+                **showFieldError('fecha-inicio', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('fecha-inicio', true);**
+
+            **}**
+
+            
+
+            **// Validar tipo de expediente**
+
+            **if (!tipoExpediente?.value) {**
+
+                **showFieldError('tipo-expediente', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('tipo-expediente', true);**
+
+            **}**
+
+            
+
+            **// Validar ICAP**
+
+            **if (!icap?.value) {**
+
+                **showFieldError('icap', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('icap', true);**
+
+            **}**
+
+            
+
+            **// Validar condición del funcionario**
+
+            **if (!condicionFuncionario?.value) {**
+
+                **showFieldError('condicion-funcionario', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('condicion-funcionario', true);**
+
+            **}**
+
+            
+
+            **// Validar año**
+
+            **if (!anio?.value) {**
+
+                **showFieldError('anio', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('anio', true);**
+
+            **}**
+
+            
+
+            **// Validar servicio donde labora**
+
+            **if (!servicioLabora?.value) {**
+
+                **showFieldError('servicio-labora', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('servicio-labora', true);**
+
+            **}**
+
+            
+
+            **// Validar tipo de falta**
+
+            **if (!tipoFalta?.value) {**
+
+                **showFieldError('tipo-falta', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('tipo-falta', true);**
+
+            **}**
+
+            
+
+            **// Validar origen de la falta**
+
+            **if (!origenFalta?.value) {**
+
+                **showFieldError('origen-falta', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('origen-falta', true);**
+
+            **}**
+
+            
+
+            **// Validar falta**
+
+            **if (!falta?.value) {**
+
+                **showFieldError('falta', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('falta', true);**
+
+            **}**
+
+            
+
+            **// Validar denunciante**
+
+            **if (!denunciante?.value) {**
+
+                **showFieldError('denunciante', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('denunciante', true);**
+
+            **}**
+
+            
+
+            **// Validar detenido**
+
+            **if (!detenido?.value) {**
+
+                **showFieldError('detenido', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('detenido', true);**
+
+            **}**
+
+            
+
+            **// Validar estatus**
+
+            **if (!estatus?.value) {**
+
+                **showFieldError('estatus', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('estatus', true);**
+
+            **}**
+
+            
+
+            **// Validar decisión**
+
+            **if (!decision?.value) {**
+
+                **showFieldError('decision', false);**
+
+                **isValid = false;**
+
+            **} else {**
+
+                **showFieldError('decision', true);**
+
+            **}**
+
+            
+
+            **return isValid;**
+
+        **}**
+
+        
+
+        **// Función para inicializar campos de año**
+
+        **function initializeYearField() {**
+
+            **const yearSelect = document.getElementById('anio');**
+
+            **const currentYear = new Date().getFullYear();**
+
+            **// Limpiar opciones existentes**
+
+            **yearSelect.innerHTML = '<option value="">Seleccione un año</option>';**
+
+            **// Añadir 10 años hacia atrás y 5 hacia adelante**
+
+            **for (let i = 5; i >= 0; i--) {**
+
+                **const year = currentYear - i;**
+
+                **const option = document.createElement('option');**
+
+                **option.value = year;**
+
+                **option.textContent = year;**
+
+                **yearSelect.appendChild(option);**
+
+            **}**
+
+            **for (let i = 1; i <= 5; i++) {**
+
+                **const year = currentYear + i;**
+
+                **const option = document.createElement('option');**
+
+                **option.value = year;**
+
+                **option.textContent = year;**
+
+                **yearSelect.appendChild(option);**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para cargar opciones de desplegables (CORREGIDA)**
+
+        **async function loadDropdownOptions(field) {**
+
+            **try {**
+
+                **console.log(`\[DIAGNÓSTICO] Cargando opciones para el campo: ${field}`);**
+
                 
-                // Manejo seguro de la sesión
-                const { data, error } = await supabaseClient.auth.getSession();
-                if (error) {
-                    console.error('Error al obtener sesión:', error);
-                    return false;
-                }
-                return !!data?.session;
-            } catch (error) {
-                console.error('Error al verificar validez de sesión:', error);
-                return false;
-            }
-        }
-        
-        // Función para verificar la sesión
-        async function checkSession() {
-            try {
-                console.log('Verificando sesión...');
-                
-                // Verificar si Supabase está configurado
-                if (!isSupabaseConfigured) {
-                    console.error('Supabase no está configurado. Verifica tus credenciales.');
-                    showError('Supabase no está configurado. Verifica tus credenciales.');
-                    return;
-                }
-                
-                // Manejo seguro de la sesión
-                const { data, error } = await supabaseClient.auth.getSession();
-                if (error) {
-                    console.error('Error al obtener sesión:', error);
-                    throw error;
-                }
-                
-                if (data?.session) {
-                    console.log('Sesión encontrada:', data.session);
-                    // Usuario autenticado - muestra el panel principal
-                    loginScreen.style.display = 'none';
-                    mainPanel.style.display = 'block';
+
+                **const { data, error } = await supabaseClient**
+
+                    **.from('dropdown\_options')**
+
+                    **.select('option')**
+
+                    **.eq('field', field)**
+
+                    **.order('option');**
+
                     
-                    // Muestra el nombre del usuario
-                    const user = data.session.user;
-                    if (userNameElement) {
-                        // Manejo seguro de user_metadata
-                        const fullName = user.user_metadata?.full_name || 
-                                        user.user_metadata?.fullName || 
-                                        user.user_metadata?.name ||
-                                        user.email?.split('@')[0] || 'Usuario';
-                        userNameElement.textContent = fullName;
-                    }
-                    
-                    // Verificar el rol del usuario
-                    const userRole = user.app_metadata?.role || 
-                                     user.user_metadata?.role || 'user';
-                    
-                    console.log('ROL DEL USUARIO:', userRole);
-                    
-                    // Mostrar el rol según el tipo de usuario
-                    if (roleDisplay) {
-                        roleDisplay.innerHTML = '';
-                        
-                        if (userRole === 'super_admin') {
-                            // Para super admin, mantener el badge rojo
-                            const roleBadge = document.createElement('span');
-                            roleBadge.className = 'role-badge role-super-admin';
-                            roleBadge.textContent = 'Administrador Principal';
-                            roleDisplay.appendChild(roleBadge);
-                        } else if (userRole === 'admin') {
-                            // Para admin, mantener el badge azul
-                            const roleBadge = document.createElement('span');
-                            roleBadge.className = 'role-badge role-admin';
-                            roleBadge.textContent = 'Administrador';
-                            roleDisplay.appendChild(roleBadge);
-                        } else {
-                            // Para usuario normal, solo mostrar la palabra "Usuario" en texto plano con color verde
-                            roleDisplay.textContent = 'Usuario';
-                            roleDisplay.style.color = '#28a745'; // Verde para usuarios normales
-                            roleDisplay.style.fontWeight = '600';
-                            roleDisplay.style.marginLeft = '8px';
-                        }
-                    }
-                    
-                    // Mostrar botón de crear administrador solo para super_admin
-                    if (createAdminBtn) {
-                        createAdminBtn.style.display = userRole === 'super_admin' ? 'inline-block' : 'none';
-                    }
-                } else {
-                    console.log('No hay sesión activa');
-                    // Usuario no autenticado - muestra el login
-                    loginScreen.style.display = 'block';
-                    mainPanel.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error al verificar sesión:', error);
-                showError('Error al verificar sesión: ' + error.message);
-            }
-        }
+
+                **if (error) {**
+
+                    **console.error(`Error al cargar opciones para ${field}:`, error);**
+
+                    **throw error;**
+
+                **}**
+
+                
+
+                **console.log(`Opciones encontradas para ${field}:`, data);**
+
+                
+
+                **const selectElement = document.getElementById(field);**
+
+                **if (!selectElement) {**
+
+                    **console.error(`Elemento no encontrado: ${field}`);**
+
+                    **return;**
+
+                **}**
+
+                
+
+                **// Limpiar opciones existentes (excepto la primera)**
+
+                **while (selectElement.options.length > 1) {**
+
+                    **selectElement.remove(1);**
+
+                **}**
+
+                
+
+                **// Añadir las nuevas opciones**
+
+                **if (data \&\& data.length > 0) {**
+
+                    **data.forEach(option => {**
+
+                        **const optionElement = document.createElement('option');**
+
+                        **optionElement.value = option.option;**
+
+                        **optionElement.textContent = option.option;**
+
+                        **selectElement.appendChild(optionElement);**
+
+                    **});**
+
+                    **console.log(`Se agregaron ${data.length} opciones a ${field}`);**
+
+                **} else {**
+
+                    **console.log(`No se encontraron opciones para ${field}`);**
+
+                **}**
+
+            **} catch (error) {**
+
+                **console.error(`Error al cargar opciones para ${field}:`, error);**
+
+            **}**
+
+        **}**
+
         
-        // Función para iniciar sesión
-        async function login(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            try {
-                hideError();
-                // Mostrar spinner de carga
-                loginSpinner.classList.remove('d-none');
-                loginText.textContent = 'Iniciando sesión...';
-                console.log('Intentando iniciar sesión con:', email);
-                // Intenta iniciar sesión
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-                if (error) {
-                    console.error('Error de autenticación:', error);
-                    // Manejo específico de errores
-                    let errorMessageText = 'Error: ' + error.message;
-                    if (error.message.includes('Invalid login credentials')) {
-                        errorMessageText = 'Credenciales inválidas. Verifique su correo y contraseña.';
-                    } else if (error.message.includes('Email not confirmed')) {
-                        errorMessageText = 'Correo no confirmado. Por favor, revise su bandeja de entrada y confirme su cuenta.';
-                    } else if (error.message.includes('Email rate limit exceeded')) {
-                        errorMessageText = 'Demasiados intentos. Por favor, intente más tarde.';
-                    } else if (error.message.includes('captcha')) {
-                        errorMessageText = 'Error de verificación CAPTCHA. Por favor, desactive el CAPTCHA en Supabase o contacte al administrador.';
-                    }
-                    showError(errorMessageText);
-                    // Restaurar el estado del botón
-                    loginSpinner.classList.add('d-none');
-                    loginText.textContent = 'Iniciar Sesión';
-                    return;
-                }
-                console.log('Inicio de sesión exitoso', data);
-                // Si llegamos aquí, el inicio de sesión fue exitoso
-                loginScreen.style.display = 'none';
-                mainPanel.style.display = 'block';
-                // Muestra el nombre del usuario
-                const user = data.user;
-                if (userNameElement) {
-                    // Manejo seguro de user_metadata
-                    const fullName = user.user_metadata?.full_name || 
-                                    user.user_metadata?.fullName || 
-                                    user.user_metadata?.name ||
-                                    user.email?.split('@')[0] || 'Usuario';
-                    userNameElement.textContent = fullName;
-                }
+
+        **// Función para cargar opciones para administración (CORREGIDA)**
+
+        **async function loadDropdownOptionsForManagement(field) {**
+
+            **try {**
+
+                **console.log(`\[DIAGNÓSTICO] Cargando opciones para administración del campo: ${field}`);**
+
                 
-                // Verificar el rol del usuario
-                const userRole = user.app_metadata?.role || 
-                                 user.user_metadata?.role || 'user';
-                
-                console.log('ROL DEL USUARIO:', userRole);
-                
-                // Mostrar el rol según el tipo de usuario
-                if (roleDisplay) {
-                    roleDisplay.innerHTML = '';
+
+                **const { data, error } = await supabaseClient**
+
+                    **.from('dropdown\_options')**
+
+                    **.select('\*')**
+
+                    **.eq('field', field)**
+
+                    **.order('option');**
+
                     
-                    if (userRole === 'super_admin') {
-                        // Para super admin, mantener el badge rojo
-                        const roleBadge = document.createElement('span');
-                        roleBadge.className = 'role-badge role-super-admin';
-                        roleBadge.textContent = 'Administrador Principal';
-                        roleDisplay.appendChild(roleBadge);
-                    } else if (userRole === 'admin') {
-                        // Para admin, mantener el badge azul
-                        const roleBadge = document.createElement('span');
-                        roleBadge.className = 'role-badge role-admin';
-                        roleBadge.textContent = 'Administrador';
-                        roleDisplay.appendChild(roleBadge);
-                    } else {
-                        // Para usuario normal, solo mostrar la palabra "Usuario" en texto plano con color verde
-                        roleDisplay.textContent = 'Usuario';
-                        roleDisplay.style.color = '#28a745'; // Verde para usuarios normales
-                        roleDisplay.style.fontWeight = '600';
-                        roleDisplay.style.marginLeft = '8px';
-                    }
-                }
+
+                **if (error) throw error;**
+
                 
-                // Mostrar botón de crear administrador solo para super_admin
-                if (createAdminBtn) {
-                    createAdminBtn.style.display = userRole === 'super_admin' ? 'inline-block' : 'none';
-                }
+
+                **console.log(`Opciones encontradas para administración de ${field}:`, data);**
+
                 
-                // Restaurar el estado del botón
-                loginSpinner.classList.add('d-none');
-                loginText.textContent = 'Iniciar Sesión';
-            } catch (error) {
-                console.error('Error inesperado al iniciar sesión:', error);
-                showError('Error inesperado: ' + error.message);
-                // Restaurar el estado del botón
-                loginSpinner.classList.add('d-none');
-                loginText.textContent = 'Iniciar Sesión';
-            }
-        }
+
+                **// Limpiar lista**
+
+                **optionsList.innerHTML = '';**
+
+                **if (data \&\& data.length > 0) {**
+
+                    **data.forEach(option => {**
+
+                        **const row = document.createElement('tr');**
+
+                        **row.innerHTML = `**
+
+                            **<td>${option.option}</td>**
+
+                            **<td>${option.option}</td>**
+
+                            **<td class="text-end">**
+
+                                **<button class="btn btn-sm btn-outline-primary edit-option me-1" data-id="${option.id}">**
+
+                                    **<i class="fas fa-edit"></i>**
+
+                                **</button>**
+
+                                **<button class="btn btn-sm btn-outline-danger delete-option" data-id="${option.id}">**
+
+                                    **<i class="fas fa-trash"></i>**
+
+                                **</button>**
+
+                            **</td>**
+
+                        **`;**
+
+                        **optionsList.appendChild(row);**
+
+                    **});**
+
+                    **// Configurar eventos para los botones**
+
+                    **document.querySelectorAll('.edit-option').forEach(button => {**
+
+                        **button.addEventListener('click', function() {**
+
+                            **const id = this.getAttribute('data-id');**
+
+                            **editOption(id);**
+
+                        **});**
+
+                    **});**
+
+                    **document.querySelectorAll('.delete-option').forEach(button => {**
+
+                        **button.addEventListener('click', function() {**
+
+                            **const id = this.getAttribute('data-id');**
+
+                            **deleteOption(id);**
+
+                        **});**
+
+                    **});**
+
+                **} else {**
+
+                    **optionsList.innerHTML = `**
+
+                        **<tr>**
+
+                            **<td colspan="4" class="text-center py-3 text-muted">**
+
+                                **<i class="fas fa-inbox me-2"></i>No hay opciones definidas**
+
+                            **</td>**
+
+                        **</tr>**
+
+                    **`;**
+
+                **}**
+
+                **return data;**
+
+            **} catch (error) {**
+
+                **console.error(`Error al cargar opciones para administración de ${field}:`, error);**
+
+                **return \[];**
+
+            **}**
+
+        **}**
+
         
-        // Función para cerrar sesión
-        async function logout() {
-            try {
-                const { error } = await supabaseClient.auth.signOut();
-                if (error) throw error;
-                // Mostrar pantalla de login
-                loginScreen.style.display = 'block';
-                mainPanel.style.display = 'none';
-                // Limpiar el formulario de login
-                document.getElementById('email').value = '';
-                document.getElementById('password').value = '';
-                document.getElementById('user-name').textContent = '';
-                document.getElementById('role-display').innerHTML = '';
-            } catch (error) {
-                console.error('Error al cerrar sesión:', error);
-                alert('Error al cerrar sesión: ' + error.message);
-            }
-        }
+
+        **// Función para verificar el rol del usuario (CORREGIDA)**
+
+        **async function checkUserRole() {**
+
+            **try {**
+
+                **// Verificar si Supabase está configurado**
+
+                **if (!isSupabaseConfigured) {**
+
+                    **throw new Error("Supabase no está configurado. Verifica tus credenciales.");**
+
+                **}**
+
+                
+
+                **// Manejo seguro de la sesión**
+
+                **const { data, error: sessionError } = await supabaseClient.auth.getSession();**
+
+                **if (sessionError || !data?.session) {**
+
+                    **throw new Error("No hay sesión activa. Por favor, inicie sesión.");**
+
+                **}**
+
+                
+
+                **const user = data.session.user;**
+
+                
+
+                **// 1. PRIMERO: Intentar obtener el rol directamente de la tabla users (MÉTODO MÁS CONFIABLE)**
+
+                **const { data: userData, error: userError } = await supabaseClient**
+
+                    **.from('users')**
+
+                    **.select('role')**
+
+                    **.eq('id', user.id)**
+
+                    **.single();**
+
+                    
+
+                **if (!userError \&\& userData?.role) {**
+
+                    **console.log('ROL ENCONTRADO EN TABLA USERS:', userData.role);**
+
+                    **return {**
+
+                        **role: userData.role,**
+
+                        **user: user**
+
+                    **};**
+
+                **}**
+
+                
+
+                **// 2. SEGUNDO: Si no está en tabla users, buscar en los metadatos**
+
+                **let userRole = user.app\_metadata?.role || user.user\_metadata?.role;**
+
+                
+
+                **if (userRole) {**
+
+                    **console.log('ROL ENCONTRADO EN METADATOS:', userRole);**
+
+                    **return {**
+
+                        **role: userRole,**
+
+                        **user: user**
+
+                    **};**
+
+                **}**
+
+                
+
+                **// 3. TERCERO: Si no se encontró, usar 'user' como valor por defecto**
+
+                **console.log('ROL NO ENCONTRADO, USANDO VALOR POR DEFECTO: user');**
+
+                **return {**
+
+                    **role: 'user',**
+
+                    **user: user**
+
+                **};**
+
+            **} catch (error) {**
+
+                **console.error('Error CRÍTICO al verificar rol de usuario:', error);**
+
+                **return {**
+
+                    **role: 'user',**
+
+                    **user: null**
+
+                **};**
+
+            **}**
+
+        **}**
+
         
-        // Función para inicializar Supabase
-        function initSupabase() {
-            try {
-                // Verificar si las credenciales son placeholders
-                if (supabaseUrl.includes('TU_SUPABASE_URL') || 
-                    supabaseKey.includes('TU_SUPABASE_ANON_KEY')) {
-                    throw new Error("Debes reemplazar las credenciales de Supabase. Abre este archivo en un editor de texto y reemplaza los valores de supabaseUrl y supabaseKey con los de tu proyecto.");
-                }
+
+        **// Función para mostrar el modal de administración (CORREGIDA)**
+
+        **async function showManageDropdownModal(field) {**
+
+            **try {**
+
+                **// Verificar si Supabase está configurado**
+
+                **if (!isSupabaseConfigured) {**
+
+                    **throw new Error("Supabase no está configurado. Verifica tus credenciales.");**
+
+                **}**
+
                 
-                // Inicializar Supabase
-                const { createClient } = supabase;
-                supabaseClient = createClient(supabaseUrl, supabaseKey, {
-                    auth: {
-                        autoRefreshToken: true,
-                        persistSession: true,
-                        detectSessionInUrl: true
-                    }
-                });
+
+                **// Verificar el rol del usuario**
+
+                **const { role } = await checkUserRole();**
+
+                **// Si no es admin o super\_admin, mostrar advertencia**
+
+                **if (role !== 'admin' \&\& role !== 'super\_admin') {**
+
+                    **alert("No tiene permisos para administrar opciones de desplegables");**
+
+                    **return;**
+
+                **}**
+
                 
-                isSupabaseConfigured = true;
-                console.log("Supabase inicializado correctamente");
-            } catch (error) {
-                console.error("Error al inicializar Supabase:", error);
-                showError("Error de configuración: " + error.message);
-            }
-        }
+
+                **currentDropdownField = field;**
+
+                
+
+                **// Actualizar título del modal**
+
+                **document.querySelector('#manageDropdownModal .modal-title').textContent =** 
+
+                    **`Administrar Opciones: ${field.replace(/-/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase())}`;**
+
+                
+
+                **// Cargar opciones existentes**
+
+                **await loadDropdownOptionsForManagement(field);**
+
+                
+
+                **// Mostrar modal**
+
+                **manageDropdownModal.show();**
+
+            **} catch (error) {**
+
+                **console.error('Error al mostrar modal de administración:', error);**
+
+                **alert(`Error al mostrar modal: ${error.message}`);**
+
+            **}**
+
+        **}**
+
         
-        // Configurar eventos
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                // Inicializar Supabase
-                initSupabase();
+
+        **// Función para agregar una nueva opción (CORREGIDA)**
+
+        **async function addOption() {**
+
+            **const newValue = newOptionValue.value.trim();**
+
+            **const newLabel = newOptionLabel.value.trim();**
+
+            **if (!newValue || !newLabel) {**
+
+                **alert('Por favor, complete ambos campos');**
+
+                **return;**
+
+            **}**
+
+            **try {**
+
+                **// Verificar el rol del usuario**
+
+                **const { role } = await checkUserRole();**
+
+                **// Verificar el rol del usuario**
+
+                **if (role !== 'admin' \&\& role !== 'super\_admin') {**
+
+                    **throw new Error("Solo los administradores pueden agregar opciones");**
+
+                **}**
+
                 
-                // Verificar la sesión inicial
-                await checkSession();
+
+                **// Crear nueva opción**
+
+                **const newOption = {**
+
+                    **field: currentDropdownField,**
+
+                    **option: newLabel**
+
+                **};**
+
                 
-                // Agregar listener para cambios de autenticación
-                if (supabaseClient) {
-                    supabaseClient.auth.onAuthStateChange((event, session) => {
-                        console.log('Cambio de estado de autenticación:', event);
-                        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-                            // Verificar la sesión nuevamente
-                            checkSession();
-                        }
-                    });
-                }
+
+                **// Insertar en Supabase**
+
+                **const { error } = await supabaseClient**
+
+                    **.from('dropdown\_options')**
+
+                    **.insert(\[newOption]);**
+
+                **if (error) throw error;**
+
                 
-                // Configurar el evento de submit del formulario de login
-                if (loginForm) {
-                    loginForm.addEventListener('submit', login);
-                }
+
+                **// Mostrar mensaje de éxito**
+
+                **alert('Opción agregada exitosamente');**
+
                 
-                // Configurar botón de logout
-                if (logoutBtn) {
-                    logoutBtn.addEventListener('click', logout);
-                }
+
+                **// Recargar opciones para el modal**
+
+                **console.log(`Recargando opciones para administración de: ${currentDropdownField}`);**
+
+                **await loadDropdownOptionsForManagement(currentDropdownField);**
+
                 
-                console.log('Sistema inicializado correctamente');
-            } catch (error) {
-                console.error('Error al inicializar el sistema:', error);
-                showError('Error al inicializar el sistema: ' + error.message);
-            }
-        });
-    </script>
-</body>
-</html>
+
+                **// Recargar opciones para el desplegable principal**
+
+                **console.log(`Recargando opciones para desplegable principal: ${currentDropdownField}`);**
+
+                **await loadDropdownOptions(currentDropdownField);**
+
+                
+
+                **// Forzar recarga de TODOS los desplegables para asegurar consistencia**
+
+                **console.log('Forzando recarga de todos los desplegables...');**
+
+                **const allDropdowns = \[**
+
+                    **'rango', 'sexo', 'tipo-expediente', 'icap', 'condicion-funcionario',**
+
+                    **'servicio-labora', 'tipo-falta', 'origen-falta', 'falta',**
+
+                    **'denunciante', 'estatus', 'decision'**
+
+                **];**
+
+                
+
+                **for (const dropdown of allDropdowns) {**
+
+                    **console.log(`Recargando desplegable: ${dropdown}`);**
+
+                    **await loadDropdownOptions(dropdown);**
+
+                **}**
+
+                
+
+                **// Limpiar campos**
+
+                **newOptionValue.value = '';**
+
+                **newOptionLabel.value = '';**
+
+            **} catch (error) {**
+
+                **console.error('Error al agregar opción:', error);**
+
+                **alert(`Error al agregar opción: ${error.message}`);**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para editar una opción**
+
+        **async function editOption(id) {**
+
+            **try {**
+
+                **// Verificar el rol del usuario**
+
+                **const { role } = await checkUserRole();**
+
+                **// Verificar el rol del usuario**
+
+                **if (role !== 'admin' \&\& role !== 'super\_admin') {**
+
+                    **throw new Error("Solo los administradores pueden editar opciones");**
+
+                **}**
+
+                **const { data, error } = await supabaseClient**
+
+                    **.from('dropdown\_options')**
+
+                    **.select('\*')**
+
+                    **.eq('id', id)**
+
+                    **.single();**
+
+                **if (error) throw error;**
+
+                **if (!data) {**
+
+                    **throw new Error('Opción no encontrada');**
+
+                **}**
+
+                **// Rellenar el formulario de nueva opción con los datos de edición**
+
+                **newOptionValue.value = data.option;**
+
+                **newOptionLabel.value = data.option;**
+
+                **// Establecer el ID de edición**
+
+                **editingOptionId = id;**
+
+                **// Desplazar al formulario**
+
+                **newOptionValue.scrollIntoView({ behavior: 'smooth' });**
+
+                **alert('Ahora edite los valores y haga clic en "Agregar Opción" para guardar los cambios');**
+
+            **} catch (error) {**
+
+                **console.error('Error al editar opción:', error);**
+
+                **alert(`Error al editar opción: ${error.message}`);**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para eliminar una opción (CORREGIDA)**
+
+        **async function deleteOption(id) {**
+
+            **if (!confirm('¿Está seguro de que desea eliminar esta opción?')) {**
+
+                **return;**
+
+            **}**
+
+            **try {**
+
+                **// Verificar si Supabase está configurado**
+
+                **if (!isSupabaseConfigured) {**
+
+                    **throw new Error("Supabase no está configurado. Verifica tus credenciales.");**
+
+                **}**
+
+                
+
+                **// Manejo seguro de la sesión**
+
+                **const { data, error: sessionError } = await supabaseClient.auth.getSession();**
+
+                **if (sessionError || !data?.session) {**
+
+                    **throw new Error("No hay sesión activa. Por favor, inicie sesión.");**
+
+                **}**
+
+                
+
+                **const user = data.session.user;**
+
+                **// Verificar el rol del usuario**
+
+                **const { role } = await checkUserRole();**
+
+                
+
+                **// Si no es admin o super\_admin, mostrar advertencia**
+
+                **if (role !== 'admin' \&\& role !== 'super\_admin') {**
+
+                    **throw new Error("Solo los administradores pueden eliminar opciones");**
+
+                **}**
+
+                
+
+                **// Eliminar la opción de dropdown\_options**
+
+                **const { error } = await supabaseClient**
+
+                    **.from('dropdown\_options')**
+
+                    **.delete()**
+
+                    **.eq('id', id);**
+
+                **if (error) throw error;**
+
+                
+
+                **// Recargar opciones**
+
+                **await loadDropdownOptionsForManagement(currentDropdownField);**
+
+                **// Actualizar el desplegable principal**
+
+                **await loadDropdownOptions(currentDropdownField);**
+
+                
+
+                **// Forzar recarga de TODOS los desplegables para asegurar consistencia**
+
+                **const allDropdowns = \[**
+
+                    **'rango', 'sexo', 'tipo-expediente', 'icap', 'condicion-funcionario',**
+
+                    **'servicio-labora', 'tipo-falta', 'origen-falta', 'falta',**
+
+                    **'denunciante', 'estatus', 'decision'**
+
+                **];**
+
+                
+
+                **for (const dropdown of allDropdowns) {**
+
+                    **await loadDropdownOptions(dropdown);**
+
+                **}**
+
+                
+
+                **alert('Opción eliminada exitosamente');**
+
+            **} catch (error) {**
+
+                **console.error('Error al eliminar opción:', error);**
+
+                **alert(`Error al eliminar opción: ${error.message}`);**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para cargar usuarios**
+
+        **async function loadUsers() {**
+
+            **try {**
+
+                **// Verificar si Supabase está configurado**
+
+                **if (!isSupabaseConfigured) {**
+
+                    **throw new Error("Supabase no está configurado. Verifica tus credenciales.");**
+
+                **}**
+
+                
+
+                **// Manejo seguro de la sesión**
+
+                **const { data, error: sessionError } = await supabaseClient.auth.getSession();**
+
+                **if (sessionError || !data?.session) {**
+
+                    **throw new Error("No hay sesión activa. Por favor, inicie sesión.");**
+
+                **}**
+
+                
+
+                **// Obtener el rol del usuario**
+
+                **const { role } = await checkUserRole();**
+
+                **// Verificar permisos**
+
+                **if (role !== 'super\_admin' \&\& role !== 'admin') {**
+
+                    **throw new Error("Solo los administradores pueden ver la lista de usuarios");**
+
+                **}**
+
+                
+
+                **// Consultar usuarios desde la tabla users**
+
+                **const { data: usersData, error } = await supabaseClient**
+
+                    **.from('users')**
+
+                    **.select('\*');**
+
+                **if (error) throw error;**
+
+                
+
+                **// Limpiar la lista**
+
+                **usersList.innerHTML = '';**
+
+                **if (usersData \&\& usersData.length > 0) {**
+
+                    **usersData.forEach(user => {**
+
+                        **const row = document.createElement('tr');**
+
+                        **// Determinar el rol para mostrar**
+
+                        **let displayRole = 'Usuario';**
+
+                        **if (user.role === 'super\_admin') {**
+
+                            **displayRole = 'Administrador Principal';**
+
+                        **} else if (user.role === 'admin') {**
+
+                            **displayRole = 'Administrador';**
+
+                        **}**
+
+                        **row.innerHTML = `**
+
+                            **<td>${user.full\_name || 'Sin nombre'}</td>**
+
+                            **<td>${user.email}</td>**
+
+                            **<td>**
+
+                                **<span class="role-badge ${user.role === 'super\_admin' ? 'role-super-admin' : user.role === 'admin' ? 'role-admin' : 'role-user'}">**
+
+                                    **${displayRole}**
+
+                                **</span>**
+
+                            **</td>**
+
+                            **<td>**
+
+                                **${user.role !== 'super\_admin' ?** 
+
+                                    **`<button class="btn btn-sm btn-outline-danger delete-user" data-id="${user.id}">**
+
+                                        **<i class="fas fa-trash"></i>**
+
+                                    **</button>` :** 
+
+                                    **'<span class="text-muted">No permitido</span>'**
+
+                                **}**
+
+                            **</td>**
+
+                        **`;**
+
+                        **usersList.appendChild(row);**
+
+                    **});**
+
+                    **// Configurar eventos para los botones de eliminación**
+
+                    **document.querySelectorAll('.delete-user').forEach(button => {**
+
+                        **button.addEventListener('click', function() {**
+
+                            **const id = this.getAttribute('data-id');**
+
+                            **deleteUser(id);**
+
+                        **});**
+
+                    **});**
+
+                **} else {**
+
+                    **usersList.innerHTML = `**
+
+                        **<tr>**
+
+                            **<td colspan="4" class="text-center py-3 text-muted">**
+
+                                **<i class="fas fa-inbox me-2"></i>No hay usuarios registrados**
+
+                            **</td>**
+
+                        **</tr>**
+
+                    **`;**
+
+                **}**
+
+            **} catch (error) {**
+
+                **console.error('Error al cargar usuarios:', error);**
+
+                **usersList.innerHTML = `**
+
+                    **<tr>**
+
+                        **<td colspan="4" class="text-center py-3 text-danger">**
+
+                            **<i class="fas fa-exclamation-circle me-2"></i>Error: ${error.message}**
+
+                        **</td>**
+
+                    **</tr>**
+
+                **`;**
+
+                **showError(`Error: ${error.message}`);**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para crear un nuevo usuario**
+
+        **async function register(e) {**
+
+            **e.preventDefault();**
+
+            **const fullName = document.getElementById('reg-name').value;**
+
+            **const email = document.getElementById('reg-email').value;**
+
+            **const password = document.getElementById('reg-password').value;**
+
+            **const role = document.getElementById('user-role').value;**
+
+            **try {**
+
+                **hideError();**
+
+                **// Verificar el rol del usuario**
+
+                **const { role: currentUserRole } = await checkUserRole();**
+
+                **// Solo super\_admin puede crear nuevos usuarios**
+
+                **if (currentUserRole !== 'super\_admin') {**
+
+                    **throw new Error("Solo el administrador principal puede crear nuevos usuarios");**
+
+                **}**
+
+                **// Registrar el nuevo usuario**
+
+                **const { data: signUpData, error } = await supabaseClient.auth.signUp({**
+
+                    **email: email,**
+
+                    **password: password**
+
+                **});**
+
+                **if (error) throw error;**
+
+                **if (signUpData?.user) {**
+
+                    **console.log('Registro exitoso', signUpData);**
+
+                    **// Insertar en la tabla users**
+
+                    **const { error: insertError } = await supabaseClient**
+
+                        **.from('users')**
+
+                        **.insert(\[{**
+
+                            **id: signUpData.user.id,**
+
+                            **email: email,**
+
+                            **full\_name: fullName,**
+
+                            **role: role**
+
+                        **}]);**
+
+                    **if (insertError) throw insertError;**
+
+                    **alert('¡Usuario creado exitosamente!');**
+
+                    **// Limpiar el formulario**
+
+                    **document.getElementById('reg-name').value = '';**
+
+                    **document.getElementById('reg-email').value = '';**
+
+                    **document.getElementById('reg-password').value = '';**
+
+                    **document.getElementById('user-role').value = 'user';**
+
+                    **// Recargar la lista de usuarios**
+
+                    **await loadUsers();**
+
+                **}**
+
+            **} catch (error) {**
+
+                **console.error('Error al crear usuario:', error);**
+
+                **showError(`Error al crear usuario: ${error.message}`);**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para eliminar un usuario**
+
+        **async function deleteUser(id) {**
+
+            **if (!confirm('¿Está seguro de que desea eliminar este usuario?')) {**
+
+                **return;**
+
+            **}**
+
+            **try {**
+
+                **// Verificar el rol del usuario**
+
+                **const { role } = await checkUserRole();**
+
+                **// Solo super\_admin puede eliminar usuarios**
+
+                **if (role !== 'super\_admin') {**
+
+                    **throw new Error("Solo el administrador principal puede eliminar usuarios");**
+
+                **}**
+
+                **// Eliminar el usuario de la tabla users**
+
+                **const { error } = await supabaseClient**
+
+                    **.from('users')**
+
+                    **.delete()**
+
+                    **.eq('id', id);**
+
+                **if (error) throw error;**
+
+                **// Recargar la lista de usuarios**
+
+                **await loadUsers();**
+
+                **alert('Usuario eliminado exitosamente');**
+
+            **} catch (error) {**
+
+                **console.error('Error al eliminar usuario:', error);**
+
+                **alert(`Error al eliminar usuario: ${error.message}`);**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para guardar un expediente**
+
+        **async function saveExpediente(e) {**
+
+            **e.preventDefault();**
+
+            **try {**
+
+                **// Validar formulario**
+
+                **if (!validatePersonalForm()) {**
+
+                    **throw new Error("Por favor, corrija los errores en el formulario");**
+
+                **}**
+
+                **// Verificar si Supabase está configurado**
+
+                **if (!isSupabaseConfigured) {**
+
+                    **throw new Error("Supabase no está configurado. Verifica tus credenciales.");**
+
+                **}**
+
+                **// Manejo seguro de la sesión**
+
+                **const { data, error: sessionError } = await supabaseClient.auth.getSession();**
+
+                **if (sessionError || !data?.session) {**
+
+                    **throw new Error("No hay sesión activa. Por favor, inicie sesión.");**
+
+                **}**
+
+                **// Obtener el rol del usuario**
+
+                **const { role } = await checkUserRole();**
+
+                **// Verificar permisos**
+
+                **if (role !== 'admin' \&\& role !== 'super\_admin') {**
+
+                    **throw new Error("No tiene permisos para registrar expedientes. Solo los administradores pueden registrar.");**
+
+                **}**
+
+                **// Generar número de expediente**
+
+                **const currentDate = new Date();**
+
+                **const year = currentDate.getFullYear();**
+
+                **const month = String(currentDate.getMonth() + 1).padStart(2, '0');**
+
+                **const randomNum = Math.floor(1000 + Math.random() \* 9000);**
+
+                **const expedienteNum = `${year}-${month}-${randomNum}`;**
+
+                **// Crear objeto expediente**
+
+                **const expediente = {**
+
+                    **foto: profilePicture.src,**
+
+                    **nombres: nombres.value,**
+
+                    **apellidos: apellidos.value,**
+
+                    **edad: edad.value ? parseInt(edad.value) : null,**
+
+                    **rango: rango.value,**
+
+                    **sexo: sexo.value,**
+
+                    **cedula: cedula.value,**
+
+                    **fecha\_nacimiento: fechaNacimiento.value,**
+
+                    **fecha\_inicio: fechaInicio.value,**
+
+                    **tipo\_expediente: tipoExpediente.value,**
+
+                    **icap: icap.value,**
+
+                    **condicion\_funcionario: condicionFuncionario.value,**
+
+                    **anio: anio.value,**
+
+                    **servicio\_labora: servicioLabora.value,**
+
+                    **tipo\_falta: tipoFalta.value,**
+
+                    **origen\_falta: origenFalta.value,**
+
+                    **falta: falta.value,**
+
+                    **denunciante: denunciante.value,**
+
+                    **detenido: detenido.value,**
+
+                    **estatus: estatus.value,**
+
+                    **decision: decision.value,**
+
+                    **expediente\_penal: expedientePenal.value,**
+
+                    **resena\_caso: resenaCaso.value,**
+
+                    **causa: causa.value,**
+
+                    **registrado\_por: registradoPor.value,**
+
+                    **remision: remision.value,**
+
+                    **expediente\_numero: expedienteNum,**
+
+                    **fecha\_registro: new Date().toISOString(),**
+
+                    **user\_id: data.session.user.id,**
+
+                    **registrado\_por: data.session.user.email?.split('@')\[0] || 'Usuario'**
+
+                **};**
+
+                **// Guardar en Supabase**
+
+                **const { error: saveError } = await supabaseClient**
+
+                    **.from('expedientes')**
+
+                    **.insert(\[expediente]);**
+
+                **if (saveError) throw saveError;**
+
+                **// Mostrar mensaje de éxito**
+
+                **alert('Expediente guardado exitosamente');**
+
+                **// Actualizar campos solo lectura**
+
+                **expedienteNumero.value = expedienteNum;**
+
+                **registradoPor.value = data.session.user.email?.split('@')\[0] || 'Usuario';**
+
+                **// Limpiar el formulario**
+
+                **document.getElementById('profile-picture').src = 'https://via.placeholder.com/150';**
+
+                **document.getElementById('nombres').value = '';**
+
+                **document.getElementById('apellidos').value = '';**
+
+                **document.getElementById('cedula').value = '';**
+
+                **document.getElementById('edad').value = '';**
+
+                **document.getElementById('rango').value = '';**
+
+                **document.getElementById('sexo').value = '';**
+
+                **document.getElementById('fecha-nacimiento').value = '';**
+
+                **document.getElementById('fecha-inicio').value = '';**
+
+                **document.getElementById('tipo-expediente').value = '';**
+
+                **document.getElementById('icap').value = '';**
+
+                **document.getElementById('condicion-funcionario').value = '';**
+
+                **document.getElementById('anio').value = '';**
+
+                **document.getElementById('servicio-labora').value = '';**
+
+                **document.getElementById('tipo-falta').value = '';**
+
+                **document.getElementById('origen-falta').value = '';**
+
+                **document.getElementById('falta').value = '';**
+
+                **document.getElementById('denunciante').value = '';**
+
+                **document.getElementById('detenido').value = '';**
+
+                **document.getElementById('estatus').value = '';**
+
+                **document.getElementById('decision').value = '';**
+
+                **document.getElementById('resena-caso').value = '';**
+
+                **document.getElementById('causa').value = '';**
+
+                **document.getElementById('remision').value = '';**
+
+                **// Limpiar validaciones**
+
+                **document.querySelectorAll('.is-invalid').forEach(element => {**
+
+                    **element.classList.remove('is-invalid');**
+
+                **});**
+
+            **} catch (error) {**
+
+                **console.error('Error al guardar expediente:', error);**
+
+                **showError(`Error al guardar expediente: ${error.message || 'Error desconocido'}`);**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para verificar si la sesión es válida**
+
+        **async function isSessionValid() {**
+
+            **try {**
+
+                **// Verificar si Supabase está configurado**
+
+                **if (!isSupabaseConfigured) {**
+
+                    **console.error('Supabase no está configurado. Verifica tus credenciales.');**
+
+                    **return false;**
+
+                **}**
+
+                **// Manejo seguro de la sesión**
+
+                **const { data, error } = await supabaseClient.auth.getSession();**
+
+                **if (error) {**
+
+                    **console.error('Error al obtener sesión:', error);**
+
+                    **return false;**
+
+                **}**
+
+                **return !!data?.session;**
+
+            **} catch (error) {**
+
+                **console.error('Error al verificar validez de sesión:', error);**
+
+                **return false;**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para verificar la sesión**
+
+        **async function checkSession() {**
+
+            **try {**
+
+                **console.log('--- INICIO DE VERIFICACIÓN DE SESIÓN ---');**
+
+                **// Verificar si Supabase está configurado**
+
+                **if (!isSupabaseConfigured) {**
+
+                    **console.error('Supabase no está configurado. Verifica tus credenciales.');**
+
+                    **showError('Supabase no está configurado. Verifica tus credenciales.');**
+
+                    **return;**
+
+                **}**
+
+                **// Manejo seguro de la sesión**
+
+                **const { data, error } = await supabaseClient.auth.getSession();**
+
+                **if (error) {**
+
+                    **console.error('Error al obtener sesión:', error);**
+
+                    **throw error;**
+
+                **}**
+
+                **if (data?.session) {**
+
+                    **console.log('Sesión encontrada:', data.session);**
+
+                    **// Usuario autenticado - muestra el panel principal**
+
+                    **loginScreen.style.display = 'none';**
+
+                    **mainPanel.style.display = 'block';**
+
+                    **// Muestra el nombre del usuario**
+
+                    **const user = data.session.user;**
+
+                    **if (userNameElement) {**
+
+                        **// Primero intentar obtener el nombre de la tabla users**
+
+                        **const { data: userData, error: userError } = await supabaseClient**
+
+                            **.from('users')**
+
+                            **.select('full\_name')**
+
+                            **.eq('id', user.id)**
+
+                            **.single();**
+
+                        **if (!userError \&\& userData?.full\_name) {**
+
+                            **userNameElement.textContent = userData.full\_name;**
+
+                        **} else {**
+
+                            **// Manejo seguro de user\_metadata**
+
+                            **const fullName = user.user\_metadata?.full\_name ||** 
+
+                                            **user.user\_metadata?.fullName ||** 
+
+                                            **user.user\_metadata?.name ||**
+
+                                            **user.email?.split('@')\[0] || 'Usuario';**
+
+                            **userNameElement.textContent = fullName;**
+
+                        **}**
+
+                    **}**
+
+                    **// Verificar el rol del usuario**
+
+                    **const { role } = await checkUserRole();**
+
+                    **currentUserRole = role;**
+
+                    **console.log('ROL DEL USUARIO:', role);**
+
+                    **// Mostrar el rol según el tipo de usuario**
+
+                    **if (roleDisplay) {**
+
+                        **roleDisplay.innerHTML = '';**
+
+                        **if (role === 'super\_admin') {**
+
+                            **// Para super admin, mantener el badge rojo**
+
+                            **const roleBadge = document.createElement('span');**
+
+                            **roleBadge.className = 'role-badge role-super-admin';**
+
+                            **roleBadge.textContent = 'Administrador Principal';**
+
+                            **roleDisplay.appendChild(roleBadge);**
+
+                        **} else if (role === 'admin') {**
+
+                            **// Para admin, mantener el badge azul**
+
+                            **const roleBadge = document.createElement('span');**
+
+                            **roleBadge.className = 'role-badge role-admin';**
+
+                            **roleBadge.textContent = 'Administrador';**
+
+                            **roleDisplay.appendChild(roleBadge);**
+
+                        **} else {**
+
+                            **// Para usuario normal, solo mostrar la palabra "Usuario" en texto plano con color verde**
+
+                            **roleDisplay.textContent = 'Usuario';**
+
+                            **roleDisplay.style.color = '#28a745'; // Verde para usuarios normales**
+
+                            **roleDisplay.style.fontWeight = '600';**
+
+                            **roleDisplay.style.marginLeft = '8px';**
+
+                        **}**
+
+                    **}**
+
+                    **// Aplicar restricciones según el rol**
+
+                    **applyRoleRestrictions(role);**
+
+                    **// Si es super\_admin, cargar la lista de usuarios**
+
+                    **if (role === 'super\_admin') {**
+
+                        **await loadUsers();**
+
+                    **}**
+
+                    **// Inicializar todos los desplegables**
+
+                    **await initializeDropdowns();**
+
+                **} else {**
+
+                    **console.log('No hay sesión activa');**
+
+                    **// Usuario no autenticado - muestra el login**
+
+                    **loginScreen.style.display = 'block';**
+
+                    **mainPanel.style.display = 'none';**
+
+                **}**
+
+            **} catch (error) {**
+
+                **console.error('Error al verificar sesión:', error);**
+
+                **showError('Error al verificar sesión: ' + error.message);**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para inicializar todos los desplegables**
+
+        **async function initializeDropdowns() {**
+
+            **try {**
+
+                **console.log('--- INICIALIZANDO TODOS LOS DESPLEGABLES ---');**
+
+                
+
+                **// Lista de todos los campos de desplegables**
+
+                **const dropdownFields = \[**
+
+                    **'rango', 'sexo', 'tipo-expediente', 'icap', 'condicion-funcionario',**
+
+                    **'servicio-labora', 'tipo-falta', 'origen-falta', 'falta',**
+
+                    **'denunciante', 'estatus', 'decision'**
+
+                **];**
+
+                
+
+                **// Cargar opciones para todos los desplegables**
+
+                **for (const field of dropdownFields) {**
+
+                    **console.log(`Cargando opciones para: ${field}`);**
+
+                    **await loadDropdownOptions(field);**
+
+                **}**
+
+                
+
+                **// Inicializar el campo de año**
+
+                **initializeYearField();**
+
+                
+
+                **console.log('--- INICIALIZACIÓN DE DESPLEGABLES COMPLETADA ---');**
+
+            **} catch (error) {**
+
+                **console.error('Error al inicializar desplegables:', error);**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para aplicar restricciones según el rol del usuario**
+
+        **function applyRoleRestrictions(role) {**
+
+            **console.log('APLICANDO RESTRICCIONES - ROL ACTUAL:', role);**
+
+            **currentUserRole = role;**
+
+            
+
+            **// Primero ocultar TODAS las pestañas**
+
+            **document.querySelectorAll('.super-admin-only, .admin-only, .user-only').forEach(element => {**
+
+                **element.style.display = 'none';**
+
+            **});**
+
+            
+
+            **// Mostrar pestañas según el rol**
+
+            **if (role === 'super\_admin') {**
+
+                **console.log('MOSTRANDO TODAS LAS PESTAÑAS PARA SUPER\_ADMIN');**
+
+                **document.querySelectorAll('.super-admin-only, .admin-only, .user-only').forEach(element => {**
+
+                    **element.style.display = 'block';**
+
+                **});**
+
+            **} else if (role === 'admin') {**
+
+                **console.log('MOSTRANDO PESTAÑAS PARA ADMIN');**
+
+                **document.querySelectorAll('.admin-only, .user-only').forEach(element => {**
+
+                    **element.style.display = 'block';**
+
+                **});**
+
+            **} else {**
+
+                **console.log('MOSTRANDO SOLO PESTAÑAS PARA USUARIO');**
+
+                **document.querySelectorAll('.user-only').forEach(element => {**
+
+                    **element.style.display = 'block';**
+
+                **});**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para iniciar sesión**
+
+        **async function login(e) {**
+
+            **e.preventDefault();**
+
+            **const email = document.getElementById('email').value;**
+
+            **const password = document.getElementById('password').value;**
+
+            **try {**
+
+                **hideError();**
+
+                **// Mostrar spinner de carga**
+
+                **loginSpinner.classList.remove('d-none');**
+
+                **loginText.textContent = 'Iniciando sesión...';**
+
+                **console.log('Intentando iniciar sesión con:', email);**
+
+                **// Intenta iniciar sesión**
+
+                **const { data, error } = await supabaseClient.auth.signInWithPassword({**
+
+                    **email: email,**
+
+                    **password: password**
+
+                **});**
+
+                **if (error) {**
+
+                    **console.error('Error de autenticación:', error);**
+
+                    **// Manejo específico de errores**
+
+                    **let errorMessageText = 'Error: ' + error.message;**
+
+                    **if (error.message.includes('Invalid login credentials')) {**
+
+                        **errorMessageText = 'Credenciales inválidas. Verifique su correo y contraseña.';**
+
+                    **} else if (error.message.includes('Email not confirmed')) {**
+
+                        **errorMessageText = 'Correo no confirmado. Por favor, revise su bandeja de entrada y confirme su cuenta.';**
+
+                    **} else if (error.message.includes('Email rate limit exceeded')) {**
+
+                        **errorMessageText = 'Demasiados intentos. Por favor, intente más tarde.';**
+
+                    **} else if (error.message.includes('captcha')) {**
+
+                        **errorMessageText = 'Error de verificación CAPTCHA. Por favor, desactive el CAPTCHA en Supabase o contacte al administrador.';**
+
+                    **}**
+
+                    **showError(errorMessageText);**
+
+                    **// Restaurar el estado del botón**
+
+                    **loginSpinner.classList.add('d-none');**
+
+                    **loginText.textContent = 'Iniciar Sesión';**
+
+                    **return;**
+
+                **}**
+
+                **console.log('Inicio de sesión exitoso', data);**
+
+                **// Si llegamos aquí, el inicio de sesión fue exitoso**
+
+                **loginScreen.style.display = 'none';**
+
+                **mainPanel.style.display = 'block';**
+
+                **// Muestra el nombre del usuario**
+
+                **const user = data.user;**
+
+                **if (userNameElement) {**
+
+                    **// Primero intentar obtener el nombre de la tabla users**
+
+                    **const { data: userData, error: userError } = await supabaseClient**
+
+                        **.from('users')**
+
+                        **.select('full\_name')**
+
+                        **.eq('id', user.id)**
+
+                        **.single();**
+
+                    **if (!userError \&\& userData?.full\_name) {**
+
+                        **userNameElement.textContent = userData.full\_name;**
+
+                    **} else {**
+
+                        **// Manejo seguro de user\_metadata**
+
+                        **const fullName = user.user\_metadata?.full\_name ||** 
+
+                                        **user.user\_metadata?.fullName ||** 
+
+                                        **user.user\_metadata?.name ||**
+
+                                        **user.email?.split('@')\[0] || 'Usuario';**
+
+                        **userNameElement.textContent = fullName;**
+
+                    **}**
+
+                **}**
+
+                **// Verificar el rol del usuario**
+
+                **const { role } = await checkUserRole();**
+
+                **currentUserRole = role;**
+
+                **console.log('ROL DEL USUARIO:', role);**
+
+                **// Mostrar el rol según el tipo de usuario**
+
+                **if (roleDisplay) {**
+
+                    **roleDisplay.innerHTML = '';**
+
+                    **if (role === 'super\_admin') {**
+
+                        **// Para super admin, mantener el badge rojo**
+
+                        **const roleBadge = document.createElement('span');**
+
+                        **roleBadge.className = 'role-badge role-super-admin';**
+
+                        **roleBadge.textContent = 'Administrador Principal';**
+
+                        **roleDisplay.appendChild(roleBadge);**
+
+                    **} else if (role === 'admin') {**
+
+                        **// Para admin, mantener el badge azul**
+
+                        **const roleBadge = document.createElement('span');**
+
+                        **roleBadge.className = 'role-badge role-admin';**
+
+                        **roleBadge.textContent = 'Administrador';**
+
+                        **roleDisplay.appendChild(roleBadge);**
+
+                    **} else {**
+
+                        **// Para usuario normal, solo mostrar la palabra "Usuario" en texto plano con color verde**
+
+                        **roleDisplay.textContent = 'Usuario';**
+
+                        **roleDisplay.style.color = '#28a745'; // Verde para usuarios normales**
+
+                        **roleDisplay.style.fontWeight = '600';**
+
+                        **roleDisplay.style.marginLeft = '8px';**
+
+                    **}**
+
+                **}**
+
+                **// Aplicar restricciones según el rol**
+
+                **applyRoleRestrictions(role);**
+
+                **// Si es super\_admin, cargar la lista de usuarios**
+
+                **if (role === 'super\_admin') {**
+
+                    **await loadUsers();**
+
+                **}**
+
+                **// Inicializar todos los desplegables**
+
+                **await initializeDropdowns();**
+
+                **// Restaurar el estado del botón**
+
+                **loginSpinner.classList.add('d-none');**
+
+                **loginText.textContent = 'Iniciar Sesión';**
+
+            **} catch (error) {**
+
+                **console.error('Error inesperado al iniciar sesión:', error);**
+
+                **showError('Error inesperado: ' + error.message);**
+
+                **// Restaurar el estado del botón**
+
+                **loginSpinner.classList.add('d-none');**
+
+                **loginText.textContent = 'Iniciar Sesión';**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para cerrar sesión**
+
+        **async function logout() {**
+
+            **try {**
+
+                **const { error } = await supabaseClient.auth.signOut();**
+
+                **if (error) throw error;**
+
+                **// Mostrar pantalla de login**
+
+                **loginScreen.style.display = 'block';**
+
+                **mainPanel.style.display = 'none';**
+
+                **// Limpiar el formulario de login**
+
+                **document.getElementById('email').value = '';**
+
+                **document.getElementById('password').value = '';**
+
+                **document.getElementById('user-name').textContent = '';**
+
+                **document.getElementById('role-display').innerHTML = '';**
+
+            **} catch (error) {**
+
+                **console.error('Error al cerrar sesión:', error);**
+
+                **alert('Error al cerrar sesión: ' + error.message);**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Función para inicializar Supabase**
+
+        **function initSupabase() {**
+
+            **try {**
+
+                **// Verificar si las credenciales son placeholders**
+
+                **if (supabaseUrl.includes('TU\_URL\_DE\_SUPABASE') ||** 
+
+                    **supabaseKey.includes('TU\_CLAVE\_ANONIMA\_DE\_SUPABASE')) {**
+
+                    **throw new Error("Debes reemplazar las credenciales de Supabase. Abre este archivo en un editor de texto y reemplaza los valores de supabaseUrl y supabaseKey con los de tu proyecto.");**
+
+                **}**
+
+                **// Inicializar Supabase**
+
+                **const { createClient } = supabase;**
+
+                **supabaseClient = createClient(supabaseUrl, supabaseKey, {**
+
+                    **auth: {**
+
+                        **autoRefreshToken: true,**
+
+                        **persistSession: true,**
+
+                        **detectSessionInUrl: true**
+
+                    **}**
+
+                **});**
+
+                **isSupabaseConfigured = true;**
+
+                **console.log("Supabase inicializado correctamente");**
+
+            **} catch (error) {**
+
+                **console.error("Error al inicializar Supabase:", error);**
+
+                **showError("Error de configuración: " + error.message);**
+
+            **}**
+
+        **}**
+
+        
+
+        **// Configurar eventos**
+
+        **document.addEventListener('DOMContentLoaded', async () => {**
+
+            **try {**
+
+                **// Inicializar Supabase**
+
+                **initSupabase();**
+
+                **// Verificar la sesión inicial**
+
+                **await checkSession();**
+
+                **// Agregar listener para cambios de autenticación**
+
+                **if (supabaseClient) {**
+
+                    **supabaseClient.auth.onAuthStateChange((event, session) => {**
+
+                        **console.log('Cambio de estado de autenticación:', event, session);**
+
+                        **if (event === 'SIGNED\_IN' || event === 'SIGNED\_OUT') {**
+
+                            **// Verificar la sesión nuevamente**
+
+                            **checkSession();**
+
+                        **}**
+
+                    **});**
+
+                **}**
+
+                **// Configurar el evento de submit del formulario de login**
+
+                **if (loginForm) {**
+
+                    **loginForm.addEventListener('submit', login);**
+
+                **}**
+
+                **// Configurar el evento de submit del formulario de registro**
+
+                **if (registerForm) {**
+
+                    **registerForm.addEventListener('submit', register);**
+
+                **}**
+
+                **// Configurar el evento de submit del formulario de personal**
+
+                **if (personalForm) {**
+
+                    **personalForm.addEventListener('submit', saveExpediente);**
+
+                **}**
+
+                **// Configurar botón de logout**
+
+                **if (logoutBtn) {**
+
+                    **logoutBtn.addEventListener('click', logout);**
+
+                **}**
+
+                **// Configurar subida de foto de perfil**
+
+                **if (profilePictureUpload) {**
+
+                    **profilePictureUpload.addEventListener('change', function(e) {**
+
+                        **const file = e.target.files\[0];**
+
+                        **if (file) {**
+
+                            **const reader = new FileReader();**
+
+                            **reader.onload = function(event) {**
+
+                                **profilePicture.src = event.target.result;**
+
+                            **}**
+
+                            **reader.readAsDataURL(file);**
+
+                        **}**
+
+                    **});**
+
+                **}**
+
+                **// Configurar el ícono de subir foto**
+
+                **document.querySelector('.upload-icon')?.addEventListener('click', function() {**
+
+                    **profilePictureUpload.click();**
+
+                **});**
+
+                **// Configurar botones de administración de desplegables**
+
+                **document.querySelectorAll('.manage-dropdown').forEach(button => {**
+
+                    **// Eliminar cualquier listener existente**
+
+                    **const newButton = button.cloneNode(true);**
+
+                    **button.parentNode.replaceChild(newButton, button);**
+
+                    **// Configurar el nuevo listener**
+
+                    **newButton.addEventListener('click', async function(e) {**
+
+                        **e.preventDefault();**
+
+                        **e.stopPropagation();**
+
+                        **try {**
+
+                            **// Verificar si Supabase está configurado**
+
+                            **if (!isSupabaseConfigured) {**
+
+                                **throw new Error("Supabase no está configurado. Verifica tus credenciales.");**
+
+                            **}**
+
+                            **// Manejo seguro de la sesión**
+
+                            **const { data, error: sessionError } = await supabaseClient.auth.getSession();**
+
+                            **if (sessionError || !data?.session) {**
+
+                                **throw new Error("No hay sesión activa. Por favor, inicie sesión.");**
+
+                            **}**
+
+                            **const user = data.session.user;**
+
+                            **console.log('Usuario actual:', user);**
+
+                            **// Verificar el rol del usuario**
+
+                            **const { role } = await checkUserRole();**
+
+                            **console.log('ROL ACTUAL:', role);**
+
+                            **// Si no es admin o super\_admin, mostrar advertencia**
+
+                            **if (role !== 'admin' \&\& role !== 'super\_admin') {**
+
+                                **alert("No tienes permisos para administrar opciones de desplegables");**
+
+                                **return;**
+
+                            **}**
+
+                            **// Intentar obtener el campo de diferentes formas**
+
+                            **let field = this.getAttribute('data-field');**
+
+                            **// Si no tiene data-field, buscar en el select anterior**
+
+                            **if (!field) {**
+
+                                **const selectGroup = this.closest('.input-group');**
+
+                                **if (selectGroup) {**
+
+                                    **const select = selectGroup.previousElementSibling;**
+
+                                    **if (select \&\& select.id) {**
+
+                                        **field = select.id;**
+
+                                    **}**
+
+                                **}**
+
+                            **}**
+
+                            **if (!field) {**
+
+                                **// Último intento: buscar en el padre**
+
+                                **const parent = this.closest('.mb-3, .row');**
+
+                                **if (parent) {**
+
+                                    **const label = parent.querySelector('label');**
+
+                                    **if (label \&\& label.htmlFor) {**
+
+                                        **field = label.htmlFor;**
+
+                                    **}**
+
+                                **}**
+
+                            **}**
+
+                            **if (field) {**
+
+                                **console.log('Campo identificado:', field);**
+
+                                **currentDropdownField = field;**
+
+                                **// Cargar opciones para el campo**
+
+                                **await loadDropdownOptionsForManagement(field);**
+
+                                **// Mostrar modal**
+
+                                **manageDropdownModal.show();**
+
+                            **} else {**
+
+                                **console.error('No se pudo determinar el campo para el botón de administración');**
+
+                                **alert('Error: No se pudo identificar el campo. Por favor, contacte al administrador.');**
+
+                            **}**
+
+                        **} catch (error) {**
+
+                            **console.error('Error al procesar clic:', error);**
+
+                            **alert(`Error: ${error.message}`);**
+
+                        **}**
+
+                    **});**
+
+                **});**
+
+                **// Configurar botón para agregar opciones**
+
+                **if (btnAddOption) {**
+
+                    **btnAddOption.addEventListener('click', addOption);**
+
+                **}**
+
+                **// Permitir agregar opciones con Enter en el campo de texto**
+
+                **if (newOptionValue) {**
+
+                    **newOptionValue.addEventListener('keypress', function(e) {**
+
+                        **if (e.key === 'Enter') {**
+
+                            **addOption();**
+
+                        **}**
+
+                    **});**
+
+                **}**
+
+                **if (newOptionLabel) {**
+
+                    **newOptionLabel.addEventListener('keypress', function(e) {**
+
+                        **if (e.key === 'Enter') {**
+
+                            **addOption();**
+
+                        **}**
+
+                    **});**
+
+                **}**
+
+                **// Configurar el evento de ocultar el modal**
+
+                **document.getElementById('manageDropdownModal')?.addEventListener('hidden.bs.modal', function() {**
+
+                    **// Limpiar campos al cerrar el modal**
+
+                    **if (newOptionValue) newOptionValue.value = '';**
+
+                    **if (newOptionLabel) newOptionLabel.value = '';**
+
+                    **editingOptionId = null;**
+
+                **});**
+
+                **// Inicializar todos los desplegables**
+
+                **await initializeDropdowns();**
+
+                **console.log('Sistema inicializado correctamente');**
+
+            **} catch (error) {**
+
+                **console.error('Error al inicializar el sistema:', error);**
+
+                **showError('Error al inicializar el sistema: ' + error.message);**
+
+            **}**
+
+        **});**
+
+    **</script>**
+
+**</body>**
+
+**</html>**
+
