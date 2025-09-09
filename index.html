@@ -622,7 +622,7 @@
                                         </div>
                                         <div class="col-md-6">
                                             <label for="expediente-numero" class="form-label small fw-bold">Expediente Número</label>
-                                            <input type="text" class="form-control form-control-sm" id="expediente-numero">
+                                            <input type="text" class="form-control form-control-sm" id="expediente-numero" readonly>
                                         </div>
                                     </div>
                                     <div class="mb-3">
@@ -636,7 +636,7 @@
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="registrado-por" class="form-label small fw-bold">Registrado por Sustanciador</label>
-                                            <input type="text" class="form-control form-control-sm" id="registrado-por">
+                                            <input type="text" class="form-control form-control-sm" id="registrado-por" readonly>
                                         </div>
                                         <div class="col-md-6">
                                             <label for="remision" class="form-label small fw-bold">Remisión</label>
@@ -794,7 +794,6 @@
         let currentUserRole = 'user'; // Por defecto es usuario normal
         let currentDropdownField = '';
         let editingOptionId = null;
-        
         // CONFIGURACIÓN DE SUPABASE - ¡REEMPLAZA CON TUS CREDENCIALES!
         // PASOS:
         // 1. Ve a tu proyecto en Supabase
@@ -802,7 +801,6 @@
         // 3. Pega aquí los valores CORRECTOS
         const supabaseUrl = 'https://stwriaubepeugobgyxjt.supabase.co'; // ¡REEMPLAZA ESTO!
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g'; // ¡REEMPLAZA ESTO!
-        
         // Elementos del DOM
         const loginScreen = document.getElementById('login-screen');
         const mainPanel = document.getElementById('main-panel');
@@ -817,7 +815,6 @@
         const roleDisplay = document.getElementById('role-display');
         const usersList = document.getElementById('users-list');
         const personalForm = document.getElementById('personal-form');
-        
         // Campos de personal
         const profilePicture = document.getElementById('profile-picture');
         const profilePictureUpload = document.getElementById('profile-picture-upload');
@@ -828,7 +825,6 @@
         const sexo = document.getElementById('sexo');
         const cedula = document.getElementById('cedula');
         const fechaNacimiento = document.getElementById('fecha-nacimiento');
-        
         // Campos de expediente
         const fechaInicio = document.getElementById('fecha-inicio');
         const tipoExpediente = document.getElementById('tipo-expediente');
@@ -843,7 +839,6 @@
         const detenido = document.getElementById('detenido');
         const estatus = document.getElementById('estatus');
         const decision = document.getElementById('decision');
-        
         // Campos solo lectura
         const expedientePenal = document.getElementById('expediente-penal');
         const resenaCaso = document.getElementById('resena-caso');
@@ -851,14 +846,12 @@
         const registradoPor = document.getElementById('registrado-por');
         const remision = document.getElementById('remision');
         const expedienteNumero = document.getElementById('expediente-numero');
-        
         // Modal de administración
         const manageDropdownModal = new bootstrap.Modal(document.getElementById('manageDropdownModal'));
         const newOptionValue = document.getElementById('new-option-value');
         const newOptionLabel = document.getElementById('new-option-label');
         const optionsList = document.getElementById('options-list');
         const btnAddOption = document.getElementById('btn-add-option');
-        
         // Función para mostrar mensajes de error
         function showError(message) {
             if (errorText && errorMessage) {
@@ -867,14 +860,12 @@
             }
             console.error('Error:', message);
         }
-        
         // Función para ocultar mensajes de error
         function hideError() {
             if (errorMessage) {
                 errorMessage.style.display = 'none';
             }
         }
-        
         // Función para mostrar error en campo específico
         function showFieldError(field, isValid) {
             const input = document.getElementById(field);
@@ -887,11 +878,9 @@
                 }
             }
         }
-        
         // Función para validar formulario de personal
         function validatePersonalForm() {
             let isValid = true;
-            
             // Validar nombres
             if (!nombres?.value || nombres.value.trim().length < 2) {
                 showFieldError('nombres', false);
@@ -899,7 +888,6 @@
             } else {
                 showFieldError('nombres', true);
             }
-            
             // Validar apellidos
             if (!apellidos?.value || apellidos.value.trim().length < 2) {
                 showFieldError('apellidos', false);
@@ -907,7 +895,6 @@
             } else {
                 showFieldError('apellidos', true);
             }
-            
             // Validar cédula
             if (!cedula?.value || cedula.value.trim().length < 5) {
                 showFieldError('cedula', false);
@@ -915,7 +902,6 @@
             } else {
                 showFieldError('cedula', true);
             }
-            
             // Validar rango
             if (!rango?.value) {
                 showFieldError('rango', false);
@@ -923,7 +909,6 @@
             } else {
                 showFieldError('rango', true);
             }
-            
             // Validar sexo
             if (!sexo?.value) {
                 showFieldError('sexo', false);
@@ -931,7 +916,6 @@
             } else {
                 showFieldError('sexo', true);
             }
-            
             // Validar fecha de inicio
             if (!fechaInicio?.value) {
                 showFieldError('fecha-inicio', false);
@@ -939,7 +923,6 @@
             } else {
                 showFieldError('fecha-inicio', true);
             }
-            
             // Validar tipo de expediente
             if (!tipoExpediente?.value) {
                 showFieldError('tipo-expediente', false);
@@ -947,7 +930,6 @@
             } else {
                 showFieldError('tipo-expediente', true);
             }
-            
             // Validar ICAP
             if (!icap?.value) {
                 showFieldError('icap', false);
@@ -955,7 +937,6 @@
             } else {
                 showFieldError('icap', true);
             }
-            
             // Validar condición del funcionario
             if (!condicionFuncionario?.value) {
                 showFieldError('condicion-funcionario', false);
@@ -963,7 +944,6 @@
             } else {
                 showFieldError('condicion-funcionario', true);
             }
-            
             // Validar año
             if (!anio?.value) {
                 showFieldError('anio', false);
@@ -971,7 +951,6 @@
             } else {
                 showFieldError('anio', true);
             }
-            
             // Validar servicio donde labora
             if (!servicioLabora?.value) {
                 showFieldError('servicio-labora', false);
@@ -979,7 +958,6 @@
             } else {
                 showFieldError('servicio-labora', true);
             }
-            
             // Validar tipo de falta
             if (!tipoFalta?.value) {
                 showFieldError('tipo-falta', false);
@@ -987,7 +965,6 @@
             } else {
                 showFieldError('tipo-falta', true);
             }
-            
             // Validar origen de la falta
             if (!origenFalta?.value) {
                 showFieldError('origen-falta', false);
@@ -995,7 +972,6 @@
             } else {
                 showFieldError('origen-falta', true);
             }
-            
             // Validar falta
             if (!falta?.value) {
                 showFieldError('falta', false);
@@ -1003,7 +979,6 @@
             } else {
                 showFieldError('falta', true);
             }
-            
             // Validar denunciante
             if (!denunciante?.value) {
                 showFieldError('denunciante', false);
@@ -1011,7 +986,6 @@
             } else {
                 showFieldError('denunciante', true);
             }
-            
             // Validar detenido
             if (!detenido?.value) {
                 showFieldError('detenido', false);
@@ -1019,7 +993,6 @@
             } else {
                 showFieldError('detenido', true);
             }
-            
             // Validar estatus
             if (!estatus?.value) {
                 showFieldError('estatus', false);
@@ -1027,7 +1000,6 @@
             } else {
                 showFieldError('estatus', true);
             }
-            
             // Validar decisión
             if (!decision?.value) {
                 showFieldError('decision', false);
@@ -1035,10 +1007,8 @@
             } else {
                 showFieldError('decision', true);
             }
-            
             return isValid;
         }
-        
         // Función para inicializar campos de año
         function initializeYearField() {
             const yearSelect = document.getElementById('anio');
@@ -1061,36 +1031,29 @@
                 yearSelect.appendChild(option);
             }
         }
-        
         // Función para cargar opciones de desplegables (CORREGIDA)
         async function loadDropdownOptions(field) {
             try {
                 console.log(`[DIAGNÓSTICO] Cargando opciones para el campo: ${field}`);
-                
                 const { data, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('option')
                     .eq('field', field)
                     .order('option');
-                    
                 if (error) {
                     console.error(`Error al cargar opciones para ${field}:`, error);
                     throw error;
                 }
-                
                 console.log(`Opciones encontradas para ${field}:`, data);
-                
                 const selectElement = document.getElementById(field);
                 if (!selectElement) {
                     console.error(`Elemento no encontrado: ${field}`);
                     return;
                 }
-                
                 // Limpiar opciones existentes (excepto la primera)
                 while (selectElement.options.length > 1) {
                     selectElement.remove(1);
                 }
-                
                 // Añadir las nuevas opciones
                 if (data && data.length > 0) {
                     data.forEach(option => {
@@ -1107,22 +1070,17 @@
                 console.error(`Error al cargar opciones para ${field}:`, error);
             }
         }
-        
         // Función para cargar opciones para administración (CORREGIDA)
         async function loadDropdownOptionsForManagement(field) {
             try {
                 console.log(`[DIAGNÓSTICO] Cargando opciones para administración del campo: ${field}`);
-                
                 const { data, error } = await supabaseClient
                     .from('dropdown_options')
                     .select('*')
                     .eq('field', field)
                     .order('option');
-                    
                 if (error) throw error;
-                
                 console.log(`Opciones encontradas para administración de ${field}:`, data);
-                
                 // Limpiar lista
                 optionsList.innerHTML = '';
                 if (data && data.length > 0) {
@@ -1170,7 +1128,6 @@
                 return [];
             }
         }
-        
         // Función para verificar el rol del usuario (CORREGIDA)
         async function checkUserRole() {
             try {
@@ -1178,22 +1135,18 @@
                 if (!isSupabaseConfigured) {
                     throw new Error("Supabase no está configurado. Verifica tus credenciales.");
                 }
-                
                 // Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
-                
                 const user = data.session.user;
-                
                 // 1. PRIMERO: Intentar obtener el rol directamente de la tabla users (MÉTODO MÁS CONFIABLE)
                 const { data: userData, error: userError } = await supabaseClient
                     .from('users')
                     .select('role')
                     .eq('id', user.id)
                     .single();
-                    
                 if (!userError && userData?.role) {
                     console.log('ROL ENCONTRADO EN TABLA USERS:', userData.role);
                     return {
@@ -1201,10 +1154,8 @@
                         user: user
                     };
                 }
-                
                 // 2. SEGUNDO: Si no está en tabla users, buscar en los metadatos
                 let userRole = user.app_metadata?.role || user.user_metadata?.role;
-                
                 if (userRole) {
                     console.log('ROL ENCONTRADO EN METADATOS:', userRole);
                     return {
@@ -1212,7 +1163,6 @@
                         user: user
                     };
                 }
-                
                 // 3. TERCERO: Si no se encontró, usar 'user' como valor por defecto
                 console.log('ROL NO ENCONTRADO, USANDO VALOR POR DEFECTO: user');
                 return {
@@ -1227,7 +1177,6 @@
                 };
             }
         }
-        
         // Función para mostrar el modal de administración (CORREGIDA)
         async function showManageDropdownModal(field) {
             try {
@@ -1235,7 +1184,6 @@
                 if (!isSupabaseConfigured) {
                     throw new Error("Supabase no está configurado. Verifica tus credenciales.");
                 }
-                
                 // Verificar el rol del usuario
                 const { role } = await checkUserRole();
                 // Si no es admin o super_admin, mostrar advertencia
@@ -1243,16 +1191,12 @@
                     alert("No tiene permisos para administrar opciones de desplegables");
                     return;
                 }
-                
                 currentDropdownField = field;
-                
                 // Actualizar título del modal
                 document.querySelector('#manageDropdownModal .modal-title').textContent = 
                     `Administrar Opciones: ${field.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
-                
                 // Cargar opciones existentes
                 await loadDropdownOptionsForManagement(field);
-                
                 // Mostrar modal
                 manageDropdownModal.show();
             } catch (error) {
@@ -1260,7 +1204,6 @@
                 alert(`Error al mostrar modal: ${error.message}`);
             }
         }
-        
         // Función para agregar una nueva opción (CORREGIDA)
         async function addOption() {
             const newValue = newOptionValue.value.trim();
@@ -1276,30 +1219,24 @@
                 if (role !== 'admin' && role !== 'super_admin') {
                     throw new Error("Solo los administradores pueden agregar opciones");
                 }
-                
                 // Crear nueva opción
                 const newOption = {
                     field: currentDropdownField,
                     option: newLabel
                 };
-                
                 // Insertar en Supabase
                 const { error } = await supabaseClient
                     .from('dropdown_options')
                     .insert([newOption]);
                 if (error) throw error;
-                
                 // Mostrar mensaje de éxito
                 alert('Opción agregada exitosamente');
-                
                 // Recargar opciones para el modal
                 console.log(`Recargando opciones para administración de: ${currentDropdownField}`);
                 await loadDropdownOptionsForManagement(currentDropdownField);
-                
                 // Recargar opciones para el desplegable principal
                 console.log(`Recargando opciones para desplegable principal: ${currentDropdownField}`);
                 await loadDropdownOptions(currentDropdownField);
-                
                 // Forzar recarga de TODOS los desplegables para asegurar consistencia
                 console.log('Forzando recarga de todos los desplegables...');
                 const allDropdowns = [
@@ -1307,12 +1244,10 @@
                     'servicio-labora', 'tipo-falta', 'origen-falta', 'falta',
                     'denunciante', 'estatus', 'decision'
                 ];
-                
                 for (const dropdown of allDropdowns) {
                     console.log(`Recargando desplegable: ${dropdown}`);
                     await loadDropdownOptions(dropdown);
                 }
-                
                 // Limpiar campos
                 newOptionValue.value = '';
                 newOptionLabel.value = '';
@@ -1321,7 +1256,6 @@
                 alert(`Error al agregar opción: ${error.message}`);
             }
         }
-        
         // Función para editar una opción
         async function editOption(id) {
             try {
@@ -1353,7 +1287,6 @@
                 alert(`Error al editar opción: ${error.message}`);
             }
         }
-        
         // Función para eliminar una opción (CORREGIDA)
         async function deleteOption(id) {
             if (!confirm('¿Está seguro de que desea eliminar esta opción?')) {
@@ -1364,52 +1297,43 @@
                 if (!isSupabaseConfigured) {
                     throw new Error("Supabase no está configurado. Verifica tus credenciales.");
                 }
-                
                 // Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
-                
                 const user = data.session.user;
                 // Verificar el rol del usuario
                 const { role } = await checkUserRole();
-                
                 // Si no es admin o super_admin, mostrar advertencia
                 if (role !== 'admin' && role !== 'super_admin') {
                     throw new Error("Solo los administradores pueden eliminar opciones");
                 }
-                
                 // Eliminar la opción de dropdown_options
                 const { error } = await supabaseClient
                     .from('dropdown_options')
                     .delete()
                     .eq('id', id);
                 if (error) throw error;
-                
                 // Recargar opciones
                 await loadDropdownOptionsForManagement(currentDropdownField);
                 // Actualizar el desplegable principal
                 await loadDropdownOptions(currentDropdownField);
-                
                 // Forzar recarga de TODOS los desplegables para asegurar consistencia
                 const allDropdowns = [
                     'rango', 'sexo', 'tipo-expediente', 'icap', 'condicion-funcionario',
                     'servicio-labora', 'tipo-falta', 'origen-falta', 'falta',
                     'denunciante', 'estatus', 'decision'
                 ];
-                
                 for (const dropdown of allDropdowns) {
                     await loadDropdownOptions(dropdown);
                 }
-                
                 alert('Opción eliminada exitosamente');
             } catch (error) {
                 console.error('Error al eliminar opción:', error);
                 alert(`Error al eliminar opción: ${error.message}`);
             }
         }
-        
         // Función para cargar usuarios
         async function loadUsers() {
             try {
@@ -1417,26 +1341,22 @@
                 if (!isSupabaseConfigured) {
                     throw new Error("Supabase no está configurado. Verifica tus credenciales.");
                 }
-                
                 // Manejo seguro de la sesión
                 const { data, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError || !data?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
-                
                 // Obtener el rol del usuario
                 const { role } = await checkUserRole();
                 // Verificar permisos
                 if (role !== 'super_admin' && role !== 'admin') {
                     throw new Error("Solo los administradores pueden ver la lista de usuarios");
                 }
-                
                 // Consultar usuarios desde la tabla users
                 const { data: usersData, error } = await supabaseClient
                     .from('users')
                     .select('*');
                 if (error) throw error;
-                
                 // Limpiar la lista
                 usersList.innerHTML = '';
                 if (usersData && usersData.length > 0) {
@@ -1496,7 +1416,6 @@
                 showError(`Error: ${error.message}`);
             }
         }
-        
         // Función para crear un nuevo usuario
         async function register(e) {
             e.preventDefault();
@@ -1544,7 +1463,6 @@
                 showError(`Error al crear usuario: ${error.message}`);
             }
         }
-        
         // Función para eliminar un usuario
         async function deleteUser(id) {
             if (!confirm('¿Está seguro de que desea eliminar este usuario?')) {
@@ -1571,7 +1489,6 @@
                 alert(`Error al eliminar usuario: ${error.message}`);
             }
         }
-        
         // Función para guardar un expediente
         async function saveExpediente(e) {
             e.preventDefault();
@@ -1595,6 +1512,23 @@
                 if (role !== 'admin' && role !== 'super_admin') {
                     throw new Error("No tiene permisos para registrar expedientes. Solo los administradores pueden registrar.");
                 }
+                
+                // Verificar si la cédula ya existe
+                const cedulaValue = cedula.value.trim();
+                const { data: existingExpediente, error: checkError } = await supabaseClient
+                    .from('expedientes')
+                    .select('cedula')
+                    .eq('cedula', cedulaValue)
+                    .single();
+                
+                if (checkError && checkError.code !== 'PGRST116') { // PGRST116 significa "no rows returned"
+                    throw checkError;
+                }
+                
+                if (existingExpediente) {
+                    throw new Error("La cédula ingresada ya existe en el sistema. No se permiten duplicados.");
+                }
+                
                 // Generar número de expediente
                 const currentDate = new Date();
                 const year = currentDate.getFullYear();
@@ -1609,7 +1543,7 @@
                     edad: edad.value ? parseInt(edad.value) : null,
                     rango: rango.value,
                     sexo: sexo.value,
-                    cedula: cedula.value,
+                    cedula: cedulaValue,
                     fecha_nacimiento: fechaNacimiento.value,
                     fecha_inicio: fechaInicio.value,
                     tipo_expediente: tipoExpediente.value,
@@ -1678,7 +1612,6 @@
                 showError(`Error al guardar expediente: ${error.message || 'Error desconocido'}`);
             }
         }
-        
         // Función para verificar si la sesión es válida
         async function isSessionValid() {
             try {
@@ -1699,7 +1632,6 @@
                 return false;
             }
         }
-        
         // Función para verificar la sesión
         async function checkSession() {
             try {
@@ -1787,44 +1719,36 @@
                 showError('Error al verificar sesión: ' + error.message);
             }
         }
-        
         // Función para inicializar todos los desplegables
         async function initializeDropdowns() {
             try {
                 console.log('--- INICIALIZANDO TODOS LOS DESPLEGABLES ---');
-                
                 // Lista de todos los campos de desplegables
                 const dropdownFields = [
                     'rango', 'sexo', 'tipo-expediente', 'icap', 'condicion-funcionario',
                     'servicio-labora', 'tipo-falta', 'origen-falta', 'falta',
                     'denunciante', 'estatus', 'decision'
                 ];
-                
                 // Cargar opciones para todos los desplegables
                 for (const field of dropdownFields) {
                     console.log(`Cargando opciones para: ${field}`);
                     await loadDropdownOptions(field);
                 }
-                
                 // Inicializar el campo de año
                 initializeYearField();
-                
                 console.log('--- INICIALIZACIÓN DE DESPLEGABLES COMPLETADA ---');
             } catch (error) {
                 console.error('Error al inicializar desplegables:', error);
             }
         }
-        
         // Función para aplicar restricciones según el rol del usuario
         function applyRoleRestrictions(role) {
             console.log('APLICANDO RESTRICCIONES - ROL ACTUAL:', role);
             currentUserRole = role;
-            
             // Primero ocultar TODAS las pestañas
             document.querySelectorAll('.super-admin-only, .admin-only, .user-only').forEach(element => {
                 element.style.display = 'none';
             });
-            
             // Mostrar pestañas según el rol
             if (role === 'super_admin') {
                 console.log('MOSTRANDO TODAS LAS PESTAÑAS PARA SUPER_ADMIN');
@@ -1843,7 +1767,6 @@
                 });
             }
         }
-        
         // Función para iniciar sesión
         async function login(e) {
             e.preventDefault();
@@ -1949,7 +1872,6 @@
                 loginText.textContent = 'Iniciar Sesión';
             }
         }
-        
         // Función para cerrar sesión
         async function logout() {
             try {
@@ -1968,7 +1890,6 @@
                 alert('Error al cerrar sesión: ' + error.message);
             }
         }
-        
         // Función para inicializar Supabase
         function initSupabase() {
             try {
@@ -1993,7 +1914,6 @@
                 showError("Error de configuración: " + error.message);
             }
         }
-        
         // Configurar eventos
         document.addEventListener('DOMContentLoaded', async () => {
             try {
