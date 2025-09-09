@@ -1142,7 +1142,7 @@
                 }
                 const user = data.session.user;
                 // 1. PRIMERO: Intentar obtener el rol directamente de la tabla users (MÉTODO MÁS CONFIABLE)
-                const { data: userData, error: userError } = await supabaseClient
+                const {  userData, error: userError } = await supabaseClient
                     .from('users')
                     .select('role')
                     .eq('id', user.id)
@@ -1353,7 +1353,7 @@
                     throw new Error("Solo los administradores pueden ver la lista de usuarios");
                 }
                 // Consultar usuarios desde la tabla users
-                const { data: usersData, error } = await supabaseClient
+                const {  usersData, error } = await supabaseClient
                     .from('users')
                     .select('*');
                 if (error) throw error;
@@ -1432,7 +1432,7 @@
                     throw new Error("Solo el administrador principal puede crear nuevos usuarios");
                 }
                 // Registrar el nuevo usuario
-                const { data: signUpData, error } = await supabaseClient.auth.signUp({
+                const {  signUpData, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password
                 });
@@ -1513,25 +1513,34 @@
                     throw new Error("No tiene permisos para registrar expedientes. Solo los administradores pueden registrar.");
                 }
                 
-                // Verificar si la cédula ya existe
+                // Verificar si la cédula ya existe - CORRECCIÓN DEFINITIVA
                 const cedulaValue = cedula.value.trim();
-                const { data: existingExpediente, error: checkError } = await supabaseClient
+                
+                // Realizar la consulta para buscar expedientes con la misma cédula
+                const { data: existingExpedientes, error: checkError } = await supabaseClient
                     .from('expedientes')
                     .select('cedula')
-                    .eq('cedula', cedulaValue)
-                    .single();
+                    .eq('cedula', cedulaValue);
                 
-                // Si no hay error y se encontró un registro, la cédula ya existe
-                if (!checkError && existingExpediente) {
+                // Verificar si hubo un error en la consulta
+                if (checkError) {
+                    console.error('Error al verificar cédula:', checkError);
+                    throw new Error("Error al verificar si la cédula ya existe: " + checkError.message);
+                }
+                
+                // Verificar si se encontraron expedientes con la misma cédula
+                if (existingExpedientes && existingExpedientes.length > 0) {
                     throw new Error("La cédula ingresada ya existe en el sistema. No se permiten duplicados.");
                 }
                 
+                // Si llegamos aquí, la cédula no existe, procedemos a guardar
                 // Generar número de expediente
                 const currentDate = new Date();
                 const year = currentDate.getFullYear();
                 const month = String(currentDate.getMonth() + 1).padStart(2, '0');
                 const randomNum = Math.floor(1000 + Math.random() * 9000);
                 const expedienteNum = `${year}-${month}-${randomNum}`;
+                
                 // Crear objeto expediente
                 const expediente = {
                     foto: profilePicture.src,
@@ -1565,16 +1574,21 @@
                     user_id: data.session.user.id,
                     registrado_por: data.session.user.email?.split('@')[0] || 'Usuario'
                 };
+                
                 // Guardar en Supabase
                 const { error: saveError } = await supabaseClient
                     .from('expedientes')
                     .insert([expediente]);
+                    
                 if (saveError) throw saveError;
+                
                 // Mostrar mensaje de éxito
                 alert('Expediente guardado exitosamente');
+                
                 // Actualizar campos solo lectura
                 expedienteNumero.value = expedienteNum;
                 registradoPor.value = data.session.user.email?.split('@')[0] || 'Usuario';
+                
                 // Limpiar el formulario
                 document.getElementById('profile-picture').src = 'https://via.placeholder.com/150';
                 document.getElementById('nombres').value = '';
@@ -1600,6 +1614,7 @@
                 document.getElementById('resena-caso').value = '';
                 document.getElementById('causa').value = '';
                 document.getElementById('remision').value = '';
+                
                 // Limpiar validaciones
                 document.querySelectorAll('.is-invalid').forEach(element => {
                     element.classList.remove('is-invalid');
@@ -1654,7 +1669,7 @@
                     const user = data.session.user;
                     if (userNameElement) {
                         // Primero intentar obtener el nombre de la tabla users
-                        const { data: userData, error: userError } = await supabaseClient
+                        const {  userData, error: userError } = await supabaseClient
                             .from('users')
                             .select('full_name')
                             .eq('id', user.id)
@@ -1807,7 +1822,7 @@
                 const user = data.user;
                 if (userNameElement) {
                     // Primero intentar obtener el nombre de la tabla users
-                    const { data: userData, error: userError } = await supabaseClient
+                    const {  userData, error: userError } = await supabaseClient
                         .from('users')
                         .select('full_name')
                         .eq('id', user.id)
