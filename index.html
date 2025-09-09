@@ -1489,7 +1489,7 @@
                 alert(`Error al eliminar usuario: ${error.message}`);
             }
         }
-        // Función para guardar un expediente
+        // Función para guardar un expediente (CORREGIDA - VERIFICACIÓN DE CÉDULA DUPLICADA)
         async function saveExpediente(e) {
             e.preventDefault();
             try {
@@ -1521,11 +1521,8 @@
                     .eq('cedula', cedulaValue)
                     .single();
                 
-                if (checkError && checkError.code !== 'PGRST116') { // PGRST116 significa "no rows returned"
-                    throw checkError;
-                }
-                
-                if (existingExpediente) {
+                // Si no hay error y se encontró un registro, la cédula ya existe
+                if (!checkError && existingExpediente) {
                     throw new Error("La cédula ingresada ya existe en el sistema. No se permiten duplicados.");
                 }
                 
