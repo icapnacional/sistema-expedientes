@@ -1142,7 +1142,7 @@
                 }
                 const user = data.session.user;
                 // 1. PRIMERO: Intentar obtener el rol directamente de la tabla users (MÉTODO MÁS CONFIABLE)
-                const {  userData, error: userError } = await supabaseClient
+                const { data: userData, error: userError } = await supabaseClient
                     .from('users')
                     .select('role')
                     .eq('id', user.id)
@@ -1353,7 +1353,7 @@
                     throw new Error("Solo los administradores pueden ver la lista de usuarios");
                 }
                 // Consultar usuarios desde la tabla users
-                const {  usersData, error } = await supabaseClient
+                const { data: usersData, error } = await supabaseClient
                     .from('users')
                     .select('*');
                 if (error) throw error;
@@ -1432,7 +1432,7 @@
                     throw new Error("Solo el administrador principal puede crear nuevos usuarios");
                 }
                 // Registrar el nuevo usuario
-                const {  signUpData, error } = await supabaseClient.auth.signUp({
+                const { data: signUpData, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password
                 });
@@ -1489,7 +1489,59 @@
                 alert(`Error al eliminar usuario: ${error.message}`);
             }
         }
-        // Función para guardar un expediente (CORREGIDA - VERIFICACIÓN DE CÉDULA DUPLICADA)
+        // Función para verificar si una cédula ya existe (NUEVA IMPLEMENTACIÓN)
+        async function checkCedulaExists(cedulaValue) {
+            try {
+                console.log('Verificando si la cédula existe:', cedulaValue);
+                
+                // Primero, verificar si Supabase está configurado
+                if (!isSupabaseConfigured) {
+                    throw new Error("Supabase no está configurado");
+                }
+                
+                // Obtener la sesión actual
+                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !sessionData?.session) {
+                    throw new Error("No hay sesión activa");
+                }
+                
+                // Realizar la consulta para buscar la cédula
+                const { data: expedientes, error: queryError } = await supabaseClient
+                    .from('expedientes')
+                    .select('cedula, id')
+                    .eq('cedula', cedulaValue.trim());
+                
+                if (queryError) {
+                    console.error('Error en la consulta:', queryError);
+                    throw new Error("Error al verificar la cédula: " + queryError.message);
+                }
+                
+                console.log('Resultado de la consulta:', expedientes);
+                
+                // Si hay resultados, la cédula ya existe
+                if (expedientes && expedientes.length > 0) {
+                    console.log('¡Cédula encontrada! Total de registros:', expedientes.length);
+                    return {
+                        exists: true,
+                        count: expedientes.length,
+                        records: expedientes
+                    };
+                }
+                
+                console.log('Cédula no encontrada, se puede proceder con el registro');
+                return {
+                    exists: false,
+                    count: 0,
+                    records: []
+                };
+                
+            } catch (error) {
+                console.error('Error en checkCedulaExists:', error);
+                throw error;
+            }
+        }
+        
+        // Función para guardar un expediente (IMPLEMENTACIÓN DEFINITIVA)
         async function saveExpediente(e) {
             e.preventDefault();
             try {
@@ -1497,43 +1549,40 @@
                 if (!validatePersonalForm()) {
                     throw new Error("Por favor, corrija los errores en el formulario");
                 }
+                
                 // Verificar si Supabase está configurado
                 if (!isSupabaseConfigured) {
                     throw new Error("Supabase no está configurado. Verifica tus credenciales.");
                 }
+                
                 // Manejo seguro de la sesión
-                const { data, error: sessionError } = await supabaseClient.auth.getSession();
-                if (sessionError || !data?.session) {
+                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !sessionData?.session) {
                     throw new Error("No hay sesión activa. Por favor, inicie sesión.");
                 }
+                
                 // Obtener el rol del usuario
                 const { role } = await checkUserRole();
+                
                 // Verificar permisos
                 if (role !== 'admin' && role !== 'super_admin') {
                     throw new Error("No tiene permisos para registrar expedientes. Solo los administradores pueden registrar.");
                 }
                 
-                // Verificar si la cédula ya existe - CORRECCIÓN DEFINITIVA
+                // Obtener el valor de la cédula
                 const cedulaValue = cedula.value.trim();
                 
-                // Realizar la consulta para buscar expedientes con la misma cédula
-                const { data: existingExpedientes, error: checkError } = await supabaseClient
-                    .from('expedientes')
-                    .select('cedula')
-                    .eq('cedula', cedulaValue);
+                // Verificar si la cédula ya existe - IMPLEMENTACIÓN DEFINITIVA
+                console.log('--- INICIANDO VERIFICACIÓN DE CÉDULA ---');
+                const cedulaCheckResult = await checkCedulaExists(cedulaValue);
                 
-                // Verificar si hubo un error en la consulta
-                if (checkError) {
-                    console.error('Error al verificar cédula:', checkError);
-                    throw new Error("Error al verificar si la cédula ya existe: " + checkError.message);
+                if (cedulaCheckResult.exists) {
+                    console.log('--- CÉDULA DUPLICADA DETECTADA ---');
+                    throw new Error(`La cédula ${cedulaValue} ya existe en el sistema (${cedulaCheckResult.count} registro(s) encontrado(s)). No se permiten duplicados.`);
                 }
                 
-                // Verificar si se encontraron expedientes con la misma cédula
-                if (existingExpedientes && existingExpedientes.length > 0) {
-                    throw new Error("La cédula ingresada ya existe en el sistema. No se permiten duplicados.");
-                }
+                console.log('--- CÉDULA ÚNICA CONFIRMADA, PROCEDE A GUARDAR ---');
                 
-                // Si llegamos aquí, la cédula no existe, procedemos a guardar
                 // Generar número de expediente
                 const currentDate = new Date();
                 const year = currentDate.getFullYear();
@@ -1571,23 +1620,31 @@
                     remision: remision.value,
                     expediente_numero: expedienteNum,
                     fecha_registro: new Date().toISOString(),
-                    user_id: data.session.user.id,
-                    registrado_por: data.session.user.email?.split('@')[0] || 'Usuario'
+                    user_id: sessionData.session.user.id,
+                    registrado_por: sessionData.session.user.email?.split('@')[0] || 'Usuario'
                 };
                 
                 // Guardar en Supabase
-                const { error: saveError } = await supabaseClient
+                const { data: savedData, error: saveError } = await supabaseClient
                     .from('expedientes')
-                    .insert([expediente]);
+                    .insert([expediente])
+                    .select();
                     
-                if (saveError) throw saveError;
+                if (saveError) {
+                    console.error('Error al guardar:', saveError);
+                    throw new Error("Error al guardar el expediente: " + saveError.message);
+                }
+                
+                if (!savedData || savedData.length === 0) {
+                    throw new Error("No se pudo guardar el expediente correctamente");
+                }
                 
                 // Mostrar mensaje de éxito
                 alert('Expediente guardado exitosamente');
                 
                 // Actualizar campos solo lectura
                 expedienteNumero.value = expedienteNum;
-                registradoPor.value = data.session.user.email?.split('@')[0] || 'Usuario';
+                registradoPor.value = sessionData.session.user.email?.split('@')[0] || 'Usuario';
                 
                 // Limpiar el formulario
                 document.getElementById('profile-picture').src = 'https://via.placeholder.com/150';
@@ -1619,11 +1676,15 @@
                 document.querySelectorAll('.is-invalid').forEach(element => {
                     element.classList.remove('is-invalid');
                 });
+                
+                console.log('--- EXPEDIENTE GUARDADO EXITOSAMENTE ---');
+                
             } catch (error) {
                 console.error('Error al guardar expediente:', error);
                 showError(`Error al guardar expediente: ${error.message || 'Error desconocido'}`);
             }
         }
+        
         // Función para verificar si la sesión es válida
         async function isSessionValid() {
             try {
@@ -1669,7 +1730,7 @@
                     const user = data.session.user;
                     if (userNameElement) {
                         // Primero intentar obtener el nombre de la tabla users
-                        const {  userData, error: userError } = await supabaseClient
+                        const { data: userData, error: userError } = await supabaseClient
                             .from('users')
                             .select('full_name')
                             .eq('id', user.id)
@@ -1822,7 +1883,7 @@
                 const user = data.user;
                 if (userNameElement) {
                     // Primero intentar obtener el nombre de la tabla users
-                    const {  userData, error: userError } = await supabaseClient
+                    const { data: userData, error: userError } = await supabaseClient
                         .from('users')
                         .select('full_name')
                         .eq('id', user.id)
