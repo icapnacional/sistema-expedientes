@@ -158,7 +158,7 @@
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
 
-    // ✅ CORRECCIÓN CLAVE: usar window.supabase.createClient
+    // ✅ CORRECCIÓN: usar window.supabase.createClient
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const form = document.getElementById('loginForm');
@@ -178,8 +178,8 @@
         alertDiv.className = 'alert alert-success';
         alertDiv.style.display = 'block';
 
-        // 👉 Aquí puedes redirigir o mostrar el panel
-        // Por ahora, solo muestra el mensaje
+        // 👉 Aquí puedes redirigir al panel o mostrarlo en la misma página
+        // Ejemplo: window.location.href = 'panel.html';
 
       } catch (err) {
         alertDiv.textContent = err.message || 'Error: credenciales inválidas.';
