@@ -251,65 +251,54 @@
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
   </div>
 
-  <script>
-    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+ <script>
+  const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
 
-    // ✅ Corrección crítica: inicializar Supabase correctamente
-    const { createClient } = supabase;
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // ✅ Corrección: inicializar correctamente
+  const { createClient } = supabase;
+  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const loginView = document.getElementById('loginView');
-    const panelView = document.getElementById('panelView');
-    const userEmailSpan = document.getElementById('userEmail');
-    const alertDiv = document.getElementById('alertMessage');
-    const loginForm = document.getElementById('loginForm');
-    const logoutBtn = document.getElementById('logoutBtn');
+  const form = document.getElementById('loginForm');
+  const alertDiv = document.getElementById('alertMessage');
 
-    // Verificar sesión al cargar
-    async function checkSession() {
-      const {  { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        showPanel(session.user.email);
-      } else {
-        showLogin();
-      }
+  // ✅ Corrección crítica: desestructuración válida
+  async function checkSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+      // Si hay sesión, redirigir o mostrar panel
+      window.location.href = 'panel.html'; // o muestra panel en la misma página
     }
+  }
 
-    function showLogin() {
-      loginView.classList.remove('hidden');
-      panelView.classList.add('hidden');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    alertDiv.style.display = 'none';
+
+    try {
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+
+      alertDiv.textContent = 'Inicio de sesión exitoso. Redirigiendo...';
+      alertDiv.className = 'alert alert-success';
+      alertDiv.style.display = 'block';
+
+      setTimeout(() => {
+        // Aquí puedes redirigir o cambiar la vista
+        window.location.href = 'panel.html'; // o mostrar panel integrado
+      }, 1000);
+
+    } catch (err) {
+      alertDiv.textContent = err.message || 'Error: credenciales inválidas.';
+      alertDiv.className = 'alert alert-error';
+      alertDiv.style.display = 'block';
     }
+  });
 
-    function showPanel(email) {
-      userEmailSpan.textContent = email;
-      loginView.classList.add('hidden');
-      panelView.classList.remove('hidden');
-    }
-
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      alertDiv.style.display = 'none';
-
-      try {
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        showPanel(email);
-      } catch (err) {
-        alertDiv.textContent = err.message || 'Error: credenciales inválidas.';
-        alertDiv.className = 'alert alert-error';
-        alertDiv.style.display = 'block';
-      }
-    });
-
-    logoutBtn.addEventListener('click', async () => {
-      await supabaseClient.auth.signOut();
-      showLogin();
-    });
-
-    checkSession();
-  </script>
+  // Opcional: verificar sesión al cargar
+  checkSession();
+</script>
 </body>
 </html>
