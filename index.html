@@ -192,9 +192,9 @@
   <!-- ===== LOGIN ===== -->
   <div id="loginSection" class="login-container">
     <div class="login-card">
-      <!-- 🔁 Reemplaza con tu logo real -->
+      <!-- 🔁 LOGO DE PRUEBA (reemplaza con tu logo real) -->
       <img 
-        src="https://raw.githubusercontent.com/tu-usuario/tu-repo/main/logo-icap.png" 
+        src="https://via.placeholder.com/90/722F37/FFFFFF?text=ICAP" 
         alt="ICAP Nacional" 
         class="logo"
       />
@@ -225,7 +225,7 @@
   <div id="panelSection" class="panel-container">
     <div class="panel-header">
       <img 
-        src="https://raw.githubusercontent.com/tu-usuario/tu-repo/main/logo-icap.png" 
+        src="https://via.placeholder.com/80/722F37/FFFFFF?text=ICAP" 
         alt="ICAP Nacional" 
         class="panel-logo"
       />
@@ -244,9 +244,9 @@
   </div>
 
   <script>
-    // 🔑 CONFIGURA TUS CREDENCIALES DE SUPABASE AQUÍ
-    const SUPABASE_URL ='https://stwriaubepeugobgyxjt.supabase.co';
-    const SUPABASE_ANON_KEY ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+    // 🔑 TUS CREDENCIALES DE SUPABASE (YA CORREGIDAS)
+    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const loginSection = document.getElementById('loginSection');
@@ -255,7 +255,7 @@
     const loginAlert = document.getElementById('loginAlert');
     const logoutLink = document.getElementById('logoutLink');
 
-    // Función para verificar sesión
+    // Verificar sesión al cargar
     async function checkSession() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -267,10 +267,9 @@
       }
     }
 
-    // Verificar al cargar
     checkSession();
 
-    // Iniciar sesión
+    // Login
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value.trim();
@@ -278,20 +277,20 @@
       loginAlert.style.display = 'none';
 
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        checkSession(); // Mostrar panel
+        checkSession();
       } catch (err) {
         loginAlert.textContent = 'Credenciales incorrectas o cuenta inactiva.';
         loginAlert.style.display = 'block';
       }
     });
 
-    // Cerrar sesión
+    // Logout
     logoutLink.addEventListener('click', async (e) => {
       e.preventDefault();
       await supabase.auth.signOut();
-      checkSession(); // Volver a login
+      checkSession();
     });
   </script>
 </body>
