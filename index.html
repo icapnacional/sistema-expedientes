@@ -13,28 +13,28 @@
       box-sizing: border-box;
     }
     body {
-      background-color: #fafafa;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e7f1 100%);
       font-family: 'Inter', sans-serif;
       color: #2d2d2d;
+      min-height: 100vh;
+      padding: 20px;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      padding: 20px;
     }
-    .login-card {
+    .card {
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
       width: 100%;
-      max-width: 400px;
+      max-width: 500px;
       padding: 40px 32px;
       text-align: center;
-      border: 1px solid #f0f0f0;
+      border: 1px solid #eaeef5;
     }
     .logo {
       width: 90px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
     h1 {
       font-size: 24px;
@@ -63,7 +63,7 @@
       width: 100%;
       padding: 12px 14px;
       border: 1px solid #ddd;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 15px;
       color: #222;
       background-color: #fdfdfd;
@@ -71,23 +71,24 @@
     input:focus {
       outline: none;
       border-color: #722F37;
-      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
     }
     .btn-login {
-      background-color: #722F37;
+      background: linear-gradient(to right, #722F37, #9c4a52);
       color: white;
       border: none;
-      border-radius: 8px;
-      padding: 13px;
+      border-radius: 10px;
+      padding: 14px;
       font-size: 16px;
       font-weight: 600;
       width: 100%;
       cursor: pointer;
-      transition: background-color 0.25s;
+      transition: all 0.3s ease;
       margin-top: 6px;
     }
     .btn-login:hover {
-      background-color: #5e262d;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(114, 47, 55, 0.3);
     }
     .institutional-note {
       margin-top: 26px;
@@ -99,8 +100,8 @@
     }
     .alert {
       margin-top: 18px;
-      padding: 10px;
-      border-radius: 6px;
+      padding: 12px;
+      border-radius: 10px;
       font-size: 14px;
       display: none;
     }
@@ -114,18 +115,79 @@
       color: #080;
       border: 1px solid #d0ffd0;
     }
+
+    /* Panel */
+    .user-header {
+      margin: 20px 0;
+      padding: 14px;
+      background: #f8f9fc;
+      border-radius: 12px;
+      font-size: 15px;
+      color: #444;
+      border: 1px solid #eaeef5;
+    }
+    .panel-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 24px 0;
+    }
+    .panel-btn {
+      background: white;
+      border: 2px solid #e0e5f0;
+      border-radius: 14px;
+      padding: 16px 12px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #2a4bc8;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 90px;
+    }
+    .panel-btn:hover {
+      border-color: #722F37;
+      background: #fdf6f7;
+      color: #722F37;
+      transform: translateY(-3px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    }
+    .btn-logout {
+      background: linear-gradient(to right, #e53935, #d32f2f);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+    .btn-logout:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+    }
+    .hidden {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
-  <div class="login-card">
-    <!-- ✅ LOGO EN UNA SOLA LÍNEA -->
+  <!-- Login View -->
+  <div id="loginView" class="card">
     <img 
       src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
       alt="ICAP Nacional - PNB" 
       class="logo"
     />
     <h1>Sistema de Expedientes</h1>
-    <p class="subtitle">Acceso restringido a personal autorizado de la ICAP Nacional</p>
+    <p class="subtitle">Acceso restringido a personal autorizado</p>
     <form id="loginForm">
       <div class="form-group">
         <label for="email">Correo Institucional</label>
@@ -151,23 +213,80 @@
     </form>
     <div id="alertMessage" class="alert"></div>
     <p class="institutional-note">
-      Plataforma institucional de la ICAP Nacional del Cuerpo de Policía Nacional Bolivariana
+      Plataforma institucional de la ICAP Nacional - PNB
     </p>
   </div>
 
+  <!-- Panel Principal -->
+  <div id="panelView" class="card hidden">
+    <img 
+      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+      alt="ICAP Nacional - PNB" 
+      class="logo"
+    />
+    <h1>Panel de Gestión</h1>
+    <div class="user-header">
+      <strong>👤 Usuario:</strong> <span id="userEmail">—</span>
+    </div>
+
+    <div class="panel-buttons">
+      <button class="panel-btn" onclick="alert('Registrar nuevo expediente')">
+        📝<br>Registrar Expediente
+      </button>
+      <button class="panel-btn" onclick="alert('Consultar expedientes existentes')">
+        🔍<br>Consultar Expedientes
+      </button>
+      <button class="panel-btn" onclick="alert('Generar reportes institucionales')">
+        📊<br>Reportes
+      </button>
+      <button class="panel-btn" onclick="alert('Configuración de perfil o sistema')">
+        ⚙️<br>Configuración
+      </button>
+    </div>
+
+    <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
+  </div>
+
   <script>
-    // 🔑 CREDENCIALES REALES DE SUPABASE
+    // 🔑 Credenciales de Supabase
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
 
-    // ✅ Corrección crítica: inicializar Supabase correctamente
+    // ✅ Corrección: inicializar Supabase correctamente
     const { createClient } = supabase;
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const form = document.getElementById('loginForm');
+    // Elementos del DOM
+    const loginView = document.getElementById('loginView');
+    const panelView = document.getElementById('panelView');
+    const userEmailSpan = document.getElementById('userEmail');
     const alertDiv = document.getElementById('alertMessage');
+    const loginForm = document.getElementById('loginForm');
+    const logoutBtn = document.getElementById('logoutBtn');
 
-    form.addEventListener('submit', async (e) => {
+    // Verificar sesión al cargar
+    async function checkSession() {
+      const {  { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        showPanel(session.user.email);
+      } else {
+        showLogin();
+      }
+    }
+
+    function showLogin() {
+      loginView.classList.remove('hidden');
+      panelView.classList.add('hidden');
+    }
+
+    function showPanel(email) {
+      userEmailSpan.textContent = email;
+      loginView.classList.add('hidden');
+      panelView.classList.remove('hidden');
+    }
+
+    // Login
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
@@ -176,22 +295,22 @@
       try {
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
-
-        alertDiv.textContent = 'Inicio de sesión exitoso. Cargando sistema...';
-        alertDiv.className = 'alert alert-success';
-        alertDiv.style.display = 'block';
-
-        // ⚠️ Si quieres redirigir al panel, descomenta esta línea:
-        // window.location.href = 'panel.html';
-
-        // ✅ O mejor: integra el panel en esta misma página (te lo puedo ayudar)
-
+        showPanel(email);
       } catch (err) {
         alertDiv.textContent = err.message || 'Error: credenciales inválidas.';
         alertDiv.className = 'alert alert-error';
         alertDiv.style.display = 'block';
       }
     });
+
+    // Logout
+    logoutBtn.addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+      showLogin();
+    });
+
+    // Iniciar verificación
+    checkSession();
   </script>
 </body>
 </html>
