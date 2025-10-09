@@ -1,18 +1,14 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ICAP Nacional - PNB</title>
+  <title>ICAP Nacional - Iniciar Sesión</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background-color: #fafafa;
       font-family: 'Inter', sans-serif;
@@ -23,66 +19,29 @@
       min-height: 100vh;
       padding: 20px;
     }
-
     .login-card {
       background: white;
       border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
       width: 100%;
       max-width: 400px;
       padding: 40px 32px;
       text-align: center;
       border: 1px solid #f0f0f0;
     }
-
-    .logo {
-      width: 90px;
-      margin-bottom: 24px;
-    }
-
-    h1 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #2d2d2d;
-      margin-bottom: 8px;
-    }
-
-    .subtitle {
-      font-size: 15px;
-      color: #555;
-      margin-bottom: 28px;
-      line-height: 1.5;
-    }
-
-    .form-group {
-      text-align: left;
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
-    }
-
+    .logo { width: 90px; margin-bottom: 24px; }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { font-size: 15px; color: #555; margin-bottom: 28px; }
+    .form-group { text-align: left; margin-bottom: 20px; }
+    label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
     input {
       width: 100%;
       padding: 12px 14px;
       border: 1px solid #ddd;
       border-radius: 8px;
       font-size: 15px;
-      color: #222;
-      background-color: #fdfdfd;
     }
-
-    input:focus {
-      outline: none;
-      border-color: #722F37;
-      background-color: #ffffff;
-    }
-
+    input:focus { outline: none; border-color: #722F37; }
     .btn-login {
       background-color: #722F37;
       color: white;
@@ -93,23 +52,7 @@
       font-weight: 600;
       width: 100%;
       cursor: pointer;
-      transition: background-color 0.25s;
-      margin-top: 6px;
     }
-
-    .btn-login:hover {
-      background-color: #5e262d;
-    }
-
-    .institutional-note {
-      margin-top: 26px;
-      font-size: 13px;
-      color: #444;
-      line-height: 1.5;
-      font-style: italic;
-      padding: 0 10px;
-    }
-
     .alert {
       margin-top: 18px;
       padding: 10px;
@@ -117,65 +60,29 @@
       font-size: 14px;
       display: none;
     }
-
-    .alert-error {
-      background-color: #fff5f5;
-      color: #c00;
-      border: 1px solid #ffd0d0;
-    }
-
-    .alert-success {
-      background-color: #f5fff5;
-      color: #080;
-      border: 1px solid #d0ffd0;
-    }
+    .alert-error { background: #fff5f5; color: #c00; border: 1px solid #ffd0d0; }
   </style>
 </head>
 <body>
   <div class="login-card">
-    <!-- 🔁 REEMPLAZA ESTA URL CON TU LOGO REAL -->
-    <img 
-      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes
-      /main/Logo.png" 
-      alt="ICAP Nacional - PNB" 
-      class="logo"
-    />
-
+    <!-- 🔁 Reemplaza con tu logo real -->
+    <img src="https://raw.githubusercontent.com/tu-usuario/tu-repo/main/logo-icap.png" alt="ICAP" class="logo" />
     <h1>Sistema de Expedientes</h1>
-    <p class="subtitle">Acceso restringido a personal autorizado de la ICAP Nacional</p>
+    <p class="subtitle">Acceso restringido a personal autorizado</p>
 
     <form id="loginForm">
       <div class="form-group">
         <label for="email">Correo Institucional</label>
-        <input 
-          type="email" 
-          id="email" 
-          required 
-          autocomplete="username"
-          placeholder="usuario@icap.gob.ve"
-        />
+        <input type="email" id="email" required autocomplete="username" />
       </div>
-
       <div class="form-group">
         <label for="password">Contraseña</label>
-        <input 
-          type="password" 
-          id="password" 
-          required 
-          autocomplete="current-password"
-          placeholder="••••••••"
-        />
+        <input type="password" id="password" required autocomplete="current-password" />
       </div>
-
       <button type="submit" class="btn-login">Iniciar Sesión</button>
     </form>
 
-    <div id="alertMessage" class="alert"></div>
-
-    <!-- ✅ Texto institucional debajo del botón -->
-    <p class="institutional-note">
-      Plataforma institucional de la ICAP Nacional del Cuerpo de Policía Nacional Bolivariana
-    </p>
+    <div id="alertMessage" class="alert alert-error"></div>
   </div>
 
   <script>
@@ -187,32 +94,28 @@
     const form = document.getElementById('loginForm');
     const alertDiv = document.getElementById('alertMessage');
 
+    // Verificar si ya hay sesión activa
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        window.location.href = 'panel.html';
+      }
+    });
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
-
       alertDiv.style.display = 'none';
 
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        alertDiv.textContent = 'Inicio de sesión exitoso. Cargando sistema...';
-        alertDiv.className = 'alert alert-success';
-        alertDiv.style.display = 'block';
-
-        // Opcional: redirigir
-        // setTimeout(() => window.location.href = '/dashboard.html', 1500);
+        // ✅ Redirigir al panel
+        window.location.href = 'panel.html';
 
       } catch (err) {
-        alertDiv.textContent = err.message || 'Error: credenciales inválidas o cuenta inactiva.';
-        alertDiv.className = 'alert alert-error';
+        alertDiv.textContent = 'Credenciales incorrectas o cuenta inactiva.';
         alertDiv.style.display = 'block';
       }
     });
