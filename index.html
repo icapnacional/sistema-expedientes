@@ -3,54 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ICAP Nacional - Policía Nacional Bolivariana</title>
+  <title>ICAP Nacional - PNB</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
+    /* ===== FONDO CON VECTOR SUTIL ===== */
+    body {
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      background-color: #f9f9f9;
+      min-height: 100vh;
+      background-color: #f8f6f3;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(114, 47, 55, 0.03) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(114, 47, 55, 0.03) 0%, transparent 20%),
+        linear-gradient(135deg, rgba(248, 246, 243, 1) 0%, rgba(240, 238, 235, 1) 100%);
       font-family: 'Open Sans', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
       padding: 20px;
     }
 
     .login-card {
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+      border-radius: 14px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
       width: 100%;
-      max-width: 400px;
-      padding: 36px 30px;
+      max-width: 420px;
+      padding: 40px 32px;
       text-align: center;
+      position: relative;
+      z-index: 2;
       border: 1px solid #eee;
     }
 
     .logo {
-      width: 80px;
-      margin-bottom: 24px;
+      width: 100px;
+      height: auto;
+      margin-bottom: 22px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
     }
 
     h1 {
       color: #2D2D2D;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 700;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .subtitle {
-      color: #555;
+      color: #5a5a5a;
       font-size: 15px;
-      margin-bottom: 28px;
-      font-weight: 400;
+      margin-bottom: 26px;
     }
 
     .form-group {
@@ -68,30 +72,31 @@
 
     input {
       width: 100%;
-      padding: 12px 14px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      padding: 12px 16px;
+      border: 1px solid #d0d0d0;
+      border-radius: 8px;
       font-size: 15px;
-      transition: border-color 0.25s;
+      transition: all 0.25s;
     }
 
     input:focus {
       outline: none;
       border-color: #722F37;
+      box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
     }
 
     .btn-login {
       background-color: #722F37;
       color: white;
       border: none;
-      border-radius: 6px;
-      padding: 13px;
+      border-radius: 8px;
+      padding: 14px;
       font-size: 16px;
       font-weight: 600;
       width: 100%;
       cursor: pointer;
       transition: background-color 0.3s;
-      margin-top: 8px;
+      margin-top: 6px;
     }
 
     .btn-login:hover {
@@ -99,15 +104,16 @@
     }
 
     .institutional-note {
-      margin-top: 24px;
+      margin-top: 28px;
       font-size: 13px;
       color: #444;
       line-height: 1.5;
       font-style: italic;
+      padding: 0 10px;
     }
 
     .alert {
-      margin-top: 16px;
+      margin-top: 18px;
       padding: 10px;
       border-radius: 6px;
       font-size: 14px;
@@ -115,25 +121,29 @@
     }
 
     .alert-error {
-      background-color: #ffe9e9;
+      background-color: #fff1f1;
       color: #c00;
-      border: 1px solid #ffcfcf;
+      border: 1px solid #ffd0d0;
     }
 
     .alert-success {
-      background-color: #eaffea;
-      color: #0a0;
-      border: 1px solid #c1e8c1;
+      background-color: #f1fff1;
+      color: #080;
+      border: 1px solid #d0ffd0;
     }
   </style>
 </head>
 <body>
   <div class="login-card">
-    <!-- 🔁 Reemplaza esta URL con tu logo real -->
-    <img src="https://via.placeholder.com/80/722F37/FFFFFF?text=ICAP" alt="ICAP Nacional - PNB" class="logo" />
+    <!-- 🔁 🔁 🔁 REEMPLAZA ESTA URL POR LA DE TU LOGO REAL -->
+    <img 
+      src="https://raw.githubusercontent.com/tu-usuario/tu-repo/main/logo-icap.png" 
+      alt="ICAP Nacional - PNB" 
+      class="logo"
+    />
 
     <h1>Acceso al Sistema</h1>
-    <p class="subtitle">Inicie sesión con sus credenciales institucionales</p>
+    <p class="subtitle">Ingrese con sus credenciales institucionales</p>
 
     <form id="loginForm">
       <div class="form-group">
@@ -182,15 +192,14 @@
 
         if (error) throw error;
 
-        alertDiv.textContent = 'Inicio de sesión exitoso. Accediendo...';
+        alertDiv.textContent = 'Acceso concedido. Redirigiendo...';
         alertDiv.className = 'alert alert-success';
         alertDiv.style.display = 'block';
 
-        // Opcional: redirigir después de 1.5 segundos
         // setTimeout(() => window.location.href = '/dashboard.html', 1500);
 
       } catch (err) {
-        alertDiv.textContent = err.message || 'Credenciales incorrectas o cuenta inactiva.';
+        alertDiv.textContent = err.message || 'Error: credenciales inválidas.';
         alertDiv.className = 'alert alert-error';
         alertDiv.style.display = 'block';
       }
