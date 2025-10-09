@@ -13,7 +13,7 @@
       box-sizing: border-box;
     }
     body {
-      background-color: #fafafa;
+      background-color: #f5f7fa;
       font-family: 'Inter', sans-serif;
       color: #2d2d2d;
       display: flex;
@@ -25,12 +25,12 @@
     .login-card, .panel-card {
       background: white;
       border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
       width: 100%;
       max-width: 500px;
       padding: 40px 32px;
       text-align: center;
-      border: 1px solid #f0f0f0;
+      border: 1px solid #eaeaea;
     }
     .logo {
       width: 90px;
@@ -73,21 +73,39 @@
       border-color: #722F37;
       background-color: #ffffff;
     }
-    .btn-login, .btn-logout {
-      background-color: #722F37;
-      color: white;
+    .btn-login, .btn-logout, .panel-btn {
       border: none;
       border-radius: 8px;
-      padding: 13px;
+      padding: 12px 16px;
       font-size: 16px;
       font-weight: 600;
       width: 100%;
       cursor: pointer;
-      transition: background-color 0.25s;
-      margin-top: 6px;
+      transition: background-color 0.2s;
+      margin-top: 8px;
     }
-    .btn-login:hover, .btn-logout:hover {
+    .btn-login {
+      background-color: #722F37;
+      color: white;
+    }
+    .btn-login:hover {
       background-color: #5e262d;
+    }
+    .btn-logout {
+      background-color: #e02020;
+      color: white;
+      margin-top: 24px;
+    }
+    .btn-logout:hover {
+      background-color: #c51111;
+    }
+    .panel-btn {
+      background-color: #f0f4ff;
+      color: #2a4bc8;
+      font-weight: 500;
+    }
+    .panel-btn:hover {
+      background-color: #dce6ff;
     }
     .institutional-note {
       margin-top: 26px;
@@ -114,14 +132,13 @@
       color: #080;
       border: 1px solid #d0ffd0;
     }
-
-    /* Panel styles */
     .user-info {
-      margin-top: 20px;
-      padding: 16px;
-      background: #f9f9f9;
+      margin: 20px 0;
+      padding: 12px;
+      background: #f9fafc;
       border-radius: 8px;
-      text-align: left;
+      font-size: 15px;
+      color: #444;
     }
     .hidden {
       display: none !important;
@@ -167,54 +184,91 @@
     </p>
   </div>
 
-  <!-- Panel View (oculto al inicio) -->
+  <!-- Panel Principal (oculto al inicio) -->
   <div id="panelView" class="panel-card hidden">
     <img 
       src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
       alt="ICAP Nacional - PNB" 
       class="logo"
     />
-    <h1>Panel de Expedientes</h1>
+    <h1>Panel Principal</h1>
     <div class="user-info">
-      <p><strong>Usuario:</strong> <span id="userEmail">—</span></p>
-      <p>Bienvenido al sistema de gestión de expedientes.</p>
+      <strong>Usuario:</strong> <span id="userEmail">—</span>
     </div>
+
+    <!-- 4 Botones del panel -->
+    <button class="panel-btn" onclick="alert('Función: Registrar Expediente')">Registrar Expediente</button>
+    <button class="panel-btn" onclick="alert('Función: Consultar Expedientes')">Consultar Expedientes</button>
+    <button class="panel-btn" onclick="alert('Función: Reportes')">Generar Reportes</button>
+    <button class="panel-btn" onclick="alert('Función: Configuración')">Configuración</button>
+
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
   </div>
 
-<script>
-  // 🔑 CREDENCIALES REALES DE SUPABASE
-  const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+  <script>
+    // 🔑 Credenciales de Supabase
+    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
 
-  // ✅ Inicializar Supabase correctamente (v2)
-  const { createClient } = supabase;
-  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // ✅ Corrección clave: inicializar Supabase correctamente
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const form = document.getElementById('loginForm');
-  const alertDiv = document.getElementById('alertMessage');
+    // Elementos del DOM
+    const loginView = document.getElementById('loginView');
+    const panelView = document.getElementById('panelView');
+    const userEmailSpan = document.getElementById('userEmail');
+    const alertDiv = document.getElementById('alertMessage');
+    const loginForm = document.getElementById('loginForm');
+    const logoutBtn = document.getElementById('logoutBtn');
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    alertDiv.style.display = 'none';
-
-    try {
-      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-
-      alertDiv.textContent = 'Inicio de sesión exitoso. Cargando sistema...';
-      alertDiv.className = 'alert alert-success';
-      alertDiv.style.display = 'block';
-
-
-    } catch (err) {
-      alertDiv.textContent = err.message || 'Error: credenciales inválidas.';
-      alertDiv.className = 'alert alert-error';
-      alertDiv.style.display = 'block';
+    // Verificar sesión al cargar
+    async function checkSession() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        showPanel(session.user.email);
+      } else {
+        showLogin();
+      }
     }
-  });
-</script>
+
+    function showLogin() {
+      loginView.classList.remove('hidden');
+      panelView.classList.add('hidden');
+    }
+
+    function showPanel(email) {
+      userEmailSpan.textContent = email;
+      loginView.classList.add('hidden');
+      panelView.classList.remove('hidden');
+    }
+
+    // Login
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      alertDiv.style.display = 'none';
+
+      try {
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        showPanel(email);
+      } catch (err) {
+        alertDiv.textContent = err.message || 'Error: credenciales inválidas.';
+        alertDiv.className = 'alert alert-error';
+        alertDiv.style.display = 'block';
+      }
+    });
+
+    // Logout
+    logoutBtn.addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+      showLogin();
+    });
+
+    // Iniciar
+    checkSession();
+  </script>
 </body>
 </html>
