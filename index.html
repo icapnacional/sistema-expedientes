@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Iniciar Sesión - Institución</title>
+  <title>ICAP Nacional - Sistema de Expedientes</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     body {
-      background-color: #f5f5f5;
+      background: linear-gradient(135deg, #f8f6f2 0%, #e9e4dd 100%);
+      font-family: 'Roboto', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -24,128 +25,160 @@
 
     .login-container {
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
       width: 100%;
-      max-width: 400px;
-      padding: 40px 30px;
+      max-width: 420px;
+      padding: 40px 32px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: #722F37;
     }
 
     .logo {
-      width: 100px;
-      margin-bottom: 24px;
+      width: 90px;
+      margin: 0 auto 20px;
+      display: block;
     }
 
     h1 {
       color: #722F37;
-      font-size: 24px;
-      margin-bottom: 24px;
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      color: #555;
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.5;
+      margin-bottom: 28px;
+      padding: 0 10px;
     }
 
     .input-group {
-      margin-bottom: 18px;
+      margin-bottom: 20px;
       text-align: left;
     }
 
     label {
       display: block;
-      margin-bottom: 6px;
-      color: #555;
-      font-weight: 600;
+      margin-bottom: 8px;
+      color: #444;
       font-size: 14px;
+      font-weight: 500;
     }
 
     input {
       width: 100%;
-      padding: 12px 16px;
+      padding: 13px 16px;
       border: 1px solid #ddd;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 16px;
-      transition: border-color 0.3s;
+      transition: all 0.3s ease;
     }
 
     input:focus {
       outline: none;
       border-color: #722F37;
+      box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.15);
     }
 
     button {
-      background-color: #722F37;
+      background: #722F37;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 14px;
       font-size: 16px;
       font-weight: 600;
       width: 100%;
       cursor: pointer;
-      transition: background-color 0.3s;
+      transition: background 0.3s ease;
+      margin-top: 8px;
     }
 
     button:hover {
-      background-color: #5a242c;
+      background: #5a242c;
     }
 
-    .error-message {
-      color: #e74c3c;
+    .message {
+      margin-top: 16px;
+      padding: 10px;
+      border-radius: 8px;
       font-size: 14px;
-      margin-top: 12px;
       display: none;
     }
 
-    .success-message {
-      color: #27ae60;
-      font-size: 14px;
-      margin-top: 12px;
-      display: none;
+    .error {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ffcdd2;
+    }
+
+    .success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
     }
   </style>
 </head>
 <body>
   <div class="login-container">
-    <!-- 🔁 Reemplaza esta URL con la de tu logo institucional -->
-    <img src="https://via.placeholder.com/100/722F37/FFFFFF?text=LOGO" alt="Logo Institucional" class="logo" />
-    <h1>Iniciar Sesión</h1>
+    <!-- 🔁 Reemplaza esta URL con tu logo real -->
+    <img src="https://via.placeholder.com/90/722F37/FFFFFF?text=ICAP" alt="Logo ICAP Nacional" class="logo" />
+    
+    <h1>Sistema de Expedientes</h1>
+    
+    <p class="subtitle">
+      Plataforma institucional de la ICAP Nacional para el acceso seguro y gestionado a expedientes académicos y administrativos.
+    </p>
 
     <form id="loginForm">
       <div class="input-group">
-        <label for="email">Correo Electrónico</label>
-        <input type="email" id="email" required />
+        <label for="email">Correo Institucional</label>
+        <input type="email" id="email" required autocomplete="username" />
       </div>
 
       <div class="input-group">
         <label for="password">Contraseña</label>
-        <input type="password" id="password" required />
+        <input type="password" id="password" required autocomplete="current-password" />
       </div>
 
       <button type="submit">Iniciar Sesión</button>
     </form>
 
-    <div id="errorMessage" class="error-message"></div>
-    <div id="successMessage" class="success-message"></div>
+    <div id="message" class="message"></div>
   </div>
 
   <script>
-    // 🔑 Configura aquí tus credenciales de Supabase
+    // 🔑 CONFIGURA TUS CREDENCIALES DE SUPABASE AQUÍ
     const SUPABASE_URL = 'https://TU_PROYECTO.supabase.co';
     const SUPABASE_ANON_KEY = 'TU_ANON_KEY';
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
     const loginForm = document.getElementById('loginForm');
-    const errorMessage = document.getElementById('errorMessage');
-    const successMessage = document.getElementById('successMessage');
+    const messageDiv = document.getElementById('message');
 
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const email = document.getElementById('email').value;
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
-      // Limpiar mensajes previos
-      errorMessage.style.display = 'none';
-      successMessage.style.display = 'none';
+      // Limpiar mensaje previo
+      messageDiv.style.display = 'none';
 
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -155,15 +188,17 @@
 
         if (error) throw error;
 
-        successMessage.textContent = '¡Inicio de sesión exitoso!';
-        successMessage.style.display = 'block';
+        messageDiv.textContent = 'Acceso concedido. Redirigiendo...';
+        messageDiv.className = 'message success';
+        messageDiv.style.display = 'block';
 
-        // 👉 Redirigir a dashboard o página protegida
-        // window.location.href = '/dashboard.html';
+        // 👉 Redirige a tu dashboard (ajusta la URL)
+        // setTimeout(() => window.location.href = '/dashboard.html', 1500);
 
       } catch (err) {
-        errorMessage.textContent = err.message || 'Error al iniciar sesión.';
-        errorMessage.style.display = 'block';
+        messageDiv.textContent = err.message || 'Error al iniciar sesión. Verifique sus credenciales.';
+        messageDiv.className = 'message error';
+        messageDiv.style.display = 'block';
       }
     });
   </script>
