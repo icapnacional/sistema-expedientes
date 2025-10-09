@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ICAP Nacional - Sistema de Expedientes</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- ✅ SCRIPT LOCAL DE SUPABASE -->
+  <script src="supabase.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {
@@ -192,9 +193,9 @@
   <!-- ===== LOGIN ===== -->
   <div id="loginSection" class="login-container">
     <div class="login-card">
-      <!-- 🔁 LOGO DE PRUEBA (reemplaza con tu logo real) -->
+      <!-- ✅ LOGO INTERNO (SVG EMBEBIDO) -->
       <img 
-        src="https://via.placeholder.com/90/722F37/FFFFFF?text=ICAP" 
+        src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5MCIgaGVpZ2h0PSI5MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiPjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjNzIyRjM3Ii8+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iMzAiIGZpbGw9IiNmZmYiLz48dGV4dCB4PSI1MCIgeT0iNTQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIzMiIgZm9udC13ZWlnaHQ9ImJvbGQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM3MjJGMzciPklDQVA8L3RleHQ+PC9zdmc+" 
         alt="ICAP Nacional" 
         class="logo"
       />
@@ -224,8 +225,9 @@
   <!-- ===== PANEL PRINCIPAL ===== -->
   <div id="panelSection" class="panel-container">
     <div class="panel-header">
+      <!-- ✅ LOGO INTERNO PARA EL PANEL -->
       <img 
-        src="https://via.placeholder.com/80/722F37/FFFFFF?text=ICAP" 
+        src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiPjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjNzIyRjM3Ii8+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iMzAiIGZpbGw9IiNmZmYiLz48dGV4dCB4PSI1MCIgeT0iNTQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9ImJvbGQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM3MjJGMzciPklDQVA8L3RleHQ+PC9zdmc+" 
         alt="ICAP Nacional" 
         class="panel-logo"
       />
@@ -257,13 +259,17 @@
 
     // Verificar sesión al cargar
     async function checkSession() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        loginSection.style.display = 'none';
-        panelSection.style.display = 'block';
-      } else {
-        loginSection.style.display = 'flex';
-        panelSection.style.display = 'none';
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          loginSection.style.display = 'none';
+          panelSection.style.display = 'block';
+        } else {
+          loginSection.style.display = 'flex';
+          panelSection.style.display = 'none';
+        }
+      } catch (err) {
+        console.error('Error al verificar sesión:', err);
       }
     }
 
