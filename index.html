@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ICAP Nacional - Sistema de Expedientes</title>
+  <title>ICAP Nacional - Policía Nacional Bolivariana</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -14,8 +14,8 @@
     }
 
     body {
-      background: linear-gradient(135deg, #f8f6f2 0%, #e9e4dd 100%);
-      font-family: 'Roboto', sans-serif;
+      background-color: #f9f9f9;
+      font-family: 'Open Sans', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -23,162 +23,156 @@
       padding: 20px;
     }
 
-    .login-container {
+    .login-card {
       background: white;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
       width: 100%;
-      max-width: 420px;
-      padding: 40px 32px;
+      max-width: 400px;
+      padding: 36px 30px;
       text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .login-container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 6px;
-      background: #722F37;
+      border: 1px solid #eee;
     }
 
     .logo {
-      width: 90px;
-      margin: 0 auto 20px;
-      display: block;
+      width: 80px;
+      margin-bottom: 24px;
     }
 
     h1 {
-      color: #722F37;
-      font-size: 26px;
+      color: #2D2D2D;
+      font-size: 22px;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .subtitle {
       color: #555;
       font-size: 15px;
-      font-weight: 400;
-      line-height: 1.5;
       margin-bottom: 28px;
-      padding: 0 10px;
+      font-weight: 400;
     }
 
-    .input-group {
-      margin-bottom: 20px;
+    .form-group {
       text-align: left;
+      margin-bottom: 20px;
     }
 
     label {
       display: block;
-      margin-bottom: 8px;
-      color: #444;
+      margin-bottom: 6px;
+      color: #333;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
     }
 
     input {
       width: 100%;
-      padding: 13px 16px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 16px;
-      transition: all 0.3s ease;
+      padding: 12px 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: border-color 0.25s;
     }
 
     input:focus {
       outline: none;
       border-color: #722F37;
-      box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.15);
     }
 
-    button {
-      background: #722F37;
+    .btn-login {
+      background-color: #722F37;
       color: white;
       border: none;
-      border-radius: 10px;
-      padding: 14px;
+      border-radius: 6px;
+      padding: 13px;
       font-size: 16px;
       font-weight: 600;
       width: 100%;
       cursor: pointer;
-      transition: background 0.3s ease;
+      transition: background-color 0.3s;
       margin-top: 8px;
     }
 
-    button:hover {
-      background: #5a242c;
+    .btn-login:hover {
+      background-color: #5a242c;
     }
 
-    .message {
+    .institutional-note {
+      margin-top: 24px;
+      font-size: 13px;
+      color: #444;
+      line-height: 1.5;
+      font-style: italic;
+    }
+
+    .alert {
       margin-top: 16px;
       padding: 10px;
-      border-radius: 8px;
+      border-radius: 6px;
       font-size: 14px;
       display: none;
     }
 
-    .error {
-      background: #ffebee;
-      color: #c62828;
-      border: 1px solid #ffcdd2;
+    .alert-error {
+      background-color: #ffe9e9;
+      color: #c00;
+      border: 1px solid #ffcfcf;
     }
 
-    .success {
-      background: #e8f5e9;
-      color: #2e7d32;
-      border: 1px solid #c8e6c9;
+    .alert-success {
+      background-color: #eaffea;
+      color: #0a0;
+      border: 1px solid #c1e8c1;
     }
   </style>
 </head>
 <body>
-  <div class="login-container">
+  <div class="login-card">
     <!-- 🔁 Reemplaza esta URL con tu logo real -->
-    <img src="https://via.placeholder.com/90/722F37/FFFFFF?text=ICAP" alt="Logo ICAP Nacional" class="logo" />
-    
-    <h1>Sistema de Expedientes</h1>
-    
-    <p class="subtitle">
-      Plataforma institucional de la ICAP Nacional para el acceso seguro y gestionado a expedientes académicos y administrativos.
-    </p>
+    <img src="https://via.placeholder.com/80/722F37/FFFFFF?text=ICAP" alt="ICAP Nacional - PNB" class="logo" />
+
+    <h1>Acceso al Sistema</h1>
+    <p class="subtitle">Inicie sesión con sus credenciales institucionales</p>
 
     <form id="loginForm">
-      <div class="input-group">
-        <label for="email">Correo Institucional</label>
+      <div class="form-group">
+        <label for="email">Correo Electrónico</label>
         <input type="email" id="email" required autocomplete="username" />
       </div>
 
-      <div class="input-group">
+      <div class="form-group">
         <label for="password">Contraseña</label>
         <input type="password" id="password" required autocomplete="current-password" />
       </div>
 
-      <button type="submit">Iniciar Sesión</button>
+      <button type="submit" class="btn-login">Iniciar Sesión</button>
     </form>
 
-    <div id="message" class="message"></div>
+    <div id="alertMessage" class="alert"></div>
+
+    <!-- ✅ Texto institucional debajo del botón -->
+    <p class="institutional-note">
+      Plataforma institucional de la ICAP Nacional del Cuerpo de Policía Nacional Bolivariana
+    </p>
   </div>
 
   <script>
-    // 🔑 CONFIGURA TUS CREDENCIALES DE SUPABASE AQUÍ
+    // 🔑 CONFIGURA TUS CREDENCIALES DE SUPABASE
     const SUPABASE_URL = 'https://TU_PROYECTO.supabase.co';
     const SUPABASE_ANON_KEY = 'TU_ANON_KEY';
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const loginForm = document.getElementById('loginForm');
-    const messageDiv = document.getElementById('message');
+    const form = document.getElementById('loginForm');
+    const alertDiv = document.getElementById('alertMessage');
 
-    loginForm.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
-      // Limpiar mensaje previo
-      messageDiv.style.display = 'none';
+      alertDiv.style.display = 'none';
 
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -188,17 +182,17 @@
 
         if (error) throw error;
 
-        messageDiv.textContent = 'Acceso concedido. Redirigiendo...';
-        messageDiv.className = 'message success';
-        messageDiv.style.display = 'block';
+        alertDiv.textContent = 'Inicio de sesión exitoso. Accediendo...';
+        alertDiv.className = 'alert alert-success';
+        alertDiv.style.display = 'block';
 
-        // 👉 Redirige a tu dashboard (ajusta la URL)
+        // Opcional: redirigir después de 1.5 segundos
         // setTimeout(() => window.location.href = '/dashboard.html', 1500);
 
       } catch (err) {
-        messageDiv.textContent = err.message || 'Error al iniciar sesión. Verifique sus credenciales.';
-        messageDiv.className = 'message error';
-        messageDiv.style.display = 'block';
+        alertDiv.textContent = err.message || 'Credenciales incorrectas o cuenta inactiva.';
+        alertDiv.className = 'alert alert-error';
+        alertDiv.style.display = 'block';
       }
     });
   </script>
