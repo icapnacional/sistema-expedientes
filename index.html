@@ -12,16 +12,20 @@
       padding: 0;
       box-sizing: border-box;
     }
-
     body {
       background-color: #fafafa;
       font-family: 'Inter', sans-serif;
       color: #2d2d2d;
-      display: flex;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* ===== LOGIN ===== */
+    .login-container {
+      display: none;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      padding: 20px;
     }
 
     .login-card {
@@ -35,23 +39,47 @@
       border: 1px solid #f0f0f0;
     }
 
-    .logo {
+    /* ===== PANEL ===== */
+    .panel-container {
+      display: none;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    .logo, .panel-logo {
       width: 90px;
       margin-bottom: 24px;
     }
 
-    h1 {
+    .panel-logo {
+      width: 80px;
+      margin-bottom: 16px;
+    }
+
+    h1, h2 {
       font-size: 24px;
       font-weight: 700;
       color: #2d2d2d;
       margin-bottom: 8px;
     }
 
-    .subtitle {
+    h2 {
+      font-size: 26px;
+      text-align: center;
+    }
+
+    .subtitle, .panel-subtitle {
       font-size: 15px;
       color: #555;
       margin-bottom: 28px;
       line-height: 1.5;
+    }
+
+    .panel-subtitle {
+      text-align: center;
+      margin-top: 6px;
+      margin-bottom: 32px;
     }
 
     .form-group {
@@ -83,7 +111,7 @@
       background-color: #ffffff;
     }
 
-    .btn-login {
+    .btn-login, .btn-panel {
       background-color: #722F37;
       color: white;
       border: none;
@@ -95,10 +123,30 @@
       cursor: pointer;
       transition: background-color 0.25s;
       margin-top: 6px;
+      text-align: center;
+      text-decoration: none;
+      display: block;
     }
 
-    .btn-login:hover {
+    .btn-login:hover, .btn-panel:hover {
       background-color: #5e262d;
+    }
+
+    .btn-panel {
+      background: white;
+      color: #722F37;
+      border: 2px solid #722F37;
+      font-size: 17px;
+      padding: 18px 20px;
+      border-radius: 10px;
+      margin-top: 0;
+    }
+
+    .btn-panel:hover {
+      background: #722F37;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(114, 47, 55, 0.2);
     }
 
     .institutional-note {
@@ -129,92 +177,140 @@
       color: #080;
       border: 1px solid #d0ffd0;
     }
+
+    .buttons-grid {
+      display: grid;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .logout-link {
+      display: block;
+      margin: 30px auto 0;
+      color: #777;
+      text-align: center;
+      font-size: 14px;
+      text-decoration: none;
+      max-width: 400px;
+    }
+
+    .logout-link:hover {
+      color: #c00;
+    }
   </style>
 </head>
 <body>
-  <div class="login-card">
-    <!-- 🔁 REEMPLAZA ESTA URL CON TU LOGO REAL -->
-    <img 
-      src="https://raw.githubusercontent.com/icapnacional
-/sistema-expedientes/main/Logo.png" 
-      alt="ICAP Nacional - PNB" 
-      class="logo"
-    />
+  <!-- ===== LOGIN ===== -->
+  <div id="loginSection" class="login-container">
+    <div class="login-card">
+      <img 
+        src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+        alt="ICAP Nacional - PNB" 
+        class="logo"
+      />
+      <h1>Sistema de Expedientes</h1>
+      <p class="subtitle">Acceso restringido a personal autorizado de la ICAP Nacional</p>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Correo Institucional</label>
+          <input 
+            type="email" 
+            id="email" 
+            required 
+            autocomplete="username"
+            placeholder="usuario@icap.gob.ve"
+          />
+        </div>
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input 
+            type="password" 
+            id="password" 
+            required 
+            autocomplete="current-password"
+            placeholder="••••••••"
+          />
+        </div>
+        <button type="submit" class="btn-login">Iniciar Sesión</button>
+      </form>
+      <div id="alertMessage" class="alert"></div>
+      <p class="institutional-note">
+        Plataforma institucional de la ICAP Nacional del Cuerpo de Policía Nacional Bolivariana
+      </p>
+    </div>
+  </div>
 
-    <h1>Sistema de Expedientes</h1>
-    <p class="subtitle">Acceso restringido a personal autorizado de la ICAP Nacional</p>
+  <!-- ===== PANEL PRINCIPAL ===== -->
+  <div id="panelSection" class="panel-container">
+    <div style="text-align: center;">
+      <img 
+        src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+        alt="ICAP Nacional - PNB" 
+        class="panel-logo"
+      />
+      <h2>Panel de Gestión</h2>
+      <p class="panel-subtitle">ICAP Nacional - Cuerpo de Policía Nacional Bolivariana</p>
+    </div>
 
-    <form id="loginForm">
-      <div class="form-group">
-        <label for="email">Correo Institucional</label>
-        <input 
-          type="email" 
-          id="email" 
-          required 
-          autocomplete="username"
-          placeholder="usuario@icap.gob.ve"
-        />
-      </div>
+    <div class="buttons-grid">
+      <a href="#" class="btn-panel">Registrar Expediente</a>
+      <a href="#" class="btn-panel">Consultar Expediente</a>
+      <a href="#" class="btn-panel">Consulta General</a>
+      <a href="#" class="btn-panel">Administrar Usuarios</a>
+    </div>
 
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input 
-          type="password" 
-          id="password" 
-          required 
-          autocomplete="current-password"
-          placeholder="••••••••"
-        />
-      </div>
-
-      <button type="submit" class="btn-login">Iniciar Sesión</button>
-    </form>
-
-    <div id="alertMessage" class="alert"></div>
-
-    <!-- ✅ Texto institucional debajo del botón -->
-    <p class="institutional-note">
-      Plataforma institucional de la ICAP Nacional del Cuerpo de Policía Nacional Bolivariana
-    </p>
+    <a href="#" id="logoutLink" class="logout-link">Cerrar Sesión</a>
   </div>
 
   <script>
-    // 🔑 CONFIGURA TUS CREDENCIALES DE SUPABASE
-    const SUPABASE_URL = 'https://TU_PROYECTO.supabase.co';
-    const SUPABASE_ANON_KEY = 'TU_ANON_KEY';
+    // 🔑 CONFIGURACIÓN DE SUPABASE
+    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const form = document.getElementById('loginForm');
+    const loginSection = document.getElementById('loginSection');
+    const panelSection = document.getElementById('panelSection');
+    const loginForm = document.getElementById('loginForm');
     const alertDiv = document.getElementById('alertMessage');
+    const logoutLink = document.getElementById('logoutLink');
 
-    form.addEventListener('submit', async (e) => {
+    // Verificar sesión al cargar
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        loginSection.style.display = 'none';
+        panelSection.style.display = 'block';
+      } else {
+        loginSection.style.display = 'flex';
+        panelSection.style.display = 'none';
+      }
+    }
+
+    checkSession();
+
+    // Login
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
-
       alertDiv.style.display = 'none';
 
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-
-        alertDiv.textContent = 'Inicio de sesión exitoso. Cargando sistema...';
-        alertDiv.className = 'alert alert-success';
-        alertDiv.style.display = 'block';
-
-        // Opcional: redirigir
-        // setTimeout(() => window.location.href = '/dashboard.html', 1500);
-
+        checkSession();
       } catch (err) {
         alertDiv.textContent = err.message || 'Error: credenciales inválidas o cuenta inactiva.';
         alertDiv.className = 'alert alert-error';
         alertDiv.style.display = 'block';
       }
+    });
+
+    // Logout
+    logoutLink.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await supabase.auth.signOut();
+      checkSession();
     });
   </script>
 </body>
