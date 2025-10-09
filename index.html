@@ -230,16 +230,16 @@
     </div>
 
     <div class="panel-buttons">
-      <button class="panel-btn" onclick="alert('Registrar nuevo expediente')">
+      <button class="panel-btn" onclick="alert('Función: Registrar Expediente')">
         📝<br>Registrar Expediente
       </button>
-      <button class="panel-btn" onclick="alert('Consultar expedientes existentes')">
+      <button class="panel-btn" onclick="alert('Función: Consultar Expedientes')">
         🔍<br>Consultar Expedientes
       </button>
-      <button class="panel-btn" onclick="alert('Generar reportes institucionales')">
+      <button class="panel-btn" onclick="alert('Función: Generar Reportes')">
         📊<br>Reportes
       </button>
-      <button class="panel-btn" onclick="alert('Configuración de perfil o sistema')">
+      <button class="panel-btn" onclick="alert('Función: Configuración')">
         ⚙️<br>Configuración
       </button>
     </div>
@@ -252,9 +252,8 @@
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
 
-    // ✅ Corrección: inicializar Supabase correctamente
-    const { createClient } = supabase;
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // ✅ Corrección: usar window.supabase.createClient (válido con CDN)
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Elementos del DOM
     const loginView = document.getElementById('loginView');
@@ -266,7 +265,7 @@
 
     // Verificar sesión al cargar
     async function checkSession() {
-      const {  { session } } = await supabaseClient.auth.getSession();
+      const {  { session } } = await supabase.auth.getSession();
       if (session) {
         showPanel(session.user.email);
       } else {
@@ -293,7 +292,7 @@
       alertDiv.style.display = 'none';
 
       try {
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         showPanel(email);
       } catch (err) {
@@ -305,7 +304,7 @@
 
     // Logout
     logoutBtn.addEventListener('click', async () => {
-      await supabaseClient.auth.signOut();
+      await supabase.auth.signOut();
       showLogin();
     });
 
