@@ -22,7 +22,7 @@
       min-height: 100vh;
       padding: 20px;
     }
-    .login-card, .panel-card {
+    .login-card {
       background: white;
       border-radius: 12px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
@@ -73,7 +73,7 @@
       border-color: #722F37;
       background-color: #ffffff;
     }
-    .btn-login, .btn-logout {
+    .btn-login {
       background-color: #722F37;
       color: white;
       border: none;
@@ -86,7 +86,7 @@
       transition: background-color 0.25s;
       margin-top: 6px;
     }
-    .btn-login:hover, .btn-logout:hover {
+    .btn-login:hover {
       background-color: #5e262d;
     }
     .institutional-note {
@@ -114,46 +114,10 @@
       color: #080;
       border: 1px solid #d0ffd0;
     }
-
-    /* Panel */
-    .user-info {
-      margin: 20px 0;
-      padding: 12px;
-      background: #f9f9f9;
-      border-radius: 8px;
-      font-size: 14px;
-      color: #333;
-    }
-    .panel-buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin: 20px 0;
-    }
-    .panel-btn {
-      background: #f5f7fa;
-      border: 1px solid #e0e5f0;
-      border-radius: 8px;
-      padding: 12px 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #2a4bc8;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .panel-btn:hover {
-      background: #e8ecf5;
-      border-color: #722F37;
-      color: #722F37;
-    }
-    .hidden {
-      display: none !important;
-    }
   </style>
 </head>
 <body>
-  <!-- Login View -->
-  <div id="loginView" class="login-card">
+  <div class="login-card">
     <img 
       src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
       alt="ICAP Nacional - PNB" 
@@ -190,67 +154,17 @@
     </p>
   </div>
 
-  <!-- Panel Principal -->
-  <div id="panelView" class="panel-card hidden">
-    <img 
-      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
-      alt="ICAP Nacional - PNB" 
-      class="logo"
-    />
-    <h1>Panel de Gestión</h1>
-    <div class="user-info">
-      <strong>Usuario:</strong> <span id="userEmail">—</span>
-    </div>
-
-    <div class="panel-buttons">
-      <button class="panel-btn" onclick="alert('Registrar nuevo expediente')">📝 Registrar</button>
-      <button class="panel-btn" onclick="alert('Consultar expedientes')">🔍 Consultar</button>
-      <button class="panel-btn" onclick="alert('Generar reportes')">📊 Reportes</button>
-      <button class="panel-btn" onclick="alert('Configuración')">⚙️ Configuración</button>
-    </div>
-
-    <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
-  </div>
-
   <script>
-    // 🔑 Credenciales de Supabase
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
 
-    // ✅ CORRECCIÓN: usar window.supabase.createClient
+    // ✅ CORRECCIÓN CLAVE: usar window.supabase.createClient
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Elementos
-    const loginView = document.getElementById('loginView');
-    const panelView = document.getElementById('panelView');
-    const userEmailSpan = document.getElementById('userEmail');
+    const form = document.getElementById('loginForm');
     const alertDiv = document.getElementById('alertMessage');
-    const loginForm = document.getElementById('loginForm');
-    const logoutBtn = document.getElementById('logoutBtn');
 
-    // Verificar sesión al cargar
-    async function checkSession() {
-      const {  { session } } = await supabase.auth.getSession();
-      if (session) {
-        showPanel(session.user.email);
-      } else {
-        showLogin();
-      }
-    }
-
-    function showLogin() {
-      loginView.classList.remove('hidden');
-      panelView.classList.add('hidden');
-    }
-
-    function showPanel(email) {
-      userEmailSpan.textContent = email;
-      loginView.classList.add('hidden');
-      panelView.classList.remove('hidden');
-    }
-
-    // Login
-    loginForm.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
@@ -259,22 +173,20 @@
       try {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        showPanel(email);
+
+        alertDiv.textContent = 'Inicio de sesión exitoso. Cargando sistema...';
+        alertDiv.className = 'alert alert-success';
+        alertDiv.style.display = 'block';
+
+        // 👉 Aquí puedes redirigir al panel o mostrarlo en la misma página
+        // Ejemplo: window.location.href = 'panel.html';
+
       } catch (err) {
         alertDiv.textContent = err.message || 'Error: credenciales inválidas.';
         alertDiv.className = 'alert alert-error';
         alertDiv.style.display = 'block';
       }
     });
-
-    // Logout
-    logoutBtn.addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      showLogin();
-    });
-
-    // Iniciar verificación
-    checkSession();
   </script>
 </body>
 </html>
