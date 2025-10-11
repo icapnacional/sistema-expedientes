@@ -24,13 +24,13 @@
     }
     .login-card, .panel-card {
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
       width: 100%;
-      max-width: 400px;
+      max-width: 420px;
       padding: 40px 32px;
       text-align: center;
-      border: 1px solid #f0f0f0;
+      border: 1px solid #eee;
     }
     .logo {
       width: 90px;
@@ -54,40 +54,48 @@
     }
     label {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       font-size: 14px;
       font-weight: 600;
       color: #333;
     }
     input {
       width: 100%;
-      padding: 12px 14px;
+      padding: 14px;
       border: 1px solid #ddd;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 15px;
       color: #222;
       background-color: #fdfdfd;
+      transition: all 0.25s;
     }
     input:focus {
       outline: none;
       border-color: #722F37;
-      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
     }
+    /* Botones principales mejorados */
     .btn-login, .btn-logout {
       background-color: #722F37;
       color: white;
       border: none;
-      border-radius: 8px;
-      padding: 13px;
+      border-radius: 12px;
+      padding: 16px;
       font-size: 16px;
       font-weight: 600;
       width: 100%;
       cursor: pointer;
-      transition: background-color 0.25s;
-      margin-top: 6px;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      box-shadow: 0 3px 8px rgba(114, 47, 55, 0.2);
     }
     .btn-login:hover, .btn-logout:hover {
       background-color: #5e262d;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 14px rgba(114, 47, 55, 0.25);
+    }
+    .btn-login:active, .btn-logout:active {
+      transform: translateY(0);
     }
     .institutional-note {
       margin-top: 26px;
@@ -99,8 +107,8 @@
     }
     .alert {
       margin-top: 18px;
-      padding: 10px;
-      border-radius: 6px;
+      padding: 12px;
+      border-radius: 8px;
       font-size: 14px;
       display: none;
     }
@@ -116,34 +124,47 @@
     }
     /* Panel */
     .user-info {
-      margin: 20px 0;
-      padding: 12px;
+      margin: 24px 0;
+      padding: 14px;
       background: #f9f9f9;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 14px;
       color: #333;
+      border: 1px solid #eee;
     }
     .panel-buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin: 20px 0;
+      gap: 18px;
+      margin: 24px 0;
     }
     .panel-btn {
-      background: #f5f7fa;
-      border: 1px solid #e0e5f0;
-      border-radius: 8px;
-      padding: 12px 8px;
-      font-size: 13px;
+      background: white;
+      border: 2px solid #eaeaea;
+      border-radius: 14px;
+      padding: 20px 12px;
+      font-size: 15px;
       font-weight: 600;
-      color: #2a4bc8;
+      color: #722F37;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+      min-height: 85px;
+      text-align: center;
     }
     .panel-btn:hover {
-      background: #e8ecf5;
+      transform: translateY(-4px);
+      box-shadow: 0 6px 14px rgba(114, 47, 55, 0.18);
       border-color: #722F37;
-      color: #722F37;
+      background-color: #fdf7f7;
+      color: #5e262d;
+    }
+    .panel-btn:active {
+      transform: translateY(-1px);
     }
     .hidden {
       display: none !important;
@@ -188,6 +209,7 @@
       Plataforma institucional de la ICAP Nacional del Cuerpo de Policía Nacional Bolivariana
     </p>
   </div>
+
   <!-- Panel Principal -->
   <div id="panelView" class="panel-card hidden">
     <img 
@@ -200,13 +222,14 @@
       <strong>Usuario:</strong> <span id="userEmail">—</span>
     </div>
     <div class="panel-buttons">
-      <button class="panel-btn" onclick="window.location.href='registrar.html'">📝 Registrar</button>
+      <button class="panel-btn" onclick="alert('Registrar nuevo expediente')">📝 Registrar</button>
       <button class="panel-btn" onclick="alert('Consultar expedientes')">🔍 Consultar</button>
       <button class="panel-btn" onclick="alert('Generar reportes')">📊 Reportes</button>
       <button class="panel-btn" onclick="alert('Configuración')">⚙️ Configuración</button>
     </div>
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
   </div>
+
   <script>
     // 🔑 Credenciales de Supabase
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
@@ -221,7 +244,7 @@
     const loginForm = document.getElementById('loginForm');
     const logoutBtn = document.getElementById('logoutBtn');
 
-    // ✅ CORREGIDO: desestructuración válida
+    // ✅ Corrección clave: sintaxis de desestructuración
     async function checkSession() {
       const {  { session } } = await supabase.auth.getSession();
       if (session) {
@@ -247,6 +270,7 @@
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       alertDiv.style.display = 'none';
+
       try {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
