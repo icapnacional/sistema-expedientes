@@ -16,7 +16,7 @@
       font-family: 'Inter', sans-serif;
       color: #2d2d2d;
       padding: 20px;
-      line-height: 1.4;
+      line-height: 1.5;
     }
     .container {
       max-width: 900px;
@@ -42,16 +42,15 @@
       font-size: 18px;
       font-weight: 700;
       color: #722F37;
-      margin: 24px 0 14px;
-      padding-bottom: 4px;
-      border-bottom: 1px solid #eee;
+      margin: 28px 0 16px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #f0f0f0;
     }
-    /* ✅ Más compacto */
     .form-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 14px;
-      margin-bottom: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 20px;
     }
     .form-group {
       display: flex;
@@ -60,27 +59,27 @@
     label {
       font-size: 14px;
       font-weight: 600;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
       color: #333;
     }
     input, select, textarea {
-      padding: 10px 12px;
+      padding: 12px;
       border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 14px;
+      border-radius: 10px;
+      font-size: 15px;
       background-color: #fdfdfd;
     }
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: #722F37;
-      box-shadow: 0 0 0 2px rgba(114, 47, 55, 0.1);
+      box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
     }
     textarea {
-      min-height: 60px;
+      min-height: 80px;
       resize: vertical;
     }
 
-    /* ✅ Estilo para la foto con vista previa */
+    /* Estilo para la foto */
     .photo-container {
       display: flex;
       flex-direction: column;
@@ -90,12 +89,12 @@
       width: 100px;
       height: 100px;
       border: 2px dashed #ccc;
-      border-radius: 8px;
-      background: #fafafa;
+      border-radius: 10px;
+      background-color: #fafafa;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       overflow: hidden;
     }
     .photo-preview img {
@@ -105,13 +104,14 @@
     }
     .photo-placeholder {
       color: #999;
-      font-size: 20px;
+      font-size: 24px;
     }
     .photo-input {
       width: 100%;
-      font-size: 13px;
-      padding: 6px;
-      border-radius: 6px;
+      padding: 8px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
     }
 
     .btn-save {
@@ -158,7 +158,9 @@
 
     <!-- Sección: Datos Personales -->
     <h2 class="section-title">Datos Personales</h2>
-    <div class="form-row">
+
+    <!-- Fila 1: Foto (ocupa toda la fila) -->
+    <div class="form-row" style="grid-template-columns: 1fr;">
       <div class="form-group">
         <label for="fotoInput">Foto</label>
         <div class="photo-container">
@@ -168,6 +170,10 @@
           <input type="file" id="fotoInput" accept="image/*" class="photo-input">
         </div>
       </div>
+    </div>
+
+    <!-- Fila 2: Nombre y Apellido -->
+    <div class="form-row">
       <div class="form-group">
         <label for="nombre">Nombre</label>
         <input type="text" id="nombre" required>
@@ -176,6 +182,10 @@
         <label for="apellido">Apellido</label>
         <input type="text" id="apellido" required>
       </div>
+    </div>
+
+    <!-- Resto de los campos -->
+    <div class="form-row">
       <div class="form-group">
         <label for="fechaNac">Fecha de Nacimiento</label>
         <input type="date" id="fechaNac">
