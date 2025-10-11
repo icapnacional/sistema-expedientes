@@ -37,7 +37,21 @@
       font-size: 24px;
       font-weight: 700;
       color: #2d2d2d;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
+    }
+    .btn-config-lists {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 16px;
+      display: block;
+      width: fit-content;
+      margin-left: auto;
     }
     .section-title {
       font-size: 18px;
@@ -147,6 +161,101 @@
     .back-link:hover {
       text-decoration: underline;
     }
+
+    /* Modal de gestión */
+    #configModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      overflow: auto;
+    }
+    .config-content {
+      background: white;
+      margin: 40px auto;
+      padding: 24px;
+      width: 90%;
+      max-width: 700px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .config-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    .config-header h2 {
+      color: #722F37;
+      font-size: 20px;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #777;
+    }
+    .config-section {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px dashed #f0f0f0;
+    }
+    .config-section:last-child {
+      border-bottom: none;
+    }
+    .config-section h3 {
+      margin-bottom: 12px;
+      font-size: 16px;
+      color: #333;
+      font-weight: 600;
+    }
+    .option-list {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 50px;
+      background: #fcfcfc;
+    }
+    .option-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 14px;
+      align-items: center;
+    }
+    .add-option {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .add-option input {
+      flex: 1;
+      padding: 8px 10px;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+    .add-option button {
+      padding: 8px 14px;
+      background: #722F37;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .add-option button:hover {
+      background: #5e262d;
+    }
   </style>
 </head>
 <body>
@@ -158,7 +267,10 @@
     />
     <h1>Registrar Nuevo Expediente</h1>
 
-    <!-- ✅ CUADRO DE FOTO CENTRADO (arriba de todo) -->
+    <!-- ✅ BOTÓN DE GESTIÓN DE LISTAS -->
+    <button class="btn-config-lists" onclick="openConfigModal()">⚙️ Gestionar Listas</button>
+
+    <!-- ✅ CUADRO DE FOTO CENTRADO -->
     <div class="photo-upload-container">
       <div class="photo-preview-box" id="photoPreview">
         <span class="photo-placeholder">📷</span>
@@ -188,10 +300,7 @@
       <div class="form-group">
         <label for="sexo">Sexo</label>
         <select id="sexo">
-          <option value="">Seleccionar</option>
-          <option value="masculino">Masculino</option>
-          <option value="femenino">Femenino</option>
-          <option value="otro">Otro</option>
+          <option value="">Cargando...</option>
         </select>
       </div>
       <div class="form-group">
@@ -200,15 +309,14 @@
       </div>
       <div class="form-group">
         <label for="jerarquia">Jerarquía</label>
-        <input type="text" id="jerarquia" placeholder="Ej: Teniente">
+        <select id="jerarquia">
+          <option value="">Cargando...</option>
+        </select>
       </div>
       <div class="form-group">
         <label for="estatusPersonal">Estatus</label>
         <select id="estatusPersonal">
-          <option value="">Seleccionar</option>
-          <option value="activo">Activo</option>
-          <option value="suspendido">Suspendido</option>
-          <option value="baja">Baja</option>
+          <option value="">Cargando...</option>
         </select>
       </div>
       <div class="form-group">
@@ -231,93 +339,61 @@
       <div class="form-group">
         <label for="tipoExpediente">Tipo de Expediente</label>
         <select id="tipoExpediente">
-          <option value="">Seleccionar</option>
-          <option value="disciplinario">Disciplinario</option>
-          <option value="administrativo">Administrativo</option>
-          <option value="penal">Penal</option>
+          <option value="">Cargando...</option>
         </select>
       </div>
       <div class="form-group">
         <label for="icapOficina">ICAP (Oficina)</label>
         <select id="icapOficina">
-          <option value="">Seleccionar</option>
-          <option value="caracas">Caracas</option>
-          <option value="maracay">Maracay</option>
-          <option value="valencia">Valencia</option>
+          <option value="">Cargando...</option>
         </select>
       </div>
       <div class="form-group">
         <label for="funcInvestigado">Funcionario Investigado</label>
         <select id="funcInvestigado">
-          <option value="">Seleccionar</option>
-          <option value="cap_juan">Capitán Juan Pérez</option>
-          <option value="ten_maria">Teniente María López</option>
-          <option value="sarg_carlos">Sargento Carlos Rojas</option>
+          <option value="">Cargando...</option>
         </select>
       </div>
       <div class="form-group">
         <label for="condicionFunc">Condición del Funcionario en el Caso</label>
         <select id="condicionFunc">
-          <option value="">Seleccionar</option>
-          <option value="imputado">Imputado</option>
-          <option value="testigo">Testigo</option>
-          <option value="denunciado">Denunciado</option>
+          <option value="">Cargando...</option>
         </select>
       </div>
       <div class="form-group">
         <label for="denunciante">Denunciante</label>
         <select id="denunciante">
-          <option value="">Seleccionar</option>
-          <option value="ciudadano">Ciudadano Anónimo</option>
-          <option value="superior">Oficial Superior</option>
-          <option value="otro_func">Otro Funcionario</option>
-          <option value="institucion">Institución Pública</option>
+          <option value="">Cargando...</option>
         </select>
       </div>
       <div class="form-group">
         <label for="origenFalta">Origen de la Falta</label>
         <select id="origenFalta">
-          <option value="">Seleccionar</option>
-          <option value="interna">Interna</option>
-          <option value="externa">Externa</option>
+          <option value="">Cargando...</option>
         </select>
       </div>
       <div class="form-group">
         <label for="tipoFalta">Tipo de Falta</label>
         <select id="tipoFalta">
-          <option value="">Seleccionar</option>
-          <option value="leve">Leve</option>
-          <option value="grave">Grave</option>
-          <option value="muy_grave">Muy Grave</option>
+          <option value="">Cargando...</option>
         </select>
       </div>
       <div class="form-group">
         <label for="faltaArt">Falta (Artículo)</label>
         <select id="faltaArt">
-          <option value="">Seleccionar</option>
-          <option value="art45">Art. 45 – Abandono de cargo</option>
-          <option value="art46">Art. 46 – Insubordinación</option>
-          <option value="art47">Art. 47 – Uso indebido de uniforme</option>
-          <option value="art48">Art. 48 – Conducta inmoral</option>
+          <option value="">Cargando...</option>
         </select>
       </div>
       <div class="form-group">
         <label for="estatusExpediente">Estatus</label>
         <select id="estatusExpediente">
-          <option value="">Seleccionar</option>
-          <option value="abierto">Abierto</option>
-          <option value="cerrado">Cerrado</option>
-          <option value="archivado">Archivado</option>
+          <option value="">Cargando...</option>
         </select>
       </div>
       <div class="form-group">
         <label for="decision">Decisión</label>
         <select id="decision">
-          <option value="">Seleccionar</option>
-          <option value="sancion">Sanción Administrativa</option>
-          <option value="absolucion">Absolución</option>
-          <option value="remision">Remisión a Fiscalía</option>
-          <option value="archivo">Archivo del caso</option>
+          <option value="">Cargando...</option>
         </select>
       </div>
     </div>
@@ -351,9 +427,7 @@
       <div class="form-group">
         <label for="funcDetenido">¿Funcionario Detenido?</label>
         <select id="funcDetenido">
-          <option value="">Seleccionar</option>
-          <option value="si">Sí</option>
-          <option value="no">No</option>
+          <option value="">Cargando...</option>
         </select>
       </div>
       <div class="form-group">
@@ -370,13 +444,315 @@
     <a href="index.html" class="back-link">← Volver al Panel</a>
   </div>
 
+  <!-- Modal de gestión -->
+  <div id="configModal">
+    <div class="config-content">
+      <div class="config-header">
+        <h2>Gestionar Listas</h2>
+        <button class="close-btn" onclick="closeConfigModal()">×</button>
+      </div>
+
+      <!-- Listas de Datos Personales -->
+      <div class="config-section">
+        <h3>🧍 Sexo</h3>
+        <div class="option-list" id="sexoList"></div>
+        <div class="add-option">
+          <input type="text" id="newSexo" placeholder="Ej: No binario">
+          <button onclick="addOption('sexos', 'newSexo', 'sexoList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>🎖️ Jerarquía</h3>
+        <div class="option-list" id="jerarquiaList"></div>
+        <div class="add-option">
+          <input type="text" id="newJerarquia" placeholder="Ej: Comisario General">
+          <button onclick="addOption('jerarquias', 'newJerarquia', 'jerarquiaList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>🧍 Estatus (Datos Personales)</h3>
+        <div class="option-list" id="estatusPersonalList"></div>
+        <div class="add-option">
+          <input type="text" id="newEstatusPersonal" placeholder="Ej: Jubilado">
+          <button onclick="addOption('estatus_personales', 'newEstatusPersonal', 'estatusPersonalList')">+</button>
+        </div>
+      </div>
+
+      <!-- Listas de Expediente -->
+      <div class="config-section">
+        <h3>📁 Tipo de Expediente</h3>
+        <div class="option-list" id="tipoExpedienteList"></div>
+        <div class="add-option">
+          <input type="text" id="newTipoExpediente" placeholder="Ej: Disciplinario">
+          <button onclick="addOption('tipos_expediente', 'newTipoExpediente', 'tipoExpedienteList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>🏢 ICAP (Oficina)</h3>
+        <div class="option-list" id="icapOficinaList"></div>
+        <div class="add-option">
+          <input type="text" id="newIcapOficina" placeholder="Ej: Caracas">
+          <button onclick="addOption('icap_oficinas', 'newIcapOficina', 'icapOficinaList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>👮 Funcionario Investigado</h3>
+        <div class="option-list" id="funcInvestigadoList"></div>
+        <div class="add-option">
+          <input type="text" id="newFuncInvestigado" placeholder="Ej: Capitán Juan Pérez">
+          <button onclick="addOption('func_investigados', 'newFuncInvestigado', 'funcInvestigadoList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>⚖️ Condición del Funcionario</h3>
+        <div class="option-list" id="condicionFuncList"></div>
+        <div class="add-option">
+          <input type="text" id="newCondicionFunc" placeholder="Ej: Imputado">
+          <button onclick="addOption('condiciones_func', 'newCondicionFunc', 'condicionFuncList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>📢 Denunciante</h3>
+        <div class="option-list" id="denuncianteList"></div>
+        <div class="add-option">
+          <input type="text" id="newDenunciante" placeholder="Ej: Ciudadano Anónimo">
+          <button onclick="addOption('denunciantes', 'newDenunciante', 'denuncianteList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>🔍 Origen de la Falta</h3>
+        <div class="option-list" id="origenFaltaList"></div>
+        <div class="add-option">
+          <input type="text" id="newOrigenFalta" placeholder="Ej: Interna">
+          <button onclick="addOption('origenes_falta', 'newOrigenFalta', 'origenFaltaList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>⚠️ Tipo de Falta</h3>
+        <div class="option-list" id="tipoFaltaList"></div>
+        <div class="add-option">
+          <input type="text" id="newTipoFalta" placeholder="Ej: Leve">
+          <button onclick="addOption('tipos_falta', 'newTipoFalta', 'tipoFaltaList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>📜 Falta (Artículo)</h3>
+        <div class="option-list" id="faltaArtList"></div>
+        <div class="add-option">
+          <input type="text" id="newFaltaArt" placeholder="Ej: Art. 49 – Negligencia">
+          <button onclick="addOption('faltas_art', 'newFaltaArt', 'faltaArtList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>📊 Estatus (Expediente)</h3>
+        <div class="option-list" id="estatusExpedienteList"></div>
+        <div class="add-option">
+          <input type="text" id="newEstatusExpediente" placeholder="Ej: Archivado">
+          <button onclick="addOption('estatus_expedientes', 'newEstatusExpediente', 'estatusExpedienteList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>✅ Decisión</h3>
+        <div class="option-list" id="decisionList"></div>
+        <div class="add-option">
+          <input type="text" id="newDecision" placeholder="Ej: Sanción Administrativa">
+          <button onclick="addOption('decisiones', 'newDecision', 'decisionList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>🔒 ¿Funcionario Detenido?</h3>
+        <div class="option-list" id="funcDetenidoList"></div>
+        <div class="add-option">
+          <input type="text" id="newFuncDetenido" placeholder="Ej: Sí">
+          <button onclick="addOption('func_detenidos', 'newFuncDetenido', 'funcDetenidoList')">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // 🔑 Supabase
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Vista previa de la foto
+    // Listas por defecto
+    const defaultLists = {
+      sexos: [{label:'Masculino',value:'masculino'},{label:'Femenino',value:'femenino'},{label:'Otro',value:'otro'}],
+      jerarquias: [
+        {label:'Comisario General',value:'comisario_general'},
+        {label:'Comisario Jefe',value:'comisario_jefe'},
+        {label:'Comisario',value:'comisario'},
+        {label:'Subcomisario',value:'subcomisario'},
+        {label:'Inspector Jefe',value:'inspector_jefe'},
+        {label:'Inspector',value:'inspector'},
+        {label:'Subinspector',value:'subinspector'},
+        {label:'Oficial Jefe',value:'oficial_jefe'},
+        {label:'Oficial',value:'oficial'},
+        {label:'Oficial Ayudante',value:'oficial_ayudante'},
+        {label:'Sargento',value:'sargento'},
+        {label:'Cabo',value:'cabo'},
+        {label:'Policía',value:'policia'}
+      ],
+      estatus_personales: [{label:'Activo',value:'activo'},{label:'Suspendido',value:'suspendido'},{label:'Baja',value:'baja'}],
+      tipos_expediente: [{label:'Disciplinario',value:'disciplinario'},{label:'Administrativo',value:'administrativo'},{label:'Penal',value:'penal'}],
+      icap_oficinas: [{label:'Caracas',value:'caracas'},{label:'Maracay',value:'maracay'},{label:'Valencia',value:'valencia'}],
+      func_investigados: [{label:'Capitán Juan Pérez',value:'cap_juan'},{label:'Teniente María López',value:'ten_maria'},{label:'Sargento Carlos Rojas',value:'sarg_carlos'}],
+      condiciones_func: [{label:'Imputado',value:'imputado'},{label:'Testigo',value:'testigo'},{label:'Denunciado',value:'denunciado'}],
+      denunciantes: [{label:'Ciudadano Anónimo',value:'ciudadano'},{label:'Oficial Superior',value:'superior'},{label:'Otro Funcionario',value:'otro_func'},{label:'Institución Pública',value:'institucion'}],
+      origenes_falta: [{label:'Interna',value:'interna'},{label:'Externa',value:'externa'}],
+      tipos_falta: [{label:'Leve',value:'leve'},{label:'Grave',value:'grave'},{label:'Muy Grave',value:'muy_grave'}],
+      faltas_art: [
+        {label:'Art. 45 – Abandono de cargo',value:'art45'},
+        {label:'Art. 46 – Insubordinación',value:'art46'},
+        {label:'Art. 47 – Uso indebido de uniforme',value:'art47'},
+        {label:'Art. 48 – Conducta inmoral',value:'art48'}
+      ],
+      estatus_expedientes: [{label:'Abierto',value:'abierto'},{label:'Cerrado',value:'cerrado'},{label:'Archivado',value:'archivado'}],
+      decisiones: [
+        {label:'Sanción Administrativa',value:'sancion'},
+        {label:'Absolución',value:'absolucion'},
+        {label:'Remisión a Fiscalía',value:'remision'},
+        {label:'Archivo del caso',value:'archivo'}
+      ],
+      func_detenidos: [{label:'Sí',value:'si'},{label:'No',value:'no'}]
+    };
+
+    // localStorage
+    function loadLists() {
+      const saved = localStorage.getItem('dropdownLists');
+      return saved ? JSON.parse(saved) : defaultLists;
+    }
+    function saveLists(lists) {
+      localStorage.setItem('dropdownLists', JSON.stringify(lists));
+    }
+
+    // Rellenar select
+    function populateSelect(selectId, options) {
+      const select = document.getElementById(selectId);
+      select.innerHTML = '<option value="">Seleccionar</option>';
+      options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.label;
+        select.appendChild(option);
+      });
+    }
+
+    // Renderizar lista en modal
+    function renderList(listKey, containerId) {
+      const lists = loadLists();
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      lists[listKey].forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'option-item';
+        div.innerHTML = `${item.label} <button onclick="removeOption('${listKey}', ${index})" style="background:none;border:none;color:#c00;cursor:pointer;font-size:18px;">🗑️</button>`;
+        container.appendChild(div);
+      });
+    }
+
+    // Agregar opción
+    function addOption(listKey, inputId, containerId) {
+      const input = document.getElementById(inputId);
+      const label = input.value.trim();
+      if (!label) return;
+      const value = label.toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '');
+      const lists = loadLists();
+      lists[listKey].push({ label, value });
+      saveLists(lists);
+      input.value = '';
+      renderList(listKey, containerId);
+      populateSelectFromList(listKey);
+    }
+
+    // Eliminar opción
+    function removeOption(listKey, index) {
+      const lists = loadLists();
+      lists[listKey].splice(index, 1);
+      saveLists(lists);
+      renderList(listKey, getContainerId(listKey));
+      populateSelectFromList(listKey);
+    }
+
+    // Mapeo contenedores
+    function getContainerId(listKey) {
+      const map = {
+        sexos: 'sexoList',
+        jerarquias: 'jerarquiaList',
+        estatus_personales: 'estatusPersonalList',
+        tipos_expediente: 'tipoExpedienteList',
+        icap_oficinas: 'icapOficinaList',
+        func_investigados: 'funcInvestigadoList',
+        condiciones_func: 'condicionFuncList',
+        denunciantes: 'denuncianteList',
+        origenes_falta: 'origenFaltaList',
+        tipos_falta: 'tipoFaltaList',
+        faltas_art: 'faltaArtList',
+        estatus_expedientes: 'estatusExpedienteList',
+        decisiones: 'decisionList',
+        func_detenidos: 'funcDetenidoList'
+      };
+      return map[listKey];
+    }
+
+    // Rellenar selects
+    function populateSelectFromList(listKey) {
+      const lists = loadLists();
+      const map = {
+        sexos: 'sexo',
+        jerarquias: 'jerarquia',
+        estatus_personales: 'estatusPersonal',
+        tipos_expediente: 'tipoExpediente',
+        icap_oficinas: 'icapOficina',
+        func_investigados: 'funcInvestigado',
+        condiciones_func: 'condicionFunc',
+        denunciantes: 'denunciante',
+        origenes_falta: 'origenFalta',
+        tipos_falta: 'tipoFalta',
+        faltas_art: 'faltaArt',
+        estatus_expedientes: 'estatusExpediente',
+        decisiones: 'decision',
+        func_detenidos: 'funcDetenido'
+      };
+      const selectId = map[listKey];
+      if (selectId && lists[listKey]) {
+        populateSelect(selectId, lists[listKey]);
+      }
+    }
+
+    // Inicializar
+    function init() {
+      const lists = loadLists();
+      Object.keys(lists).forEach(key => {
+        populateSelectFromList(key);
+      });
+    }
+
+    // Modal
+    function openConfigModal() {
+      document.getElementById('configModal').style.display = 'block';
+      Object.keys(defaultLists).forEach(key => {
+        renderList(key, getContainerId(key));
+      });
+    }
+    function closeConfigModal() {
+      document.getElementById('configModal').style.display = 'none';
+    }
+
+    // Vista previa foto
     document.getElementById('fotoInput').addEventListener('change', function(e) {
       const preview = document.getElementById('photoPreview');
       const file = e.target.files[0];
@@ -391,12 +767,11 @@
       }
     });
 
-    // Guardar expediente
+    // Guardar
     document.querySelector('.btn-save').addEventListener('click', async () => {
       const nombre = document.getElementById('nombre').value.trim();
       const apellido = document.getElementById('apellido').value.trim();
       const cedula = document.getElementById('cedula').value.trim();
-
       if (!nombre || !apellido || !cedula) {
         alert('⚠️ Nombre, Apellido y Cédula son obligatorios.');
         return;
@@ -406,23 +781,19 @@
       let fotoUrl = null;
 
       try {
-        // Subir foto a Supabase Storage
         if (fotoFile) {
           const fileExt = fotoFile.name.split('.').pop();
           const fileName = `expedientes/${cedula}-${Date.now()}.${fileExt}`;
           const { error: uploadError } = await supabase.storage
             .from('fotos-expedientes')
             .upload(fileName, fotoFile, { upsert: true });
-
           if (uploadError) throw uploadError;
-
           const { data } = supabase.storage
             .from('fotos-expedientes')
             .getPublicUrl(fileName);
           fotoUrl = data.publicUrl;
         }
 
-        // Guardar en tabla 'expedientes'
         const { error: insertError } = await supabase
           .from('expedientes')
           .insert([{
@@ -437,7 +808,7 @@
             telefono: document.getElementById('telefono').value || null,
             correo: document.getElementById('correo').value || null,
             direccion: document.getElementById('direccion').value || null,
-            foto_url: fotoUrl, // ✅ Campo que debe existir en tu tabla
+            foto_url: fotoUrl,
             tipo_expediente: document.getElementById('tipoExpediente').value || null,
             icap_oficina: document.getElementById('icapOficina').value || null,
             func_investigado: document.getElementById('funcInvestigado').value || null,
@@ -460,7 +831,6 @@
           }]);
 
         if (insertError) throw insertError;
-
         alert('✅ Expediente guardado correctamente.');
         window.location.href = 'index.html';
 
@@ -469,6 +839,9 @@
         alert('❌ Error al guardar: ' + (error.message || 'Intente nuevamente.'));
       }
     });
+
+    // Iniciar
+    init();
   </script>
 </body>
 </html>
