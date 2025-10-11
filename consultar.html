@@ -79,6 +79,19 @@
       border-radius: 8px;
       object-fit: cover;
       border: 1px solid #ddd;
+      background: #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .result-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .result-photo .placeholder {
+      color: #999;
+      font-size: 20px;
     }
     .result-info h2 {
       font-size: 20px;
@@ -173,7 +186,7 @@
           .from('expedientes')
           .select('*')
           .eq('cedula', cedula)
-          .single(); // Solo esperamos un resultado por cédula
+          .single();
 
         if (error) throw error;
 
@@ -193,12 +206,15 @@
     }
 
     function displayResult(expediente) {
-      const hasPhoto = expediente.foto_url;
+      const hasPhoto = expediente.foto_url && expediente.foto_url.startsWith('https://');
+      const photoHtml = hasPhoto ? `<img src="${expediente.foto_url}" alt="Foto">` : `<span class="placeholder">📷</span>`;
 
       const resultHTML = `
         <div class="result-card">
           <div class="result-header">
-            ${hasPhoto ? `<img src="${expediente.foto_url}" alt="Foto" class="result-photo">` : `<div class="result-photo" style="background:#eee;display:flex;align-items:center;justify-content:center;">📷</div>`}
+            <div class="result-photo">
+              ${photoHtml}
+            </div>
             <div class="result-info">
               <h2>${expediente.nombre} ${expediente.apellido}</h2>
               <p>Cédula: ${expediente.cedula}</p>
