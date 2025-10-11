@@ -24,13 +24,13 @@
     }
     .login-card, .panel-card {
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
       width: 100%;
-      max-width: 400px;
+      max-width: 420px;
       padding: 40px 32px;
       text-align: center;
-      border: 1px solid #f0f0f0;
+      border: 1px solid #eee;
     }
     .logo {
       width: 90px;
@@ -54,40 +54,48 @@
     }
     label {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       font-size: 14px;
       font-weight: 600;
       color: #333;
     }
     input {
       width: 100%;
-      padding: 12px 14px;
+      padding: 14px;
       border: 1px solid #ddd;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 15px;
       color: #222;
       background-color: #fdfdfd;
+      transition: all 0.25s;
     }
     input:focus {
       outline: none;
       border-color: #722F37;
-      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
     }
+    /* Botones principales mejorados */
     .btn-login, .btn-logout {
       background-color: #722F37;
       color: white;
       border: none;
-      border-radius: 8px;
-      padding: 13px;
+      border-radius: 12px;
+      padding: 16px;
       font-size: 16px;
       font-weight: 600;
       width: 100%;
       cursor: pointer;
-      transition: background-color 0.25s;
-      margin-top: 6px;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      box-shadow: 0 3px 8px rgba(114, 47, 55, 0.2);
     }
     .btn-login:hover, .btn-logout:hover {
       background-color: #5e262d;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 14px rgba(114, 47, 55, 0.25);
+    }
+    .btn-login:active, .btn-logout:active {
+      transform: translateY(0);
     }
     .institutional-note {
       margin-top: 26px;
@@ -99,8 +107,8 @@
     }
     .alert {
       margin-top: 18px;
-      padding: 10px;
-      border-radius: 6px;
+      padding: 12px;
+      border-radius: 8px;
       font-size: 14px;
       display: none;
     }
@@ -114,53 +122,53 @@
       color: #080;
       border: 1px solid #d0ffd0;
     }
-
     /* Panel */
     .user-info {
-      margin: 20px 0;
-      padding: 12px;
+      margin: 24px 0;
+      padding: 14px;
       background: #f9f9f9;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 14px;
       color: #333;
+      border: 1px solid #eee;
     }
-  .panel-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin: 24px 0;
-}
-
-.panel-btn {
-  background: white;
-  border: 2px solid #eaeaea;
-  border-radius: 14px;
-  padding: 18px 12px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #722F37;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
-  min-height: 80px;
-  text-align: center;
-}
-
-.panel-btn:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 14px rgba(114, 47, 55, 0.18);
-  border-color: #722F37;
-  background-color: #fdf7f7;
-  color: #5e262d;
-}
-
-.panel-btn:active {
-  transform: translateY(-1px);
-}
+    .panel-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin: 24px 0;
+    }
+    .panel-btn {
+      background: white;
+      border: 2px solid #eaeaea;
+      border-radius: 14px;
+      padding: 20px 12px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #722F37;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+      min-height: 85px;
+      text-align: center;
+    }
+    .panel-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 14px rgba(114, 47, 55, 0.18);
+      border-color: #722F37;
+      background-color: #fdf7f7;
+      color: #5e262d;
+    }
+    .panel-btn:active {
+      transform: translateY(-1px);
+    }
+    .hidden {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -213,14 +221,12 @@
     <div class="user-info">
       <strong>Usuario:</strong> <span id="userEmail">—</span>
     </div>
-
     <div class="panel-buttons">
       <button class="panel-btn" onclick="alert('Registrar nuevo expediente')">📝 Registrar</button>
       <button class="panel-btn" onclick="alert('Consultar expedientes')">🔍 Consultar</button>
       <button class="panel-btn" onclick="alert('Generar reportes')">📊 Reportes</button>
       <button class="panel-btn" onclick="alert('Configuración')">⚙️ Configuración</button>
     </div>
-
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
   </div>
 
@@ -228,8 +234,6 @@
     // 🔑 Credenciales de Supabase
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
-
-    // ✅ CORRECCIÓN CLAVE: usar window.supabase.createClient
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Elementos del DOM
@@ -240,15 +244,15 @@
     const loginForm = document.getElementById('loginForm');
     const logoutBtn = document.getElementById('logoutBtn');
 
-    // Verificar sesión al cargar la página
-   async function checkSession() {
- const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-    showPanel(session.user.email); // Esto debería estar bien
-  } else {
-    showLogin();
-  }
-}
+    // ✅ Corrección clave: sintaxis de desestructuración
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        showPanel(session.user.email);
+      } else {
+        showLogin();
+      }
+    }
 
     function showLogin() {
       loginView.classList.remove('hidden');
@@ -261,7 +265,6 @@
       panelView.classList.remove('hidden');
     }
 
-    // Manejo del login
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value.trim();
@@ -279,13 +282,11 @@
       }
     });
 
-    // Cerrar sesión
     logoutBtn.addEventListener('click', async () => {
       await supabase.auth.signOut();
       showLogin();
     });
 
-    // Iniciar verificación al cargar
     checkSession();
   </script>
 </body>
