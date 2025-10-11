@@ -2,320 +2,383 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ICAP Nacional - PNB</title>
-
-  <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Fuente Inter -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registrar Expediente - ICAP Nacional</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
     body {
       background-color: #fafafa;
       font-family: 'Inter', sans-serif;
       color: #2d2d2d;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
       padding: 20px;
+      line-height: 1.5;
     }
-
-    .login-card,
-    .panel-card {
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
       background: white;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-      width: 100%;
-      max-width: 420px;
-      padding: 40px 32px;
-      text-align: center;
-      border: 1px solid #eee;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      padding: 32px;
     }
-
     .logo {
-      width: 90px;
-      margin-bottom: 24px;
+      width: 80px;
+      display: block;
+      margin: 0 auto 20px;
     }
-
     h1 {
+      text-align: center;
       font-size: 24px;
       font-weight: 700;
       color: #2d2d2d;
-      margin-bottom: 8px;
+      margin-bottom: 24px;
     }
-
-    .subtitle {
-      font-size: 15px;
-      color: #555;
-      margin-bottom: 28px;
-      line-height: 1.5;
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #722F37;
+      margin: 24px 0 14px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #eee;
     }
-
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
     .form-group {
-      text-align: left;
-      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
     }
-
     label {
-      display: block;
-      margin-bottom: 8px;
       font-size: 14px;
       font-weight: 600;
+      margin-bottom: 6px;
       color: #333;
     }
-
-    input {
-      width: 100%;
-      padding: 14px;
+    input, select, textarea {
+      padding: 10px 12px;
       border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 15px;
-      color: #222;
-      background-color: #fdfdfd;
-      transition: all 0.25s;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: #722F37;
-      box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
-    }
-
-    .btn-login,
-    .btn-logout {
-      background-color: #722F37;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 16px;
-      font-size: 16px;
-      font-weight: 600;
-      width: 100%;
-      cursor: pointer;
-      transition: background-color 0.3s, transform 0.2s;
-      margin-top: 10px;
-      box-shadow: 0 3px 8px rgba(114, 47, 55, 0.2);
-    }
-
-    .btn-login:hover,
-    .btn-logout:hover {
-      background-color: #5e262d;
-      transform: translateY(-2px);
-    }
-
-    .institutional-note {
-      margin-top: 26px;
-      font-size: 13px;
-      color: #444;
-      line-height: 1.5;
-      font-style: italic;
-      padding: 0 10px;
-    }
-
-    .alert {
-      margin-top: 18px;
-      padding: 12px;
       border-radius: 8px;
       font-size: 14px;
-      display: none;
+      background-color: #fdfdfd;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #722F37;
+    }
+    textarea {
+      min-height: 70px;
+      resize: vertical;
     }
 
-    .alert-error {
-      background-color: #fff5f5;
-      color: #c00;
-      border: 1px solid #ffd0d0;
-    }
-
-    .user-info {
-      margin: 24px 0;
-      padding: 14px;
-      background: #f9f9f9;
-      border-radius: 10px;
-      font-size: 14px;
-      color: #333;
-      border: 1px solid #eee;
-    }
-
-    .panel-buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      margin: 24px 0;
-    }
-
-    .panel-btn {
-      background: white;
-      border: 2px solid #eaeaea;
-      border-radius: 14px;
-      padding: 20px 12px;
-      font-size: 15px;
-      font-weight: 600;
-      color: #722F37;
-      cursor: pointer;
-      transition: all 0.3s ease;
+    /* Estilo para la foto */
+    .photo-preview-container {
       display: flex;
       flex-direction: column;
       align-items: center;
+    }
+    .photo-preview {
+      width: 100px;
+      height: 100px;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      background-color: #fafafa;
+      display: flex;
+      align-items: center;
       justify-content: center;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
-      min-height: 85px;
-      text-align: center;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .photo-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .photo-preview-placeholder {
+      color: #999;
+      font-size: 20px;
     }
 
-    .panel-btn:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 6px 14px rgba(114, 47, 55, 0.18);
-      border-color: #722F37;
-      background-color: #fdf7f7;
-      color: #5e262d;
+    .btn-save {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background-color 0.25s;
+      display: block;
+      width: 100%;
+      max-width: 200px;
     }
-
-    .hidden {
-      display: none !important;
+    .btn-save:hover {
+      background-color: #5e262d;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 12px;
+      color: #722F37;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .back-link:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  <!-- Vista de Inicio de Sesión -->
-  <div id="loginView" class="login-card">
+  <div class="container">
     <img 
       src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
       alt="ICAP Nacional - PNB" 
       class="logo"
     />
-    <h1>Sistema de Expedientes</h1>
-    <p class="subtitle">Acceso restringido a personal autorizado de la ICAP Nacional</p>
-    <form id="loginForm">
-      <div class="form-group">
-        <label for="email">Correo Institucional</label>
-        <input 
-          type="email" 
-          id="email" 
-          required 
-          autocomplete="username"
-          placeholder="usuario@icap.gob.ve"
-        />
-      </div>
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input 
-          type="password" 
-          id="password" 
-          required 
-          autocomplete="current-password"
-          placeholder="••••••••"
-        />
-      </div>
-      <button type="submit" class="btn-login">Iniciar Sesión</button>
-    </form>
-    <div id="alertMessage" class="alert"></div>
-    <p class="institutional-note">
-      Plataforma institucional de la ICAP Nacional del Cuerpo de Policía Nacional Bolivariana
-    </p>
-  </div>
+    <h1>Registrar Nuevo Expediente</h1>
 
-  <!-- Panel Principal (oculto por defecto) -->
-  <div id="panelView" class="panel-card hidden">
-    <img 
-      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
-      alt="ICAP Nacional - PNB" 
-      class="logo"
-    />
-    <h1>Panel de Gestión</h1>
-    <div class="user-info">
-      <strong>Usuario:</strong> <span id="userEmail">—</span>
+    <!-- Datos Personales -->
+    <h2 class="section-title">Datos Personales</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="fotoInput">Foto</label>
+        <div class="photo-preview-container">
+          <div class="photo-preview" id="photoPreview">
+            <span class="photo-preview-placeholder">📷</span>
+          </div>
+          <input type="file" id="fotoInput" accept="image/*">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" required>
+      </div>
+      <div class="form-group">
+        <label for="apellido">Apellido</label>
+        <input type="text" id="apellido" required>
+      </div>
+      <div class="form-group">
+        <label for="fechaNac">Fecha de Nacimiento</label>
+        <input type="date" id="fechaNac">
+      </div>
+      <div class="form-group">
+        <label for="cedula">Cédula de Identidad</label>
+        <input type="text" id="cedula" placeholder="V-12345678">
+      </div>
+      <div class="form-group">
+        <label for="sexo">Sexo</label>
+        <select id="sexo">
+          <option value="">Seleccionar</option>
+          <option value="masculino">Masculino</option>
+          <option value="femenino">Femenino</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="edad">Edad</label>
+        <input type="number" id="edad" min="18" max="100">
+      </div>
+      <div class="form-group">
+        <label for="jerarquia">Jerarquía</label>
+        <input type="text" id="jerarquia" placeholder="Ej: Teniente">
+      </div>
+      <div class="form-group">
+        <label for="estatusPersonal">Estatus</label>
+        <select id="estatusPersonal">
+          <option value="">Seleccionar</option>
+          <option value="activo">Activo</option>
+          <option value="suspendido">Suspendido</option>
+          <option value="baja">Baja</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="telefono">Teléfono</label>
+        <input type="tel" id="telefono" placeholder="0412-1234567">
+      </div>
+      <div class="form-group">
+        <label for="correo">Correo</label>
+        <input type="email" id="correo">
+      </div>
+      <div class="form-group">
+        <label for="direccion">Dirección</label>
+        <textarea id="direccion" placeholder="Dirección completa"></textarea>
+      </div>
     </div>
-    <div class="panel-buttons">
-      <button class="panel-btn" onclick="window.location.href='registrar.html'">📝 Registrar</button>
-      <button class="panel-btn" onclick="alert('Consultar expedientes')">🔍 Consultar</button>
-      <button class="panel-btn" onclick="alert('Generar reportes')">📊 Reportes</button>
-      <button class="panel-btn" onclick="alert('Configuración')">⚙️ Configuración</button>
+
+    <!-- Expediente -->
+    <h2 class="section-title">Expediente</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="tipoExpediente">Tipo de Expediente</label>
+        <select id="tipoExpediente">
+          <option value="">Seleccionar</option>
+          <option value="disciplinario">Disciplinario</option>
+          <option value="administrativo">Administrativo</option>
+          <option value="penal">Penal</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="icapOficina">ICAP (Oficina)</label>
+        <select id="icapOficina">
+          <option value="">Seleccionar</option>
+          <option value="caracas">Caracas</option>
+          <option value="maracay">Maracay</option>
+          <option value="valencia">Valencia</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="funcInvestigado">Funcionario Investigado</label>
+        <select id="funcInvestigado">
+          <option value="">Seleccionar</option>
+          <option value="cap_juan">Capitán Juan Pérez</option>
+          <option value="ten_maria">Teniente María López</option>
+          <option value="sarg_carlos">Sargento Carlos Rojas</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="condicionFunc">Condición del Funcionario en el Caso</label>
+        <select id="condicionFunc">
+          <option value="">Seleccionar</option>
+          <option value="imputado">Imputado</option>
+          <option value="testigo">Testigo</option>
+          <option value="denunciado">Denunciado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="denunciante">Denunciante</label>
+        <select id="denunciante">
+          <option value="">Seleccionar</option>
+          <option value="ciudadano">Ciudadano Anónimo</option>
+          <option value="superior">Oficial Superior</option>
+          <option value="otro_func">Otro Funcionario</option>
+          <option value="institucion">Institución Pública</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="origenFalta">Origen de la Falta</label>
+        <select id="origenFalta">
+          <option value="">Seleccionar</option>
+          <option value="interna">Interna</option>
+          <option value="externa">Externa</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="tipoFalta">Tipo de Falta</label>
+        <select id="tipoFalta">
+          <option value="">Seleccionar</option>
+          <option value="leve">Leve</option>
+          <option value="grave">Grave</option>
+          <option value="muy_grave">Muy Grave</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="faltaArt">Falta (Artículo)</label>
+        <select id="faltaArt">
+          <option value="">Seleccionar</option>
+          <option value="art45">Art. 45 – Abandono de cargo</option>
+          <option value="art46">Art. 46 – Insubordinación</option>
+          <option value="art47">Art. 47 – Uso indebido de uniforme</option>
+          <option value="art48">Art. 48 – Conducta inmoral</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="estatusExpediente">Estatus</label>
+        <select id="estatusExpediente">
+          <option value="">Seleccionar</option>
+          <option value="abierto">Abierto</option>
+          <option value="cerrado">Cerrado</option>
+          <option value="archivado">Archivado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="decision">Decisión</label>
+        <select id="decision">
+          <option value="">Seleccionar</option>
+          <option value="sancion">Sanción Administrativa</option>
+          <option value="absolucion">Absolución</option>
+          <option value="remision">Remisión a Fiscalía</option>
+          <option value="archivo">Archivo del caso</option>
+        </select>
+      </div>
     </div>
-    <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
+
+    <!-- Campos de texto libre -->
+    <div class="form-group">
+      <label for="resena">Reseña del Caso</label>
+      <textarea id="resena" placeholder="Descripción detallada del caso..."></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="servicioLabora">Servicio donde Labora</label>
+        <input type="text" id="servicioLabora">
+      </div>
+      <div class="form-group">
+        <label for="expedientePenalAnio">Expediente Penal Año</label>
+        <input type="number" id="expedientePenalAnio" min="1900" max="2099">
+      </div>
+      <div class="form-group">
+        <label for="fechaInicio">Fecha de Inicio</label>
+        <input type="date" id="fechaInicio">
+      </div>
+      <div class="form-group">
+        <label for="expedienteNumero">Expediente Número</label>
+        <input type="text" id="expedienteNumero" placeholder="Ej: EXP-2024-1234">
+      </div>
+      <div class="form-group">
+        <label for="causa">Causa</label>
+        <input type="text" id="causa">
+      </div>
+      <div class="form-group">
+        <label for="funcDetenido">¿Funcionario Detenido?</label>
+        <select id="funcDetenido">
+          <option value="">Seleccionar</option>
+          <option value="si">Sí</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="sustanciador">Sustanciador Remisión</label>
+        <input type="text" id="sustanciador">
+      </div>
+      <div class="form-group">
+        <label for="registradoPor">Registrado Por</label>
+        <input type="text" id="registradoPor">
+      </div>
+    </div>
+
+    <button class="btn-save">Guardar Expediente</button>
+    <a href="index.html" class="back-link">← Volver al Panel</a>
   </div>
 
   <script>
-    // ───────────────────────────────────────
-    // 🔐 Configuración de Supabase
-    // ───────────────────────────────────────
-    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // ───────────────────────────────────────
-    // 🧩 Elementos del DOM
-    // ───────────────────────────────────────
-    const loginView = document.getElementById('loginView');
-    const panelView = document.getElementById('panelView');
-    const userEmailSpan = document.getElementById('userEmail');
-    const alertDiv = document.getElementById('alertMessage');
-    const loginForm = document.getElementById('loginForm');
-    const logoutBtn = document.getElementById('logoutBtn');
-
-¿
-  ¿
- async function checkSession() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-    showPanel(session.user.email);
-  } else {
-    showLogin();
-  }
-}
-
-
-    function showLogin() {
-      loginView.classList.remove('hidden');
-      panelView.classList.add('hidden');
-    }
-
-    function showPanel(email) {
-      userEmailSpan.textContent = email;
-      loginView.classList.add('hidden');
-      panelView.classList.remove('hidden');
-    }
-
-    // ───────────────────────────────────────
-
-    // ───────────────────────────────────────
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      alertDiv.style.display = 'none';
-
-      try {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        showPanel(email);
-      } catch (err) {
-        alertDiv.textContent = err.message || 'Error: credenciales inválidas.';
-        alertDiv.className = 'alert alert-error';
-        alertDiv.style.display = 'block';
+    // Previsualización de la foto
+    document.getElementById('fotoInput').addEventListener('change', function(e) {
+      const preview = document.getElementById('photoPreview');
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          preview.innerHTML = '<img src="' + event.target.result + '" alt="Foto">';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.innerHTML = '<span class="photo-preview-placeholder">📷</span>';
       }
     });
 
-    // ───────────────────────────────────────
-    // 🚪 Cerrar sesión
-    // ───────────────────────────────────────
-    logoutBtn.addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      showLogin();
+    // Botón de guardar (pendiente de integración con Supabase)
+    document.querySelector('.btn-save').addEventListener('click', () => {
+      alert('Funcionalidad de guardado pendiente.');
     });
-
-    // ───────────────────────────────────────
-    // 🚀 Iniciar aplicación
-    // ───────────────────────────────────────
-    checkSession();
   </script>
 </body>
 </html>
