@@ -78,6 +78,41 @@
       min-height: 80px;
       resize: vertical;
     }
+
+    /* Estilo especial para la foto */
+    .photo-upload-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .photo-preview-box {
+      width: 100px;
+      height: 100px;
+      border: 2px dashed #ccc;
+      border-radius: 10px;
+      background-color: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .photo-preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .photo-placeholder {
+      color: #999;
+      font-size: 24px;
+    }
+    .photo-upload-btn {
+      width: 100%;
+      padding: 8px;
+      font-size: 13px;
+      text-align: center;
+    }
+
     .btn-save {
       background-color: #722F37;
       color: white;
@@ -119,13 +154,17 @@
       class="logo"
     />
     <h1>Registrar Nuevo Expediente</h1>
-
     <!-- Sección: Datos Personales -->
     <h2 class="section-title">Datos Personales</h2>
     <div class="form-row">
       <div class="form-group">
-        <label for="foto">Foto (URL)</label>
-        <input type="text" id="foto" placeholder="URL de la foto">
+        <label for="fotoInput">Foto</label>
+        <div class="photo-upload-container">
+          <div class="photo-preview-box" id="photoPreview">
+            <span class="photo-placeholder">📷</span>
+          </div>
+          <input type="file" id="fotoInput" accept="image/*" class="photo-upload-btn">
+        </div>
       </div>
       <div class="form-group">
         <label for="nombre">Nombre</label>
@@ -183,7 +222,7 @@
       </div>
     </div>
 
-    <!-- Sección: Expediente -->
+    <!-- Resto del formulario (Expediente) -->
     <h2 class="section-title">Expediente</h2>
     <div class="form-row">
       <div class="form-group">
@@ -329,7 +368,21 @@
   </div>
 
   <script>
-    // Aquí puedes conectar con Supabase más adelante
+    // Previsualización de la foto seleccionada
+    document.getElementById('fotoInput').addEventListener('change', function(e) {
+      const preview = document.getElementById('photoPreview');
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          preview.innerHTML = `<img src="${event.target.result}" alt="Foto">`;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.innerHTML = '<span class="photo-placeholder">📷</span>';
+      }
+    });
+
     document.querySelector('.btn-save').addEventListener('click', () => {
       alert('Funcionalidad de guardado pendiente.');
     });
