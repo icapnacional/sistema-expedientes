@@ -22,8 +22,8 @@
       max-width: 900px;
       margin: 0 auto;
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
       padding: 32px;
     }
     .logo {
@@ -42,15 +42,15 @@
       font-size: 18px;
       font-weight: 700;
       color: #722F37;
-      margin: 24px 0 14px;
-      padding-bottom: 4px;
-      border-bottom: 1px solid #eee;
+      margin: 28px 0 16px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #f0f0f0;
     }
     .form-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 20px;
     }
     .form-group {
       display: flex;
@@ -63,70 +63,44 @@
       color: #333;
     }
     input, select, textarea {
-      padding: 10px 12px;
+      padding: 12px;
       border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 14px;
+      border-radius: 10px;
+      font-size: 15px;
       background-color: #fdfdfd;
     }
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: #722F37;
+      box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
     }
     textarea {
-      min-height: 70px;
+      min-height: 80px;
       resize: vertical;
     }
-
-    /* Estilo para la foto */
-    .photo-preview-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .photo-preview {
-      width: 100px;
-      height: 100px;
-      border: 2px dashed #ccc;
-      border-radius: 8px;
-      background-color: #fafafa;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 8px;
-      overflow: hidden;
-    }
-    .photo-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .photo-preview-placeholder {
-      color: #999;
-      font-size: 20px;
-    }
-
     .btn-save {
       background-color: #722F37;
       color: white;
       border: none;
-      border-radius: 8px;
-      padding: 12px 24px;
+      border-radius: 12px;
+      padding: 14px 24px;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      margin-top: 16px;
-      transition: background-color 0.25s;
+      margin-top: 20px;
+      transition: all 0.3s ease;
       display: block;
       width: 100%;
-      max-width: 200px;
+      max-width: 220px;
     }
     .btn-save:hover {
       background-color: #5e262d;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(114, 47, 55, 0.2);
     }
     .back-link {
       display: inline-block;
-      margin-top: 12px;
+      margin-top: 10px;
       color: #722F37;
       text-decoration: none;
       font-weight: 600;
@@ -146,17 +120,12 @@
     />
     <h1>Registrar Nuevo Expediente</h1>
 
-    <!-- Datos Personales -->
+    <!-- Sección: Datos Personales -->
     <h2 class="section-title">Datos Personales</h2>
     <div class="form-row">
       <div class="form-group">
-        <label for="fotoInput">Foto</label>
-        <div class="photo-preview-container">
-          <div class="photo-preview" id="photoPreview">
-            <span class="photo-preview-placeholder">📷</span>
-          </div>
-          <input type="file" id="fotoInput" accept="image/*">
-        </div>
+        <label for="foto">Foto (URL)</label>
+        <input type="text" id="foto" placeholder="URL de la foto">
       </div>
       <div class="form-group">
         <label for="nombre">Nombre</label>
@@ -214,7 +183,7 @@
       </div>
     </div>
 
-    <!-- Expediente -->
+    <!-- Sección: Expediente -->
     <h2 class="section-title">Expediente</h2>
     <div class="form-row">
       <div class="form-group">
@@ -360,22 +329,7 @@
   </div>
 
   <script>
-    // Previsualización de la foto
-    document.getElementById('fotoInput').addEventListener('change', function(e) {
-      const preview = document.getElementById('photoPreview');
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          preview.innerHTML = '<img src="' + event.target.result + '" alt="Foto">';
-        };
-        reader.readAsDataURL(file);
-      } else {
-        preview.innerHTML = '<span class="photo-preview-placeholder">📷</span>';
-      }
-    });
-
-    // Botón de guardar (pendiente de integración con Supabase)
+    // Aquí puedes conectar con Supabase más adelante
     document.querySelector('.btn-save').addEventListener('click', () => {
       alert('Funcionalidad de guardado pendiente.');
     });
