@@ -46,12 +46,12 @@
       padding-bottom: 4px;
       border-bottom: 1px solid #eee;
     }
-    /* ✅ Ajuste: menos espacio entre filas */
+    /* ✅ Más compacto */
     .form-row {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 14px; /* reducido de 18px a 14px */
-      margin-bottom: 16px; /* reducido de 20px a 16px */
+      gap: 14px;
+      margin-bottom: 16px;
     }
     .form-group {
       display: flex;
@@ -60,11 +60,11 @@
     label {
       font-size: 14px;
       font-weight: 600;
-      margin-bottom: 4px; /* reducido de 6px a 4px */
+      margin-bottom: 4px;
       color: #333;
     }
     input, select, textarea {
-      padding: 10px 12px; /* reducido de 12px a 10px */
+      padding: 10px 12px;
       border: 1px solid #ddd;
       border-radius: 8px;
       font-size: 14px;
@@ -79,6 +79,41 @@
       min-height: 60px;
       resize: vertical;
     }
+
+    /* ✅ Estilo para la foto con vista previa */
+    .photo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .photo-preview {
+      width: 100px;
+      height: 100px;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .photo-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .photo-placeholder {
+      color: #999;
+      font-size: 20px;
+    }
+    .photo-input {
+      width: 100%;
+      font-size: 13px;
+      padding: 6px;
+      border-radius: 6px;
+    }
+
     .btn-save {
       background-color: #722F37;
       color: white;
@@ -125,8 +160,13 @@
     <h2 class="section-title">Datos Personales</h2>
     <div class="form-row">
       <div class="form-group">
-        <label for="foto">Foto (URL)</label>
-        <input type="text" id="foto" placeholder="URL de la foto">
+        <label for="fotoInput">Foto</label>
+        <div class="photo-container">
+          <div class="photo-preview" id="photoPreview">
+            <span class="photo-placeholder">📷</span>
+          </div>
+          <input type="file" id="fotoInput" accept="image/*" class="photo-input">
+        </div>
       </div>
       <div class="form-group">
         <label for="nombre">Nombre</label>
@@ -330,6 +370,21 @@
   </div>
 
   <script>
+    // Vista previa de la foto
+    document.getElementById('fotoInput').addEventListener('change', function(e) {
+      const preview = document.getElementById('photoPreview');
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          preview.innerHTML = '<img src="' + event.target.result + '" alt="Foto">';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.innerHTML = '<span class="photo-placeholder">📷</span>';
+      }
+    });
+
     document.querySelector('.btn-save').addEventListener('click', () => {
       alert('Funcionalidad de guardado pendiente.');
     });
