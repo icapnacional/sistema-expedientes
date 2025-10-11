@@ -16,7 +16,7 @@
       font-family: 'Inter', sans-serif;
       color: #2d2d2d;
       padding: 20px;
-      line-height: 1.5;
+      line-height: 1.4;
     }
     .container {
       max-width: 900px;
@@ -42,15 +42,16 @@
       font-size: 18px;
       font-weight: 700;
       color: #722F37;
-      margin: 28px 0 16px;
-      padding-bottom: 6px;
-      border-bottom: 2px solid #f0f0f0;
+      margin: 24px 0 14px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #eee;
     }
+    /* ✅ Ajuste: menos espacio entre filas */
     .form-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 18px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px; /* reducido de 18px a 14px */
+      margin-bottom: 16px; /* reducido de 20px a 16px */
     }
     .form-group {
       display: flex;
@@ -59,60 +60,25 @@
     label {
       font-size: 14px;
       font-weight: 600;
-      margin-bottom: 6px;
+      margin-bottom: 4px; /* reducido de 6px a 4px */
       color: #333;
     }
     input, select, textarea {
-      padding: 12px;
+      padding: 10px 12px; /* reducido de 12px a 10px */
       border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 15px;
+      border-radius: 8px;
+      font-size: 14px;
       background-color: #fdfdfd;
     }
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: #722F37;
-      box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+      box-shadow: 0 0 0 2px rgba(114, 47, 55, 0.1);
     }
     textarea {
-      min-height: 80px;
+      min-height: 60px;
       resize: vertical;
     }
-
-    /* Estilo especial para la foto */
-    .photo-upload-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .photo-preview-box {
-      width: 100px;
-      height: 100px;
-      border: 2px dashed #ccc;
-      border-radius: 10px;
-      background-color: #fafafa;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 10px;
-      overflow: hidden;
-    }
-    .photo-preview-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .photo-placeholder {
-      color: #999;
-      font-size: 24px;
-    }
-    .photo-upload-btn {
-      width: 100%;
-      padding: 8px;
-      font-size: 13px;
-      text-align: center;
-    }
-
     .btn-save {
       background-color: #722F37;
       color: white;
@@ -154,17 +120,13 @@
       class="logo"
     />
     <h1>Registrar Nuevo Expediente</h1>
+
     <!-- Sección: Datos Personales -->
     <h2 class="section-title">Datos Personales</h2>
     <div class="form-row">
       <div class="form-group">
-        <label for="fotoInput">Foto</label>
-        <div class="photo-upload-container">
-          <div class="photo-preview-box" id="photoPreview">
-            <span class="photo-placeholder">📷</span>
-          </div>
-          <input type="file" id="fotoInput" accept="image/*" class="photo-upload-btn">
-        </div>
+        <label for="foto">Foto (URL)</label>
+        <input type="text" id="foto" placeholder="URL de la foto">
       </div>
       <div class="form-group">
         <label for="nombre">Nombre</label>
@@ -222,7 +184,7 @@
       </div>
     </div>
 
-    <!-- Resto del formulario (Expediente) -->
+    <!-- Sección: Expediente -->
     <h2 class="section-title">Expediente</h2>
     <div class="form-row">
       <div class="form-group">
@@ -368,21 +330,6 @@
   </div>
 
   <script>
-    // Previsualización de la foto seleccionada
-    document.getElementById('fotoInput').addEventListener('change', function(e) {
-      const preview = document.getElementById('photoPreview');
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          preview.innerHTML = `<img src="${event.target.result}" alt="Foto">`;
-        };
-        reader.readAsDataURL(file);
-      } else {
-        preview.innerHTML = '<span class="photo-placeholder">📷</span>';
-      }
-    });
-
     document.querySelector('.btn-save').addEventListener('click', () => {
       alert('Funcionalidad de guardado pendiente.');
     });
