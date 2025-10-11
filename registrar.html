@@ -261,22 +261,18 @@
     const loginForm = document.getElementById('loginForm');
     const logoutBtn = document.getElementById('logoutBtn');
 
-    // ───────────────────────────────────────
-    // 🔄 Verificar sesión al cargar la página
-    // ───────────────────────────────────────
-    async function checkSession() {
-      // ✅ Corrección: sintaxis válida de desestructuración
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        showPanel(session.user.email);
-      } else {
-        showLogin();
-      }
-    }
+¿
+  ¿
+ async function checkSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    showPanel(session.user.email);
+  } else {
+    showLogin();
+  }
+}
 
-    // ───────────────────────────────────────
-    // 👁️‍🗨️ Mostrar vistas
-    // ───────────────────────────────────────
+
     function showLogin() {
       loginView.classList.remove('hidden');
       panelView.classList.add('hidden');
@@ -289,7 +285,7 @@
     }
 
     // ───────────────────────────────────────
-    // 🔑 Manejo del formulario de login
+
     // ───────────────────────────────────────
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
