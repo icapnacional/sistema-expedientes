@@ -267,7 +267,9 @@
       </div>
       <div class="form-group">
         <label for="jerarquia">Jerarquía</label>
-        <input type="text" id="jerarquia" placeholder="Ej: Teniente">
+        <select id="jerarquia">
+          <option value="">Cargando...</option>
+        </select>
       </div>
       <div class="form-group">
         <label for="estatusPersonal">Estatus</label>
@@ -410,6 +412,24 @@
 
       <!-- Datos Personales -->
       <div class="config-section">
+        <h3>🧍 Sexo</h3>
+        <div class="option-list" id="sexoList"></div>
+        <div class="add-option">
+          <input type="text" id="newSexo" placeholder="Ej: No binario">
+          <button onclick="addOption('sexos', 'newSexo', 'sexoList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>🎖️ Jerarquía</h3>
+        <div class="option-list" id="jerarquiaList"></div>
+        <div class="add-option">
+          <input type="text" id="newJerarquia" placeholder="Ej: Comisario General">
+          <button onclick="addOption('jerarquias', 'newJerarquia', 'jerarquiaList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
         <h3>🧍 Estatus (Datos Personales)</h3>
         <div class="option-list" id="estatusPersonalList"></div>
         <div class="add-option">
@@ -474,6 +494,24 @@
       </div>
 
       <div class="config-section">
+        <h3>⚠️ Tipo de Falta</h3>
+        <div class="option-list" id="tipoFaltaList"></div>
+        <div class="add-option">
+          <input type="text" id="newTipoFalta" placeholder="Ej: Leve">
+          <button onclick="addOption('tipos_falta', 'newTipoFalta', 'tipoFaltaList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>📜 Falta (Artículo)</h3>
+        <div class="option-list" id="faltaArtList"></div>
+        <div class="add-option">
+          <input type="text" id="newFaltaArt" placeholder="Ej: Art. 49 – Negligencia">
+          <button onclick="addOption('faltas_art', 'newFaltaArt', 'faltaArtList')">+</button>
+        </div>
+      </div>
+
+      <div class="config-section">
         <h3>📊 Estatus (Expediente)</h3>
         <div class="option-list" id="estatusExpedienteList"></div>
         <div class="add-option">
@@ -490,12 +528,41 @@
           <button onclick="addOption('decisiones', 'newDecision', 'decisionList')">+</button>
         </div>
       </div>
+
+      <div class="config-section">
+        <h3>🔒 ¿Funcionario Detenido?</h3>
+        <div class="option-list" id="funcDetenidoList"></div>
+        <div class="add-option">
+          <input type="text" id="newFuncDetenido" placeholder="Ej: Sí">
+          <button onclick="addOption('func_detenidos', 'newFuncDetenido', 'funcDetenidoList')">+</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
     // Listas por defecto
     const defaultLists = {
+      sexos: [
+        { label: 'Masculino', value: 'masculino' },
+        { label: 'Femenino', value: 'femenino' },
+        { label: 'Otro', value: 'otro' }
+      ],
+      jerarquias: [
+        { label: 'Comisario General', value: 'comisario_general' },
+        { label: 'Comisario Jefe', value: 'comisario_jefe' },
+        { label: 'Comisario', value: 'comisario' },
+        { label: 'Subcomisario', value: 'subcomisario' },
+        { label: 'Inspector Jefe', value: 'inspector_jefe' },
+        { label: 'Inspector', value: 'inspector' },
+        { label: 'Subinspector', value: 'subinspector' },
+        { label: 'Oficial Jefe', value: 'oficial_jefe' },
+        { label: 'Oficial', value: 'oficial' },
+        { label: 'Oficial Ayudante', value: 'oficial_ayudante' },
+        { label: 'Sargento', value: 'sargento' },
+        { label: 'Cabo', value: 'cabo' },
+        { label: 'Policía', value: 'policia' }
+      ],
       estatus_personales: [
         { label: 'Activo', value: 'activo' },
         { label: 'Suspendido', value: 'suspendido' },
@@ -531,6 +598,17 @@
         { label: 'Interna', value: 'interna' },
         { label: 'Externa', value: 'externa' }
       ],
+      tipos_falta: [
+        { label: 'Leve', value: 'leve' },
+        { label: 'Grave', value: 'grave' },
+        { label: 'Muy Grave', value: 'muy_grave' }
+      ],
+      faltas_art: [
+        { label: 'Art. 45 – Abandono de cargo', value: 'art45' },
+        { label: 'Art. 46 – Insubordinación', value: 'art46' },
+        { label: 'Art. 47 – Uso indebido de uniforme', value: 'art47' },
+        { label: 'Art. 48 – Conducta inmoral', value: 'art48' }
+      ],
       estatus_expedientes: [
         { label: 'Abierto', value: 'abierto' },
         { label: 'Cerrado', value: 'cerrado' },
@@ -541,6 +619,10 @@
         { label: 'Absolución', value: 'absolucion' },
         { label: 'Remisión a Fiscalía', value: 'remision' },
         { label: 'Archivo del caso', value: 'archivo' }
+      ],
+      func_detenidos: [
+        { label: 'Sí', value: 'si' },
+        { label: 'No', value: 'no' }
       ]
     };
 
@@ -609,6 +691,8 @@
     // Mapeo para saber qué contenedor usar
     function getContainerId(listKey) {
       const map = {
+        sexos: 'sexoList',
+        jerarquias: 'jerarquiaList',
         estatus_personales: 'estatusPersonalList',
         tipos_expediente: 'tipoExpedienteList',
         icap_oficinas: 'icapOficinaList',
@@ -616,8 +700,11 @@
         condiciones_func: 'condicionFuncList',
         denunciantes: 'denuncianteList',
         origenes_falta: 'origenFaltaList',
+        tipos_falta: 'tipoFaltaList',
+        faltas_art: 'faltaArtList',
         estatus_expedientes: 'estatusExpedienteList',
-        decisiones: 'decisionList'
+        decisiones: 'decisionList',
+        func_detenidos: 'funcDetenidoList'
       };
       return map[listKey] || '';
     }
@@ -625,6 +712,8 @@
     // Rellenar selects desde localStorage
     function populateSelectFromList(listKey) {
       const lists = loadLists();
+      if (listKey === 'sexos') populateSelect('sexo', lists.sexos);
+      if (listKey === 'jerarquias') populateSelect('jerarquia', lists.jerarquias);
       if (listKey === 'estatus_personales') populateSelect('estatusPersonal', lists.estatus_personales);
       if (listKey === 'tipos_expediente') populateSelect('tipoExpediente', lists.tipos_expediente);
       if (listKey === 'icap_oficinas') populateSelect('icapOficina', lists.icap_oficinas);
@@ -632,13 +721,18 @@
       if (listKey === 'condiciones_func') populateSelect('condicionFunc', lists.condiciones_func);
       if (listKey === 'denunciantes') populateSelect('denunciante', lists.denunciantes);
       if (listKey === 'origenes_falta') populateSelect('origenFalta', lists.origenes_falta);
+      if (listKey === 'tipos_falta') populateSelect('tipoFalta', lists.tipos_falta);
+      if (listKey === 'faltas_art') populateSelect('faltaArt', lists.faltas_art);
       if (listKey === 'estatus_expedientes') populateSelect('estatusExpediente', lists.estatus_expedientes);
       if (listKey === 'decisiones') populateSelect('decision', lists.decisiones);
+      if (listKey === 'func_detenidos') populateSelect('funcDetenido', lists.func_detenidos);
     }
 
     // Inicializar
     function init() {
       const lists = loadLists();
+      populateSelect('sexo', lists.sexos);
+      populateSelect('jerarquia', lists.jerarquias);
       populateSelect('estatusPersonal', lists.estatus_personales);
       populateSelect('tipoExpediente', lists.tipos_expediente);
       populateSelect('icapOficina', lists.icap_oficinas);
@@ -646,9 +740,11 @@
       populateSelect('condicionFunc', lists.condiciones_func);
       populateSelect('denunciante', lists.denunciantes);
       populateSelect('origenFalta', lists.origenes_falta);
+      populateSelect('tipoFalta', lists.tipos_falta);
+      populateSelect('faltaArt', lists.faltas_art);
       populateSelect('estatusExpediente', lists.estatus_expedientes);
       populateSelect('decision', lists.decisiones);
-      // Los demás (sexo, tipoFalta, etc.) se mantienen fijos o los puedes agregar aquí si lo deseas
+      populateSelect('funcDetenido', lists.func_detenidos);
     }
 
     // Modal
