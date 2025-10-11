@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Consultar Expediente - ICAP Nacional</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      padding: 32px;
+    }
+    .logo {
+      width: 80px;
+      display: block;
+      margin: 0 auto 20px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+      margin-bottom: 24px;
+    }
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+    .search-box input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+    .search-box button {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0 20px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .result-card {
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+      border: 1px solid #eee;
+    }
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .result-photo {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid #ddd;
+    }
+    .result-info h2 {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    .result-info p {
+      color: #555;
+      font-size: 15px;
+    }
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .result-item {
+      font-size: 14px;
+    }
+    .result-label {
+      font-weight: 600;
+      color: #333;
+    }
+    .result-value {
+      color: #222;
+    }
+    .no-result {
+      text-align: center;
+      padding: 40px 0;
+      color: #777;
+      font-style: italic;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #722F37;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #722F37;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img 
+      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+      alt="ICAP Nacional - PNB" 
+      class="logo"
+    />
+    <h1>Consultar Expediente</h1>
+
+    <div class="search-box">
+      <input type="text" id="searchCedula" placeholder="Ingrese la cédula de identidad (Ej: V-12345678)">
+      <button id="btnSearch">Buscar</button>
+    </div>
+
+    <div id="resultContainer"></div>
+
+    <a href="index.html" class="back-link">← Volver al Panel</a>
+  </div>
+
+  <script>
+    // 🔑 Configuración de Supabase
+    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    document.getElementById('btnSearch').addEventListener('click', searchExpediente);
+    document.getElementById('searchCedula').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') searchExpediente();
+    });
+
+    async function searchExpediente() {
+      const cedula = document.getElementById('searchCedula').value.trim();
+      const resultContainer = document.getElementById('resultContainer');
+
+      if (!cedula) {
+        alert('Por favor, ingrese una cédula de identidad.');
+        return;
+      }
+
+      resultContainer.innerHTML = '<div class="loading">Buscando...</div>';
+
+      try {
+        const { data, error } = await supabase
+          .from('expedientes')
+          .select('*')
+          .eq('cedula', cedula)
+          .single(); // Solo esperamos un resultado por cédula
+
+        if (error) throw error;
+
+        if (data) {
+          displayResult(data);
+        } else {
+          resultContainer.innerHTML = '<div class="no-result">No se encontró ningún expediente con esa cédula.</div>';
+        }
+      } catch (err) {
+        console.error(err);
+        if (err.code === 'PGRST116') {
+          resultContainer.innerHTML = '<div class="no-result">No se encontró ningún expediente con esa cédula.</div>';
+        } else {
+          resultContainer.innerHTML = '<div class="no-result">Error al buscar el expediente. Intente nuevamente.</div>';
+        }
+      }
+    }
+
+    function displayResult(expediente) {
+      const hasPhoto = expediente.foto_url;
+
+      const resultHTML = `
+        <div class="result-card">
+          <div class="result-header">
+            ${hasPhoto ? `<img src="${expediente.foto_url}" alt="Foto" class="result-photo">` : `<div class="result-photo" style="background:#eee;display:flex;align-items:center;justify-content:center;">📷</div>`}
+            <div class="result-info">
+              <h2>${expediente.nombre} ${expediente.apellido}</h2>
+              <p>Cédula: ${expediente.cedula}</p>
+            </div>
+          </div>
+
+          <div class="result-grid">
+            <div class="result-item"><span class="result-label">Fecha de Nacimiento:</span> <span class="result-value">${expediente.fecha_nacimiento || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Sexo:</span> <span class="result-value">${expediente.sexo || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Edad:</span> <span class="result-value">${expediente.edad || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Jerarquía:</span> <span class="result-value">${expediente.jerarquia || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Estatus Personal:</span> <span class="result-value">${expediente.estatus_personal || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Teléfono:</span> <span class="result-value">${expediente.telefono || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Correo:</span> <span class="result-value">${expediente.correo || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Dirección:</span> <span class="result-value">${expediente.direccion || '—'}</span></div>
+
+            <div class="result-item"><span class="result-label">Tipo de Expediente:</span> <span class="result-value">${expediente.tipo_expediente || '—'}</span></div>
+            <div class="result-item"><span class="result-label">ICAP (Oficina):</span> <span class="result-value">${expediente.icap_oficina || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Funcionario Investigado:</span> <span class="result-value">${expediente.func_investigado || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Condición:</span> <span class="result-value">${expediente.condicion_func || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Denunciante:</span> <span class="result-value">${expediente.denunciante || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Origen de la Falta:</span> <span class="result-value">${expediente.origen_falta || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Tipo de Falta:</span> <span class="result-value">${expediente.tipo_falta || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Falta (Artículo):</span> <span class="result-value">${expediente.falta_art || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Estatus del Expediente:</span> <span class="result-value">${expediente.estatus_expediente || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Decisión:</span> <span class="result-value">${expediente.decision || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Reseña:</span> <span class="result-value">${expediente.resena || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Servicio donde Labora:</span> <span class="result-value">${expediente.servicio_labora || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Expediente Penal Año:</span> <span class="result-value">${expediente.expediente_penal_anio || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Fecha de Inicio:</span> <span class="result-value">${expediente.fecha_inicio || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Expediente Número:</span> <span class="result-value">${expediente.expediente_numero || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Causa:</span> <span class="result-value">${expediente.causa || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Funcionario Detenido:</span> <span class="result-value">${expediente.func_detenido ? 'Sí' : 'No'}</span></div>
+            <div class="result-item"><span class="result-label">Sustanciador:</span> <span class="result-value">${expediente.sustanciador || '—'}</span></div>
+            <div class="result-item"><span class="result-label">Registrado Por:</span> <span class="result-value">${expediente.registrado_por || '—'}</span></div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('resultContainer').innerHTML = resultHTML;
+    }
+  </script>
+</body>
+</html>
