@@ -1,4 +1,189 @@
-<!-- Expediente -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registrar Expediente - ICAP Nacional</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      padding: 32px;
+    }
+    .logo {
+      width: 80px;
+      display: block;
+      margin: 0 auto 20px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #722F37;
+      margin: 28px 0 16px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #333;
+    }
+    input, select, textarea {
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+      background-color: #fdfdfd;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #722F37;
+      box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+    }
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .btn-save {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.3s ease;
+      display: block;
+      width: 100%;
+      max-width: 220px;
+    }
+    .btn-save:hover {
+      background-color: #5e262d;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(114, 47, 55, 0.2);
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 10px;
+      color: #722F37;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img 
+      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+      alt="ICAP Nacional - PNB" 
+      class="logo"
+    />
+    <h1>Registrar Nuevo Expediente</h1>
+
+    <!-- Datos Personales -->
+    <h2 class="section-title">Datos Personales</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="foto">Foto (URL o archivo)</label>
+        <input type="text" id="foto" placeholder="URL de la foto">
+      </div>
+      <div class="form-group">
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" required>
+      </div>
+      <div class="form-group">
+        <label for="apellido">Apellido</label>
+        <input type="text" id="apellido" required>
+      </div>
+      <div class="form-group">
+        <label for="fechaNac">Fecha de Nacimiento</label>
+        <input type="date" id="fechaNac">
+      </div>
+      <div class="form-group">
+        <label for="cedula">Cédula de Identidad</label>
+        <input type="text" id="cedula" placeholder="V-12345678">
+      </div>
+      <div class="form-group">
+        <label for="sexo">Sexo</label>
+        <select id="sexo">
+          <option value="">Seleccionar</option>
+          <option value="masculino">Masculino</option>
+          <option value="femenino">Femenino</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="edad">Edad</label>
+        <input type="number" id="edad" min="18" max="100">
+      </div>
+      <div class="form-group">
+        <label for="jerarquia">Jerarquía</label>
+        <input type="text" id="jerarquia" placeholder="Ej: Teniente">
+      </div>
+      <div class="form-group">
+        <label for="estatusPersonal">Estatus</label>
+        <select id="estatusPersonal">
+          <option value="">Seleccionar</option>
+          <option value="activo">Activo</option>
+          <option value="suspendido">Suspendido</option>
+          <option value="baja">Baja</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="telefono">Teléfono</label>
+        <input type="tel" id="telefono" placeholder="0412-1234567">
+      </div>
+      <div class="form-group">
+        <label for="correo">Correo</label>
+        <input type="email" id="correo">
+      </div>
+      <div class="form-group">
+        <label for="direccion">Dirección</label>
+        <textarea id="direccion" placeholder="Dirección completa"></textarea>
+      </div>
+    </div>
+
+  <!-- Expediente -->
 <h2 class="section-title">Expediente</h2>
 <div class="form-row">
   <div class="form-group">
@@ -98,3 +283,116 @@
     </select>
   </div>
 </div>
+      <div class="form-group">
+        <label for="funcInvestigado">Funcionario Investigado</label>
+        <input type="text" id="funcInvestigado">
+      </div>
+      <div class="form-group">
+        <label for="condicionFunc">Condición del Funcionario en el Caso</label>
+        <select id="condicionFunc">
+          <option value="">Seleccionar</option>
+          <option value="imputado">Imputado</option>
+          <option value="testigo">Testigo</option>
+          <option value="denunciado">Denunciado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="denunciante">Denunciante</label>
+        <input type="text" id="denunciante">
+      </div>
+      <div class="form-group">
+        <label for="elFuncionario">El Funcionario</label>
+        <input type="text" id="elFuncionario">
+      </div>
+      <div class="form-group">
+        <label for="origenFalta">Origen de la Falta</label>
+        <select id="origenFalta">
+          <option value="">Seleccionar</option>
+          <option value="interna">Interna</option>
+          <option value="externa">Externa</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="tipoFalta">Tipo de Falta</label>
+        <select id="tipoFalta">
+          <option value="">Seleccionar</option>
+          <option value="leve">Leve</option>
+          <option value="grave">Grave</option>
+          <option value="muy_grave">Muy Grave</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="faltaArt">Falta (Artículo)</label>
+        <input type="text" id="faltaArt" placeholder="Ej: Art. 45">
+      </div>
+      <div class="form-group">
+        <label for="estatusExpediente">Estatus</label>
+        <select id="estatusExpediente">
+          <option value="">Seleccionar</option>
+          <option value="abierto">Abierto</option>
+          <option value="cerrado">Cerrado</option>
+          <option value="archivado">Archivado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="decision">Decisión</label>
+        <input type="text" id="decision" placeholder="Ej: Sanción, Absolución, etc.">
+      </div>
+    </div>
+
+    <!-- Campos de texto libres -->
+    <div class="form-group">
+      <label for="resena">Reseña del Caso</label>
+      <textarea id="resena" placeholder="Descripción detallada del caso..."></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="servicioLabora">Servicio donde Labora</label>
+        <input type="text" id="servicioLabora">
+      </div>
+      <div class="form-group">
+        <label for="expedientePenalAnio">Expediente Penal Año</label>
+        <input type="number" id="expedientePenalAnio" min="1900" max="2099">
+      </div>
+      <div class="form-group">
+        <label for="fechaInicio">Fecha de Inicio</label>
+        <input type="date" id="fechaInicio">
+      </div>
+      <div class="form-group">
+        <label for="expedienteNumero">Expediente Número</label>
+        <input type="text" id="expedienteNumero" placeholder="Ej: EXP-2024-1234">
+      </div>
+      <div class="form-group">
+        <label for="causa">Causa</label>
+        <input type="text" id="causa">
+      </div>
+      <div class="form-group">
+        <label for="funcDetenido">¿Funcionario Detenido?</label>
+        <select id="funcDetenido">
+          <option value="">Seleccionar</option>
+          <option value="si">Sí</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="sustanciador">Sustanciador Remisión</label>
+        <input type="text" id="sustanciador">
+      </div>
+      <div class="form-group">
+        <label for="registradoPor">Registrado Por</label>
+        <input type="text" id="registradoPor">
+      </div>
+    </div>
+
+    <button class="btn-save">Guardar Expediente</button>
+    <a href="index.html" class="back-link">← Volver al Panel</a>
+  </div>
+
+  <script>
+    // Aquí puedes agregar la lógica para enviar los datos a Supabase o tu backend
+    document.querySelector('.btn-save').addEventListener('click', () => {
+      alert('Funcionalidad de guardado pendiente de implementación.');
+    });
+  </script>
+</body>
+</html>
