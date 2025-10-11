@@ -229,14 +229,14 @@
     const logoutBtn = document.getElementById('logoutBtn');
 
     // Verificar sesión al cargar la página
-    async function checkSession() {
-      const {  { session } } = await supabase.auth.getSession();
-      if (session) {
-        showPanel(session.user.email);
-      } else {
-        showLogin();
-      }
-    }
+   async function checkSession() {
+ const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    showPanel(session.user.email); // Esto debería estar bien
+  } else {
+    showLogin();
+  }
+}
 
     function showLogin() {
       loginView.classList.remove('hidden');
