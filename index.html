@@ -246,7 +246,7 @@
 
     // ✅ Corrección clave: sintaxis de desestructuración
     async function checkSession() {
-      const {  { session } } = await supabase.auth.getSession();
+const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         showPanel(session.user.email);
       } else {
