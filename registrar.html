@@ -78,6 +78,35 @@
       min-height: 80px;
       resize: vertical;
     }
+
+    /* Estilo especial para la foto */
+    .photo-preview-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .photo-preview {
+      width: 100px;
+      height: 100px;
+      border: 2px dashed #ccc;
+      border-radius: 10px;
+      background-color: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .photo-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .photo-preview-placeholder {
+      color: #999;
+      font-size: 24px;
+    }
+
     .btn-save {
       background-color: #722F37;
       color: white;
@@ -124,8 +153,13 @@
     <h2 class="section-title">Datos Personales</h2>
     <div class="form-row">
       <div class="form-group">
-        <label for="foto">Foto (URL)</label>
-        <input type="text" id="foto" placeholder="URL de la foto">
+        <label for="fotoInput">Foto</label>
+        <div class="photo-preview-container">
+          <div class="photo-preview" id="photoPreview">
+            <span class="photo-preview-placeholder">📷</span>
+          </div>
+          <input type="file" id="fotoInput" accept="image/*" style="width:100%;">
+        </div>
       </div>
       <div class="form-group">
         <label for="nombre">Nombre</label>
@@ -329,7 +363,22 @@
   </div>
 
   <script>
-    // Aquí puedes conectar con Supabase más adelante
+    // Previsualización de la foto seleccionada
+    document.getElementById('fotoInput').addEventListener('change', function(e) {
+      const preview = document.getElementById('photoPreview');
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          preview.innerHTML = `<img src="${event.target.result}" alt="Foto seleccionada">`;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.innerHTML = '<span class="photo-preview-placeholder">📷</span>';
+      }
+    });
+
+    // Guardar (pendiente de integración con Supabase)
     document.querySelector('.btn-save').addEventListener('click', () => {
       alert('Funcionalidad de guardado pendiente.');
     });
