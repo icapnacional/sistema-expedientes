@@ -77,21 +77,17 @@
       width: 80px;
       height: 80px;
       border-radius: 8px;
-      object-fit: cover;
       border: 1px solid #ddd;
       background: #eee;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
     .result-photo img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-    }
-    .result-photo .placeholder {
-      color: #999;
-      font-size: 20px;
     }
     .result-info h2 {
       font-size: 20px;
@@ -148,17 +144,13 @@
       class="logo"
     />
     <h1>Consultar Expediente</h1>
-
     <div class="search-box">
       <input type="text" id="searchCedula" placeholder="Ingrese la cédula de identidad (Ej: V-12345678)">
       <button id="btnSearch">Buscar</button>
     </div>
-
     <div id="resultContainer"></div>
-
     <a href="index.html" class="back-link">← Volver al Panel</a>
   </div>
-
   <script>
     // 🔑 Configuración de Supabase
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
@@ -206,21 +198,20 @@
     }
 
     function displayResult(expediente) {
-      const hasPhoto = expediente.foto_url && expediente.foto_url.startsWith('https://');
-      const photoHtml = hasPhoto ? `<img src="${expediente.foto_url}" alt="Foto">` : `<span class="placeholder">📷</span>`;
+      const hasPhoto = expediente.foto_url;
+      const photoHtml = hasPhoto 
+        ? `<div class="result-photo"><img src="${expediente.foto_url}" alt="Foto"></div>`
+        : `<div class="result-photo" style="background:#eee;display:flex;align-items:center;justify-content:center;"><span>📷</span></div>`;
 
       const resultHTML = `
         <div class="result-card">
           <div class="result-header">
-            <div class="result-photo">
-              ${photoHtml}
-            </div>
+            ${photoHtml}
             <div class="result-info">
               <h2>${expediente.nombre} ${expediente.apellido}</h2>
               <p>Cédula: ${expediente.cedula}</p>
             </div>
           </div>
-
           <div class="result-grid">
             <div class="result-item"><span class="result-label">Fecha de Nacimiento:</span> <span class="result-value">${expediente.fecha_nacimiento || '—'}</span></div>
             <div class="result-item"><span class="result-label">Sexo:</span> <span class="result-value">${expediente.sexo || '—'}</span></div>
@@ -230,7 +221,6 @@
             <div class="result-item"><span class="result-label">Teléfono:</span> <span class="result-value">${expediente.telefono || '—'}</span></div>
             <div class="result-item"><span class="result-label">Correo:</span> <span class="result-value">${expediente.correo || '—'}</span></div>
             <div class="result-item"><span class="result-label">Dirección:</span> <span class="result-value">${expediente.direccion || '—'}</span></div>
-
             <div class="result-item"><span class="result-label">Tipo de Expediente:</span> <span class="result-value">${expediente.tipo_expediente || '—'}</span></div>
             <div class="result-item"><span class="result-label">ICAP (Oficina):</span> <span class="result-value">${expediente.icap_oficina || '—'}</span></div>
             <div class="result-item"><span class="result-label">Funcionario Investigado:</span> <span class="result-value">${expediente.func_investigado || '—'}</span></div>
