@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Registrar Expediente - ICAP Nacional</title>
+  <title>Editar Expediente - ICAP Nacional</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -38,20 +38,6 @@
       font-weight: 700;
       color: #2d2d2d;
       margin-bottom: 16px;
-    }
-    .btn-config-lists {
-      background-color: #722F37;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-bottom: 16px;
-      display: block;
-      width: fit-content;
-      margin-left: auto;
     }
     .section-title {
       font-size: 18px;
@@ -93,8 +79,6 @@
       min-height: 80px;
       resize: vertical;
     }
-
-    /* Estilo para la foto */
     .photo-upload-container {
       display: flex;
       flex-direction: column;
@@ -129,7 +113,6 @@
       font-size: 14px;
       text-align: center;
     }
-
     .btn-save {
       background-color: #722F37;
       color: white;
@@ -161,100 +144,11 @@
     .back-link:hover {
       text-decoration: underline;
     }
-
-    /* Modal de gestión */
-    #configModal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
-      overflow: auto;
-    }
-    .config-content {
-      background: white;
-      margin: 40px auto;
-      padding: 24px;
-      width: 90%;
-      max-width: 700px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    .config-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #eee;
-    }
-    .config-header h2 {
+    .loading {
+      text-align: center;
+      padding: 20px;
       color: #722F37;
-      font-size: 20px;
-    }
-    .close-btn {
-      background: none;
-      border: none;
-      font-size: 28px;
-      cursor: pointer;
-      color: #777;
-    }
-    .config-section {
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px dashed #f0f0f0;
-    }
-    .config-section:last-child {
-      border-bottom: none;
-    }
-    .config-section h3 {
-      margin-bottom: 12px;
-      font-size: 16px;
-      color: #333;
-      font-weight: 600;
-    }
-    .option-list {
-      border: 1px solid #eee;
-      border-radius: 8px;
-      padding: 12px;
-      min-height: 50px;
-      background: #fcfcfc;
-    }
-    .option-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 0;
-      font-size: 14px;
-      align-items: center;
-    }
-    .add-option {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-    }
-    .add-option input {
-      flex: 1;
-      padding: 8px 10px;
-      font-size: 14px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-    }
-    .add-option button {
-      padding: 8px 14px;
-      background: #722F37;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .add-option button:hover {
-      background: #5e262d;
+      font-style: italic;
     }
   </style>
 </head>
@@ -265,321 +159,180 @@
       alt="ICAP Nacional - PNB" 
       class="logo"
     />
-    <h1>Registrar Nuevo Expediente</h1>
-
-    <!-- ✅ BOTÓN DE GESTIÓN DE LISTAS -->
-    <button class="btn-config-lists" onclick="openConfigModal()">⚙️ Gestionar Listas</button>
-
-    <!-- ✅ CUADRO DE FOTO CENTRADO -->
-    <div class="photo-upload-container">
-      <div class="photo-preview-box" id="photoPreview">
-        <span class="photo-placeholder">📷</span>
+    <h1>Editar Expediente</h1>
+    <div id="loading" class="loading">Cargando expediente...</div>
+    <div id="formContainer" style="display: none;">
+      <div class="photo-upload-container">
+        <div class="photo-preview-box" id="photoPreview">
+          <span class="photo-placeholder">📷</span>
+        </div>
+        <input type="file" id="fotoInput" accept="image/*" class="photo-input">
       </div>
-      <input type="file" id="fotoInput" accept="image/*" class="photo-input">
+
+      <!-- Sección: Datos Personales -->
+      <h2 class="section-title">Datos Personales</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nombre">Nombre</label>
+          <input type="text" id="nombre" required>
+        </div>
+        <div class="form-group">
+          <label for="apellido">Apellido</label>
+          <input type="text" id="apellido" required>
+        </div>
+        <div class="form-group">
+          <label for="fechaNac">Fecha de Nacimiento</label>
+          <input type="date" id="fechaNac">
+        </div>
+        <div class="form-group">
+          <label for="cedula">Cédula de Identidad</label>
+          <input type="text" id="cedula" readonly>
+        </div>
+        <div class="form-group">
+          <label for="sexo">Sexo</label>
+          <select id="sexo">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edad">Edad</label>
+          <input type="number" id="edad" min="18" max="100">
+        </div>
+        <div class="form-group">
+          <label for="jerarquia">Jerarquía</label>
+          <select id="jerarquia">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="estatusPersonal">Estatus</label>
+          <select id="estatusPersonal">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="telefono">Teléfono</label>
+          <input type="tel" id="telefono">
+        </div>
+        <div class="form-group">
+          <label for="correo">Correo</label>
+          <input type="email" id="correo">
+        </div>
+        <div class="form-group">
+          <label for="direccion">Dirección</label>
+          <textarea id="direccion"></textarea>
+        </div>
+      </div>
+
+      <!-- Sección: Expediente -->
+      <h2 class="section-title">Expediente</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="tipoExpediente">Tipo de Expediente</label>
+          <select id="tipoExpediente">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="icapOficina">ICAP (Oficina)</label>
+          <select id="icapOficina">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="funcInvestigado">Funcionario Investigado</label>
+          <select id="funcInvestigado">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="condicionFunc">Condición del Funcionario en el Caso</label>
+          <select id="condicionFunc">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="denunciante">Denunciante</label>
+          <select id="denunciante">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="origenFalta">Origen de la Falta</label>
+          <select id="origenFalta">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="tipoFalta">Tipo de Falta</label>
+          <select id="tipoFalta">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="faltaArt">Falta (Artículo)</label>
+          <select id="faltaArt">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="estatusExpediente">Estatus</label>
+          <select id="estatusExpediente">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="decision">Decisión</label>
+          <select id="decision">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Campos de texto libre -->
+      <div class="form-group">
+        <label for="resena">Reseña del Caso</label>
+        <textarea id="resena"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="servicioLabora">Servicio donde Labora</label>
+          <input type="text" id="servicioLabora">
+        </div>
+        <div class="form-group">
+          <label for="expedientePenalAnio">Expediente Penal Año</label>
+          <input type="number" id="expedientePenalAnio" min="1900" max="2099">
+        </div>
+        <div class="form-group">
+          <label for="fechaInicio">Fecha de Inicio</label>
+          <input type="date" id="fechaInicio">
+        </div>
+        <div class="form-group">
+          <label for="expedienteNumero">Expediente Número</label>
+          <input type="text" id="expedienteNumero">
+        </div>
+        <div class="form-group">
+          <label for="causa">Causa</label>
+          <input type="text" id="causa">
+        </div>
+        <div class="form-group">
+          <label for="funcDetenido">¿Funcionario Detenido?</label>
+          <select id="funcDetenido">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="sustanciador">Sustanciador Remisión</label>
+          <input type="text" id="sustanciador">
+        </div>
+        <div class="form-group">
+          <label for="registradoPor">Registrado Por</label>
+          <input type="text" id="registradoPor">
+        </div>
+      </div>
+      <button class="btn-save" id="btnSave">Guardar Cambios</button>
     </div>
-
-    <!-- Sección: Datos Personales -->
-    <h2 class="section-title">Datos Personales</h2>
-    <div class="form-row">
-      <div class="form-group">
-        <label for="nombre">Nombre</label>
-        <input type="text" id="nombre" required>
-      </div>
-      <div class="form-group">
-        <label for="apellido">Apellido</label>
-        <input type="text" id="apellido" required>
-      </div>
-      <div class="form-group">
-        <label for="fechaNac">Fecha de Nacimiento</label>
-        <input type="date" id="fechaNac">
-      </div>
-      <div class="form-group">
-        <label for="cedula">Cédula de Identidad</label>
-        <input type="text" id="cedula" placeholder="V-12345678">
-      </div>
-      <div class="form-group">
-        <label for="sexo">Sexo</label>
-        <select id="sexo">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="edad">Edad</label>
-        <input type="number" id="edad" min="18" max="100">
-      </div>
-      <div class="form-group">
-        <label for="jerarquia">Jerarquía</label>
-        <select id="jerarquia">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="estatusPersonal">Estatus</label>
-        <select id="estatusPersonal">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="telefono">Teléfono</label>
-        <input type="tel" id="telefono" placeholder="0412-1234567">
-      </div>
-      <div class="form-group">
-        <label for="correo">Correo</label>
-        <input type="email" id="correo">
-      </div>
-      <div class="form-group">
-        <label for="direccion">Dirección</label>
-        <textarea id="direccion" placeholder="Dirección completa"></textarea>
-      </div>
-    </div>
-
-    <!-- Sección: Expediente -->
-    <h2 class="section-title">Expediente</h2>
-    <div class="form-row">
-      <div class="form-group">
-        <label for="tipoExpediente">Tipo de Expediente</label>
-        <select id="tipoExpediente">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="icapOficina">ICAP (Oficina)</label>
-        <select id="icapOficina">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="funcInvestigado">Funcionario Investigado</label>
-        <select id="funcInvestigado">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="condicionFunc">Condición del Funcionario en el Caso</label>
-        <select id="condicionFunc">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="denunciante">Denunciante</label>
-        <select id="denunciante">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="origenFalta">Origen de la Falta</label>
-        <select id="origenFalta">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="tipoFalta">Tipo de Falta</label>
-        <select id="tipoFalta">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="faltaArt">Falta (Artículo)</label>
-        <select id="faltaArt">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="estatusExpediente">Estatus</label>
-        <select id="estatusExpediente">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="decision">Decisión</label>
-        <select id="decision">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Campos de texto libre -->
-    <div class="form-group">
-      <label for="resena">Reseña del Caso</label>
-      <textarea id="resena" placeholder="Descripción detallada del caso..."></textarea>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label for="servicioLabora">Servicio donde Labora</label>
-        <input type="text" id="servicioLabora">
-      </div>
-      <div class="form-group">
-        <label for="expedientePenalAnio">Expediente Penal Año</label>
-        <input type="number" id="expedientePenalAnio" min="1900" max="2099">
-      </div>
-      <div class="form-group">
-        <label for="fechaInicio">Fecha de Inicio</label>
-        <input type="date" id="fechaInicio">
-      </div>
-      <div class="form-group">
-        <label for="expedienteNumero">Expediente Número</label>
-        <input type="text" id="expedienteNumero" placeholder="Ej: EXP-2024-1234">
-      </div>
-      <div class="form-group">
-        <label for="causa">Causa</label>
-        <input type="text" id="causa">
-      </div>
-      <div class="form-group">
-        <label for="funcDetenido">¿Funcionario Detenido?</label>
-        <select id="funcDetenido">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="sustanciador">Sustanciador Remisión</label>
-        <input type="text" id="sustanciador">
-      </div>
-      <div class="form-group">
-        <label for="registradoPor">Registrado Por</label>
-        <input type="text" id="registradoPor">
-      </div>
-    </div>
-
-    <button class="btn-save">Guardar Expediente</button>
     <a href="index.html" class="back-link">← Volver al Panel</a>
-  </div>
-
-  <!-- Modal de gestión -->
-  <div id="configModal">
-    <div class="config-content">
-      <div class="config-header">
-        <h2>Gestionar Listas</h2>
-        <button class="close-btn" onclick="closeConfigModal()">×</button>
-      </div>
-
-      <!-- Listas de Datos Personales -->
-      <div class="config-section">
-        <h3>🧍 Sexo</h3>
-        <div class="option-list" id="sexoList"></div>
-        <div class="add-option">
-          <input type="text" id="newSexo" placeholder="Ej: No binario">
-          <button onclick="addOption('sexos', 'newSexo', 'sexoList')">+</button>
-        </div>
-      </div>
-
-      <div class="config-section">
-        <h3>🎖️ Jerarquía</h3>
-        <div class="option-list" id="jerarquiaList"></div>
-        <div class="add-option">
-          <input type="text" id="newJerarquia" placeholder="Ej: Comisario General">
-          <button onclick="addOption('jerarquias', 'newJerarquia', 'jerarquiaList')">+</button>
-        </div>
-      </div>
-
-      <div class="config-section">
-        <h3>🧍 Estatus (Datos Personales)</h3>
-        <div class="option-list" id="estatusPersonalList"></div>
-        <div class="add-option">
-          <input type="text" id="newEstatusPersonal" placeholder="Ej: Jubilado">
-          <button onclick="addOption('estatus_personales', 'newEstatusPersonal', 'estatusPersonalList')">+</button>
-        </div>
-      </div>
-
-      <!-- Listas de Expediente -->
-      <div class="config-section">
-        <h3>📁 Tipo de Expediente</h3>
-        <div class="option-list" id="tipoExpedienteList"></div>
-        <div class="add-option">
-          <input type="text" id="newTipoExpediente" placeholder="Ej: Disciplinario">
-          <button onclick="addOption('tipos_expediente', 'newTipoExpediente', 'tipoExpedienteList')">+</button>
-        </div>
-      </div>
-
-      <div class="config-section">
-        <h3>🏢 ICAP (Oficina)</h3>
-        <div class="option-list" id="icapOficinaList"></div>
-        <div class="add-option">
-          <input type="text" id="newIcapOficina" placeholder="Ej: Caracas">
-          <button onclick="addOption('icap_oficinas', 'newIcapOficina', 'icapOficinaList')">+</button>
-        </div>
-      </div>
-
-      <div class="config-section">
-        <h3>👮 Funcionario Investigado</h3>
-        <div class="option-list" id="funcInvestigadoList"></div>
-        <div class="add-option">
-          <input type="text" id="newFuncInvestigado" placeholder="Ej: Capitán Juan Pérez">
-          <button onclick="addOption('func_investigados', 'newFuncInvestigado', 'funcInvestigadoList')">+</button>
-        </div>
-      </div>
-
-      <div class="config-section">
-        <h3>⚖️ Condición del Funcionario</h3>
-        <div class="option-list" id="condicionFuncList"></div>
-        <div class="add-option">
-          <input type="text" id="newCondicionFunc" placeholder="Ej: Imputado">
-          <button onclick="addOption('condiciones_func', 'newCondicionFunc', 'condicionFuncList')">+</button>
-        </div>
-      </div>
-
-      <div class="config-section">
-        <h3>📢 Denunciante</h3>
-        <div class="option-list" id="denuncianteList"></div>
-        <div class="add-option">
-          <input type="text" id="newDenunciante" placeholder="Ej: Ciudadano Anónimo">
-          <button onclick="addOption('denunciantes', 'newDenunciante', 'denuncianteList')">+</button>
-        </div>
-      </div>
-
-      <div class="config-section">
-        <h3>🔍 Origen de la Falta</h3>
-        <div class="option-list" id="origenFaltaList"></div>
-        <div class="add-option">
-          <input type="text" id="newOrigenFalta" placeholder="Ej: Interna">
-          <button onclick="addOption('origenes_falta', 'newOrigenFalta', 'origenFaltaList')">+</button>
-        </div>
-      </div>
-
-      <div class="config-section">
-        <h3>⚠️ Tipo de Falta</h3>
-        <div class="option-list" id="tipoFaltaList"></div>
-        <div class="add-option">
-          <input type="text" id="newTipoFalta" placeholder="Ej: Leve">
-          <button onclick="addOption('tipos_falta', 'newTipoFalta', 'tipoFaltaList')">+</button>
-        </div>
-      </div>
-
-      <div class="config-section">
-        <h3>📜 Falta (Artículo)</h3>
-        <div class="option-list" id="faltaArtList"></div>
-        <div class="add-option">
-          <input type="text" id="newFaltaArt" placeholder="Ej: Art. 49 – Negligencia">
-          <button onclick="addOption('faltas_art', 'newFaltaArt', 'faltaArtList')">+</button>
-        </div>
-      </div>
-
-      <div class="config-section">
-        <h3>📊 Estatus (Expediente)</h3>
-        <div class="option-list" id="estatusExpedienteList"></div>
-        <div class="add-option">
-          <input type="text" id="newEstatusExpediente" placeholder="Ej: Archivado">
-          <button onclick="addOption('estatus_expedientes', 'newEstatusExpediente', 'estatusExpedienteList')">+</button>
-        </div>
-      </div>
-
-      <div class="config-section">
-        <h3>✅ Decisión</h3>
-        <div class="option-list" id="decisionList"></div>
-        <div class="add-option">
-          <input type="text" id="newDecision" placeholder="Ej: Sanción Administrativa">
-          <button onclick="addOption('decisiones', 'newDecision', 'decisionList')">+</button>
-        </div>
-      </div>
-
-      <div class="config-section">
-        <h3>🔒 ¿Funcionario Detenido?</h3>
-        <div class="option-list" id="funcDetenidoList"></div>
-        <div class="add-option">
-          <input type="text" id="newFuncDetenido" placeholder="Ej: Sí">
-          <button onclick="addOption('func_detenidos', 'newFuncDetenido', 'funcDetenidoList')">+</button>
-        </div>
-      </div>
-    </div>
   </div>
 
   <script>
@@ -587,6 +340,16 @@
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Verificar sesión
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('Acceso restringido. Por favor inicie sesión.');
+        window.location.href = 'index.html';
+        return;
+      }
+    })();
 
     // Listas por defecto
     const defaultLists = {
@@ -630,16 +393,11 @@
       func_detenidos: [{label:'Sí',value:'si'},{label:'No',value:'no'}]
     };
 
-    // localStorage
     function loadLists() {
       const saved = localStorage.getItem('dropdownLists');
       return saved ? JSON.parse(saved) : defaultLists;
     }
-    function saveLists(lists) {
-      localStorage.setItem('dropdownLists', JSON.stringify(lists));
-    }
 
-    // Rellenar select
     function populateSelect(selectId, options) {
       const select = document.getElementById(selectId);
       select.innerHTML = '<option value="">Seleccionar</option>';
@@ -651,64 +409,6 @@
       });
     }
 
-    // Renderizar lista en modal
-    function renderList(listKey, containerId) {
-      const lists = loadLists();
-      const container = document.getElementById(containerId);
-      container.innerHTML = '';
-      lists[listKey].forEach((item, index) => {
-        const div = document.createElement('div');
-        div.className = 'option-item';
-        div.innerHTML = `${item.label} <button onclick="removeOption('${listKey}', ${index})" style="background:none;border:none;color:#c00;cursor:pointer;font-size:18px;">🗑️</button>`;
-        container.appendChild(div);
-      });
-    }
-
-    // Agregar opción
-    function addOption(listKey, inputId, containerId) {
-      const input = document.getElementById(inputId);
-      const label = input.value.trim();
-      if (!label) return;
-      const value = label.toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '');
-      const lists = loadLists();
-      lists[listKey].push({ label, value });
-      saveLists(lists);
-      input.value = '';
-      renderList(listKey, containerId);
-      populateSelectFromList(listKey);
-    }
-
-    // Eliminar opción
-    function removeOption(listKey, index) {
-      const lists = loadLists();
-      lists[listKey].splice(index, 1);
-      saveLists(lists);
-      renderList(listKey, getContainerId(listKey));
-      populateSelectFromList(listKey);
-    }
-
-    // Mapeo contenedores
-    function getContainerId(listKey) {
-      const map = {
-        sexos: 'sexoList',
-        jerarquias: 'jerarquiaList',
-        estatus_personales: 'estatusPersonalList',
-        tipos_expediente: 'tipoExpedienteList',
-        icap_oficinas: 'icapOficinaList',
-        func_investigados: 'funcInvestigadoList',
-        condiciones_func: 'condicionFuncList',
-        denunciantes: 'denuncianteList',
-        origenes_falta: 'origenFaltaList',
-        tipos_falta: 'tipoFaltaList',
-        faltas_art: 'faltaArtList',
-        estatus_expedientes: 'estatusExpedienteList',
-        decisiones: 'decisionList',
-        func_detenidos: 'funcDetenidoList'
-      };
-      return map[listKey];
-    }
-
-    // Rellenar selects
     function populateSelectFromList(listKey) {
       const lists = loadLists();
       const map = {
@@ -733,26 +433,14 @@
       }
     }
 
-    // Inicializar
-    function init() {
+    function initDropdowns() {
       const lists = loadLists();
       Object.keys(lists).forEach(key => {
         populateSelectFromList(key);
       });
     }
 
-    // Modal
-    function openConfigModal() {
-      document.getElementById('configModal').style.display = 'block';
-      Object.keys(defaultLists).forEach(key => {
-        renderList(key, getContainerId(key));
-      });
-    }
-    function closeConfigModal() {
-      document.getElementById('configModal').style.display = 'none';
-    }
-
-    // Vista previa foto
+    let currentPhotoUrl = null;
     document.getElementById('fotoInput').addEventListener('change', function(e) {
       const preview = document.getElementById('photoPreview');
       const file = e.target.files[0];
@@ -762,23 +450,87 @@
           preview.innerHTML = `<img src="${event.target.result}" alt="Foto">`;
         };
         reader.readAsDataURL(file);
+      } else if (currentPhotoUrl) {
+        preview.innerHTML = `<img src="${currentPhotoUrl}" alt="Foto">`;
       } else {
         preview.innerHTML = '<span class="photo-placeholder">📷</span>';
       }
     });
 
-    // Guardar
-    document.querySelector('.btn-save').addEventListener('click', async () => {
+    function getIdFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('id');
+    }
+
+    async function loadExpediente(id) {
+      const { data, error } = await supabase
+        .from('expedientes')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (error || !data) {
+        alert('No se encontró el expediente.');
+        document.getElementById('loading').textContent = 'Expediente no encontrado.';
+        return null;
+      }
+      return data;
+    }
+
+    function fillForm(expediente) {
+      document.getElementById('nombre').value = expediente.nombre || '';
+      document.getElementById('apellido').value = expediente.apellido || '';
+      document.getElementById('cedula').value = expediente.cedula || '';
+      document.getElementById('fechaNac').value = expediente.fecha_nacimiento || '';
+      document.getElementById('sexo').value = expediente.sexo || '';
+      document.getElementById('edad').value = expediente.edad || '';
+      document.getElementById('jerarquia').value = expediente.jerarquia || '';
+      document.getElementById('estatusPersonal').value = expediente.estatus_personal || '';
+      document.getElementById('telefono').value = expediente.telefono || '';
+      document.getElementById('correo').value = expediente.correo || '';
+      document.getElementById('direccion').value = expediente.direccion || '';
+
+      document.getElementById('tipoExpediente').value = expediente.tipo_expediente || '';
+      document.getElementById('icapOficina').value = expediente.icap_oficina || '';
+      document.getElementById('funcInvestigado').value = expediente.func_investigado || '';
+      document.getElementById('condicionFunc').value = expediente.condicion_func || '';
+      document.getElementById('denunciante').value = expediente.denunciante || '';
+      document.getElementById('origenFalta').value = expediente.origen_falta || '';
+      document.getElementById('tipoFalta').value = expediente.tipo_falta || '';
+      document.getElementById('faltaArt').value = expediente.falta_art || '';
+      document.getElementById('estatusExpediente').value = expediente.estatus_expediente || '';
+      document.getElementById('decision').value = expediente.decision || '';
+
+      document.getElementById('resena').value = expediente.resena || '';
+      document.getElementById('servicioLabora').value = expediente.servicio_labora || '';
+      document.getElementById('expedientePenalAnio').value = expediente.expediente_penal_anio || '';
+      document.getElementById('fechaInicio').value = expediente.fecha_inicio || '';
+      document.getElementById('expedienteNumero').value = expediente.expediente_numero || '';
+      document.getElementById('causa').value = expediente.causa || '';
+      document.getElementById('funcDetenido').value = expediente.func_detenido ? 'si' : 'no';
+      document.getElementById('sustanciador').value = expediente.sustanciador || '';
+      document.getElementById('registradoPor').value = expediente.registrado_por || '';
+
+      currentPhotoUrl = expediente.foto_url;
+      const preview = document.getElementById('photoPreview');
+      if (currentPhotoUrl) {
+        preview.innerHTML = `<img src="${currentPhotoUrl}" alt="Foto">`;
+      } else {
+        preview.innerHTML = '<span class="photo-placeholder">📷</span>';
+      }
+    }
+
+    document.getElementById('btnSave').addEventListener('click', async () => {
+      const cedula = document.getElementById('cedula').value.trim();
       const nombre = document.getElementById('nombre').value.trim();
       const apellido = document.getElementById('apellido').value.trim();
-      const cedula = document.getElementById('cedula').value.trim();
+
       if (!nombre || !apellido || !cedula) {
         alert('⚠️ Nombre, Apellido y Cédula son obligatorios.');
         return;
       }
 
       const fotoFile = document.getElementById('fotoInput').files[0];
-      let fotoUrl = null;
+      let fotoUrl = currentPhotoUrl;
 
       try {
         if (fotoFile) {
@@ -788,18 +540,23 @@
             .from('fotos-expedientes')
             .upload(fileName, fotoFile, { upsert: true });
           if (uploadError) throw uploadError;
-          const { data } = supabase.storage
+          const { data } = await supabase.storage // ✅ await aquí
             .from('fotos-expedientes')
             .getPublicUrl(fileName);
           fotoUrl = data.publicUrl;
         }
 
-        const { error: insertError } = await supabase
+        const id = getIdFromUrl();
+        if (!id) {
+          alert('No se encontró el ID del expediente.');
+          return;
+        }
+
+        const { error: updateError } = await supabase
           .from('expedientes')
-          .insert([{
+          .update({
             nombre,
             apellido,
-            cedula,
             fecha_nacimiento: document.getElementById('fechaNac').value || null,
             sexo: document.getElementById('sexo').value || null,
             edad: parseInt(document.getElementById('edad').value) || null,
@@ -828,20 +585,34 @@
             func_detenido: document.getElementById('funcDetenido').value === 'si',
             sustanciador: document.getElementById('sustanciador').value || null,
             registrado_por: document.getElementById('registradoPor').value || null
-          }]);
+          })
+          .eq('id', id); // ✅ Actualiza por ID
 
-        if (insertError) throw insertError;
-        alert('✅ Expediente guardado correctamente.');
+        if (updateError) throw updateError;
+        alert('✅ Expediente actualizado correctamente.');
         window.location.href = 'index.html';
-
       } catch (error) {
-        console.error('Error:', error);
-        alert('❌ Error al guardar: ' + (error.message || 'Intente nuevamente.'));
+        console.error('Error al actualizar:', error);
+        alert('❌ Error al guardar cambios: ' + (error.message || 'Intente nuevamente.'));
       }
     });
 
-    // Iniciar
-    init();
+    (async () => {
+      const id = getIdFromUrl();
+      if (!id) {
+        alert('No se especificó el ID del expediente.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      initDropdowns();
+      const expediente = await loadExpediente(id);
+      if (expediente) {
+        fillForm(expediente);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('formContainer').style.display = 'block';
+      }
+    })();
   </script>
 </body>
 </html>
