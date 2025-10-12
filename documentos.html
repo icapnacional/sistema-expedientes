@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Documentos del Expediente - ICAP Nacional</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      padding: 32px;
+    }
+    .logo {
+      width: 80px;
+      display: block;
+      margin: 0 auto 20px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+      margin-bottom: 24px;
+    }
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+    .search-box input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+    .search-box button {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0 20px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .result-card {
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+      border: 1px solid #eee;
+      text-align: center;
+    }
+    .no-result {
+      text-align: center;
+      padding: 40px 0;
+      color: #777;
+      font-style: italic;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #722F37;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #722F37;
+    }
+    /* Lista de documentos */
+    .document-list {
+      display: grid;
+      gap: 14px;
+    }
+    .document-item {
+      padding: 14px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      background: #fcfcfc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .document-name {
+      font-size: 15px;
+      color: #333;
+      max-width: 70%;
+      word-break: break-word;
+    }
+    .btn-download {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-download:hover {
+      background-color: #5e262d;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img 
+      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+      alt="ICAP Nacional - PNB" 
+      class="logo"
+    />
+    <h1>Documentos del Expediente</h1>
+    <div class="search-box">
+      <input type="text" id="searchCedula" placeholder="Ingrese la cédula de identidad (Ej: V-12345678)">
+      <button id="btnSearch">Buscar</button>
+    </div>
+    <div id="resultContainer"></div>
+    <a href="index.html" class="back-link">← Volver al Panel</a>
+  </div>
+  <script>
+    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Verificar sesión
+    (async () => {
+      const {  { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('Acceso restringido. Por favor inicie sesión.');
+        window.location.href = 'index.html';
+        return;
+      }
+    })();
+
+    // Nombres legibles para los tipos de documento
+    const documentLabels = {
+      'portada': 'Portada',
+      'acta_disciplinaria': 'Acta disciplinaria',
+      'modo_conocer': 'Modo de conocer',
+      'denuncia': 'Denuncia',
+      'noticia_crimen': 'Noticia crimen',
+      'orden_servicios': 'Orden de servicios y Novedades diarias',
+      'entrevista_testigos': 'Entrevista de posibles testigos',
+      'entrevista_supervisor': 'Entrevista de supervisor directo',
+      'entrevista_jefe_servicios': 'Entrevista jefe de servicios',
+      'entrevista_parquero': 'Entrevista del parquero',
+      'entrevista_rrhh': 'Entrevista del jefe de recursos humanos',
+      'entrevista_operaciones': 'Entrevista del jefe de operaciones',
+      'oficios': 'Oficios',
+      'memorandum': 'Memorándum',
+      'consignaciones': 'Consignaciones',
+      'analisis_audios': 'Análisis de audios o CD',
+      'actuaciones_penales': 'Actuaciones penales',
+      'cedula_carnet': 'Copia de cédula y carnet policial',
+      'hoja_filiatorios': 'Hoja de datos filiatorios',
+      'informe_jefe_inmediato': 'Informe del jefe inmediato',
+      'orden_servicios_cert': 'Orden de servicios certificada',
+      'extracto_novedad': 'Extracto de novedad certificado',
+      'actas_diligencia': 'Actas de diligencia',
+      'visita_domiciliaria': 'Visita domiciliaria',
+      'informe_parque_armas': 'Informe del jefe de parque de armas',
+      'entrevista_funcionario': 'Entrevista del funcionario investigado',
+      'entrega_prendas': 'Entrega de prendas y carnet',
+      'registro_migratorio': 'Registro de Movimiento Migratorio',
+      'verificacion_siipol': 'Verificación (S.I.I.P.O.L)',
+      'record_disciplinario': 'Record Disciplinario ICAP',
+      'constancia_trabajo': 'Constancia de trabajo',
+      'inclusion': 'Inclusión',
+      'exclusion': 'Exclusión',
+      'valoracion_cargo': 'Valoración determinación de cargo'
+    };
+
+    document.getElementById('btnSearch').addEventListener('click', searchDocuments);
+    document.getElementById('searchCedula').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') searchDocuments();
+    });
+
+    async function searchDocuments() {
+      const cedula = document.getElementById('searchCedula').value.trim();
+      const resultContainer = document.getElementById('resultContainer');
+      if (!cedula) {
+        alert('Por favor, ingrese una cédula de identidad.');
+        return;
+      }
+      resultContainer.innerHTML = '<div class="loading">Buscando...</div>';
+      try {
+        // Primero obtener el número de expediente
+        const { data: expedienteData, error: expedienteError } = await supabase
+          .from('expedientes')
+          .select('expediente_numero')
+          .eq('cedula', cedula)
+          .maybeSingle();
+        if (expedienteError) throw expedienteError;
+        if (!expedienteData || !expedienteData.expediente_numero) {
+          resultContainer.innerHTML = '<div class="no-result">No se encontró ningún expediente con esa cédula.</div>';
+          return;
+        }
+        const expedienteNumero = expedienteData.expediente_numero;
+        // Luego obtener los documentos
+        const { data: docs, error: docsError } = await supabase
+          .from('documentos')
+          .select('*')
+          .eq('cedula', cedula)
+          .eq('expediente_numero', expedienteNumero)
+          .order('created_at', { ascending: false });
+        if (docsError) throw docsError;
+        displayDocuments(cedula, expedienteNumero, docs);
+      } catch (err) {
+        console.error(err);
+        resultContainer.innerHTML = '<div class="no-result">Error al buscar documentos. Intente nuevamente.</div>';
+      }
+    }
+
+    function displayDocuments(cedula, expedienteNumero, documents) {
+      let html = `
+        <div class="result-card">
+          <h2>Expediente: ${expedienteNumero}</h2>
+          <p><strong>Cédula:</strong> ${cedula}</p>
+        </div>
+      `;
+      if (documents && documents.length > 0) {
+        html += `<div class="document-list">`;
+        documents.forEach(doc => {
+          const label = documentLabels[doc.tipo_documento] || doc.tipo_documento;
+          html += `
+            <div class="document-item">
+              <span class="document-name">${label}</span>
+              <a href="${doc.url}" target="_blank" class="btn-download">Ver/Descargar</a>
+            </div>
+          `;
+        });
+        html += `</div>`;
+      } else {
+        html += `<div class="no-result">No hay documentos cargados para este expediente.</div>`;
+      }
+      document.getElementById('resultContainer').innerHTML = html;
+    }
+  </script>
+</body>
+</html>
