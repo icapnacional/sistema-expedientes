@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Editar Expediente - ICAP Nacional</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Mismo estilo que registrar.html */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background-color: #fafafa; font-family: 'Inter', sans-serif; color: #2d2d2d; padding: 20px; line-height: 1.5; }
+    .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); padding: 32px; }
+    .logo { width: 80px; display: block; margin: 0 auto 20px; }
+    h1 { text-align: center; font-size: 24px; font-weight: 700; color: #2d2d2d; margin-bottom: 24px; }
+    .section-title { font-size: 18px; font-weight: 700; color: #722F37; margin: 28px 0 16px; padding-bottom: 6px; border-bottom: 2px solid #f0f0f0; }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 20px; }
+    .form-group { display: flex; flex-direction: column; }
+    label { font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #333; }
+    input, select, textarea { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 15px; background-color: #fdfdfd; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #722F37; box-shadow: 0 0 0 3px rgba(114,47,55,0.1); }
+    textarea { min-height: 80px; resize: vertical; }
+
+    /* Foto */
+    .photo-upload-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .photo-preview-box {
+      width: 120px;
+      height: 120px;
+      border: 2px dashed #ccc;
+      border-radius: 10px;
+      background-color: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .photo-preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .photo-placeholder { color: #999; font-size: 28px; }
+    .photo-input { width: 100%; max-width: 220px; padding: 8px; font-size: 14px; text-align: center; }
+
+    .btn-save, .btn-delete {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.3s ease;
+      display: block;
+      width: 100%;
+      max-width: 220px;
+    }
+    .btn-delete {
+      background-color: #c00;
+      max-width: 180px;
+      margin-left: auto;
+    }
+    .btn-save:hover { background-color: #5e262d; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(114,47,55,0.2); }
+    .btn-delete:hover { background-color: #a00; }
+    .back-link {
+      display: inline-block;
+      margin-top: 10px;
+      color: #722F37;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" class="logo" />
+    <h1>Editar Expediente</h1>
+
+    <!-- Foto -->
+    <div class="photo-upload-container">
+      <div class="photo-preview-box" id="photoPreview">
+        <span class="photo-placeholder">📷</span>
+      </div>
+      <input type="file" id="fotoInput" accept="image/*" class="photo-input">
+    </div>
+
+    <!-- Formulario (igual que registrar.html, pero con valores dinámicos) -->
+    <h2 class="section-title">Datos Personales</h2>
+    <div class="form-row">
+      <div class="form-group"><label for="nombre">Nombre</label><input type="text" id="nombre" required></div>
+      <div class="form-group"><label for="apellido">Apellido</label><input type="text" id="apellido" required></div>
+      <div class="form-group"><label for="fechaNac">Fecha de Nacimiento</label><input type="date" id="fechaNac"></div>
+      <div class="form-group"><label for="cedula">Cédula de Identidad</label><input type="text" id="cedula" placeholder="V-12345678" readonly></div>
+      <div class="form-group"><label for="sexo">Sexo</label><select id="sexo"></select></div>
+      <div class="form-group"><label for="edad">Edad</label><input type="number" id="edad" min="18" max="100"></div>
+      <div class="form-group"><label for="jerarquia">Jerarquía</label><select id="jerarquia"></select></div>
+      <div class="form-group"><label for="estatusPersonal">Estatus</label><select id="estatusPersonal"></select></div>
+      <div class="form-group"><label for="telefono">Teléfono</label><input type="tel" id="telefono" placeholder="0412-1234567"></div>
+      <div class="form-group"><label for="correo">Correo</label><input type="email" id="correo"></div>
+      <div class="form-group"><label for="direccion">Dirección</label><textarea id="direccion"></textarea></div>
+    </div>
+
+    <h2 class="section-title">Expediente</h2>
+    <div class="form-row">
+      <div class="form-group"><label for="tipoExpediente">Tipo de Expediente</label><select id="tipoExpediente"></select></div>
+      <div class="form-group"><label for="icapOficina">ICAP (Oficina)</label><select id="icapOficina"></select></div>
+      <div class="form-group"><label for="funcInvestigado">Funcionario Investigado</label><select id="funcInvestigado"></select></div>
+      <div class="form-group"><label for="condicionFunc">Condición del Funcionario en el Caso</label><select id="condicionFunc"></select></div>
+      <div class="form-group"><label for="denunciante">Denunciante</label><select id="denunciante"></select></div>
+      <div class="form-group"><label for="origenFalta">Origen de la Falta</label><select id="origenFalta"></select></div>
+      <div class="form-group"><label for="tipoFalta">Tipo de Falta</label><select id="tipoFalta"></select></div>
+      <div class="form-group"><label for="faltaArt">Falta (Artículo)</label><select id="faltaArt"></select></div>
+      <div class="form-group"><label for="estatusExpediente">Estatus</label><select id="estatusExpediente"></select></div>
+      <div class="form-group"><label for="decision">Decisión</label><select id="decision"></select></div>
+    </div>
+
+    <div class="form-group"><label for="resena">Reseña del Caso</label><textarea id="resena"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label for="servicioLabora">Servicio donde Labora</label><input type="text" id="servicioLabora"></div>
+      <div class="form-group"><label for="expedientePenalAnio">Expediente Penal Año</label><input type="number" id="expedientePenalAnio" min="1900" max="2099"></div>
+      <div class="form-group"><label for="fechaInicio">Fecha de Inicio</label><input type="date" id="fechaInicio"></div>
+      <div class="form-group"><label for="expedienteNumero">Expediente Número</label><input type="text" id="expedienteNumero"></div>
+      <div class="form-group"><label for="causa">Causa</label><input type="text" id="causa"></div>
+      <div class="form-group"><label for="funcDetenido">¿Funcionario Detenido?</label><select id="funcDetenido"></select></div>
+      <div class="form-group"><label for="sustanciador">Sustanciador Remisión</label><input type="text" id="sustanciador"></div>
+      <div class="form-group"><label for="registradoPor">Registrado Por</label><input type="text" id="registradoPor"></div>
+    </div>
+
+    <button class="btn-save" id="btnSave">Guardar Cambios</button>
+    <button class="btn-delete" id="btnDelete">🗑️ Eliminar Expediente</button>
+    <a href="consulta.txt" class="back-link">← Volver a Consulta</a>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Listas estáticas (igual que en registrar.html)
+    const listas = {
+      sexos: [{label:'Masculino',value:'masculino'},{label:'Femenino',value:'femenino'},{label:'Otro',value:'otro'}],
+      jerarquias: [{label:'Comisario General',value:'comisario_general'},/* ... */],
+      estatus_personales: [{label:'Activo',value:'activo'},{label:'Suspendido',value:'suspendido'},{label:'Baja',value:'baja'}],
+      tipos_expediente: [{label:'Disciplinario',value:'disciplinario'},{label:'Administrativo',value:'administrativo'},{label:'Penal',value:'penal'}],
+      icap_oficinas: [{label:'Caracas',value:'caracas'},{label:'Maracay',value:'maracay'},{label:'Valencia',value:'valencia'}],
+      func_investigados: [{label:'Capitán Juan Pérez',value:'cap_juan'},/* ... */],
+      condiciones_func: [{label:'Imputado',value:'imputado'},{label:'Testigo',value:'testigo'},{label:'Denunciado',value:'denunciado'}],
+      denunciantes: [{label:'Ciudadano Anónimo',value:'ciudadano'},/* ... */],
+      origenes_falta: [{label:'Interna',value:'interna'},{label:'Externa',value:'externa'}],
+      tipos_falta: [{label:'Leve',value:'leve'},{label:'Grave',value:'grave'},{label:'Muy Grave',value:'muy_grave'}],
+      faltas_art: [{label:'Art. 45 – Abandono de cargo',value:'art45'},/* ... */],
+      estatus_expedientes: [{label:'Abierto',value:'abierto'},{label:'Cerrado',value:'cerrado'},{label:'Archivado',value:'archivado'}],
+      decisiones: [{label:'Sanción Administrativa',value:'sancion'},/* ... */],
+      func_detenidos: [{label:'Sí',value:'si'},{label:'No',value:'no'}]
+    };
+
+    // Rellenar selects
+    function populateSelect(selectId, options, selectedValue = '') {
+      const select = document.getElementById(selectId);
+      select.innerHTML = '<option value="">Seleccionar</option>';
+      options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.label;
+        if (opt.value === selectedValue) option.selected = true;
+        select.appendChild(option);
+      });
+    }
+
+    // Cargar datos del expediente
+    async function loadExpediente() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const cedula = urlParams.get('cedula');
+      if (!cedula) {
+        alert('No se especificó la cédula.');
+        window.location.href = 'consulta.txt';
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('expedientes')
+          .select('*')
+          .eq('cedula', cedula)
+          .single();
+
+        if (error) throw error;
+
+        // Rellenar campos
+        document.getElementById('nombre').value = data.nombre || '';
+        document.getElementById('apellido').value = data.apellido || '';
+        document.getElementById('fechaNac').value = data.fecha_nacimiento || '';
+        document.getElementById('cedula').value = data.cedula || '';
+        document.getElementById('edad').value = data.edad || '';
+        document.getElementById('telefono').value = data.telefono || '';
+        document.getElementById('correo').value = data.correo || '';
+        document.getElementById('direccion').value = data.direccion || '';
+        document.getElementById('resena').value = data.resena || '';
+        document.getElementById('servicioLabora').value = data.servicio_labora || '';
+        document.getElementById('expedientePenalAnio').value = data.expediente_penal_anio || '';
+        document.getElementById('fechaInicio').value = data.fecha_inicio || '';
+        document.getElementById('expedienteNumero').value = data.expediente_numero || '';
+        document.getElementById('causa').value = data.causa || '';
+        document.getElementById('sustanciador').value = data.sustanciador || '';
+        document.getElementById('registradoPor').value = data.registrado_por || '';
+
+        // Rellenar selects
+        populateSelect('sexo', listas.sexos, data.sexo);
+        populateSelect('jerarquia', listas.jerarquias, data.jerarquia);
+        populateSelect('estatusPersonal', listas.estatus_personales, data.estatus_personal);
+        populateSelect('tipoExpediente', listas.tipos_expediente, data.tipo_expediente);
+        populateSelect('icapOficina', listas.icap_oficinas, data.icap_oficina);
+        populateSelect('funcInvestigado', listas.func_investigados, data.func_investigado);
+        populateSelect('condicionFunc', listas.condiciones_func, data.condicion_func);
+        populateSelect('denunciante', listas.denunciantes, data.denunciante);
+        populateSelect('origenFalta', listas.origenes_falta, data.origen_falta);
+        populateSelect('tipoFalta', listas.tipos_falta, data.tipo_falta);
+        populateSelect('faltaArt', listas.faltas_art, data.falta_art);
+        populateSelect('estatusExpediente', listas.estatus_expedientes, data.estatus_expediente);
+        populateSelect('decision', listas.decisiones, data.decision);
+        populateSelect('funcDetenido', listas.func_detenidos, data.func_detenido ? 'si' : 'no');
+
+        // Vista previa de la foto
+        if (data.foto_url) {
+          document.getElementById('photoPreview').innerHTML = `<img src="${data.foto_url}" alt="Foto">`;
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert('Error al cargar el expediente.');
+        window.location.href = 'consulta.txt';
+      }
+    }
+
+    // Guardar cambios
+    document.getElementById('btnSave').addEventListener('click', async () => {
+      const cedula = new URLSearchParams(window.location.search).get('cedula');
+      const nombre = document.getElementById('nombre').value.trim();
+      const apellido = document.getElementById('apellido').value.trim();
+      if (!nombre || !apellido) {
+        alert('Nombre y Apellido son obligatorios.');
+        return;
+      }
+
+      const fotoFile = document.getElementById('fotoInput').files[0];
+      let fotoUrl = null;
+
+      try {
+        // Subir nueva foto si se seleccionó
+        if (fotoFile) {
+          const fileExt = fotoFile.name.split('.').pop();
+          const fileName = `expedientes/${cedula}-${Date.now()}.${fileExt}`;
+          const { error: uploadError } = await supabase.storage
+            .from('fotos-expedientes')
+            .upload(fileName, fotoFile, { upsert: true });
+          if (uploadError) throw uploadError;
+          const { data } = supabase.storage.from('fotos-expedientes').getPublicUrl(fileName);
+          fotoUrl = data.publicUrl;
+        }
+
+        // Actualizar registro
+        const updates = {
+          nombre,
+          apellido,
+          fecha_nacimiento: document.getElementById('fechaNac').value || null,
+          edad: parseInt(document.getElementById('edad').value) || null,
+          sexo: document.getElementById('sexo').value || null,
+          jerarquia: document.getElementById('jerarquia').value || null,
+          estatus_personal: document.getElementById('estatusPersonal').value || null,
+          telefono: document.getElementById('telefono').value || null,
+          correo: document.getElementById('correo').value || null,
+          direccion: document.getElementById('direccion').value || null,
+          tipo_expediente: document.getElementById('tipoExpediente').value || null,
+          icap_oficina: document.getElementById('icapOficina').value || null,
+          func_investigado: document.getElementById('funcInvestigado').value || null,
+          condicion_func: document.getElementById('condicionFunc').value || null,
+          denunciante: document.getElementById('denunciante').value || null,
+          origen_falta: document.getElementById('origenFalta').value || null,
+          tipo_falta: document.getElementById('tipoFalta').value || null,
+          falta_art: document.getElementById('faltaArt').value || null,
+          estatus_expediente: document.getElementById('estatusExpediente').value || null,
+          decision: document.getElementById('decision').value || null,
+          resena: document.getElementById('resena').value || null,
+          servicio_labora: document.getElementById('servicioLabora').value || null,
+          expediente_penal_anio: parseInt(document.getElementById('expedientePenalAnio').value) || null,
+          fecha_inicio: document.getElementById('fechaInicio').value || null,
+          expediente_numero: document.getElementById('expedienteNumero').value || null,
+          causa: document.getElementById('causa').value || null,
+          func_detenido: document.getElementById('funcDetenido').value === 'si',
+          sustanciador: document.getElementById('sustanciador').value || null,
+          registrado_por: document.getElementById('registradoPor').value || null
+        };
+
+        // Solo actualizar foto_url si se subió una nueva foto
+        if (fotoUrl !== null) {
+          updates.foto_url = fotoUrl;
+        }
+
+        const { error } = await supabase
+          .from('expedientes')
+          .update(updates)
+          .eq('cedula', cedula);
+
+        if (error) throw error;
+
+        alert('✅ Expediente actualizado correctamente.');
+        window.location.href = `consulta.txt?cedula=${cedula}`;
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al actualizar: ' + (error.message || 'Intente nuevamente.'));
+      }
+    });
+
+    // Eliminar expediente
+    document.getElementById('btnDelete').addEventListener('click', async () => {
+      if (!confirm('¿Está seguro de eliminar este expediente? Esta acción no se puede deshacer.')) return;
+
+      const cedula = new URLSearchParams(window.location.search).get('cedula');
+      try {
+        // Opcional: eliminar la foto del bucket
+        // (requiere políticas de eliminación en Supabase Storage)
+
+        const { error } = await supabase
+          .from('expedientes')
+          .delete()
+          .eq('cedula', cedula);
+
+        if (error) throw error;
+
+        alert('🗑️ Expediente eliminado correctamente.');
+        window.location.href = 'consulta.txt';
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al eliminar: ' + (error.message || 'Intente nuevamente.'));
+      }
+    });
+
+    // Iniciar
+    loadExpediente();
+  </script>
+</body>
+</html>
