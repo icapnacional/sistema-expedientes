@@ -89,7 +89,6 @@
       padding: 20px;
       color: #722F37;
     }
-    /* Lista de documentos */
     .document-list {
       display: grid;
       gap: 14px;
@@ -156,7 +155,6 @@
       }
     })();
 
-    // Nombres legibles para los tipos de documento
     const documentLabels = {
       'portada': 'Portada',
       'acta_disciplinaria': 'Acta disciplinaria',
@@ -208,7 +206,7 @@
       }
       resultContainer.innerHTML = '<div class="loading">Buscando...</div>';
       try {
-        // Primero obtener el número de expediente
+        // ✅ Corrección: sintaxis correcta de desestructuración
         const { data: expedienteData, error: expedienteError } = await supabase
           .from('expedientes')
           .select('expediente_numero')
@@ -220,7 +218,7 @@
           return;
         }
         const expedienteNumero = expedienteData.expediente_numero;
-        // Luego obtener los documentos
+        // ✅ Corrección: sintaxis correcta de desestructuración
         const { data: docs, error: docsError } = await supabase
           .from('documentos')
           .select('*')
