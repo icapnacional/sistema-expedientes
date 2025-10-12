@@ -145,9 +145,10 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Verificar sesión
+    // Verificar sesión (versión segura)
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getSession();
+      const session = data?.session;
       if (!session) {
         alert('Acceso restringido. Por favor inicie sesión.');
         window.location.href = 'index.html';
@@ -206,7 +207,6 @@
       }
       resultContainer.innerHTML = '<div class="loading">Buscando...</div>';
       try {
-        // ✅ Corrección: sintaxis correcta de desestructuración
         const { data: expedienteData, error: expedienteError } = await supabase
           .from('expedientes')
           .select('expediente_numero')
@@ -218,7 +218,6 @@
           return;
         }
         const expedienteNumero = expedienteData.expediente_numero;
-        // ✅ Corrección: sintaxis correcta de desestructuración
         const { data: docs, error: docsError } = await supabase
           .from('documentos')
           .select('*')
