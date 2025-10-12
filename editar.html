@@ -393,7 +393,6 @@
       func_detenidos: [{label:'Sí',value:'si'},{label:'No',value:'no'}]
     };
 
-    // Cargar listas desde localStorage
     function loadLists() {
       const saved = localStorage.getItem('dropdownLists');
       return saved ? JSON.parse(saved) : defaultLists;
@@ -441,7 +440,6 @@
       });
     }
 
-    // Vista previa de foto
     let currentPhotoUrl = null;
     document.getElementById('fotoInput').addEventListener('change', function(e) {
       const preview = document.getElementById('photoPreview');
@@ -459,30 +457,27 @@
       }
     });
 
-    // Obtener cédula de la URL
-    function getCedulaFromUrl() {
+    // ✅ Obtener ID de la URL
+    function getIdFromUrl() {
       const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('cedula');
+      return urlParams.get('id');
     }
 
-    // Cargar expediente
-    async function loadExpediente(cedula) {
+    // ✅ Cargar por ID
+    async function loadExpediente(id) {
       const { data, error } = await supabase
         .from('expedientes')
         .select('*')
-        .eq('cedula', cedula)
+        .eq('id', id)
         .single();
-
       if (error || !data) {
         alert('No se encontró el expediente.');
         document.getElementById('loading').textContent = 'Expediente no encontrado.';
         return null;
       }
-
       return data;
     }
 
-    // Rellenar formulario
     function fillForm(expediente) {
       document.getElementById('nombre').value = expediente.nombre || '';
       document.getElementById('apellido').value = expediente.apellido || '';
@@ -517,7 +512,6 @@
       document.getElementById('sustanciador').value = expediente.sustanciador || '';
       document.getElementById('registradoPor').value = expediente.registrado_por || '';
 
-      // Foto
       currentPhotoUrl = expediente.foto_url;
       const preview = document.getElementById('photoPreview');
       if (currentPhotoUrl) {
@@ -527,7 +521,7 @@
       }
     }
 
-    // Guardar cambios
+    // ✅ Guardar usando ID
     document.getElementById('btnSave').addEventListener('click', async () => {
       const cedula = document.getElementById('cedula').value.trim();
       const nombre = document.getElementById('nombre').value.trim();
@@ -539,7 +533,7 @@
       }
 
       const fotoFile = document.getElementById('fotoInput').files[0];
-      let fotoUrl = currentPhotoUrl; // mantener la anterior si no se sube nueva
+      let fotoUrl = currentPhotoUrl;
 
       try {
         if (fotoFile) {
@@ -555,6 +549,7 @@
           fotoUrl = data.publicUrl;
         }
 
+        const id = getIdFromUrl(); // ✅ Usamos el ID
         const { error: updateError } = await supabase
           .from('expedientes')
           .update({
@@ -589,7 +584,7 @@
             sustanciador: document.getElementById('sustanciador').value || null,
             registrado_por: document.getElementById('registradoPor').value || null
           })
-          .eq('cedula', cedula);
+          .eq('id', id); // ✅ Actualizamos por ID
 
         if (updateError) throw updateError;
         alert('✅ Expediente actualizado correctamente.');
@@ -602,15 +597,15 @@
 
     // Inicialización
     (async () => {
-      const cedula = getCedulaFromUrl();
-      if (!cedula) {
-        alert('No se especificó la cédula en la URL.');
+      const id = getIdFromUrl();
+      if (!id) {
+        alert('No se especificó el ID del expediente.');
         window.location.href = 'index.html';
         return;
       }
 
       initDropdowns();
-      const expediente = await loadExpediente(cedula);
+      const expediente = await loadExpediente(id);
       if (expediente) {
         fillForm(expediente);
         document.getElementById('loading').style.display = 'none';
