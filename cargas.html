@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cargar Documentos - ICAP Nacional</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      padding: 32px;
+    }
+    .logo {
+      width: 80px;
+      display: block;
+      margin: 0 auto 20px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+      margin-bottom: 24px;
+    }
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+    .search-box input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+    .search-box button {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0 20px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .result-card {
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+      border: 1px solid #eee;
+      text-align: center;
+    }
+    .no-result {
+      text-align: center;
+      padding: 40px 0;
+      color: #777;
+      font-style: italic;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #722F37;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #722F37;
+    }
+    /* Documentos */
+    .document-item {
+      margin-bottom: 20px;
+      padding: 16px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      background: #fcfcfc;
+    }
+    .document-item h3 {
+      margin-bottom: 12px;
+      font-size: 16px;
+      color: #333;
+    }
+    .file-input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+    .btn-upload {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .btn-upload:hover {
+      background-color: #5e262d;
+    }
+    .upload-status {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #555;
+    }
+    .upload-success {
+      color: #2e7d32;
+    }
+    .upload-error {
+      color: #c62828;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img 
+      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+      alt="ICAP Nacional - PNB" 
+      class="logo"
+    />
+    <h1>Cargar Documentos</h1>
+    <div class="search-box">
+      <input type="text" id="searchCedula" placeholder="Ingrese la cédula de identidad (Ej: V-12345678)">
+      <button id="btnSearch">Buscar</button>
+    </div>
+    <div id="resultContainer"></div>
+    <a href="index.html" class="back-link">← Volver al Panel</a>
+  </div>
+  <script>
+    // 🔑 Supabase
+    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Verificar sesión
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('Acceso restringido. Por favor inicie sesión.');
+        window.location.href = 'index.html';
+        return;
+      }
+    })();
+
+    // Lista de documentos requeridos
+    const documentTypes = [
+      { id: 'portada', name: 'Portada' },
+      { id: 'acta_disciplinaria', name: 'Acta disciplinaria' },
+      { id: 'modo_conocer', name: 'Modo de conocer' },
+      { id: 'denuncia', name: 'Denuncia' },
+      { id: 'noticia_crimen', name: 'Noticia crimen' },
+      { id: 'orden_servicios', name: 'Copia legible y certificada de la Orden de los servicios y Novedades diarias' },
+      { id: 'entrevista_testigos', name: 'Entrevista de posibles testigos' },
+      { id: 'entrevista_supervisor', name: 'Entrevistas de supervisor directo o inmediato' },
+      { id: 'entrevista_jefe_servicios', name: 'Entrevista jefe de servicios' },
+      { id: 'entrevista_parquero', name: 'Entrevista del parquero' },
+      { id: 'entrevista_rrhh', name: 'Entrevista del jefe de recursos humanos' },
+      { id: 'entrevista_operaciones', name: 'Entrevista del jefe de operaciones' },
+      { id: 'oficios', name: 'Oficios' },
+      { id: 'memorandum', name: 'Memorándum' },
+      { id: 'consignaciones', name: 'Consignaciones' },
+      { id: 'analisis_audios', name: 'Actas de analisis de audios o CD' },
+      { id: 'actuaciones_penales', name: 'Actuaciones penales' },
+      { id: 'cedula_carnet', name: 'Copia de cedula y carnet policial de funcionario investigado. (Registro CNE)' },
+      { id: 'hoja_filiatorios', name: 'Hoja de datos filiatorios debe estar suscrito por el jefe de recursos humanos. (registro del funcionario investigado debe poseer número telefónico, dirección de residencia especificada y correo electrónico)' },
+      { id: 'informe_jefe_inmediato', name: 'Informe del jefe inmediato del funcionario investigado. (informe detallado de los hechos ocurridos no se aceptan informe manuscritos)' },
+      { id: 'orden_servicios_cert', name: 'Copia de Orden de los servicios debidamente certificada. (3 por cada mes de falta) Caso de abandonos.' },
+      { id: 'extracto_novedad', name: 'Extracto de novedad debidamente certificados. (3 por cada mes de falta)' },
+      { id: 'actas_diligencia', name: 'Actas de diligencia. (Acta de llamada telefónica mínimo 3)' },
+      { id: 'visita_domiciliaria', name: 'Acta de visita domiciliaria. (Obligatoria debe poseer fijaciones fotográficas)' },
+      { id: 'informe_parque_armas', name: 'Informe del jefe de parque de armas. (¿entrego prendas y carnet policial?)' },
+      { id: 'entrevista_funcionario', name: 'Acta de entrevista del funcionario investigado. (en caso de ser localizado)' },
+      { id: 'entrega_prendas', name: 'Acta de entrega de prendas y carnet policial del funcionario investigado. (en caso de ser localizado)' },
+      { id: 'registro_migratorio', name: 'Registro de Movimiento Migratorio. (Obligatorio se acepta solicito en espera de respuesta)' },
+      { id: 'verificacion_siipol', name: 'Verificación (S.I.I.P.O.L) (Obligatorio memo de solicitud y respuesta)' },
+      { id: 'record_disciplinario', name: 'Record Disciplinario ICAP. (Obligatorio memo de solicitud y respuesta)' },
+      { id: 'constancia_trabajo', name: 'Constancia de trabajo del funcionario investigado.' },
+      { id: 'inclusion', name: 'Inclusion' },
+      { id: 'exclusion', name: 'Exclusión' },
+      { id: 'valoracion_cargo', name: 'Valoración determinacion de cargo' }
+    ];
+
+    // Buscar expediente
+    document.getElementById('btnSearch').addEventListener('click', searchExpediente);
+    document.getElementById('searchCedula').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') searchExpediente();
+    });
+
+    async function searchExpediente() {
+      const cedula = document.getElementById('searchCedula').value.trim();
+      const resultContainer = document.getElementById('resultContainer');
+      if (!cedula) {
+        alert('Por favor, ingrese una cédula de identidad.');
+        return;
+      }
+      resultContainer.innerHTML = '<div class="loading">Buscando...</div>';
+      try {
+        const { data, error } = await supabase
+          .from('expedientes')
+          .select('expediente_numero')
+          .eq('cedula', cedula)
+          .maybeSingle();
+        if (error) throw error;
+        if (data && data.expediente_numero) {
+          displayDocumentForm(cedula, data.expediente_numero);
+        } else {
+          resultContainer.innerHTML = '<div class="no-result">No se encontró ningún expediente con esa cédula.</div>';
+        }
+      } catch (err) {
+        console.error(err);
+        resultContainer.innerHTML = '<div class="no-result">Error al buscar el expediente. Intente nuevamente.</div>';
+      }
+    }
+
+    function displayDocumentForm(cedula, expedienteNumero) {
+      let formHTML = `
+        <div class="result-card">
+          <h2>Expediente: ${expedienteNumero}</h2>
+          <p><strong>Cédula:</strong> ${cedula}</p>
+        </div>
+        <div id="documentsContainer">
+      `;
+      documentTypes.forEach(doc => {
+        formHTML += `
+          <div class="document-item" id="item-${doc.id}">
+            <h3>${doc.name}</h3>
+            <input type="file" class="file-input" id="file-${doc.id}" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+            <button class="btn-upload" onclick="uploadDocument('${doc.id}', '${cedula}', '${expedienteNumero}')">Subir</button>
+            <div class="upload-status" id="status-${doc.id}"></div>
+          </div>
+        `;
+      });
+      formHTML += '</div>';
+      document.getElementById('resultContainer').innerHTML = formHTML;
+    }
+
+    // Subir documento
+    async function uploadDocument(docId, cedula, expedienteNumero) {
+      const fileInput = document.getElementById(`file-${docId}`);
+      const statusDiv = document.getElementById(`status-${docId}`);
+      const file = fileInput.files[0];
+      if (!file) {
+        statusDiv.textContent = '⚠️ Seleccione un archivo.';
+        statusDiv.className = 'upload-status upload-error';
+        return;
+      }
+      statusDiv.textContent = 'Subiendo...';
+      statusDiv.className = 'upload-status';
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `documentos/${cedula}/${expedienteNumero}/${docId}-${Date.now()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('documentos-expedientes')
+          .upload(fileName, file, { upsert: true });
+        if (uploadError) throw uploadError;
+        const { data } = await supabase.storage
+          .from('documentos-expedientes')
+          .getPublicUrl(fileName);
+        const fileUrl = data.publicUrl;
+        // Guardar en tabla `documentos`
+        const { error: insertError } = await supabase
+          .from('documentos')
+          .insert([{
+            cedula,
+            expediente_numero: expedienteNumero,
+            tipo_documento: docId,
+            url: fileUrl,
+            nombre_original: file.name
+          }]);
+        if (insertError) throw insertError;
+        statusDiv.textContent = '✅ Subido correctamente';
+        statusDiv.className = 'upload-status upload-success';
+        fileInput.value = ''; // Limpiar input
+      } catch (error) {
+        console.error('Error al subir:', error);
+        statusDiv.textContent = '❌ Error: ' + (error.message || 'Intente nuevamente');
+        statusDiv.className = 'upload-status upload-error';
+      }
+    }
+  </script>
+</body>
+</html>
