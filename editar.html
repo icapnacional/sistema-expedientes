@@ -168,7 +168,6 @@
         </div>
         <input type="file" id="fotoInput" accept="image/*" class="photo-input">
       </div>
-
       <!-- Sección: Datos Personales -->
       <h2 class="section-title">Datos Personales</h2>
       <div class="form-row">
@@ -223,7 +222,6 @@
           <textarea id="direccion"></textarea>
         </div>
       </div>
-
       <!-- Sección: Expediente -->
       <h2 class="section-title">Expediente</h2>
       <div class="form-row">
@@ -288,7 +286,6 @@
           </select>
         </div>
       </div>
-
       <!-- Campos de texto libre -->
       <div class="form-group">
         <label for="resena">Reseña del Caso</label>
@@ -334,14 +331,10 @@
     </div>
     <a href="index.html" class="back-link">← Volver al Panel</a>
   </div>
-
   <script>
-    // 🔑 Supabase
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Verificar sesión
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -350,8 +343,6 @@
         return;
       }
     })();
-
-    // Listas por defecto (igual que en registrar.html)
     const defaultLists = {
       sexos: [{label:'Masculino',value:'masculino'},{label:'Femenino',value:'femenino'},{label:'Otro',value:'otro'}],
       jerarquias: [
@@ -392,12 +383,10 @@
       ],
       func_detenidos: [{label:'Sí',value:'si'},{label:'No',value:'no'}]
     };
-
     function loadLists() {
       const saved = localStorage.getItem('dropdownLists');
       return saved ? JSON.parse(saved) : defaultLists;
     }
-
     function populateSelect(selectId, options) {
       const select = document.getElementById(selectId);
       select.innerHTML = '<option value="">Seleccionar</option>';
@@ -408,7 +397,6 @@
         select.appendChild(option);
       });
     }
-
     function populateSelectFromList(listKey) {
       const lists = loadLists();
       const map = {
@@ -432,14 +420,12 @@
         populateSelect(selectId, lists[listKey]);
       }
     }
-
     function initDropdowns() {
       const lists = loadLists();
       Object.keys(lists).forEach(key => {
         populateSelectFromList(key);
       });
     }
-
     let currentPhotoUrl = null;
     document.getElementById('fotoInput').addEventListener('change', function(e) {
       const preview = document.getElementById('photoPreview');
@@ -456,28 +442,25 @@
         preview.innerHTML = '<span class="photo-placeholder">📷</span>';
       }
     });
-
-    // ✅ Obtener ID de la URL
     function getIdFromUrl() {
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get('id');
     }
-
-    // ✅ Cargar por ID
     async function loadExpediente(id) {
+      console.log("Cargando expediente con ID:", id); // ✅ LOG
       const { data, error } = await supabase
         .from('expedientes')
         .select('*')
         .eq('id', id)
         .single();
       if (error || !data) {
+        console.error("Error al cargar:", error);
         alert('No se encontró el expediente.');
-        document.getElementById('loading').textContent = 'Expediente no encontrado.';
         return null;
       }
+      console.log("Expediente cargado:", data); // ✅ LOG
       return data;
     }
-
     function fillForm(expediente) {
       document.getElementById('nombre').value = expediente.nombre || '';
       document.getElementById('apellido').value = expediente.apellido || '';
@@ -490,7 +473,6 @@
       document.getElementById('telefono').value = expediente.telefono || '';
       document.getElementById('correo').value = expediente.correo || '';
       document.getElementById('direccion').value = expediente.direccion || '';
-
       document.getElementById('tipoExpediente').value = expediente.tipo_expediente || '';
       document.getElementById('icapOficina').value = expediente.icap_oficina || '';
       document.getElementById('funcInvestigado').value = expediente.func_investigado || '';
@@ -501,7 +483,6 @@
       document.getElementById('faltaArt').value = expediente.falta_art || '';
       document.getElementById('estatusExpediente').value = expediente.estatus_expediente || '';
       document.getElementById('decision').value = expediente.decision || '';
-
       document.getElementById('resena').value = expediente.resena || '';
       document.getElementById('servicioLabora').value = expediente.servicio_labora || '';
       document.getElementById('expedientePenalAnio').value = expediente.expediente_penal_anio || '';
@@ -511,7 +492,6 @@
       document.getElementById('funcDetenido').value = expediente.func_detenido ? 'si' : 'no';
       document.getElementById('sustanciador').value = expediente.sustanciador || '';
       document.getElementById('registradoPor').value = expediente.registrado_por || '';
-
       currentPhotoUrl = expediente.foto_url;
       const preview = document.getElementById('photoPreview');
       if (currentPhotoUrl) {
@@ -520,21 +500,16 @@
         preview.innerHTML = '<span class="photo-placeholder">📷</span>';
       }
     }
-
-    // ✅ Guardar usando ID
     document.getElementById('btnSave').addEventListener('click', async () => {
       const cedula = document.getElementById('cedula').value.trim();
       const nombre = document.getElementById('nombre').value.trim();
       const apellido = document.getElementById('apellido').value.trim();
-
       if (!nombre || !apellido || !cedula) {
         alert('⚠️ Nombre, Apellido y Cédula son obligatorios.');
         return;
       }
-
       const fotoFile = document.getElementById('fotoInput').files[0];
       let fotoUrl = currentPhotoUrl;
-
       try {
         if (fotoFile) {
           const fileExt = fotoFile.name.split('.').pop();
@@ -543,13 +518,17 @@
             .from('fotos-expedientes')
             .upload(fileName, fotoFile, { upsert: true });
           if (uploadError) throw uploadError;
-          const { data } = supabase.storage
+          const { data } = await supabase.storage
             .from('fotos-expedientes')
             .getPublicUrl(fileName);
           fotoUrl = data.publicUrl;
         }
-
-        const id = getIdFromUrl(); // ✅ Usamos el ID
+        const id = getIdFromUrl();
+        if (!id) {
+          alert('No se encontró el ID del expediente.');
+          return;
+        }
+        console.log("Actualizando ID:", id); // ✅ LOG
         const { error: updateError } = await supabase
           .from('expedientes')
           .update({
@@ -584,9 +563,12 @@
             sustanciador: document.getElementById('sustanciador').value || null,
             registrado_por: document.getElementById('registradoPor').value || null
           })
-          .eq('id', id); // ✅ Actualizamos por ID
-
-        if (updateError) throw updateError;
+          .eq('id', id);
+        if (updateError) {
+          console.error("Error al actualizar:", updateError);
+          throw updateError;
+        }
+        console.log("✅ Actualización exitosa"); // ✅ LOG
         alert('✅ Expediente actualizado correctamente.');
         window.location.href = 'index.html';
       } catch (error) {
@@ -594,8 +576,6 @@
         alert('❌ Error al guardar cambios: ' + (error.message || 'Intente nuevamente.'));
       }
     });
-
-    // Inicialización
     (async () => {
       const id = getIdFromUrl();
       if (!id) {
@@ -603,7 +583,6 @@
         window.location.href = 'index.html';
         return;
       }
-
       initDropdowns();
       const expediente = await loadExpediente(id);
       if (expediente) {
