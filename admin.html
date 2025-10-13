@@ -15,7 +15,7 @@
       padding: 20px;
     }
     .container {
-      max-width: 1000px;
+      max-width: 1100px;
       margin: 0 auto;
       background: white;
       border-radius: 16px;
@@ -54,12 +54,13 @@
       background-color: #f9f9f9;
       font-weight: 600;
     }
-    .estado-select {
+    .estado-select, .rol-select {
       padding: 8px;
       border: 1px solid #ddd;
       border-radius: 6px;
       font-size: 14px;
-      width: 180px;
+      width: 160px;
+      margin-right: 8px;
     }
     .save-btn {
       background-color: #722F37;
@@ -69,7 +70,6 @@
       padding: 6px 12px;
       font-size: 14px;
       cursor: pointer;
-      margin-left: 8px;
     }
     .save-btn:hover { background-color: #5e262d; }
     .loading { text-align: center; padding: 20px; color: #722F37; }
@@ -92,23 +92,32 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ✅ Define aquí el correo del administrador
-    const ADMIN_EMAIL = 'tu-correo-admin@icap.gob.ve'; // ← ¡Cambia esto!
-
+    // Estados de Venezuela
     const estados = [
       "Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar", "Carabobo", "Cojedes",
       "Delta Amacuro", "Falcón", "Guárico", "Lara", "Mérida", "Miranda", "Monagas", "Nueva Esparta",
       "Portuguesa", "Sucre", "Táchira", "Trujillo", "La Guaira", "Yaracuy", "Zulia"
     ];
 
-    async function checkAdmin() {
-      const { data: { session } } = await supabase.auth.getSession();
+    // Roles
+    const roles = ["usuario", "admin"];
+
+    async function checkAdminAccess() {
+      const {  { session } } = await supabase.auth.getSession();
       if (!session) {
         alert('Acceso restringido.');
         window.location.href = 'index.html';
         return false;
       }
-      if (session.user.email !== ADMIN_EMAIL) {
+
+      // Verificar si el usuario actual es admin en usuarios_estados
+      const {  adminData } = await supabase
+        .from('usuarios_estados')
+        .select('rol')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (!adminData || adminData.rol !== 'admin') {
         alert('Acceso restringido. Solo administradores.');
         window.location.href = 'index.html';
         return false;
@@ -118,7 +127,7 @@
 
     async function loadUsers() {
       // Obtener todos los usuarios de auth.users
-      const { data: users, error: usersError } = await supabase
+      const {  users, error: usersError } = await supabase
         .from('auth.users')
         .select('id, email');
 
@@ -128,24 +137,31 @@
         return;
       }
 
-      // Obtener estados asignados
-      const { data: estadosData } = await supabase
+      // Obtener datos de usuarios_estados
+      const {  estadosData } = await supabase
         .from('usuarios_estados')
-        .select('user_id, estado');
+        .select('user_id, estado, rol');
 
-      const estadosMap = {};
+      const dataMap = {};
       if (estadosData) {
         estadosData.forEach(e => {
-          estadosMap[e.user_id] = e.estado;
+          dataMap[e.user_id] = { estado: e.estado, rol: e.rol };
         });
       }
 
       let html = `<table class="user-table">
-        <thead><tr><th>Correo</th><th>Estado Asignado</th><th>Acciones</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Correo</th>
+            <th>Estado</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
         <tbody>`;
 
       users.forEach(user => {
-        const estadoActual = estadosMap[user.id] || '';
+        const userData = dataMap[user.id] || { estado: '', rol: 'usuario' };
         html += `
           <tr>
             <td>${user.email}</td>
@@ -153,12 +169,19 @@
               <select class="estado-select" id="estado-${user.id}">
                 <option value="">-- Seleccione --</option>
                 ${estados.map(e => 
-                  `<option value="${e}" ${e === estadoActual ? 'selected' : ''}>${e}</option>`
+                  `<option value="${e}" ${e === userData.estado ? 'selected' : ''}>${e}</option>`
                 ).join('')}
               </select>
             </td>
             <td>
-              <button class="save-btn" onclick="saveEstado('${user.id}')">Guardar</button>
+              <select class="rol-select" id="rol-${user.id}">
+                ${roles.map(r => 
+                  `<option value="${r}" ${r === userData.rol ? 'selected' : ''}>${r.charAt(0).toUpperCase() + r.slice(1)}</option>`
+                ).join('')}
+              </select>
+            </td>
+            <td>
+              <button class="save-btn" onclick="saveUserConfig('${user.id}')">Guardar</button>
             </td>
           </tr>`;
       });
@@ -167,18 +190,23 @@
       document.getElementById('usersContainer').innerHTML = html;
     }
 
-    async function saveEstado(userId) {
-      const select = document.getElementById(`estado-${userId}`);
-      const estado = select.value;
+    async function saveUserConfig(userId) {
+      const estado = document.getElementById(`estado-${userId}`).value;
+      const rol = document.getElementById(`rol-${userId}`).value;
+
+      // Upsert en usuarios_estados
       const { error } = await supabase
         .from('usuarios_estados')
-        .upsert({ user_id: userId, estado }, { onConflict: 'user_id' });
+        .upsert(
+          { user_id: userId, estado, rol },
+          { onConflict: 'user_id' }
+        );
 
       if (error) {
         console.error('Error:', error);
         showAlert('Error al guardar.', 'error');
       } else {
-        showAlert('Estado guardado.', 'success');
+        showAlert('Configuración guardada.', 'success');
       }
     }
 
@@ -190,8 +218,8 @@
 
     // Iniciar
     (async () => {
-      const isAdmin = await checkAdmin();
-      if (isAdmin) {
+      const hasAccess = await checkAdminAccess();
+      if (hasAccess) {
         loadUsers();
       }
     })();
