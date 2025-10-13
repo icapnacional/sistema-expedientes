@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel de Administrador - ICAP</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      padding: 32px;
+    }
+    .logo {
+      width: 80px;
+      display: block;
+      margin: 0 auto 20px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+      margin-bottom: 24px;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #722F37;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .user-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .user-table th,
+    .user-table td {
+      padding: 14px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    .user-table th {
+      background-color: #f9f9f9;
+      font-weight: 600;
+      color: #333;
+    }
+    .estado-select {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      width: 180px;
+    }
+    .save-btn {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+    .save-btn:hover {
+      background-color: #5e262d;
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #722F37;
+    }
+    .alert {
+      padding: 12px;
+      margin: 16px 0;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .alert-success {
+      background-color: #f5fff5;
+      color: #080;
+      border: 1px solid #d0ffd0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img 
+      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+      alt="ICAP Nacional - PNB" 
+      class="logo"
+    />
+    <h1>Panel de Administrador</h1>
+    <a href="index.html" class="back-link">← Volver al Panel</a>
+    <div id="alertContainer"></div>
+    <div id="usersContainer">
+      <div class="loading">Cargando usuarios...</div>
+    </div>
+  </div>
+  <script>
+    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const estados = [
+      "Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar", "Carabobo", "Cojedes",
+      "Delta Amacuro", "Falcón", "Guárico", "Lara", "Mérida", "Miranda", "Monagas", "Nueva Esparta",
+      "Portuguesa", "Sucre", "Táchira", "Trujillo", "La Guaira", "Yaracuy", "Zulia"
+    ];
+
+    async function checkAdmin() {
+      const {  { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('Acceso restringido.');
+        window.location.href = 'index.html';
+        return false;
+      }
+      const isAdmin = session.user.user_metadata?.role === 'admin';
+      if (!isAdmin) {
+        alert('Acceso restringido. Solo administradores.');
+        window.location.href = 'index.html';
+        return false;
+      }
+      return true;
+    }
+
+    async function loadUsers() {
+      const {  users, error: usersError } = await supabase
+        .from('auth.users')
+        .select('id, email');
+
+      if (usersError) {
+        console.error('Error al cargar usuarios:', usersError);
+        document.getElementById('usersContainer').innerHTML = '<div class="alert alert-error">Error al cargar usuarios.</div>';
+        return;
+      }
+
+      const {  estadosData, error: estadosError } = await supabase
+        .from('usuarios_estados')
+        .select('user_id, estado');
+
+      if (estadosError && estadosError.code !== 'PGRST116') {
+        console.error('Error al cargar estados:', estadosError);
+      }
+
+      const estadosMap = {};
+      if (estadosData) {
+        estadosData.forEach(e => {
+          estadosMap[e.user_id] = e.estado;
+        });
+      }
+
+      let html = `<table class="user-table">
+        <thead>
+          <tr>
+            <th>Correo</th>
+            <th>Estado Asignado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      users.forEach(user => {
+        const estadoActual = estadosMap[user.id] || '';
+        html += `
+          <tr>
+            <td>${user.email}</td>
+            <td>
+              <select class="estado-select" data-user-id="${user.id}" id="estado-${user.id}">
+                <option value="">-- Seleccione --</option>
+                ${estados.map(e => 
+                  `<option value="${e}" ${e === estadoActual ? 'selected' : ''}>${e}</option>`
+                ).join('')}
+              </select>
+            </td>
+            <td>
+              <button class="save-btn" onclick="saveEstado('${user.id}')">Guardar</button>
+            </td>
+          </tr>`;
+      });
+
+      html += `</tbody></table>`;
+      document.getElementById('usersContainer').innerHTML = html;
+    }
+
+    async function saveEstado(userId) {
+      const select = document.getElementById(`estado-${userId}`);
+      const estado = select.value;
+      const { error } = await supabase
+        .from('usuarios_estados')
+        .upsert({ user_id: userId, estado }, { onConflict: 'user_id' });
+
+      if (error) {
+        console.error('Error al guardar estado:', error);
+        showAlert('Error al guardar el estado.', 'error');
+        return;
+      }
+      showAlert('Estado guardado correctamente.', 'success');
+    }
+
+    function showAlert(message, type) {
+      const container = document.getElementById('alertContainer');
+      container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+      setTimeout(() => {
+        container.innerHTML = '';
+      }, 3000);
+    }
+
+    (async () => {
+      const isAdmin = await checkAdmin();
+      if (isAdmin) {
+        loadUsers();
+      }
+    })();
+  </script>
+</body>
+</html>
