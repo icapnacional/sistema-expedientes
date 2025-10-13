@@ -22,7 +22,7 @@
       min-height: 100vh;
       padding: 20px;
     }
-    .login-card, .panel-card {
+    .login-card, .panel-card, .estado-card {
       background: white;
       border-radius: 16px;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
@@ -59,7 +59,7 @@
       font-weight: 600;
       color: #333;
     }
-    input {
+    input, select {
       width: 100%;
       padding: 14px;
       border: 1px solid #ddd;
@@ -69,13 +69,12 @@
       background-color: #fdfdfd;
       transition: all 0.25s;
     }
-    input:focus {
+    input:focus, select:focus {
       outline: none;
       border-color: #722F37;
       box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
     }
-    /* Botones principales mejorados */
-    .btn-login, .btn-logout {
+    .btn-login, .btn-logout, .btn-save-estado {
       background-color: #722F37;
       color: white;
       border: none;
@@ -89,13 +88,10 @@
       margin-top: 10px;
       box-shadow: 0 3px 8px rgba(114, 47, 55, 0.2);
     }
-    .btn-login:hover, .btn-logout:hover {
+    .btn-login:hover, .btn-logout:hover, .btn-save-estado:hover {
       background-color: #5e262d;
       transform: translateY(-2px);
       box-shadow: 0 5px 14px rgba(114, 47, 55, 0.25);
-    }
-    .btn-login:active, .btn-logout:active {
-      transform: translateY(0);
     }
     .institutional-note {
       margin-top: 26px;
@@ -122,7 +118,6 @@
       color: #080;
       border: 1px solid #d0ffd0;
     }
-    /* Panel */
     .user-info {
       margin: 24px 0;
       padding: 14px;
@@ -162,9 +157,6 @@
       border-color: #722F37;
       background-color: #fdf7f7;
       color: #5e262d;
-    }
-    .panel-btn:active {
-      transform: translateY(-1px);
     }
     .hidden {
       display: none !important;
@@ -210,6 +202,50 @@
     </p>
   </div>
 
+  <!-- Selección de Estado -->
+  <div id="estadoView" class="estado-card hidden">
+    <img 
+      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+      alt="ICAP Nacional - PNB" 
+      class="logo"
+    />
+    <h1>Seleccionar Estado</h1>
+    <p class="subtitle">Por favor, seleccione el estado al que pertenece</p>
+    <form id="estadoForm">
+      <div class="form-group">
+        <label for="estadoSelect">Estado</label>
+        <select id="estadoSelect" required>
+          <option value="">-- Seleccione un estado --</option>
+          <option value="Amazonas">Amazonas</option>
+          <option value="Anzoátegui">Anzoátegui</option>
+          <option value="Apure">Apure</option>
+          <option value="Aragua">Aragua</option>
+          <option value="Barinas">Barinas</option>
+          <option value="Bolívar">Bolívar</option>
+          <option value="Carabobo">Carabobo</option>
+          <option value="Cojedes">Cojedes</option>
+          <option value="Delta Amacuro">Delta Amacuro</option>
+          <option value="Falcón">Falcón</option>
+          <option value="Guárico">Guárico</option>
+          <option value="Lara">Lara</option>
+          <option value="Mérida">Mérida</option>
+          <option value="Miranda">Miranda</option>
+          <option value="Monagas">Monagas</option>
+          <option value="Nueva Esparta">Nueva Esparta</option>
+          <option value="Portuguesa">Portuguesa</option>
+          <option value="Sucre">Sucre</option>
+          <option value="Táchira">Táchira</option>
+          <option value="Trujillo">Trujillo</option>
+          <option value="La Guaira">La Guaira (Vargas)</option>
+          <option value="Yaracuy">Yaracuy</option>
+          <option value="Zulia">Zulia</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-save-estado">Guardar Estado</button>
+    </form>
+    <div id="estadoAlert" class="alert"></div>
+  </div>
+
   <!-- Panel Principal -->
   <div id="panelView" class="panel-card hidden">
     <img 
@@ -219,38 +255,58 @@
     />
     <h1>Panel de Gestión</h1>
     <div class="user-info">
-      <strong>Usuario:</strong> <span id="userEmail">—</span>
+      <strong>Usuario:</strong> <span id="userEmail">—</span><br>
+      <strong>Estado:</strong> <span id="userEstado">—</span>
     </div>
     <div class="panel-buttons">
       <button class="panel-btn" onclick="window.location.href='registrar.html'">📝 Registrar</button>
       <button class="panel-btn" onclick="window.location.href='consultar.html'">🔍 Consultar</button>
       <button class="panel-btn" onclick="alert('Generar reportes')">📊 Reportes</button>
       <button class="panel-btn" onclick="window.location.href='cargas.html'">💼 Cargas</button>
-      <button class="panel-btn" onclick="window.location.href='documentos.html'">📁 Documentos</button>
       <button class="panel-btn" onclick="alert('Configuración')">⚙️ Configuración</button>
     </div>
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
   </div>
 
   <script>
-    // 🔑 Credenciales de Supabase
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Elementos del DOM
     const loginView = document.getElementById('loginView');
+    const estadoView = document.getElementById('estadoView');
     const panelView = document.getElementById('panelView');
     const userEmailSpan = document.getElementById('userEmail');
+    const userEstadoSpan = document.getElementById('userEstado');
     const alertDiv = document.getElementById('alertMessage');
+    const estadoAlert = document.getElementById('estadoAlert');
     const loginForm = document.getElementById('loginForm');
+    const estadoForm = document.getElementById('estadoForm');
     const logoutBtn = document.getElementById('logoutBtn');
 
-    // ✅ Corrección clave: sintaxis de desestructuración
+    let currentUser = null;
+
     async function checkSession() {
-const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        showPanel(session.user.email);
+        currentUser = session.user;
+        // Verificar si ya tiene estado asignado
+        const { data: estadoData, error } = await supabase
+          .from('usuarios_estados')
+          .select('estado')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error al verificar estado:', error);
+          return;
+        }
+
+        if (estadoData) {
+          showPanel(session.user.email, estadoData.estado);
+        } else {
+          showEstadoSelection();
+        }
       } else {
         showLogin();
       }
@@ -258,12 +314,21 @@ const { data: { session } } = await supabase.auth.getSession();
 
     function showLogin() {
       loginView.classList.remove('hidden');
+      estadoView.classList.add('hidden');
       panelView.classList.add('hidden');
     }
 
-    function showPanel(email) {
-      userEmailSpan.textContent = email;
+    function showEstadoSelection() {
       loginView.classList.add('hidden');
+      estadoView.classList.remove('hidden');
+      panelView.classList.add('hidden');
+    }
+
+    function showPanel(email, estado) {
+      userEmailSpan.textContent = email;
+      userEstadoSpan.textContent = estado;
+      loginView.classList.add('hidden');
+      estadoView.classList.add('hidden');
       panelView.classList.remove('hidden');
     }
 
@@ -272,11 +337,11 @@ const { data: { session } } = await supabase.auth.getSession();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       alertDiv.style.display = 'none';
-
       try {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        showPanel(email);
+        // La verificación de estado se hará en checkSession
+        checkSession();
       } catch (err) {
         alertDiv.textContent = err.message || 'Error: credenciales inválidas.';
         alertDiv.className = 'alert alert-error';
@@ -284,8 +349,33 @@ const { data: { session } } = await supabase.auth.getSession();
       }
     });
 
+    estadoForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const estado = document.getElementById('estadoSelect').value;
+      if (!estado) {
+        estadoAlert.textContent = 'Por favor, seleccione un estado.';
+        estadoAlert.className = 'alert alert-error';
+        estadoAlert.style.display = 'block';
+        return;
+      }
+      estadoAlert.style.display = 'none';
+      try {
+        const { error } = await supabase
+          .from('usuarios_estados')
+          .insert([{ user_id: currentUser.id, estado }]);
+        if (error) throw error;
+        showPanel(currentUser.email, estado);
+      } catch (err) {
+        console.error('Error al guardar estado:', err);
+        estadoAlert.textContent = 'Error al guardar el estado. Intente nuevamente.';
+        estadoAlert.className = 'alert alert-error';
+        estadoAlert.style.display = 'block';
+      }
+    });
+
     logoutBtn.addEventListener('click', async () => {
       await supabase.auth.signOut();
+      currentUser = null;
       showLogin();
     });
 
