@@ -194,7 +194,29 @@
         <label for="newEstado">Estado</label>
         <select id="newEstado" required>
           <option value="">-- Seleccione --</option>
-          <!-- Estados se cargarán dinámicamente -->
+          <option value="Amazonas">Amazonas</option>
+          <option value="Anzoátegui">Anzoátegui</option>
+          <option value="Apure">Apure</option>
+          <option value="Aragua">Aragua</option>
+          <option value="Barinas">Barinas</option>
+          <option value="Bolívar">Bolívar</option>
+          <option value="Carabobo">Carabobo</option>
+          <option value="Cojedes">Cojedes</option>
+          <option value="Delta Amacuro">Delta Amacuro</option>
+          <option value="Falcón">Falcón</option>
+          <option value="Guárico">Guárico</option>
+          <option value="Lara">Lara</option>
+          <option value="Mérida">Mérida</option>
+          <option value="Miranda">Miranda</option>
+          <option value="Monagas">Monagas</option>
+          <option value="Nueva Esparta">Nueva Esparta</option>
+          <option value="Portuguesa">Portuguesa</option>
+          <option value="Sucre">Sucre</option>
+          <option value="Táchira">Táchira</option>
+          <option value="Trujillo">Trujillo</option>
+          <option value="La Guaira">La Guaira</option>
+          <option value="Yaracuy">Yaracuy</option>
+          <option value="Zulia">Zulia</option>
         </select>
       </div>
       <div class="form-group">
@@ -217,18 +239,6 @@
       "Delta Amacuro", "Falcón", "Guárico", "Lara", "Mérida", "Miranda", "Monagas", "Nueva Esparta",
       "Portuguesa", "Sucre", "Táchira", "Trujillo", "La Guaira", "Yaracuy", "Zulia"
     ];
-
-    // Cargar estados en el modal
-    function loadEstadosInModal() {
-      const select = document.getElementById('newEstado');
-      select.innerHTML = '<option value="">-- Seleccione --</option>';
-      estados.forEach(e => {
-        const opt = document.createElement('option');
-        opt.value = e;
-        opt.textContent = e;
-        select.appendChild(opt);
-      });
-    }
 
     async function checkAdminAccess() {
       const { data: { session } } = await supabase.auth.getSession();
@@ -351,9 +361,8 @@
       }
     }
 
-    // === NUEVO: Crear usuario ===
+    // === CREAR USUARIO ===
     function openCreateModal() {
-      loadEstadosInModal();
       document.getElementById('createUserModal').style.display = 'block';
     }
 
@@ -378,11 +387,13 @@
       }
 
       try {
-        // 1. Crear usuario en Auth
-        const { data, error } = await supabase.auth.admin.createUser({
+        // 1. Crear usuario con signUp (sin confirmación por correo)
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          email_confirm: true // ✅ No requiere confirmación por correo
+          options: {
+            data: { nombre: 'Nuevo Usuario' }
+          }
         });
 
         if (error) throw error;
@@ -396,7 +407,7 @@
 
         showAlert('✅ Usuario creado correctamente.', 'success');
         closeCreateModal();
-        loadUsers(); // Recargar lista
+        loadUsers();
 
         // Limpiar formulario
         document.getElementById('newEmail').value = '';
@@ -416,7 +427,6 @@
       setTimeout(() => container.innerHTML = '', 3000);
     }
 
-    // Cerrar modal al hacer clic fuera
     window.onclick = function(event) {
       const modal = document.getElementById('createUserModal');
       if (event.target === modal) {
