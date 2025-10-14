@@ -421,6 +421,41 @@
       }
     }
 
+    function validateEmail(email) {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+}
+
+async function createNewUser() {
+  const email = document.getElementById('newEmail').value.trim();
+  const password = document.getElementById('newPassword').value;
+  const estado = document.getElementById('newEstado').value;
+  const rol = document.getElementById('newRol').value;
+
+  if (!email || !password || !estado) {
+    showAlert('Complete todos los campos obligatorios.', 'error');
+    return;
+  }
+
+  if (password.length < 6) {
+    showAlert('La contraseña debe tener al menos 6 caracteres.', 'error');
+    return;
+  }
+
+  // Validar correo
+  if (!validateEmail(email)) {
+    showAlert('Correo inválido. Use un correo institucional (ej: usuario@icap.gob.ve).', 'error');
+    return;
+  }
+
+  try {
+    // ... resto del código
+  } catch (err) {
+    console.error('Error al crear usuario:', err);
+    showAlert('❌ Error: ' + (err.message || 'No se pudo crear el usuario.'), 'error');
+  }
+}
+
     function showAlert(message, type) {
       const container = document.getElementById('alertContainer');
       container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
