@@ -62,7 +62,7 @@
       width: 160px;
       margin-right: 8px;
     }
-    .save-btn, .delete-btn {
+    .save-btn {
       background-color: #722F37;
       color: white;
       border: none;
@@ -70,13 +70,21 @@
       padding: 6px 12px;
       font-size: 14px;
       cursor: pointer;
-      margin-left: 8px;
-    }
-    .delete-btn {
-      background-color: #c62828;
     }
     .save-btn:hover { background-color: #5e262d; }
-    .delete-btn:hover { background-color: #b71c1c; }
+    .delete-btn {
+      background-color: #c62828;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+    .delete-btn:hover {
+      background-color: #b71c1c;
+    }
     .loading { text-align: center; padding: 20px; color: #722F37; }
     .alert { padding: 12px; margin: 16px 0; border-radius: 8px; }
     .alert-success { background-color: #f5fff5; color: #080; border: 1px solid #d0ffd0; }
@@ -132,23 +140,16 @@
     }
 
     async function loadUsers() {
-      // 1. Cargar lista de usuarios
       const { data: users, error: usersError } = await supabase.rpc('get_all_users');
       if (usersError) {
-        console.error('Error en get_all_users:', usersError);
-        document.getElementById('usersContainer').innerHTML = '<div class="alert alert-error">Error al cargar la lista de usuarios.</div>';
+        console.error('Error al cargar usuarios:', usersError);
+        document.getElementById('usersContainer').innerHTML = '<div class="alert alert-error">Error al cargar usuarios.</div>';
         return;
       }
 
-      // 2. Cargar configuraciones de estado/rol
       const { data: estadosData, error: estadosError } = await supabase
         .from('usuarios_estados')
         .select('*');
-
-      if (estadosError) {
-        console.error('Error en usuarios_estados:', estadosError);
-        // Continúa aunque falle, pero sin datos de estado/rol
-      }
 
       const dataMap = {};
       if (estadosData) {
@@ -210,24 +211,24 @@
         );
 
       if (error) {
-        console.error('Error al guardar:', error);
-        showAlert('Error al guardar configuración.', 'error');
+        console.error('Error:', error);
+        showAlert('Error al guardar.', 'error');
       } else {
         showAlert('Configuración guardada.', 'success');
       }
     }
 
     async function deleteUser(userId, email) {
-      if (!confirm(`¿Eliminar al usuario ${email}? Sus expedientes NO se borrarán.`)) return;
+      if (!confirm(`¿Deshabilitar al usuario ${email}? Sus expedientes permanecerán intactos.`)) return;
 
       try {
         const { error } = await supabase.rpc('delete_user_soft', { target_user_id: userId });
         if (error) throw error;
-        showAlert('Usuario eliminado.', 'success');
-        loadUsers();
+        showAlert('Usuario deshabilitado.', 'success');
+        loadUsers(); // ✅ Recargar la lista inmediatamente
       } catch (err) {
         console.error('Error al eliminar:', err);
-        showAlert('Error: ' + (err.message || 'Permiso insuficiente'), 'error');
+        showAlert('Error: ' + (err.message || 'No autorizado.'), 'error');
       }
     }
 
