@@ -62,7 +62,7 @@
       width: 160px;
       margin-right: 8px;
     }
-    .save-btn {
+    .save-btn, .delete-btn {
       background-color: #722F37;
       color: white;
       border: none;
@@ -70,21 +70,13 @@
       padding: 6px 12px;
       font-size: 14px;
       cursor: pointer;
-    }
-    .save-btn:hover { background-color: #5e262d; }
-    .delete-btn {
-      background-color: #c62828;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-size: 14px;
-      cursor: pointer;
       margin-left: 8px;
     }
-    .delete-btn:hover {
-      background-color: #b71c1c;
+    .delete-btn {
+      background-color: #c62828;
     }
+    .save-btn:hover { background-color: #5e262d; }
+    .delete-btn:hover { background-color: #b71c1c; }
     .loading { text-align: center; padding: 20px; color: #722F37; }
     .alert { padding: 12px; margin: 16px 0; border-radius: 8px; }
     .alert-success { background-color: #f5fff5; color: #080; border: 1px solid #d0ffd0; }
@@ -102,4 +94,155 @@
     </div>
   </div>
   <script>
-    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.sup
+    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const estados = [
+      "Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar", "Carabobo", "Cojedes",
+      "Delta Amacuro", "Falcón", "Guárico", "Lara", "Mérida", "Miranda", "Monagas", "Nueva Esparta",
+      "Portuguesa", "Sucre", "Táchira", "Trujillo", "La Guaira", "Yaracuy", "Zulia"
+    ];
+
+    async function checkAdminAccess() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('Acceso restringido.');
+        window.location.href = 'index.html';
+        return false;
+      }
+
+      const { data: adminData, error } = await supabase
+        .from('usuarios_estados')
+        .select('rol')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error al verificar rol:', error);
+        return false;
+      }
+
+      if (!adminData || adminData.rol !== 'admin') {
+        alert('Acceso restringido. Solo administradores.');
+        window.location.href = 'index.html';
+        return false;
+      }
+
+      return true;
+    }
+
+    async function loadUsers() {
+      // 1. Cargar lista de usuarios
+      const { data: users, error: usersError } = await supabase.rpc('get_all_users');
+      if (usersError) {
+        console.error('Error en get_all_users:', usersError);
+        document.getElementById('usersContainer').innerHTML = '<div class="alert alert-error">Error al cargar la lista de usuarios.</div>';
+        return;
+      }
+
+      // 2. Cargar configuraciones de estado/rol
+      const { data: estadosData, error: estadosError } = await supabase
+        .from('usuarios_estados')
+        .select('*');
+
+      if (estadosError) {
+        console.error('Error en usuarios_estados:', estadosError);
+        // Continúa aunque falle, pero sin datos de estado/rol
+      }
+
+      const dataMap = {};
+      if (estadosData) {
+        estadosData.forEach(e => {
+          dataMap[e.user_id] = { estado: e.estado, rol: e.rol };
+        });
+      }
+
+      let html = `<table class="user-table">
+        <thead>
+          <tr>
+            <th>Correo</th>
+            <th>Estado</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      users.forEach(user => {
+        const data = dataMap[user.id] || { estado: '', rol: 'usuario' };
+        html += `
+          <tr>
+            <td>${user.email}</td>
+            <td>
+              <select class="estado-select" id="estado-${user.id}">
+                <option value="">-- Seleccione --</option>
+                ${estados.map(e => 
+                  `<option value="${e}" ${e === data.estado ? 'selected' : ''}>${e}</option>`
+                ).join('')}
+              </select>
+            </td>
+            <td>
+              <select class="rol-select" id="rol-${user.id}">
+                <option value="usuario" ${data.rol === 'usuario' ? 'selected' : ''}>Usuario</option>
+                <option value="admin" ${data.rol === 'admin' ? 'selected' : ''}>Admin</option>
+              </select>
+            </td>
+            <td>
+              <button class="save-btn" onclick="saveUserConfig('${user.id}')">Guardar</button>
+              <button class="delete-btn" onclick="deleteUser('${user.id}', '${user.email}')">🗑️ Eliminar</button>
+            </td>
+          </tr>`;
+      });
+
+      html += `</tbody></table>`;
+      document.getElementById('usersContainer').innerHTML = html;
+    }
+
+    async function saveUserConfig(userId) {
+      const estado = document.getElementById(`estado-${userId}`).value;
+      const rol = document.getElementById(`rol-${userId}`).value;
+
+      const { error } = await supabase
+        .from('usuarios_estados')
+        .upsert(
+          { user_id: userId, estado, rol },
+          { onConflict: 'user_id' }
+        );
+
+      if (error) {
+        console.error('Error al guardar:', error);
+        showAlert('Error al guardar configuración.', 'error');
+      } else {
+        showAlert('Configuración guardada.', 'success');
+      }
+    }
+
+    async function deleteUser(userId, email) {
+      if (!confirm(`¿Eliminar al usuario ${email}? Sus expedientes NO se borrarán.`)) return;
+
+      try {
+        const { error } = await supabase.rpc('delete_user_soft', { target_user_id: userId });
+        if (error) throw error;
+        showAlert('Usuario eliminado.', 'success');
+        loadUsers();
+      } catch (err) {
+        console.error('Error al eliminar:', err);
+        showAlert('Error: ' + (err.message || 'Permiso insuficiente'), 'error');
+      }
+    }
+
+    function showAlert(message, type) {
+      const container = document.getElementById('alertContainer');
+      container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+      setTimeout(() => container.innerHTML = '', 3000);
+    }
+
+    (async () => {
+      const hasAccess = await checkAdminAccess();
+      if (hasAccess) {
+        loadUsers();
+      }
+    })();
+  </script>
+</body>
+</html>
