@@ -72,6 +72,19 @@
       cursor: pointer;
     }
     .save-btn:hover { background-color: #5e262d; }
+    .delete-btn {
+      background-color: #c62828;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+    .delete-btn:hover {
+      background-color: #b71c1c;
+    }
     .loading { text-align: center; padding: 20px; color: #722F37; }
     .alert { padding: 12px; margin: 16px 0; border-radius: 8px; }
     .alert-success { background-color: #f5fff5; color: #080; border: 1px solid #d0ffd0; }
@@ -99,14 +112,14 @@
     ];
 
     async function checkAdminAccess() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {  { session } } = await supabase.auth.getSession();
       if (!session) {
         alert('Acceso restringido.');
         window.location.href = 'index.html';
         return false;
       }
 
-      const { data: adminData, error } = await supabase
+      const {  adminData, error } = await supabase
         .from('usuarios_estados')
         .select('rol')
         .eq('user_id', session.user.id)
@@ -127,14 +140,14 @@
     }
 
     async function loadUsers() {
-      const { data: users, error } = await supabase.rpc('get_all_users');
+      const {  users, error } = await supabase.rpc('get_all_users');
       if (error) {
         console.error('Error al cargar usuarios:', error);
         document.getElementById('usersContainer').innerHTML = '<div class="alert alert-error">Error al cargar usuarios.</div>';
         return;
       }
 
-      const { data: estadosData, error: estadosError } = await supabase
+      const {  estadosData, error: estadosError } = await supabase
         .from('usuarios_estados')
         .select('*');
 
@@ -177,6 +190,7 @@
             </td>
             <td>
               <button class="save-btn" onclick="saveUserConfig('${user.id}')">Guardar</button>
+              <button class="delete-btn" onclick="deleteUser('${user.id}', '${user.email}')">🗑️ Eliminar</button>
             </td>
           </tr>`;
       });
@@ -201,6 +215,24 @@
         showAlert('Error al guardar.', 'error');
       } else {
         showAlert('Configuración guardada.', 'success');
+      }
+    }
+
+    async function deleteUser(userId, email) {
+      if (!confirm(`¿Está seguro de eliminar al usuario ${email}?\n\n⚠️ Sus expedientes y documentos permanecerán en el sistema.`)) {
+        return;
+      }
+
+      try {
+        // Llama a la función RPC que solo elimina auth + usuarios_estados
+        const { error } = await supabase.rpc('delete_user_soft', { target_user_id: userId });
+        if (error) throw error;
+
+        showAlert('Usuario eliminado. Sus datos permanecen.', 'success');
+        loadUsers(); // Recargar lista
+      } catch (err) {
+        console.error('Error al eliminar:', err);
+        showAlert('Error: ' + (err.message || 'No autorizado.'), 'error');
       }
     }
 
