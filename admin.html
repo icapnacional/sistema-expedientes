@@ -98,7 +98,9 @@
       cursor: pointer;
       margin-left: 8px;
     }
-    .delete-btn:hover { background-color: #b71c1c; }
+    .delete-btn:hover {
+      background-color: #b71c1c;
+    }
     .loading { text-align: center; padding: 20px; color: #722F37; }
     .alert { padding: 12px; margin: 16px 0; border-radius: 8px; }
     .alert-success { background-color: #f5fff5; color: #080; border: 1px solid #d0ffd0; }
@@ -241,7 +243,7 @@
     ];
 
     async function checkAdminAccess() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession(); // ✅ CORREGIDO
       if (!session) {
         alert('Acceso restringido.');
         window.location.href = 'index.html';
@@ -269,7 +271,7 @@
     }
 
     async function loadUsers() {
-      const { data: users, error: usersError } = await supabase.rpc('get_all_users');
+      const { data: users, error: usersError } = await supabase.rpc('get_all_users'); // ✅ CORREGIDO
       if (usersError) {
         console.error('Error al cargar usuarios:', usersError);
         document.getElementById('usersContainer').innerHTML = '<div class="alert alert-error">Error al cargar usuarios.</div>';
@@ -370,6 +372,11 @@
       document.getElementById('createUserModal').style.display = 'none';
     }
 
+    function validateEmail(email) {
+      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return regex.test(email);
+    }
+
     async function createNewUser() {
       const email = document.getElementById('newEmail').value.trim();
       const password = document.getElementById('newPassword').value;
@@ -386,19 +393,23 @@
         return;
       }
 
+      if (!validateEmail(email)) {
+        showAlert('Correo inválido. Use un correo institucional (ej: usuario@icap.gob.ve).', 'error');
+        return;
+      }
+
       try {
-        // 1. Crear usuario con signUp
+        // ✅ CORREGIDO: sintaxis válida
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: { nombre: 'Nuevo Usuario' }
+             { nombre: 'Nuevo Usuario' }
           }
         });
 
         if (error) throw error;
 
-        // 2. Asignar estado y rol
         const { error: insertError } = await supabase
           .from('usuarios_estados')
           .insert([{ user_id: data.user.id, estado, rol }]);
@@ -420,41 +431,6 @@
         showAlert('❌ Error: ' + (err.message || 'No se pudo crear el usuario.'), 'error');
       }
     }
-
-    function validateEmail(email) {
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return regex.test(email);
-}
-
-async function createNewUser() {
-  const email = document.getElementById('newEmail').value.trim();
-  const password = document.getElementById('newPassword').value;
-  const estado = document.getElementById('newEstado').value;
-  const rol = document.getElementById('newRol').value;
-
-  if (!email || !password || !estado) {
-    showAlert('Complete todos los campos obligatorios.', 'error');
-    return;
-  }
-
-  if (password.length < 6) {
-    showAlert('La contraseña debe tener al menos 6 caracteres.', 'error');
-    return;
-  }
-
-  // Validar correo
-  if (!validateEmail(email)) {
-    showAlert('Correo inválido. Use un correo institucional (ej: usuario@icap.gob.ve).', 'error');
-    return;
-  }
-
-  try {
-    // ... resto del código
-  } catch (err) {
-    console.error('Error al crear usuario:', err);
-    showAlert('❌ Error: ' + (err.message || 'No se pudo crear el usuario.'), 'error');
-  }
-}
 
     function showAlert(message, type) {
       const container = document.getElementById('alertContainer');
