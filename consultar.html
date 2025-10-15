@@ -229,13 +229,6 @@
     <a href="index.html" class="back-link">← Volver al Panel</a>
   </div>
 
-  <div id="zoomModal" class="modal">
-    <div class="modal-content">
-      <button class="close-modal" onclick="closeZoom()">×</button>
-      <img id="zoomImage" src="" alt="Foto en zoom">
-    </div>
-  </div>
-
   <script>
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
@@ -341,7 +334,7 @@
       document.getElementById('resultContainer').innerHTML = resultHTML;
     }
 
-    // Descargar imagen directamente
+    // ✅ Descarga directa SIN abrir la imagen
     function downloadImage(url, cedula) {
       const link = document.createElement('a');
       link.href = url;
@@ -351,23 +344,24 @@
       document.body.removeChild(link);
     }
 
-    // Abrir modal de zoom
+    // ✅ Zoom al hacer clic en la foto
     function openZoom(url) {
-      const modal = document.getElementById('zoomModal');
-      const img = document.getElementById('zoomImage');
-      img.src = url;
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <button class="close-modal" onclick="this.parentElement.parentElement.remove()">×</button>
+          <img src="${url}" alt="Foto en zoom">
+        </div>
+      `;
+      document.body.appendChild(modal);
       modal.style.display = 'flex';
     }
 
-    // Cerrar modal
-    function closeZoom() {
-      document.getElementById('zoomModal').style.display = 'none';
-    }
-
-    // Cerrar al hacer clic fuera
-    document.getElementById('zoomModal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeZoom();
+    // Cerrar modal al hacer clic fuera
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('modal')) {
+        e.target.remove();
       }
     });
   </script>
