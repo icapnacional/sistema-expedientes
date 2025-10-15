@@ -83,6 +83,7 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      cursor: pointer;
     }
     .result-photo img {
       width: 100%;
@@ -145,6 +146,71 @@
       padding: 20px;
       color: #722F37;
     }
+
+    /* === NUEVO: Botón de descarga === */
+    .photo-actions {
+      text-align: center;
+      margin-top: 12px;
+    }
+    .btn-download-photo {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-block;
+      text-decoration: none;
+    }
+    .btn-download-photo:hover {
+      background-color: #5e262d;
+    }
+
+    /* === NUEVO: Modal de zoom === */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.85);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-content {
+      max-width: 90%;
+      max-height: 90vh;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      padding: 20px;
+      position: relative;
+      text-align: center;
+    }
+    .modal-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 28px;
+      color: #777;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    .close-modal:hover {
+      color: #c00;
+    }
   </style>
 </head>
 <body>
@@ -162,15 +228,25 @@
     <div id="resultContainer"></div>
     <a href="index.html" class="back-link">← Volver al Panel</a>
   </div>
+
+  <!-- Modal de zoom (se crea dinámicamente) -->
+  <div id="zoomModal" class="modal">
+    <div class="modal-content">
+      <button class="close-modal" onclick="closeZoom()">×</button>
+      <img id="zoomImage" src="" alt="Foto en zoom">
+    </div>
+  </div>
+
   <script>
-    // 🔑 Configuración de Supabase
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     document.getElementById('btnSearch').addEventListener('click', searchExpediente);
     document.getElementById('searchCedula').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') searchExpediente();
     });
+
     async function searchExpediente() {
       const cedula = document.getElementById('searchCedula').value.trim();
       const resultContainer = document.getElementById('resultContainer');
@@ -184,7 +260,7 @@
           .from('expedientes')
           .select('*')
           .eq('cedula', cedula)
-          .maybeSingle(); // ✅ Usa maybeSingle para evitar error si hay duplicados
+          .maybeSingle();
         if (error) throw error;
         if (data) {
           displayResult(data);
@@ -196,15 +272,32 @@
         resultContainer.innerHTML = '<div class="no-result">Error al buscar el expediente. Intente nuevamente.</div>';
       }
     }
+
     function displayResult(expediente) {
       const hasPhoto = expediente.foto_url;
-      const photoHtml = hasPhoto 
-        ? `<div class="result-photo"><img src="${expediente.foto_url}" alt="Foto"></div>`
-        : `<div class="result-photo" style="background:#eee;display:flex;align-items:center;justify-content:center;"><span>📷</span></div>`;
+      let photoSection = '';
+      if (hasPhoto) {
+        photoSection = `
+          <div class="result-photo" onclick="openZoom('${expediente.foto_url}')">
+            <img src="${expediente.foto_url}" alt="Foto">
+          </div>
+          <div class="photo-actions">
+            <a href="${expediente.foto_url}" download="foto_${expediente.cedula}.jpg" class="btn-download-photo">📥 Descargar Foto</a>
+          </div>
+        `;
+      } else {
+        photoSection = `
+          <div class="result-photo" style="background:#eee;display:flex;align-items:center;justify-content:center;">
+            <span>📷</span>
+          </div>
+          <div class="photo-actions" style="color:#999; font-size:13px;">Sin foto</div>
+        `;
+      }
+
       const resultHTML = `
         <div class="result-card">
           <div class="result-header">
-            ${photoHtml}
+            ${photoSection}
             <div class="result-info">
               <h2>${expediente.nombre} ${expediente.apellido}</h2>
               <p>Cédula: ${expediente.cedula}</p>
@@ -244,6 +337,25 @@
       `;
       document.getElementById('resultContainer').innerHTML = resultHTML;
     }
+
+    // === FUNCIONES NUEVAS ===
+    function openZoom(url) {
+      const modal = document.getElementById('zoomModal');
+      const img = document.getElementById('zoomImage');
+      img.src = url;
+      modal.style.display = 'flex';
+    }
+
+    function closeZoom() {
+      document.getElementById('zoomModal').style.display = 'none';
+    }
+
+    // Cerrar modal al hacer clic fuera de la imagen
+    document.getElementById('zoomModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeZoom();
+      }
+    });
   </script>
 </body>
 </html>
