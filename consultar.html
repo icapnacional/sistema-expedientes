@@ -334,14 +334,24 @@
       document.getElementById('resultContainer').innerHTML = resultHTML;
     }
 
-    // ✅ Función para descargar la imagen directamente
-    function downloadImage(url, cedula) {
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `foto_${cedula}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    // ✅ Función para descargar la imagen directamente (sin abrir)
+    async function downloadImage(url, cedula) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Error al descargar la imagen');
+        const blob = await response.blob();
+        const filename = `foto_${cedula}.${url.split('.').pop().split('?')[0]}`; // Obtener extensión
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href); // Liberar memoria
+      } catch (error) {
+        console.error('Error al descargar:', error);
+        alert('❌ Error al descargar la foto: ' + error.message);
+      }
     }
 
     // ✅ Función para abrir la foto en zoom
