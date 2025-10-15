@@ -33,25 +33,9 @@
       font-weight: 700;
       margin-bottom: 24px;
     }
-    .actions-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .btn-create {
-      background-color: #2e7d32;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn-create:hover { background-color: #1b5e20; }
     .back-link {
       display: inline-block;
+      margin-bottom: 20px;
       color: #722F37;
       text-decoration: none;
       font-weight: 600;
@@ -88,150 +72,22 @@
       cursor: pointer;
     }
     .save-btn:hover { background-color: #5e262d; }
-    .delete-btn {
-      background-color: #c62828;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-size: 14px;
-      cursor: pointer;
-      margin-left: 8px;
-    }
-    .delete-btn:hover {
-      background-color: #b71c1c;
-    }
     .loading { text-align: center; padding: 20px; color: #722F37; }
     .alert { padding: 12px; margin: 16px 0; border-radius: 8px; }
     .alert-success { background-color: #f5fff5; color: #080; border: 1px solid #d0ffd0; }
     .alert-error { background-color: #fff5f5; color: #c00; border: 1px solid #ffd0d0; }
-
-    /* Modal */
-    #createUserModal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
-    }
-    .modal-content {
-      background: white;
-      margin: 100px auto;
-      padding: 24px;
-      width: 90%;
-      max-width: 500px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .close-modal {
-      background: none; border: none; font-size: 24px; cursor: pointer; color: #777;
-    }
-    .form-group {
-      margin-bottom: 16px;
-      text-align: left;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-    }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 15px;
-    }
-    .btn-submit {
-      background-color: #2e7d32;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      width: 100%;
-      cursor: pointer;
-    }
-    .btn-submit:hover { background-color: #1b5e20; }
   </style>
 </head>
 <body>
   <div class="container">
     <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" class="logo" />
     <h1>Panel de Administrador</h1>
-    <div class="actions-bar">
-      <a href="index.html" class="back-link">← Volver al Panel</a>
-      <button class="btn-create" onclick="openCreateModal()">+ Crear Usuario</button>
-    </div>
+    <a href="index.html" class="back-link">← Volver al Panel</a>
     <div id="alertContainer"></div>
     <div id="usersContainer">
       <div class="loading">Cargando usuarios...</div>
     </div>
   </div>
-
-  <!-- Modal Crear Usuario -->
-  <div id="createUserModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Crear Nuevo Usuario</h2>
-        <button class="close-modal" onclick="closeCreateModal()">×</button>
-      </div>
-      <div class="form-group">
-        <label for="newEmail">Correo Institucional</label>
-        <input type="email" id="newEmail" placeholder="usuario@icap.gob.ve" required>
-      </div>
-      <div class="form-group">
-        <label for="newPassword">Contraseña</label>
-        <input type="password" id="newPassword" placeholder="••••••••" required minlength="6">
-      </div>
-      <div class="form-group">
-        <label for="newEstado">Estado</label>
-        <select id="newEstado" required>
-          <option value="">-- Seleccione --</option>
-          <option value="Amazonas">Amazonas</option>
-          <option value="Anzoátegui">Anzoátegui</option>
-          <option value="Apure">Apure</option>
-          <option value="Aragua">Aragua</option>
-          <option value="Barinas">Barinas</option>
-          <option value="Bolívar">Bolívar</option>
-          <option value="Carabobo">Carabobo</option>
-          <option value="Cojedes">Cojedes</option>
-          <option value="Delta Amacuro">Delta Amacuro</option>
-          <option value="Falcón">Falcón</option>
-          <option value="Guárico">Guárico</option>
-          <option value="Lara">Lara</option>
-          <option value="Mérida">Mérida</option>
-          <option value="Miranda">Miranda</option>
-          <option value="Monagas">Monagas</option>
-          <option value="Nueva Esparta">Nueva Esparta</option>
-          <option value="Portuguesa">Portuguesa</option>
-          <option value="Sucre">Sucre</option>
-          <option value="Táchira">Táchira</option>
-          <option value="Trujillo">Trujillo</option>
-          <option value="La Guaira">La Guaira</option>
-          <option value="Yaracuy">Yaracuy</option>
-          <option value="Zulia">Zulia</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="newRol">Rol</label>
-        <select id="newRol">
-          <option value="usuario">Usuario</option>
-          <option value="admin">Administrador</option>
-        </select>
-      </div>
-      <button class="btn-submit" onclick="createNewUser()">Crear Usuario</button>
-    </div>
-  </div>
-
   <script>
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
@@ -243,14 +99,14 @@
     ];
 
     async function checkAdminAccess() {
-      const { data: { session } } = await supabase.auth.getSession(); // ✅ CORREGIDO
+      const {  { session } } = await supabase.auth.getSession(); // ✅ CORREGIDO
       if (!session) {
         alert('Acceso restringido.');
         window.location.href = 'index.html';
         return false;
       }
 
-      const { data: adminData, error } = await supabase
+      const {  adminData, error } = await supabase
         .from('usuarios_estados')
         .select('rol')
         .eq('user_id', session.user.id)
@@ -271,7 +127,7 @@
     }
 
     async function loadUsers() {
-      const { data: users, error: usersError } = await supabase.rpc('get_all_users'); // ✅ CORREGIDO
+      const {  users, error: usersError } = await supabase.rpc('get_all_users'); // ✅ CORREGIDO
       if (usersError) {
         console.error('Error al cargar usuarios:', usersError);
         document.getElementById('usersContainer').innerHTML = '<div class="alert alert-error">Error al cargar usuarios.</div>';
@@ -321,7 +177,6 @@
             </td>
             <td>
               <button class="save-btn" onclick="saveUserConfig('${user.id}')">Guardar</button>
-              <button class="delete-btn" onclick="deleteUser('${user.id}', '${user.email}')">🗑️ Eliminar</button>
             </td>
           </tr>`;
       });
@@ -349,101 +204,11 @@
       }
     }
 
-    async function deleteUser(userId, email) {
-      if (!confirm(`¿Deshabilitar al usuario ${email}? Sus expedientes permanecerán intactos.`)) return;
-
-      try {
-        const { error } = await supabase.rpc('delete_user_soft', { target_user_id: userId });
-        if (error) throw error;
-        showAlert('Usuario deshabilitado.', 'success');
-        loadUsers();
-      } catch (err) {
-        console.error('Error al eliminar:', err);
-        showAlert('Error: ' + (err.message || 'No autorizado.'), 'error');
-      }
-    }
-
-    // === CREAR USUARIO ===
-    function openCreateModal() {
-      document.getElementById('createUserModal').style.display = 'block';
-    }
-
-    function closeCreateModal() {
-      document.getElementById('createUserModal').style.display = 'none';
-    }
-
-    function validateEmail(email) {
-      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return regex.test(email);
-    }
-
-    async function createNewUser() {
-      const email = document.getElementById('newEmail').value.trim();
-      const password = document.getElementById('newPassword').value;
-      const estado = document.getElementById('newEstado').value;
-      const rol = document.getElementById('newRol').value;
-
-      if (!email || !password || !estado) {
-        showAlert('Complete todos los campos obligatorios.', 'error');
-        return;
-      }
-
-      if (password.length < 6) {
-        showAlert('La contraseña debe tener al menos 6 caracteres.', 'error');
-        return;
-      }
-
-      if (!validateEmail(email)) {
-        showAlert('Correo inválido. Use un correo institucional (ej: usuario@icap.gob.ve).', 'error');
-        return;
-      }
-
-      try {
-        // ✅ CORREGIDO: sintaxis válida
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-             { nombre: 'Nuevo Usuario' }
-          }
-        });
-
-        if (error) throw error;
-
-        const { error: insertError } = await supabase
-          .from('usuarios_estados')
-          .insert([{ user_id: data.user.id, estado, rol }]);
-
-        if (insertError) throw insertError;
-
-        showAlert('✅ Usuario creado correctamente.', 'success');
-        closeCreateModal();
-        loadUsers();
-
-        // Limpiar formulario
-        document.getElementById('newEmail').value = '';
-        document.getElementById('newPassword').value = '';
-        document.getElementById('newEstado').value = '';
-        document.getElementById('newRol').value = 'usuario';
-
-      } catch (err) {
-        console.error('Error al crear usuario:', err);
-        showAlert('❌ Error: ' + (err.message || 'No se pudo crear el usuario.'), 'error');
-      }
-    }
-
     function showAlert(message, type) {
       const container = document.getElementById('alertContainer');
       container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
       setTimeout(() => container.innerHTML = '', 3000);
     }
-
-    window.onclick = function(event) {
-      const modal = document.getElementById('createUserModal');
-      if (event.target === modal) {
-        closeCreateModal();
-      }
-    };
 
     (async () => {
       const hasAccess = await checkAdminAccess();
