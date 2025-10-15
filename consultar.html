@@ -178,6 +178,9 @@
       border-bottom: 1px solid #eee;
       cursor: pointer;
       transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
     .results-list li:last-child {
       border-bottom: none;
@@ -194,6 +197,46 @@
       font-size: 14px;
       color: #555;
       margin-top: 4px;
+    }
+    .result-photo-mini {
+      width: 50px;
+      height: 50px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      background: #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .result-photo-mini img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Paginación */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .page-btn {
+      background-color: #f0f0f0;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .page-btn.active {
+      background-color: #722F37;
+      color: white;
+    }
+    .page-btn:hover {
+      background-color: #ddd;
     }
 
     /* Modal de zoom */
@@ -267,6 +310,10 @@
       if (e.key === 'Enter') searchExpedientes();
     });
 
+    let allResults = [];
+    let currentPage = 1;
+    const resultsPerPage = 15;
+
     async function searchExpedientes() {
       const query = document.getElementById('searchInput').value.trim();
       const resultContainer = document.getElementById('resultContainer');
@@ -288,12 +335,15 @@
 
         if (error) throw error;
 
-        if (!data || data.length === 0) {
+        allResults = data || [];
+        currentPage = 1;
+
+        if (allResults.length === 0) {
           resultContainer.innerHTML = '<div class="no-result">No se encontraron expedientes.</div>';
-        } else if (data.length === 1) {
-          displayResult(data[0]);
+        } else if (allResults.length === 1) {
+          displayResult(allResults[0]);
         } else {
-          displayResultsList(data);
+          displayResultsList();
         }
       } catch (err) {
         console.error(err);
@@ -301,18 +351,47 @@
       }
     }
 
-    function displayResultsList(results) {
+    function displayResultsList() {
+      const startIndex = (currentPage - 1) * resultsPerPage;
+      const endIndex = startIndex + resultsPerPage;
+      const currentResults = allResults.slice(startIndex, endIndex);
+
       let listHTML = `<div class="results-list"><ul>`;
-      results.forEach(exp => {
+      currentResults.forEach(exp => {
+        const hasPhoto = exp.foto_url;
+        const photoHtml = hasPhoto 
+          ? `<div class="result-photo-mini" onclick="openZoom('${exp.foto_url}')"><img src="${exp.foto_url}" alt="Foto"></div>`
+          : `<div class="result-photo-mini"><span style="color:#999;font-size:18px;">📷</span></div>`;
+
         listHTML += `
           <li onclick="loadExpedienteById(${exp.id})">
-            <div class="result-name">${exp.nombre} ${exp.apellido}</div>
-            <div class="result-meta">Cédula: ${exp.cedula} | Expediente: ${exp.expediente_numero || '—'}</div>
+            ${photoHtml}
+            <div>
+              <div class="result-name">${exp.nombre} ${exp.apellido}</div>
+              <div class="result-meta">Cédula: ${exp.cedula} | Expediente: ${exp.expediente_numero || '—'}</div>
+            </div>
           </li>
         `;
       });
       listHTML += `</ul></div>`;
-      document.getElementById('resultContainer').innerHTML = listHTML;
+
+      // Paginación
+      const totalPages = Math.ceil(allResults.length / resultsPerPage);
+      let paginationHTML = '';
+      if (totalPages > 1) {
+        paginationHTML = `<div class="pagination">`;
+        for (let i = 1; i <= totalPages; i++) {
+          paginationHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+        }
+        paginationHTML += `</div>`;
+      }
+
+      document.getElementById('resultContainer').innerHTML = listHTML + paginationHTML;
+    }
+
+    function changePage(page) {
+      currentPage = page;
+      displayResultsList();
     }
 
     async function loadExpedienteById(id) {
