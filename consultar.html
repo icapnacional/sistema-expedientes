@@ -60,7 +60,7 @@
       font-weight: 600;
       cursor: pointer;
     }
-    .result-card {
+    .result-card, .results-list {
       background: #f9f9f9;
       border-radius: 12px;
       padding: 20px;
@@ -168,6 +168,34 @@
       color: #722F37;
     }
 
+    /* Lista de resultados múltiples */
+    .results-list ul {
+      list-style: none;
+      padding: 0;
+    }
+    .results-list li {
+      padding: 14px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .results-list li:last-child {
+      border-bottom: none;
+    }
+    .results-list li:hover {
+      background: #fff5f5;
+    }
+    .result-name {
+      font-weight: 600;
+      font-size: 16px;
+      color: #2d2d2d;
+    }
+    .result-meta {
+      font-size: 14px;
+      color: #555;
+      margin-top: 4px;
+    }
+
     /* Modal de zoom */
     .modal {
       display: none;
@@ -222,7 +250,7 @@
     />
     <h1>Consultar Expediente</h1>
     <div class="search-box">
-      <input type="text" id="searchCedula" placeholder="Ingrese la cédula de identidad (Ej: V-12345678)">
+      <input type="text" id="searchInput" placeholder="Cédula, nombre o apellido (Ej: V-12345678 o José)">
       <button id="btnSearch">Buscar</button>
     </div>
     <div id="resultContainer"></div>
@@ -234,34 +262,73 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    document.getElementById('btnSearch').addEventListener('click', searchExpediente);
-    document.getElementById('searchCedula').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') searchExpediente();
+    document.getElementById('btnSearch').addEventListener('click', searchExpedientes);
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') searchExpedientes();
     });
 
-    async function searchExpediente() {
-      const cedula = document.getElementById('searchCedula').value.trim();
+    async function searchExpedientes() {
+      const query = document.getElementById('searchInput').value.trim();
       const resultContainer = document.getElementById('resultContainer');
-      if (!cedula) {
-        alert('Por favor, ingrese una cédula de identidad.');
+      if (!query) {
+        alert('Por favor, ingrese un término de búsqueda.');
         return;
       }
       resultContainer.innerHTML = '<div class="loading">Buscando...</div>';
       try {
+        // Escapar caracteres especiales para ilike
+        const escapedQuery = query.replace(/[%_]/g, '\\$&');
         const { data, error } = await supabase
           .from('expedientes')
           .select('*')
-          .eq('cedula', cedula)
-          .maybeSingle();
+          .or(
+            `cedula.ilike.%${escapedQuery}%,nombre.ilike.%${escapedQuery}%,apellido.ilike.%${escapedQuery}%`,
+            { quoted: true }
+          );
+
         if (error) throw error;
-        if (data) {
-          displayResult(data);
+
+        if (!data || data.length === 0) {
+          resultContainer.innerHTML = '<div class="no-result">No se encontraron expedientes.</div>';
+        } else if (data.length === 1) {
+          displayResult(data[0]);
         } else {
-          resultContainer.innerHTML = '<div class="no-result">No se encontró ningún expediente con esa cédula.</div>';
+          displayResultsList(data);
         }
       } catch (err) {
         console.error(err);
-        resultContainer.innerHTML = '<div class="no-result">Error al buscar el expediente. Intente nuevamente.</div>';
+        resultContainer.innerHTML = '<div class="no-result">Error al buscar. Intente nuevamente.</div>';
+      }
+    }
+
+    function displayResultsList(results) {
+      let listHTML = `<div class="results-list"><ul>`;
+      results.forEach(exp => {
+        listHTML += `
+          <li onclick="loadExpedienteById(${exp.id})">
+            <div class="result-name">${exp.nombre} ${exp.apellido}</div>
+            <div class="result-meta">Cédula: ${exp.cedula} | Expediente: ${exp.expediente_numero || '—'}</div>
+          </li>
+        `;
+      });
+      listHTML += `</ul></div>`;
+      document.getElementById('resultContainer').innerHTML = listHTML;
+    }
+
+    async function loadExpedienteById(id) {
+      const resultContainer = document.getElementById('resultContainer');
+      resultContainer.innerHTML = '<div class="loading">Cargando...</div>';
+      try {
+        const { data, error } = await supabase
+          .from('expedientes')
+          .select('*')
+          .eq('id', id)
+          .single();
+        if (error) throw error;
+        displayResult(data);
+      } catch (err) {
+        console.error(err);
+        resultContainer.innerHTML = '<div class="no-result">Error al cargar el expediente.</div>';
       }
     }
 
@@ -334,27 +401,28 @@
       document.getElementById('resultContainer').innerHTML = resultHTML;
     }
 
-    // ✅ Función para descargar la imagen directamente (sin abrir)
+    // ✅ Descarga directa SIN abrir la imagen
     async function downloadImage(url, cedula) {
       try {
         const response = await fetch(url);
         if (!response.ok) throw new Error('Error al descargar la imagen');
         const blob = await response.blob();
-        const filename = `foto_${cedula}.${url.split('.').pop().split('?')[0]}`; // Obtener extensión
+        const ext = url.split('.').pop().split('?')[0];
+        const filename = `foto_${cedula}.${ext}`;
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = filename;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(link.href); // Liberar memoria
+        URL.revokeObjectURL(link.href);
       } catch (error) {
         console.error('Error al descargar:', error);
-        alert('❌ Error al descargar la foto: ' + error.message);
+        alert('❌ Error al descargar la foto.');
       }
     }
 
-    // ✅ Función para abrir la foto en zoom
+    // ✅ Zoom al hacer clic en la foto
     function openZoom(url) {
       const modal = document.createElement('div');
       modal.className = 'modal';
