@@ -351,7 +351,7 @@
       }
     }
 
-   function displayResultsList() {
+  function displayResultsList() {
   const startIndex = (currentPage - 1) * resultsPerPage;
   const endIndex = startIndex + resultsPerPage;
   const currentResults = allResults.slice(startIndex, endIndex);
@@ -363,7 +363,7 @@
       ? `<div class="result-photo-mini" onclick="openZoom('${exp.foto_url}')"><img src="${exp.foto_url}" alt="Foto"></div>`
       : `<div class="result-photo-mini"><span style="color:#999;font-size:18px;">📷</span></div>`;
 
-    // ✅ Formatear el tipo de expediente (mejor visual)
+    // ✅ Formatear el tipo de expediente
     const tipoExpediente = exp.tipo_expediente 
       ? exp.tipo_expediente.charAt(0).toUpperCase() + exp.tipo_expediente.slice(1)
       : '—';
@@ -383,6 +383,20 @@
     `;
   });
   listHTML += `</ul></div>`;
+
+  // Paginación
+  const totalPages = Math.ceil(allResults.length / resultsPerPage);
+  let paginationHTML = '';
+  if (totalPages > 1) {
+    paginationHTML = `<div class="pagination">`;
+    for (let i = 1; i <= totalPages; i++) {
+      paginationHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+    }
+    paginationHTML += `</div>`;
+  }
+
+  document.getElementById('resultContainer').innerHTML = listHTML + paginationHTML;
+}
 
   // Paginación
   const totalPages = Math.ceil(allResults.length / resultsPerPage);
