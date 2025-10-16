@@ -351,29 +351,52 @@
       }
     }
 
-    function displayResultsList() {
-      const startIndex = (currentPage - 1) * resultsPerPage;
-      const endIndex = startIndex + resultsPerPage;
-      const currentResults = allResults.slice(startIndex, endIndex);
+   function displayResultsList() {
+  const startIndex = (currentPage - 1) * resultsPerPage;
+  const endIndex = startIndex + resultsPerPage;
+  const currentResults = allResults.slice(startIndex, endIndex);
 
-      let listHTML = `<div class="results-list"><ul>`;
-      currentResults.forEach(exp => {
-        const hasPhoto = exp.foto_url;
-        const photoHtml = hasPhoto 
-          ? `<div class="result-photo-mini" onclick="openZoom('${exp.foto_url}')"><img src="${exp.foto_url}" alt="Foto"></div>`
-          : `<div class="result-photo-mini"><span style="color:#999;font-size:18px;">📷</span></div>`;
+  let listHTML = `<div class="results-list"><ul>`;
+  currentResults.forEach(exp => {
+    const hasPhoto = exp.foto_url;
+    const photoHtml = hasPhoto 
+      ? `<div class="result-photo-mini" onclick="openZoom('${exp.foto_url}')"><img src="${exp.foto_url}" alt="Foto"></div>`
+      : `<div class="result-photo-mini"><span style="color:#999;font-size:18px;">📷</span></div>`;
 
-        listHTML += `
-          <li onclick="loadExpedienteById(${exp.id})">
-            ${photoHtml}
-            <div>
-              <div class="result-name">${exp.nombre} ${exp.apellido}</div>
-              <div class="result-meta">Cédula: ${exp.cedula} | Expediente: ${exp.expediente_numero || '—'}</div>
-            </div>
-          </li>
-        `;
-      });
-      listHTML += `</ul></div>`;
+    // ✅ Formatear el tipo de expediente (mejor visual)
+    const tipoExpediente = exp.tipo_expediente 
+      ? exp.tipo_expediente.charAt(0).toUpperCase() + exp.tipo_expediente.slice(1)
+      : '—';
+
+    listHTML += `
+      <li onclick="loadExpedienteById(${exp.id})">
+        ${photoHtml}
+        <div>
+          <div class="result-name">${exp.nombre} ${exp.apellido}</div>
+          <div class="result-meta">
+            Cédula: ${exp.cedula} | 
+            Expediente: ${exp.expediente_numero || '—'} | 
+            Tipo: ${tipoExpediente}
+          </div>
+        </div>
+      </li>
+    `;
+  });
+  listHTML += `</ul></div>`;
+
+  // Paginación
+  const totalPages = Math.ceil(allResults.length / resultsPerPage);
+  let paginationHTML = '';
+  if (totalPages > 1) {
+    paginationHTML = `<div class="pagination">`;
+    for (let i = 1; i <= totalPages; i++) {
+      paginationHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+    }
+    paginationHTML += `</div>`;
+  }
+
+  document.getElementById('resultContainer').innerHTML = listHTML + paginationHTML;
+}
 
       // Paginación
       const totalPages = Math.ceil(allResults.length / resultsPerPage);
