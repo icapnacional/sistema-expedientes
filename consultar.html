@@ -424,12 +424,10 @@
       if (hasPhoto) {
         photoSection = `
           <div class="photo-section">
-            <div class="result-photo" onclick="openZoom('${expediente.foto_url}')">
+            <div class="result-photo" id="photoPreviewContainer">
               <img src="${expediente.foto_url}" alt="Foto">
             </div>
-            <button class="btn-download-photo" onclick="downloadImage('${expediente.foto_url}', '${expediente.cedula}')">
-              📥 Descargar Foto
-            </button>
+            <button class="btn-download-photo" id="btnDownloadPhoto">📥 Descargar Foto</button>
           </div>
         `;
       } else {
@@ -483,13 +481,18 @@
           </div>
         </div>
         <div style="text-align:center; margin:20px 0;">
-          <button class="btn-download-photo" onclick="exportToPDF(${encodeURIComponent(JSON.stringify(expediente))})" style="background-color:#1976D2;">
+          <button class="btn-download-photo" id="btnExportPDF" style="background-color:#1976D2;">
             📄 Exportar a PDF
           </button>
         </div>
         <a href="editar.html?id=${expediente.id}" class="edit-link">✏️ Editar este expediente</a>
       `;
       document.getElementById('resultContainer').innerHTML = resultHTML;
+
+      // ✅ Asignar eventos después de renderizar
+      document.getElementById('photoPreviewContainer').addEventListener('click', () => openZoom(expediente.foto_url));
+      document.getElementById('btnDownloadPhoto').addEventListener('click', () => downloadImage(expediente.foto_url, expediente.cedula));
+      document.getElementById('btnExportPDF').addEventListener('click', () => exportToPDF(expediente));
     }
 
     // ✅ Descarga directa SIN abrir la imagen
@@ -535,9 +538,8 @@
     });
 
     // ✅ Exportar a PDF
-    function exportToPDF(encodedExp) {
+    function exportToPDF(expediente) {
       try {
-        const expediente = JSON.parse(decodeURIComponent(encodedExp));
         const hasPhoto = expediente.foto_url;
         const photoHtml = hasPhoto 
           ? `<img src="${expediente.foto_url}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;">`
