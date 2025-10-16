@@ -293,20 +293,20 @@
         <label for="fechaNac">Fecha de Nacimiento</label>
         <input type="date" id="fechaNac">
       </div>
-      <div class="form-group">
-        <label for="cedula">Cédula de Identidad</label>
-        <input type="text" id="cedula" placeholder="V-12345678">
-      </div>
+     <div class="form-group">
+  <label for="cedula">Cédula de Identidad</label>
+  <input type="text" id="cedula" placeholder="12345678" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" required>
+</div>
       <div class="form-group">
         <label for="sexo">Sexo</label>
         <select id="sexo">
           <option value="">Cargando...</option>
         </select>
       </div>
-      <div class="form-group">
-        <label for="edad">Edad</label>
-        <input type="number" id="edad" min="18" max="100">
-      </div>
+     <div class="form-group">
+  <label for="edad">Edad</label>
+  <input type="number" id="edad" min="18" max="99" maxlength="2" inputmode="numeric" required>
+</div>
       <div class="form-group">
         <label for="jerarquia">Jerarquía</label>
         <select id="jerarquia">
@@ -408,10 +408,10 @@
         <label for="servicioLabora">Servicio donde Labora</label>
         <input type="text" id="servicioLabora">
       </div>
-      <div class="form-group">
-        <label for="expedientePenalAnio">Expediente Penal Año</label>
-        <input type="number" id="expedientePenalAnio" min="1900" max="2099">
-      </div>
+     <div class="form-group">
+  <label for="expedientePenalAnio">Expediente Penal Año</label>
+  <input type="number" id="expedientePenalAnio" min="1900" max="2099" maxlength="4" inputmode="numeric">
+</div>
       <div class="form-group">
         <label for="fechaInicio">Fecha de Inicio</label>
         <input type="date" id="fechaInicio">
@@ -767,79 +767,100 @@
       }
     });
 
-    // Guardar
-    document.querySelector('.btn-save').addEventListener('click', async () => {
-      const nombre = document.getElementById('nombre').value.trim();
-      const apellido = document.getElementById('apellido').value.trim();
-      const cedula = document.getElementById('cedula').value.trim();
-      if (!nombre || !apellido || !cedula) {
-        alert('⚠️ Nombre, Apellido y Cédula son obligatorios.');
-        return;
-      }
+  document.querySelector('.btn-save').addEventListener('click', async () => {
+  const nombre = document.getElementById('nombre').value.trim();
+  const apellido = document.getElementById('apellido').value.trim();
+  const cedula = document.getElementById('cedula').value.trim();
+  const edad = document.getElementById('edad').value.trim();
+  const expedientePenalAnio = document.getElementById('expedientePenalAnio').value.trim();
 
-      const fotoFile = document.getElementById('fotoInput').files[0];
-      let fotoUrl = null;
+  // ✅ Validación: Cédula
+  if (!cedula || !/^\d{8}$/.test(cedula)) {
+    alert('⚠️ La cédula debe tener exactamente 8 dígitos numéricos.');
+    document.getElementById('cedula').focus();
+    return;
+  }
 
-      try {
-        if (fotoFile) {
-          const fileExt = fotoFile.name.split('.').pop();
-          const fileName = `expedientes/${cedula}-${Date.now()}.${fileExt}`;
-          const { error: uploadError } = await supabase.storage
-            .from('fotos-expedientes')
-            .upload(fileName, fotoFile, { upsert: true });
-          if (uploadError) throw uploadError;
-          const { data } = supabase.storage
-            .from('fotos-expedientes')
-            .getPublicUrl(fileName);
-          fotoUrl = data.publicUrl;
-        }
+  // ✅ Validación: Edad
+  const edadNum = parseInt(edad);
+  if (!edad || isNaN(edadNum) || edadNum < 18 || edadNum > 99) {
+    alert('⚠️ La edad debe ser un número entre 18 y 99.');
+    document.getElementById('edad').focus();
+    return;
+  }
 
-        const { error: insertError } = await supabase
-          .from('expedientes')
-          .insert([{
-            nombre,
-            apellido,
-            cedula,
-            fecha_nacimiento: document.getElementById('fechaNac').value || null,
-            sexo: document.getElementById('sexo').value || null,
-            edad: parseInt(document.getElementById('edad').value) || null,
-            jerarquia: document.getElementById('jerarquia').value || null,
-            estatus_personal: document.getElementById('estatusPersonal').value || null,
-            telefono: document.getElementById('telefono').value || null,
-            correo: document.getElementById('correo').value || null,
-            direccion: document.getElementById('direccion').value || null,
-            foto_url: fotoUrl,
-            tipo_expediente: document.getElementById('tipoExpediente').value || null,
-            icap_oficina: document.getElementById('icapOficina').value || null,
-            func_investigado: document.getElementById('funcInvestigado').value || null,
-            condicion_func: document.getElementById('condicionFunc').value || null,
-            denunciante: document.getElementById('denunciante').value || null,
-            origen_falta: document.getElementById('origenFalta').value || null,
-            tipo_falta: document.getElementById('tipoFalta').value || null,
-            falta_art: document.getElementById('faltaArt').value || null,
-            estatus_expediente: document.getElementById('estatusExpediente').value || null,
-            decision: document.getElementById('decision').value || null,
-            resena: document.getElementById('resena').value || null,
-            servicio_labora: document.getElementById('servicioLabora').value || null,
-            expediente_penal_anio: parseInt(document.getElementById('expedientePenalAnio').value) || null,
-            fecha_inicio: document.getElementById('fechaInicio').value || null,
-            expediente_numero: document.getElementById('expedienteNumero').value || null,
-            causa: document.getElementById('causa').value || null,
-            func_detenido: document.getElementById('funcDetenido').value === 'si',
-            sustanciador: document.getElementById('sustanciador').value || null,
-            registrado_por: document.getElementById('registradoPor').value || null
-          }]);
+  // ✅ Validación: Año
+  if (expedientePenalAnio && (!/^\d{4}$/.test(expedientePenalAnio) || parseInt(expedientePenalAnio) < 1900 || parseInt(expedientePenalAnio) > 2099)) {
+    alert('⚠️ El año debe tener 4 dígitos y estar entre 1900 y 2099.');
+    document.getElementById('expedientePenalAnio').focus();
+    return;
+  }
 
-        if (insertError) throw insertError;
-        alert('✅ Expediente guardado correctamente.');
-        window.location.href = 'index.html';
+  // ✅ Resto de validaciones
+  if (!nombre || !apellido) {
+    alert('⚠️ Nombre y Apellido son obligatorios.');
+    return;
+  }
 
-      } catch (error) {
-        console.error('Error:', error);
-        alert('❌ Error al guardar: ' + (error.message || 'Intente nuevamente.'));
-      }
-    });
-
+  // ✅ Continuar con el guardado...
+  const fotoFile = document.getElementById('fotoInput').files[0];
+  let fotoUrl = null;
+  try {
+    if (fotoFile) {
+      const fileExt = fotoFile.name.split('.').pop();
+      const fileName = `expedientes/${cedula}-${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('fotos-expedientes')
+        .upload(fileName, fotoFile, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage
+        .from('fotos-expedientes')
+        .getPublicUrl(fileName);
+      fotoUrl = data.publicUrl;
+    }
+    const { error: insertError } = await supabase
+      .from('expedientes')
+      .insert([{
+        nombre,
+        apellido,
+        cedula,
+        fecha_nacimiento: document.getElementById('fechaNac').value || null,
+        sexo: document.getElementById('sexo').value || null,
+        edad: edadNum,
+        jerarquia: document.getElementById('jerarquia').value || null,
+        estatus_personal: document.getElementById('estatusPersonal').value || null,
+        telefono: document.getElementById('telefono').value || null,
+        correo: document.getElementById('correo').value || null,
+        direccion: document.getElementById('direccion').value || null,
+        foto_url: fotoUrl,
+        tipo_expediente: document.getElementById('tipoExpediente').value || null,
+        icap_oficina: document.getElementById('icapOficina').value || null,
+        func_investigado: document.getElementById('funcInvestigado').value || null,
+        condicion_func: document.getElementById('condicionFunc').value || null,
+        denunciante: document.getElementById('denunciante').value || null,
+        origen_falta: document.getElementById('origenFalta').value || null,
+        tipo_falta: document.getElementById('tipoFalta').value || null,
+        falta_art: document.getElementById('faltaArt').value || null,
+        estatus_expediente: document.getElementById('estatusExpediente').value || null,
+        decision: document.getElementById('decision').value || null,
+        resena: document.getElementById('resena').value || null,
+        servicio_labora: document.getElementById('servicioLabora').value || null,
+        expediente_penal_anio: expedientePenalAnio ? parseInt(expedientePenalAnio) : null,
+        fecha_inicio: document.getElementById('fechaInicio').value || null,
+        expediente_numero: document.getElementById('expedienteNumero').value || null,
+        causa: document.getElementById('causa').value || null,
+        func_detenido: document.getElementById('funcDetenido').value === 'si',
+        sustanciador: document.getElementById('sustanciador').value || null,
+        registrado_por: document.getElementById('registradoPor').value || null
+      }]);
+    if (insertError) throw insertError;
+    alert('✅ Expediente guardado correctamente.');
+    window.location.href = 'index.html';
+  } catch (error) {
+    console.error('Error:', error);
+    alert('❌ Error al guardar: ' + (error.message || 'Intente nuevamente.'));
+  }
+});
     // Iniciar
     init();
   </script>
