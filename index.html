@@ -240,6 +240,7 @@
   let currentUser = null;
 
   async function checkSession() {
+    // ✅ CORREGIDO: sintaxis válida
     const {  { session } } = await supabase.auth.getSession();
     if (!session) {
       showLogin();
@@ -257,18 +258,14 @@
 
     if (error && error.code !== 'PGRST116') {
       console.error('Error al cargar perfil:', error);
-      alertDiv.textContent = 'Error interno. Contacte al administrador.';
-      alertDiv.className = 'alert alert-error';
-      alertDiv.style.display = 'block';
+      showError('Error interno. Contacte al administrador.');
       showLogin();
       return;
     }
 
     if (!perfil) {
-      // ❌ Sin perfil → acceso denegado (según tu preferencia: no auto-creación)
-      alertDiv.textContent = 'Acceso denegado: usuario no autorizado.';
-      alertDiv.className = 'alert alert-error';
-      alertDiv.style.display = 'block';
+      // ❌ Sin perfil → denegar acceso (no hay autoregistro)
+      showError('Acceso denegado: usuario no autorizado.');
       await supabase.auth.signOut();
       showLogin();
       return;
@@ -282,6 +279,12 @@
     showPanel(session.user.email, estadosTxt, perfil.rol_id);
   }
 
+  function showError(msg) {
+    alertDiv.textContent = msg;
+    alertDiv.className = 'alert alert-error';
+    alertDiv.style.display = 'block';
+  }
+
   function showLogin() {
     loginView.classList.remove('hidden');
     panelView.classList.add('hidden');
@@ -291,7 +294,7 @@
     userEmailSpan.textContent = email;
     userEstadoSpan.textContent = estado;
 
-    // 👑 Botón Admin: visible siempre, pero funcionalidad restringida
+    // 👑 Botón Admin: visible SIEMPRE, funcional solo para rol_id = 1
     adminBtn.onclick = () => {
       if (rol_id === 1) {
         window.location.href = 'admin.html';
@@ -315,9 +318,7 @@
       if (error) throw error;
       checkSession();
     } catch (err) {
-      alertDiv.textContent = err.message || 'Credenciales inválidas.';
-      alertDiv.className = 'alert alert-error';
-      alertDiv.style.display = 'block';
+      showError(err.message || 'Credenciales inválidas.');
     }
   });
 
@@ -327,7 +328,7 @@
     showLogin();
   });
 
-  // ✅ Iniciar
+  // ✅ Iniciar verificación
   checkSession();
 </script>
 </body>
