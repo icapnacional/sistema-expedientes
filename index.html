@@ -163,6 +163,10 @@
     .hidden {
       display: none !important;
     }
+    /* ✅ Resaltar admins */
+    .panel-card.admin-highlight {
+      border-left: 4px solid #722F37;
+    }
   </style>
 </head>
 <body>
@@ -206,7 +210,6 @@
       © Desarrollado por OTIC ZULIA — Información: 0424-6962840 / 0412-2714179
     </p>
   </div>
-
   <!-- Panel -->
   <div id="panelView" class="panel-card hidden">
     <img 
@@ -217,7 +220,8 @@
     <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
     <div class="user-info">
       <strong>Usuario:</strong> <span id="userEmail">—</span><br>
-      <strong>Estado(s):</strong> <span id="userEstado">—</span>
+      <strong>Estado(s):</strong> <span id="userEstado">—</span><br>
+      <strong>Rol:</strong> <span id="userRol">—</span>
     </div>
     <div class="panel-buttons">
       <button class="panel-btn" onclick="window.location.href='rh.html'">👥 Recursos Humanos</button>
@@ -236,29 +240,25 @@
   const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
   const loginView = document.getElementById('loginView');
   const panelView = document.getElementById('panelView');
   const userEmailSpan = document.getElementById('userEmail');
   const userEstadoSpan = document.getElementById('userEstado');
+  const userRolSpan = document.getElementById('userRol');
   const alertDiv = document.getElementById('alertMessage');
   const loginForm = document.getElementById('loginForm');
   const logoutBtn = document.getElementById('logoutBtn');
   const adminBtn = document.getElementById('adminBtn');
-
   let currentUser = null;
 
   async function checkSession() {
-    // ✅ CORREGIDO: sintaxis válida (línea crítica — antes causaba el error)
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       showLogin();
       return;
     }
-
     currentUser = session.user;
 
-    // 🔍 Perfil en `usuarios_perfil`
     const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id, estados_asignados')
@@ -273,7 +273,6 @@
     }
 
     if (!perfil) {
-      // ❌ Sin perfil → acceso denegado (según preferencia: no autoregistro)
       showError('Acceso denegado: usuario no autorizado.');
       await supabase.auth.signOut();
       showLogin();
@@ -283,7 +282,6 @@
     const estadosTxt = perfil.estados_asignados?.length
       ? perfil.estados_asignados.join(', ')
       : '—';
-
     showPanel(session.user.email, estadosTxt, perfil.rol_id);
   }
 
@@ -296,13 +294,18 @@
   function showLogin() {
     loginView.classList.remove('hidden');
     panelView.classList.add('hidden');
+    panelView.classList.remove('admin-highlight');
   }
 
   function showPanel(email, estado, rol_id) {
     userEmailSpan.textContent = email;
     userEstadoSpan.textContent = estado;
 
-    // 👑 Admin: visible siempre, funcional solo si rol_id === 1
+    // ✅ Mostrar rol legible
+    const rolTexto = rol_id === 1 ? 'Administrador' : 'Usuario';
+    userRolSpan.textContent = rolTexto;
+
+    // 👑 Acción del botón Admin
     adminBtn.onclick = () => {
       if (rol_id === 1) {
         window.location.href = 'admin.html';
@@ -310,6 +313,9 @@
         alert('🔒 Acceso restringido: Solo administradores.');
       }
     };
+
+    // 🎨 Resaltar visualmente si es admin
+    panelView.classList.toggle('admin-highlight', rol_id === 1);
 
     loginView.classList.add('hidden');
     panelView.classList.remove('hidden');
@@ -320,7 +326,6 @@
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     alertDiv.style.display = 'none';
-
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
@@ -336,7 +341,7 @@
     showLogin();
   });
 
-  // ✅ Iniciar
+  // ✅ Iniciar verificación
   checkSession();
 </script>
 </body>
