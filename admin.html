@@ -215,13 +215,14 @@
     }
 
     async function checkAdminAccess() {
-      // ✅ EXACTAMENTE como en index.html (línea 264) — sin errores de sintaxis
-      const {  { session } } = await supabase.auth.getSession();
-      if (!session) {
+      // ✅ CORREGIDO: Sintaxis compatible con todos los navegadores
+      const { data } = await supabase.auth.getSession();
+      if (!data || !data.session) {
         window.location.href = 'index.html';
         return false;
       }
 
+      const session = data.session;
       currentUserId = session.user.id;
 
       const {  perfil, error } = await supabase
@@ -249,9 +250,10 @@
       usersTable.classList.add('hidden');
 
       try {
-        // ✅ Sesión fresca — como en index.html
-        const {  { session } } = await supabase.auth.getSession();
-        if (!session) throw new Error('Sesión expirada.');
+        // ✅ Sesión fresca — misma lógica compatible
+        const { data } = await supabase.auth.getSession();
+        if (!data || !data.session) throw new Error('Sesión expirada.');
+        const session = data.session;
 
         const response = await fetch(`${SUPABASE_URL}/functions/v1/list-users`, {
           method: 'GET',
@@ -329,9 +331,10 @@
       createBtn.textContent = 'Creando…';
 
       try {
-        // ✅ Sesión fresca — como en index.html
-        const {  { session } } = await supabase.auth.getSession();
-        if (!session) throw new Error('Sesión expirada.');
+        // ✅ Sesión fresca — misma lógica compatible
+        const { data } = await supabase.auth.getSession();
+        if (!data || !data.session) throw new Error('Sesión expirada.');
+        const session = data.session;
 
         const response = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
           method: 'POST',
@@ -366,9 +369,10 @@
       if (!confirm(`¿Eliminar permanentemente a ${email}? Esta acción no se puede deshacer.`)) return;
 
       try {
-        // ✅ Sesión fresca
-        const {  { session } } = await supabase.auth.getSession();
-        if (!session) throw new Error('Sesión expirada.');
+        // ✅ Sesión fresca — misma lógica compatible
+        const { data } = await supabase.auth.getSession();
+        if (!data || !data.session) throw new Error('Sesión expirada.');
+        const session = data.session;
 
         const response = await fetch(`${SUPABASE_URL}/functions/v1/delete-user`, {
           method: 'POST',
@@ -395,7 +399,7 @@
       }
     };
 
-    // ✅ Iniciar — igual que index.html
+    // ✅ Iniciar
     checkAdminAccess();
   </script>
 </body>
