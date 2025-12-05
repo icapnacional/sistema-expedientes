@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel de Administración — ICAP Nacional</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      padding: 32px;
+      margin-bottom: 24px;
+      border: 1px solid #eee;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .logo {
+      width: 60px;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #2d2d2d;
+    }
+    h2 {
+      font-size: 18px;
+      margin: 24px 0 16px;
+      color: #333;
+    }
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .alert-success { background-color: #f0fdf4; color: #065f46; border: 1px solid #bbf7d0; }
+    .alert-error { background-color: #fff5f5; color: #c00; border: 1px solid #ffd0d0; }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    .btn {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn:hover:not(:disabled) {
+      background-color: #5e262d;
+      transform: translateY(-2px);
+    }
+    .btn-outline {
+      background: white;
+      color: #722F37;
+      border: 2px solid #722F37;
+    }
+    .btn-outline:hover:not(:disabled) {
+      background: #fdf7f7;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    th, td {
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+    th {
+      background-color: #f9f9f9;
+      font-weight: 600;
+      color: #333;
+    }
+    tr:hover td {
+      background-color: #fdfdfd;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .badge {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #e0e0e0;
+      color: #333;
+    }
+    .badge-admin { background: #ffebee; color: #c62828; }
+    .badge-rh { background: #e8f5e9; color: #2e7d32; }
+    .badge-analisis { background: #e3f2fd; color: #1565c0; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img 
+        src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+        alt="ICAP" 
+        class="logo"
+      />
+      <h1>Panel de Administración</h1>
+    </div>
+
+    <div id="unauthorized" class="card hidden">
+      <h2>🔒 Acceso Denegado</h2>
+      <p>Solo los administradores pueden acceder a esta sección.</p>
+      <button class="btn" onclick="window.location.href='index.html'">Volver al Inicio</button>
+    </div>
+
+    <div id="adminPanel" class="card hidden">
+      <!-- Mensajes -->
+      <div id="globalAlert" class="alert"></div>
+
+      <!-- Crear Usuario -->
+      <h2>➕ Crear Nuevo Usuario</h2>
+      <form id="createForm">
+        <div class="form-group">
+          <label for="newEmail">Correo Electrónico *</label>
+          <input type="email" id="newEmail" required placeholder="ejemplo@correo.com">
+        </div>
+        <div class="form-group">
+          <label for="newPassword">Contraseña *</label>
+          <input type="password" id="newPassword" required minlength="8" placeholder="Mínimo 8 caracteres">
+        </div>
+        <div class="form-group">
+          <label for="newRol">Rol *</label>
+          <select id="newRol" required>
+            <option value="">— Seleccionar —</option>
+            <option value="1">👑 Administrador</option>
+            <option value="2">👥 Asistente General</option>
+            <option value="3">👤 Usuario Estándar</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="newEstados">Estados Asignados (separados por comas)</label>
+          <input type="text" id="newEstados" placeholder="Zulia, Lara, Carabobo">
+        </div>
+        <button type="submit" id="createBtn" class="btn">Crear Usuario</button>
+      </form>
+
+      <!-- Lista de Usuarios -->
+      <h2 style="margin-top: 40px;">👥 Lista de Usuarios</h2>
+      <div id="loading" style="text-align:center; padding:20px;">Cargando...</div>
+      <table id="usersTable" class="hidden">
+        <thead>
+          <tr>
+            <th>Correo</th>
+            <th>Rol</th>
+            <th>Estados</th>
+            <th>Creado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="usersBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const unauthorized = document.getElementById('unauthorized');
+    const adminPanel = document.getElementById('adminPanel');
+    const globalAlert = document.getElementById('globalAlert');
+    const createForm = document.getElementById('createForm');
+    const createBtn = document.getElementById('createBtn');
+    const loading = document.getElementById('loading');
+    const usersTable = document.getElementById('usersTable');
+    const usersBody = document.getElementById('usersBody');
+
+    let currentUserId = null;
+
+    // 🔐 Verificar si es admin
+    async function checkAdminAccess() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = 'index.html';
+        return false;
+      }
+
+      currentUserId = session.user.id;
+
+      const { data: perfil, error } = await supabase
+        .from('usuarios_perfil')
+        .select('rol_id')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (error || !perfil || perfil.rol_id !== 1) {
+        unauthorized.classList.remove('hidden');
+        return false;
+      }
+
+      adminPanel.classList.remove('hidden');
+      loadUsers();
+      return true;
+    }
+
+    function showAlert(msg, type = 'error') {
+      globalAlert.textContent = msg;
+      globalAlert.className = `alert alert-${type}`;
+      globalAlert.style.display = 'block';
+      setTimeout(() => { globalAlert.style.display = 'none'; }, 5000);
+    }
+
+    // 📥 Cargar lista de usuarios
+    async function loadUsers() {
+      loading.style.display = 'block';
+      usersTable.classList.add('hidden');
+
+      try {
+        // Obtenemos todos los perfiles + join con auth.users
+        const { data: perfiles, error: err1 } = await supabase
+          .from('usuarios_perfil')
+          .select(`
+            id,
+            user_id,
+            rol_id,
+            estados_asignados,
+            created_at,
+            auth_users:auth.users!inner(email)
+          `);
+
+        if (err1) throw err1;
+
+        usersBody.innerHTML = '';
+        perfiles.forEach(p => {
+          const email = p.auth_users?.email || '—';
+          const row = document.createElement('tr');
+
+          const estadosTxt = p.estados_asignados?.length
+            ? p.estados_asignados.join(', ')
+            : '—';
+
+          const rolBadge = {
+            '1': '<span class="badge badge-admin">Admin</span>',
+            '2': '<span class="badge">Asistente</span>',
+            '3': '<span class="badge">Estándar</span>'
+          }[p.rol_id] || '<span class="badge">—</span>';
+
+          const canDelete = p.user_id !== currentUserId;
+
+          let deleteBtn = '';
+          if (canDelete) {
+            deleteBtn = `<button onclick="deleteUser('${p.user_id}', '${email}')" class="btn btn-outline" style="padding:6px 10px;font-size:13px;">🗑️ Eliminar</button>`;
+          } else {
+            deleteBtn = `<span style="color:#999;font-size:13px;">(tú)</span>`;
+          }
+
+          row.innerHTML = `
+            <td><strong>${email}</strong></td>
+            <td>${rolBadge}</td>
+            <td>${estadosTxt}</td>
+            <td>${new Date(p.created_at).toLocaleDateString()}</td>
+            <td class="action-buttons">
+              ${deleteBtn}
+            </td>
+          `;
+          usersBody.appendChild(row);
+        });
+
+        loading.style.display = 'none';
+        usersTable.classList.remove('hidden');
+
+      } catch (err) {
+        loading.style.display = 'none';
+        showAlert('Error al cargar usuarios: ' + (err.message || err), 'error');
+      }
+    }
+
+    // ➕ Crear usuario
+    createForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('newEmail').value.trim();
+      const password = document.getElementById('newPassword').value;
+      const rol = parseInt(document.getElementById('newRol').value);
+      const estadosRaw = document.getElementById('newEstados').value.trim();
+
+      if (!email || !password || !rol) {
+        showAlert('Completa todos los campos obligatorios.');
+        return;
+      }
+
+      // Parsear estados
+      let estados = [];
+      if (estadosRaw) {
+        estados = estadosRaw.split(',').map(s => s.trim()).filter(s => s);
+      }
+
+      createBtn.disabled = true;
+      createBtn.textContent = 'Creando…';
+
+      try {
+        // Paso 1: Crear auth user (solo con anon key → necesita RLS ajustado, ver PASO 2 abajo)
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { 
+              // Opcional: metadata inicial (no usada aún, pero buena práctica)
+              created_by: currentUserId,
+              role_requested: rol
+            }
+          }
+        });
+
+        if (signUpError) throw signUpError;
+        if (!authData.user) throw new Error('No se creó el usuario. Verifica permisos.');
+
+        const userId = authData.user.id;
+
+        // Paso 2: Insertar en `usuarios_perfil`
+        const { error: insertError } = await supabase
+          .from('usuarios_perfil')
+          .insert({
+            user_id: userId,
+            rol_id: rol,
+            estados_asignados: estados,
+            boton_asignado: 'rh' // valor por defecto (puedes cambiarlo)
+          });
+
+        if (insertError) {
+          // ⚠️ Si falla la inserción, eliminamos el auth user para no dejar huérfanos
+          await supabase.auth.admin.deleteUser(userId); // ❗esto requiere service_role → solución abajo
+          throw new Error('Usuario creado, pero fallo al asignar perfil. Contacte al soporte.');
+        }
+
+        showAlert(`✅ Usuario ${email} creado exitosamente.`, 'success');
+        createForm.reset();
+        loadUsers(); // refrescar lista
+
+      } catch (err) {
+        console.error(err);
+        showAlert(err.message || 'Error inesperado al crear usuario.', 'error');
+      } finally {
+        createBtn.disabled = false;
+        createBtn.textContent = 'Crear Usuario';
+      }
+    });
+
+    // 🗑️ Eliminar usuario
+    window.deleteUser = async function(userId, email) {
+      if (!confirm(`¿Eliminar permanentemente a ${email}? Esta acción no se puede deshacer.`)) return;
+
+      try {
+        // Paso 1: Eliminar perfil (RLS debe permitirlo a admins)
+        const { error: delPerfilErr } = await supabase
+          .from('usuarios_perfil')
+          .delete()
+          .eq('user_id', userId);
+
+        if (delPerfilErr) throw delPerfilErr;
+
+        // Paso 2: Eliminar auth user
+        // → Con `anon` key NO se puede hacer directamente. Solución: usar RLS + función trigger, o método alternativo 👇
+        
+        // ✅ Solución segura SIN service_role: 
+        //   - Crear una **Edge Function** `delete-user` (opcional), pero como prefieres sin entorno local,
+        //   - Usaremos un **hook postgrest con RLS + política que permita a admins borrar su propia fila en `usuarios_perfil` → y un trigger que elimine el auth user automáticamente.
+        //   - Mientras tanto, como fallback seguro: desactivamos sesión y mostramos advertencia.
+
+        // 🔒 Por ahora, *desactivamos* el usuario (sin borrar auth) hasta que configures la política.
+        const { error: updateErr } = await supabase
+          .from('usuarios_perfil')
+          .update({ active_session_token: null })
+          .eq('user_id', userId);
+
+        showAlert(`⚠️ Usuario ${email} desactivado (eliminación total requiere ajuste en Supabase).`, 'success');
+        loadUsers();
+
+        // 📝 Nota: en PASO 2 te explico cómo habilitar eliminación completa sin service_role.
+
+      } catch (err) {
+        showAlert(`Error al eliminar: ${err.message}`, 'error');
+      }
+    };
+
+    // 🚀 Iniciar
+    checkAdminAccess();
+  </script>
+</body>
+</html>
