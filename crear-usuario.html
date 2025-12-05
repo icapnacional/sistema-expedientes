@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Crear Usuario — ICAP Admin</title>
+  <title>Crear Usuario — ICAP Nacional</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -23,7 +23,7 @@
       border-radius: 16px;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
       width: 100%;
-      max-width: 480px;
+      max-width: 560px;
       padding: 40px 32px;
       text-align: left;
       border: 1px solid #eee;
@@ -51,7 +51,7 @@
       font-weight: 600;
       font-size: 14px;
     }
-    input, select, button {
+    input, select {
       width: 100%;
       padding: 12px;
       border: 1px solid #ddd;
@@ -64,6 +64,21 @@
       box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
     }
     select { cursor: pointer; }
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+    }
+    .checkbox-item input[type="checkbox"] {
+      margin-right: 8px;
+      width: auto;
+    }
     .btn {
       background-color: #722F37;
       color: white;
@@ -118,12 +133,16 @@
       class="logo"
     />
     <h1>➕ Crear Nuevo Usuario</h1>
-    <p class="subtitle">Solo administradores. El usuario recibirá sus credenciales por otros medios.</p>
+    <p class="subtitle">Solo administradores. Asigna rol y estados.</p>
 
     <form id="createForm">
       <div class="form-group">
+        <label for="nombre">Nombre Completo *</label>
+        <input type="text" id="nombre" required placeholder="Ej: Juan Pérez">
+      </div>
+      <div class="form-group">
         <label for="email">Correo Institucional *</label>
-        <input type="email" id="email" required placeholder="ejemplo@icap.gob.ve">
+        <input type="email" id="email" required placeholder="usuario@icap.gob.ve">
       </div>
       <div class="form-group">
         <label for="password">Contraseña *</label>
@@ -133,15 +152,17 @@
         <label for="rol_id">Rol *</label>
         <select id="rol_id" required>
           <option value="">— Seleccionar —</option>
-          <option value="1">Administrador</option>
-          <option value="2">Coordinador</option>
-          <option value="3">Usuario Operativo</option>
+          <option value="1">👑 Administrador</option>
+          <option value="2">👥 Coordinador</option>
+          <option value="3">📝 Usuario Operativo</option>
         </select>
       </div>
       <div class="form-group">
-        <label for="estados">Estados Asignados (separados por comas)</label>
-        <input type="text" id="estados" placeholder="Zulia, Lara, Mérida" />
-        <small style="color:#777; font-size:12px;">Ej: Zulia, Lara — Dejar vacío si aplica a todos</small>
+        <label>Estados Asignados</label>
+        <div class="checkbox-group" id="estadosCheckboxes">
+          <!-- Se llenará dinámicamente -->
+        </div>
+        <small style="color:#777; font-size:12px;">Deja vacío para acceso nacional.</small>
       </div>
       <button type="submit" id="submitBtn" class="btn">Crear Usuario</button>
       <a href="index.html" class="back-btn">← Volver al panel</a>
@@ -155,9 +176,30 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const form = document.getElementById('createForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const alertDiv = document.getElementById('alertMessage');
+    // Estados de Venezuela (orden alfabético)
+    const ESTADOS = [
+      "Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar", "Carabobo",
+      "Cojedes", "Delta Amacuro", "Distrito Capital", "Falcón", "Guárico", "Lara",
+      "Mérida", "Miranda", "Monagas", "Nueva Esparta", "Portuguesa", "Sucre",
+      "Táchira", "Trujillo", "Vargas", "Yaracuy", "Zulia", "Dependencias Federales"
+    ];
+
+    // Render checkboxes
+    const container = document.getElementById('estadosCheckboxes');
+    ESTADOS.forEach(estado => {
+      const div = document.createElement('div');
+      div.className = 'checkbox-item';
+      div.innerHTML = `<input type="checkbox" value="${estado}" id="estado-${estado.replace(/\s+/g, '-')}"> <label for="estado-${estado.replace(/\s+/g, '-')}">${estado}</label>`;
+      container.appendChild(div);
+    });
+
+    // Utilidades
+    function showAlert(msg, type = 'error') {
+      const alertDiv = document.getElementById('alertMessage');
+      alertDiv.textContent = msg;
+      alertDiv.className = `alert alert-${type}`;
+      alertDiv.style.display = 'block';
+    }
 
     async function checkAdmin() {
       const { data: { session } } = await supabase.auth.getSession();
@@ -165,83 +207,88 @@
         window.location.href = 'index.html';
         return false;
       }
-      const { data: perfil, error } = await supabase
+      const { data: perfil } = await supabase
         .from('usuarios_perfil')
         .select('rol_id')
         .eq('user_id', session.user.id)
         .single();
-      if (error || !perfil || perfil.rol_id !== 1) {
+      if (!perfil || perfil.rol_id !== 1) {
         window.location.href = 'index.html';
         return false;
       }
       return true;
     }
 
-    function showAlert(msg, type = 'error') {
-      alertDiv.textContent = msg;
-      alertDiv.className = `alert alert-${type}`;
-      alertDiv.style.display = 'block';
-    }
-
-    form.addEventListener('submit', async (e) => {
+    document.getElementById('createForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!await checkAdmin()) return;
 
+      const nombre = document.getElementById('nombre').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const rol_id = parseInt(document.getElementById('rol_id').value);
-      const estadosRaw = document.getElementById('estados').value.trim();
 
-      let estados_asignados = [];
-      if (estadosRaw) {
-        estados_asignados = estadosRaw.split(',').map(e => e.trim()).filter(e => e);
+      // ✅ Validación de dominio institucional
+      const allowedDomains = ['icap.gob.ve', 'pn.gob.ve', 'gob.ve'];
+      const domain = email.split('@')[1]?.toLowerCase();
+      if (!allowedDomains.includes(domain)) {
+        showAlert('🔒 Solo se permiten correos institucionales (@icap.gob.ve, @pn.gob.ve, @gob.ve)', 'error');
+        return;
       }
 
+      // ✅ Estados seleccionados
+      const estadosAsignados = Array.from(document.querySelectorAll('#estadosCheckboxes input:checked'))
+        .map(el => el.value);
+
+      const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
-      alertDiv.style.display = 'none';
+      showAlert('', 'error'); // limpia alerta
 
       try {
-        // ✅ Paso 1: Crear usuario en Auth
+        // 1️⃣ Crear usuario en Auth
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            data: { created_by_admin: true }
-          }
+          options: { data: { nombre } }
         });
 
         if (signUpError) throw signUpError;
-        if (!authData.user) throw new Error('No se creó el usuario.');
+        if (!authData?.user) throw new Error('No se creó el usuario.');
 
-        const newUser = authData.user;
-
-        // ✅ Paso 2: Insertar en `usuarios_perfil`
+        // 2️⃣ Insertar en `usuarios_perfil`
         const { error: perfilError } = await supabase
           .from('usuarios_perfil')
           .insert({
-            user_id: newUser.id,
+            user_id: authData.user.id,
             rol_id: rol_id,
-            estados_asignados: estados_asignados.length ? estados_asignados : null,
+            estados_asignados: estadosAsignados.length ? estadosAsignados : null,
             active_session_token: null
           });
 
         if (perfilError) {
-          // ⚠️ Si falla perfil, intentamos borrar el usuario para no dejar basura
-          await supabase.auth.admin.deleteUser(newUser.id);
-          throw new Error(`Usuario creado, pero fallo al asignar perfil: ${perfilError.message}`);
+          await supabase.auth.admin.deleteUser(authData.user.id);
+          throw new Error(`Error al asignar perfil: ${perfilError.message}`);
         }
 
-        showAlert(`✅ Usuario creado exitosamente.\n📧 ${email}\n🔑 Rol: ${rol_id}`, 'success');
-        form.reset();
+        // ✅ Éxito
+        showAlert(`✅ Usuario creado:\n${nombre} — ${email}`, 'success');
+        document.getElementById('createForm').reset();
+        document.querySelectorAll('#estadosCheckboxes input').forEach(el => el.checked = false);
+
+        // 👇 Como prefieres: deshabilitar botón 10s y sugerir recargar
+        setTimeout(() => {
+          submitBtn.disabled = false;
+          showAlert('💡 Recarga la página para ver al nuevo usuario en la lista.', 'success');
+        }, 10000);
+
       } catch (err) {
         console.error(err);
-        showAlert(err.message || 'Error al crear usuario.', 'error');
-      } finally {
+        showAlert(err.message || 'Error inesperado.', 'error');
         submitBtn.disabled = false;
       }
     });
 
-    // Inicializar
+    // Iniciar verificación
     checkAdmin();
   </script>
 </body>
