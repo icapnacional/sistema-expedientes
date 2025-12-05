@@ -19,7 +19,7 @@
       padding: 20px;
     }
     .container {
-      max-width: 900px;
+      max-width: 920px;
       margin: 0 auto;
     }
     .card {
@@ -56,7 +56,7 @@
       font-weight: 600;
       color: #333;
     }
-    input, select, textarea {
+    input, select {
       width: 100%;
       padding: 14px;
       border: 1px solid #ddd;
@@ -128,9 +128,6 @@
       font-weight: 600;
       color: #333;
     }
-    .users-table tr:hover td {
-      background-color: #fdfdfd;
-    }
     .role-badge {
       padding: 4px 10px;
       border-radius: 20px;
@@ -156,6 +153,10 @@
       gap: 12px;
       flex-wrap: wrap;
     }
+    .estado-item {
+      flex: 1;
+      min-width: 140px;
+    }
   </style>
 </head>
 <body>
@@ -167,7 +168,7 @@
         class="logo"
       />
       <h1>Panel de Administración</h1>
-      <p class="subtitle">Gestión de usuarios y permisos</p>
+      <p class="subtitle">Gestión segura de usuarios y permisos</p>
 
       <div id="adminAlert" class="alert"></div>
 
@@ -191,7 +192,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="newBoton">Botón (Área de Acceso) *</label>
+          <label for="newBoton">Área de Acceso (Botón) *</label>
           <select id="newBoton" required>
             <option value="">-- Seleccione un área --</option>
             <option value="rh">Recursos Humanos</option>
@@ -206,31 +207,29 @@
         <div class="form-group">
           <label>Estados Asignados *</label>
           <div class="flex" id="estadosCheckboxes">
-            <!-- Dinámico -->
+            <!-- checkboxes generados dinámicamente -->
           </div>
         </div>
-        <button type="submit" class="btn">✅ Crear Usuario</button>
+        <button type="submit" class="btn" id="createBtn">✅ Crear Usuario</button>
       </form>
     </div>
 
     <div class="card">
       <h2 class="section-title">👥 Lista de Usuarios</h2>
-      <div id="usersList">
-        <table class="users-table">
-          <thead>
-            <tr>
-              <th>Correo</th>
-              <th>Rol</th>
-              <th>Área</th>
-              <th>Estados</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="usersTableBody">
-            <tr><td colspan="5" style="text-align:center">Cargando...</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <div id="loadingUsers" style="text-align: center; padding: 20px;">Cargando...</div>
+      <table class="users-table hidden" id="usersTable">
+        <thead>
+          <tr>
+            <th>Correo</th>
+            <th>Rol</th>
+            <th>Área</th>
+            <th>Estados</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody">
+        </tbody>
+      </table>
     </div>
 
     <div class="card">
@@ -245,7 +244,10 @@
 
   const adminAlert = document.getElementById('adminAlert');
   const createForm = document.getElementById('createForm');
+  const createBtn = document.getElementById('createBtn');
+  const usersTable = document.getElementById('usersTable');
   const usersTableBody = document.getElementById('usersTableBody');
+  const loadingUsers = document.getElementById('loadingUsers');
   const logoutBtn = document.getElementById('logoutBtn');
   const estadosCheckboxes = document.getElementById('estadosCheckboxes');
 
@@ -257,23 +259,20 @@
 
   let currentUser = null;
 
-  // ✅ Inicializar checkboxes de estados
+  // ✅ Render checkboxes de estados
   function renderEstadosCheckboxes() {
     const html = ESTADOS.map(e => `
-      <label style="flex: 1; min-width: 150px;">
+      <label class="estado-item">
         <input type="checkbox" value="${e}" style="margin-right: 6px;"> ${e}
       </label>
     `).join('');
     estadosCheckboxes.innerHTML = html;
   }
 
-  // ✅ Verificar sesión + rol
+  // ✅ Obtener sesión y validar admin
   async function checkAdminSession() {
     const {  { session } } = await supabase.auth.getSession();
-    if (!session) {
-      window.location.href = 'index.html';
-      return;
-    }
+    if (!session) return window.location.href = 'index.html';
 
     currentUser = session.user;
 
@@ -284,12 +283,12 @@
       .single();
 
     if (error || !perfil || perfil.rol_id !== 1) {
-      alert('🔒 Acceso denegado. Solo administradores.');
+      alert('🔒 Acceso restringido: Solo administradores.');
       window.location.href = 'index.html';
       return;
     }
 
-    // ✅ Todo OK → cargar datos
+    // ✅ Todo OK
     renderEstadosCheckboxes();
     loadUsers();
   }
@@ -303,132 +302,133 @@
     }, 5000);
   }
 
+  // ✅ Llamar Edge Function con JWT
+  async function callEdge(method, path, body = null) {
+    const {  { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Sesión expirada');
+
+    const url = `${SUPABASE_URL}/functions/v1/${path}`;
+    const res = await fetch(url, {
+      method,
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: body ? JSON.stringify(body) : null
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+    return data;
+  }
+
   // ✅ Cargar lista de usuarios
   async function loadUsers() {
-    usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center">Cargando...</td></tr>';
-
     try {
-      const {  usuarios, error } = await supabase
-        .rpc('usuarios_con_datos_completos');
+      loadingUsers.style.display = 'block';
+      usersTable.classList.add('hidden');
 
-      if (error) throw error;
-
-      if (!usuarios || usuarios.length === 0) {
+      const data = await callEdge('GET', 'listar_usuarios_admin');
+      
+      if (!Array.isArray(data) || data.length === 0) {
         usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay usuarios registrados.</td></tr>';
-        return;
+      } else {
+        const rows = data.map(u => {
+          const rolText = {1: 'Admin', 2: 'Moderador', 3: 'Usuario'}[u.rol_id] || '—';
+          const rolClass = `role-${u.rol_id}`;
+          const estados = u.estados_asignados?.length ? u.estados_asignados.join(', ') : '—';
+          const botonMap = {
+            'rh': 'Recursos Humanos',
+            'analisis': 'Análisis',
+            'logistica': 'Logística',
+            'dppc': 'DPPC',
+            'asesoria': 'Asesoría Legal',
+            'disciplinarios': 'D.E. Disciplinarios',
+            'secretaria': 'Secretaría'
+          };
+          const botonText = botonMap[u.boton_asignado] || u.boton_asignado || '—';
+          
+          return `
+            <tr>
+              <td>${u.email}</td>
+              <td><span class="role-badge ${rolClass}">${rolText}</span></td>
+              <td>${botonText}</td>
+              <td>${estados}</td>
+              <td>
+                <button 
+                  class="btn btn-danger" 
+                  onclick="deleteUser('${u.id}', '${u.email}')"
+                  style="padding:6px 10px; font-size:13px;"
+                >
+                  🗑️ Eliminar
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+        usersTableBody.innerHTML = rows;
       }
 
-      const rows = usuarios.map(u => {
-        const rolText = {1: 'Admin', 2: 'Moderador', 3: 'Usuario'}[u.rol_id] || '—';
-        const rolClass = `role-${u.rol_id}`;
-        const estados = u.estados_asignados?.length ? u.estados_asignados.join(', ') : '—';
-        const botonText = u.boton_asignado || '—';
-        
-        return `
-          <tr>
-            <td>${u.email}</td>
-            <td><span class="role-badge ${rolClass}">${rolText}</span></td>
-            <td>${botonText}</td>
-            <td>${estados}</td>
-            <td>
-              <button 
-                class="btn btn-danger" 
-                onclick="deleteUser('${u.id}', '${u.email}')"
-                style="padding:6px 10px; font-size:13px;"
-              >
-                🗑️ Eliminar
-              </button>
-            </td>
-          </tr>
-        `;
-      }).join('');
+      loadingUsers.style.display = 'none';
+      usersTable.classList.remove('hidden');
 
-      usersTableBody.innerHTML = rows;
     } catch (err) {
-      console.error('Error al cargar usuarios:', err);
-      usersTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#c00">Error al cargar usuarios.</td></tr>`;
+      console.error('Error:', err);
+      loadingUsers.textContent = '⚠️ Error al cargar usuarios';
+      setTimeout(() => location.reload(), 3000);
     }
   }
 
   // ✅ Crear usuario
   createForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
     const email = document.getElementById('newEmail').value.trim();
     const password = document.getElementById('newPassword').value;
-    const rol_id = parseInt(document.getElementById('newRol').value);
+    const rol_id = document.getElementById('newRol').value;
     const boton = document.getElementById('newBoton').value;
 
     const selectedEstados = Array.from(estadosCheckboxes.querySelectorAll('input:checked'))
       .map(cb => cb.value);
 
-    if (selectedEstados.length === 0) {
-      showAlert('Seleccione al menos un estado.', 'error');
-      return;
+    if (!email || !password || !rol_id || !boton || selectedEstados.length === 0) {
+      return showAlert('Complete todos los campos y seleccione al menos un estado.', 'error');
     }
 
     try {
-      adminAlert.style.display = 'none';
+      createBtn.disabled = true;
+      createBtn.textContent = 'Creando...';
 
-      // 1️⃣ Crear auth user
-      const {  user, error: authError } = await supabase.auth.admin.createUser({
+      await callEdge('POST', 'crear_usuario_admin', {
         email,
         password,
-        email_confirm: true
+        rol_id: parseInt(rol_id),
+        boton_asignado: boton,
+        estados_asignados: selectedEstados
       });
 
-      if (authError) throw authError;
-
-      // 2️⃣ Crear perfil
-      const { error: profileError } = await supabase
-        .from('usuarios_perfil')
-        .insert([{
-          user_id: user.id,
-          rol_id: rol_id,
-          estados_asignados: selectedEstados,
-          secciones_acceso: [boton] // se usará para controlar acceso por área
-        }]);
-
-      if (profileError) {
-        // Intentar limpiar el auth user si falla el perfil
-        await supabase.auth.admin.deleteUser(user.id);
-        throw profileError;
-      }
-
-      showAlert(`✅ Usuario creado: ${email}`, 'success');
+      showAlert(`✅ Usuario creado: ${email}`);
       createForm.reset();
-      document.querySelectorAll('#estadosCheckboxes input').forEach(cb => cb.checked = false);
+      Array.from(estadosCheckboxes.querySelectorAll('input')).forEach(cb => cb.checked = false);
       loadUsers();
 
     } catch (err) {
-      console.error('Error creando usuario:', err);
-      const msg = err.message || 'Error al crear usuario.';
-      showAlert(msg.includes('already registered') ? '⚠️ El correo ya está registrado.' : msg, 'error');
+      showAlert(err.message || 'Error al crear usuario.', 'error');
+    } finally {
+      createBtn.disabled = false;
+      createBtn.textContent = '✅ Crear Usuario';
     }
   });
 
-  // ✅ Eliminar usuario (función global para onclick inline)
+  // ✅ Eliminar usuario (disponible globalmente para onclick)
   window.deleteUser = async function(userId, email) {
-    if (!confirm(`¿Eliminar definitivamente a ${email}? Esta acción no se puede deshacer.`)) return;
+    if (!confirm(`⚠️ ¿Eliminar definitivamente a ${email}?\nEsta acción no se puede deshacer.`)) return;
 
     try {
-      // 1. Eliminar auth
-      const { error: authErr } = await supabase.auth.admin.deleteUser(userId);
-      if (authErr) throw authErr;
-
-      // 2. Eliminar perfil (opcional, ya se elimina por FK CASCADE)
-      const { error: profErr } = await supabase
-        .from('usuarios_perfil')
-        .delete()
-        .eq('user_id', userId);
-
-      if (profErr && !profErr.message.includes('no rows')) throw profErr;
-
-      showAlert(`🗑️ Usuario eliminado: ${email}`, 'success');
+      await callEdge('POST', 'eliminar_usuario_admin', { user_id: userId });
+      showAlert(`🗑️ Usuario eliminado: ${email}`);
       loadUsers();
     } catch (err) {
-      console.error('Error eliminando usuario:', err);
-      showAlert(`Error al eliminar ${email}.`, 'error');
+      showAlert(`Error eliminando ${email}: ${err.message}`, 'error');
     }
   };
 
