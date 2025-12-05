@@ -219,75 +219,73 @@
       return true;
     }
 
-    document.getElementById('createForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!await checkAdmin()) return;
+  document.getElementById('createForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!await checkAdmin()) return;
 
-      const nombre = document.getElementById('nombre').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const rol_id = parseInt(document.getElementById('rol_id').value);
+  const nombre = document.getElementById('nombre').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const rol_id = parseInt(document.getElementById('rol_id').value);
 
-      // ✅ Validación de dominio institucional
-      const allowedDomains = ['icap.gob.ve', 'pn.gob.ve', 'gob.ve'];
-      const domain = email.split('@')[1]?.toLowerCase();
-      if (!allowedDomains.includes(domain)) {
-        showAlert('🔒 Solo se permiten correos institucionales (@icap.gob.ve, @pn.gob.ve, @gob.ve)', 'error');
-        return;
-      }
+  // ✅ Solo validación básica de formato (no de dominio)
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(email)) {
+    showAlert('📧 El correo debe tener un formato válido (ej: nombre@dominio.com)', 'error');
+    return;
+  }
 
-      // ✅ Estados seleccionados
-      const estadosAsignados = Array.from(document.querySelectorAll('#estadosCheckboxes input:checked'))
-        .map(el => el.value);
+  // ✅ Estados seleccionados
+  const estadosAsignados = Array.from(document.querySelectorAll('#estadosCheckboxes input:checked'))
+    .map(el => el.value);
 
-      const submitBtn = document.getElementById('submitBtn');
-      submitBtn.disabled = true;
-      showAlert('', 'error'); // limpia alerta
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  showAlert('', 'error'); // limpia alerta
 
-      try {
-        // 1️⃣ Crear usuario en Auth
-        const { data: authData, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { nombre } }
-        });
-
-        if (signUpError) throw signUpError;
-        if (!authData?.user) throw new Error('No se creó el usuario.');
-
-        // 2️⃣ Insertar en `usuarios_perfil`
-        const { error: perfilError } = await supabase
-          .from('usuarios_perfil')
-          .insert({
-            user_id: authData.user.id,
-            rol_id: rol_id,
-            estados_asignados: estadosAsignados.length ? estadosAsignados : null,
-            active_session_token: null
-          });
-
-        if (perfilError) {
-          await supabase.auth.admin.deleteUser(authData.user.id);
-          throw new Error(`Error al asignar perfil: ${perfilError.message}`);
-        }
-
-        // ✅ Éxito
-        showAlert(`✅ Usuario creado:\n${nombre} — ${email}`, 'success');
-        document.getElementById('createForm').reset();
-        document.querySelectorAll('#estadosCheckboxes input').forEach(el => el.checked = false);
-
-        // 👇 Como prefieres: deshabilitar botón 10s y sugerir recargar
-        setTimeout(() => {
-          submitBtn.disabled = false;
-          showAlert('💡 Recarga la página para ver al nuevo usuario en la lista.', 'success');
-        }, 10000);
-
-      } catch (err) {
-        console.error(err);
-        showAlert(err.message || 'Error inesperado.', 'error');
-        submitBtn.disabled = false;
-      }
+  try {
+    // 1️⃣ Crear usuario en Auth
+    const {  authData, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { nombre } }
     });
 
+    if (signUpError) throw signUpError;
+    if (!authData?.user) throw new Error('No se creó el usuario.');
+
+    // 2️⃣ Insertar en `usuarios_perfil`
+    const { error: perfilError } = await supabase
+      .from('usuarios_perfil')
+      .insert({
+        user_id: authData.user.id,
+        rol_id: rol_id,
+        estados_asignados: estadosAsignados.length ? estadosAsignados : null,
+        active_session_token: null
+      });
+
+    if (perfilError) {
+      await supabase.auth.admin.deleteUser(authData.user.id);
+      throw new Error(`Error al asignar perfil: ${perfilError.message}`);
+    }
+
+    // ✅ Éxito
+    showAlert(`✅ Usuario creado:\n${nombre} — ${email}`, 'success');
+    document.getElementById('createForm').reset();
+    document.querySelectorAll('#estadosCheckboxes input').forEach(el => el.checked = false);
+
+    // 👇 Como prefieres: deshabilitar botón 10s y sugerir recargar
+    setTimeout(() => {
+      submitBtn.disabled = false;
+      showAlert('💡 Recarga la página para ver al nuevo usuario en la lista.', 'success');
+    }, 10000);
+
+  } catch (err) {
+    console.error(err);
+    showAlert(err.message || 'Error inesperado.', 'error');
+    submitBtn.disabled = false;
+  }
+});
     // Iniciar verificación
     checkAdmin();
   </script>
