@@ -125,17 +125,11 @@
     <h1>Panel Principal</h1>
     <div class="user-info">
       <strong>Usuario:</strong> <span id="userEmail">—</span><br>
-      <strong>Estado:</strong> <span id="userEstado">—</span>
+      <strong>Estado(s):</strong> <span id="userEstado">—</span>
     </div>
 
-    <div class="panel-buttons">
-      <button class="panel-btn" onclick="goTo('rh')">🧑‍💼 Recursos Humanos</button>
-      <button class="panel-btn" onclick="goTo('analisis')">🔍 Análisis</button>
-      <button class="panel-btn" onclick="goTo('logistica')">📦 Logística</button>
-      <button class="panel-btn" onclick="goTo('dppc')">🛡️ DPPC</button>
-      <button class="panel-btn" onclick="goTo('legal')">⚖️ Asesoría Legal</button>
-      <button class="panel-btn" onclick="goTo('disciplinarios')">📑 D.E. Disciplinarios</button>
-      <button class="panel-btn" onclick="goTo('secretaria')">📝 Secretaría</button>
+    <div id="buttonsContainer" class="panel-buttons">
+      <!-- Los botones se generarán dinámicamente -->
     </div>
 
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
@@ -146,13 +140,26 @@
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
     const userEmailSpan = document.getElementById('userEmail');
     const userEstadoSpan = document.getElementById('userEstado');
+    const buttonsContainer = document.getElementById('buttonsContainer');
     const authAlert = document.getElementById('authAlert');
+    const logoutBtn = document.getElementById('logoutBtn');
 
-    // Redirección genérica (puedes ajustar las rutas más adelante)
-    function goTo(section) {
-      // Ej: rh.html, analisis.html, etc.
+    // 🔹 Definición de las 7 secciones (código y nombre)
+    const secciones = [
+      { id: 'rh', name: 'Recursos Humanos', icon: '🧑‍💼' },
+      { id: 'analisis', name: 'Análisis', icon: '🔍' },
+      { id: 'logistica', name: 'Logística', icon: '📦' },
+      { id: 'dppc', name: 'DPPC', icon: '🛡️' },
+      { id: 'legal', name: 'Asesoría Legal', icon: '⚖️' },
+      { id: 'disciplinarios', name: 'D.E. Disciplinarios', icon: '📑' },
+      { id: 'secretaria', name: 'Secretaría', icon: '📝' }
+    ];
+
+    // Redirección genérica (puedes cambiar las rutas luego)
+    function goTo(sectionId) {
       const paths = {
         rh: 'rh.html',
         analisis: 'analisis.html',
@@ -160,14 +167,17 @@
         dppc: 'dppc.html',
         legal: 'legal.html',
         disciplinarios: 'disciplinarios.html',
-        secretaria: 'secretaria.html'
+        secretaria: 'secretaria.html',
+        admin: 'admin.html'
       };
-      const url = paths[section] || '#';
+      const url = paths[sectionId] || '#';
       window.location.href = url;
     }
 
-    async function checkAuthAndRedirect() {
+    // ✅ Verificar sesión y perfil al cargar
+    async function initPanel() {
       const { data: { session } } = await supabase.auth.getSession();
+      
       if (!session) {
         authAlert.textContent = 'Sesión no válida. Redirigiendo al login…';
         authAlert.style.display = 'block';
@@ -175,38 +185,70 @@
         return;
       }
 
-      const { data: estadoData, error } = await supabase
-        .from('usuarios_estados')
-        .select('estado')
+      // 🔍 Obtener perfil
+      const { data: perfil, error } = await supabase
+        .from('usuarios_perfil')
+        .select('rol_id, estados_asignados, secciones_acceso')
         .eq('user_id', session.user.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error al verificar estado:', error);
-        authAlert.textContent = 'Error al cargar tu información. Intenta nuevamente.';
+      if (error) {
+        console.error('Error al cargar perfil:', error);
+        authAlert.textContent = 'Error al cargar su perfil. Contacte al administrador.';
         authAlert.style.display = 'block';
         return;
       }
 
-      if (!estadoData) {
-        authAlert.textContent = 'Estado no asignado. Redirigiendo a selección de estado…';
-        authAlert.style.display = 'block';
-        setTimeout(() => window.location.href = 'index.html', 2000);
-        return;
-      }
-
-      // ✅ Todo OK → mostrar datos
+      // ✅ Mostrar info
       userEmailSpan.textContent = session.user.email;
-      userEstadoSpan.textContent = estadoData.estado;
+      userEstadoSpan.textContent = perfil.estados_asignados.length 
+        ? perfil.estados_asignados.join(', ') 
+        : 'Todos los estados';
+
+      // 🎯 Determinar qué botones mostrar
+      let botonesPermitidos = [];
+
+      if (perfil.rol_id === 1) {
+        // 👑 Admin: 7 secciones + Admin
+        botonesPermitidos = [...secciones];
+        botonesPermitidos.push({ id: 'admin', name: 'Panel de Administración', icon: '👑' });
+      } else if (perfil.rol_id === 2) {
+        // 🛡️ Moderador: solo secciones_acceso
+        if (perfil.secciones_acceso && perfil.secciones_acceso.length > 0) {
+          botonesPermitidos = secciones.filter(s => 
+            perfil.secciones_acceso.includes(s.id)
+          );
+        } else {
+          botonesPermitidos = []; // sin acceso si no tiene secciones asignadas
+        }
+      } else if (perfil.rol_id === 3) {
+        // 👤 Usuario normal: todas las 7 secciones (el control por estado se hace en cada página)
+        botonesPermitidos = [...secciones];
+      }
+
+      // ✅ Renderizar botones
+      if (botonesPermitidos.length === 0) {
+        buttonsContainer.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 20px; background:#fdf5f5; border-radius:12px; color:#c00;">
+            No tiene acceso a ninguna sección. Contacte al administrador.
+          </div>
+        `;
+      } else {
+        buttonsContainer.innerHTML = botonesPermitidos.map(s => `
+          <button class="panel-btn" onclick="goTo('${s.id}')">
+            ${s.icon} ${s.name}
+          </button>
+        `).join('');
+      }
     }
 
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
+    logoutBtn.addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
     });
 
-    // Iniciar verificación
-    checkAuthAndRedirect();
+    // Iniciar
+    initPanel();
   </script>
 </body>
 </html>
