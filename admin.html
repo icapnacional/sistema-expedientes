@@ -3,192 +3,442 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - ICAP Nacional</title>
+  <title>Admin — ICAP Nacional</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #fafafa; font-family: 'Inter', sans-serif; padding: 20px; }
-    .container { max-width: 900px; margin: 0 auto; }
-    .card { background: white; border-radius: 16px; box-shadow: 0 6px 20px #0001; margin-bottom: 24px; padding: 32px; }
-    .btn { background: #722F37; color: white; border: none; border-radius: 10px; padding: 12px 20px; font-weight: 600; cursor: pointer; }
-    .form-group { text-align: left; margin: 16px 0; }
-    label { display: block; margin-bottom: 8px; font-weight: 600; }
-    input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
-    select[multiple] { height: 140px; }
-    .alert { padding: 12px; border-radius: 8px; margin: 16px 0; display: none; }
-    .alert-error { background: #fff5f5; color: #c00; }
-    .hidden { display: none !important; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      padding: 32px;
+      margin-bottom: 24px;
+      border: 1px solid #eee;
+    }
+    .logo {
+      width: 80px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #2d2d2d;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-size: 15px;
+      color: #555;
+      margin-bottom: 24px;
+    }
+    .form-group {
+      margin-bottom: 18px;
+      text-align: left;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+      color: #222;
+      background-color: #fdfdfd;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #722F37;
+      box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+    }
+    .btn {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover {
+      background-color: #5e262d;
+      transform: translateY(-1px);
+    }
+    .btn-danger {
+      background-color: #c00;
+    }
+    .btn-danger:hover {
+      background-color: #a00;
+    }
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+    .alert-success {
+      background-color: #f0fdf4;
+      color: #064e3b;
+      border: 1px solid #bbf7d0;
+    }
+    .alert-error {
+      background-color: #fff5f5;
+      color: #c00;
+      border: 1px solid #ffd0d0;
+    }
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .users-table th,
+    .users-table td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+    .users-table th {
+      background-color: #f9f9f9;
+      font-weight: 600;
+      color: #333;
+    }
+    .users-table tr:hover td {
+      background-color: #fdfdfd;
+    }
+    .role-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .role-1 { background-color: #fef3c7; color: #92400e; } /* Admin */
+    .role-2 { background-color: #dbeafe; color: #1e40af; } /* Moderador */
+    .role-3 { background-color: #dcfce7; color: #166534; } /* Usuario */
+    .hidden {
+      display: none !important;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 24px 0 16px;
+      color: #2d2d2d;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #eee;
+    }
+    .flex {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="card">
-      <h2>👑 Panel de Administración</h2>
-      <div id="authAlert" class="alert alert-error"></div>
+      <img 
+        src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+        alt="ICAP Nacional - PNB" 
+        class="logo"
+      />
+      <h1>Panel de Administración</h1>
+      <p class="subtitle">Gestión de usuarios y permisos</p>
 
-      <form id="userForm">
+      <div id="adminAlert" class="alert"></div>
+
+      <h2 class="section-title">➕ Crear Nuevo Usuario</h2>
+      <form id="createForm">
         <div class="form-group">
-          <label for="userEmail">Correo *</label>
-          <input type="email" id="userEmail" required placeholder="usuario@icap.gob.ve">
+          <label for="newEmail">Correo Institucional *</label>
+          <input type="email" id="newEmail" required placeholder="usuario@icap.gob.ve">
         </div>
         <div class="form-group">
-          <label for="userRol">Rol *</label>
-          <select id="userRol" required>
-            <option value="1">Administrador</option>
-            <option value="2">Moderador</option>
-            <option value="3">Usuario</option>
+          <label for="newPassword">Contraseña *</label>
+          <input type="password" id="newPassword" required minlength="8" placeholder="Mín. 8 caracteres">
+        </div>
+        <div class="form-group">
+          <label for="newRol">Rol *</label>
+          <select id="newRol" required>
+            <option value="">-- Seleccione --</option>
+            <option value="1">👑 Admin (acceso total)</option>
+            <option value="2">🛡️ Moderador (editar en 1 área)</option>
+            <option value="3">👤 Usuario (solo consulta)</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="estadosSelect">Estados *</label>
-          <select id="estadosSelect" multiple size="6" required>
-            <option value="Amazonas">Amazonas</option>
-            <option value="Anzoátegui">Anzoátegui</option>
-            <option value="Apure">Apure</option>
-            <option value="Aragua">Aragua</option>
-            <option value="Barinas">Barinas</option>
-            <option value="Bolívar">Bolívar</option>
-            <option value="Carabobo">Carabobo</option>
-            <option value="Cojedes">Cojedes</option>
-            <option value="Delta Amacuro">Delta Amacuro</option>
-            <option value="Falcón">Falcón</option>
-            <option value="Guárico">Guárico</option>
-            <option value="Lara">Lara</option>
-            <option value="Mérida">Mérida</option>
-            <option value="Miranda">Miranda</option>
-            <option value="Monagas">Monagas</option>
-            <option value="Nueva Esparta">Nueva Esparta</option>
-            <option value="Portuguesa">Portuguesa</option>
-            <option value="Sucre">Sucre</option>
-            <option value="Táchira">Táchira</option>
-            <option value="Trujillo">Trujillo</option>
-            <option value="La Guaira">La Guaira</option>
-            <option value="Yaracuy">Yaracuy</option>
-            <option value="Zulia">Zulia</option>
+          <label for="newBoton">Botón (Área de Acceso) *</label>
+          <select id="newBoton" required>
+            <option value="">-- Seleccione un área --</option>
+            <option value="rh">Recursos Humanos</option>
+            <option value="analisis">Análisis</option>
+            <option value="logistica">Logística</option>
+            <option value="dppc">DPPC</option>
+            <option value="asesoria">Asesoría Legal</option>
+            <option value="disciplinarios">D.E. Disciplinarios</option>
+            <option value="secretaria">Secretaría</option>
           </select>
         </div>
-        <div class="form-group" id="modulosSection">
-          <label for="modulosSelect">Módulos (Moderador)</label>
-          <select id="modulosSelect" multiple size="6">
-            <option value="rh">🧑‍💼 Recursos Humanos</option>
-            <option value="analisis">🔍 Análisis</option>
-            <option value="logistica">📦 Logística</option>
-            <option value="dppc">🛡️ DPPC</option>
-            <option value="legal">⚖️ Asesoría Legal</option>
-            <option value="disciplinarios">📑 D.E. Disciplinarios</option>
-            <option value="secretaria">📝 Secretaría</option>
-          </select>
+        <div class="form-group">
+          <label>Estados Asignados *</label>
+          <div class="flex" id="estadosCheckboxes">
+            <!-- Dinámico -->
+          </div>
         </div>
-        <button type="submit" class="btn">Crear Usuario</button>
+        <button type="submit" class="btn">✅ Crear Usuario</button>
       </form>
+    </div>
 
-      <div class="card" style="margin-top:32px;">
-        <h3>👥 Usuarios</h3>
-        <div id="usuariosList"></div>
+    <div class="card">
+      <h2 class="section-title">👥 Lista de Usuarios</h2>
+      <div id="usersList">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Área</th>
+              <th>Estados</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr><td colspan="5" style="text-align:center">Cargando...</td></tr>
+          </tbody>
+        </table>
       </div>
+    </div>
 
-      <button id="logoutBtn" class="btn" style="width:100%;">Cerrar Sesión</button>
+    <div class="card">
+      <button id="logoutBtn" class="btn">🚪 Cerrar Sesión</button>
     </div>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<script>
+  const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      const userForm = document.getElementById('userForm');
-      const userRol = document.getElementById('userRol');
-      const modulosSection = document.getElementById('modulosSection');
-      const authAlert = document.getElementById('authAlert');
-      const logoutBtn = document.getElementById('logoutBtn');
+  const adminAlert = document.getElementById('adminAlert');
+  const createForm = document.getElementById('createForm');
+  const usersTableBody = document.getElementById('usersTableBody');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const estadosCheckboxes = document.getElementById('estadosCheckboxes');
 
-      // Mostrar/ocultar módulos
-      userRol.addEventListener('change', () => {
-        modulosSection.style.display = userRol.value === '2' ? 'block' : 'none';
-      });
+  const ESTADOS = [
+    "Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar", "Carabobo", "Cojedes",
+    "Delta Amacuro", "Falcón", "Guárico", "Lara", "Mérida", "Miranda", "Monagas", "Nueva Esparta",
+    "Portuguesa", "Sucre", "Táchira", "Trujillo", "La Guaira", "Yaracuy", "Zulia"
+  ];
 
-      // 🔐 Verificar acceso
-      async function checkAccess() {
-        const {  { session } } = await supabase.auth.getSession();
-        if (!session) {
-          authAlert.textContent = 'Sesión no válida';
-          authAlert.style.display = 'block';
-          setTimeout(() => location.href = 'index.html', 2000);
-          return false;
-        }
+  let currentUser = null;
 
-        const {  perfil } = await supabase
-          .from('usuarios_perfil')
-          .select('rol_id')
-          .eq('user_id', session.user.id)
-          .single();
+  // ✅ Inicializar checkboxes de estados
+  function renderEstadosCheckboxes() {
+    const html = ESTADOS.map(e => `
+      <label style="flex: 1; min-width: 150px;">
+        <input type="checkbox" value="${e}" style="margin-right: 6px;"> ${e}
+      </label>
+    `).join('');
+    estadosCheckboxes.innerHTML = html;
+  }
 
-        if (!perfil || perfil.rol_id !== 1) {
-          authAlert.textContent = 'Acceso denegado';
-          authAlert.style.display = 'block';
-          setTimeout(() => location.href = 'index.html', 2000);
-          return false;
-        }
-        return true;
+  // ✅ Verificar sesión + rol
+  async function checkAdminSession() {
+    const {  { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'index.html';
+      return;
+    }
+
+    currentUser = session.user;
+
+    const {  perfil, error } = await supabase
+      .from('usuarios_perfil')
+      .select('rol_id')
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (error || !perfil || perfil.rol_id !== 1) {
+      alert('🔒 Acceso denegado. Solo administradores.');
+      window.location.href = 'index.html';
+      return;
+    }
+
+    // ✅ Todo OK → cargar datos
+    renderEstadosCheckboxes();
+    loadUsers();
+  }
+
+  function showAlert(msg, type = 'success') {
+    adminAlert.textContent = msg;
+    adminAlert.className = `alert alert-${type}`;
+    adminAlert.style.display = 'block';
+    setTimeout(() => {
+      adminAlert.style.display = 'none';
+    }, 5000);
+  }
+
+  // ✅ Cargar lista de usuarios
+  async function loadUsers() {
+    usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center">Cargando...</td></tr>';
+
+    try {
+      const {  usuarios, error } = await supabase
+        .rpc('usuarios_con_datos_completos');
+
+      if (error) throw error;
+
+      if (!usuarios || usuarios.length === 0) {
+        usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay usuarios registrados.</td></tr>';
+        return;
       }
 
-      // ✅ Envío (con Edge Function)
-      userForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('userEmail').value.trim();
-        const rolId = parseInt(userRol.value);
-        const estados = Array.from(document.getElementById('estadosSelect').selectedOptions).map(o => o.value);
-        if (estados.length === 0) return alert('Seleccione al menos un estado');
+      const rows = usuarios.map(u => {
+        const rolText = {1: 'Admin', 2: 'Moderador', 3: 'Usuario'}[u.rol_id] || '—';
+        const rolClass = `role-${u.rol_id}`;
+        const estados = u.estados_asignados?.length ? u.estados_asignados.join(', ') : '—';
+        const botonText = u.boton_asignado || '—';
+        
+        return `
+          <tr>
+            <td>${u.email}</td>
+            <td><span class="role-badge ${rolClass}">${rolText}</span></td>
+            <td>${botonText}</td>
+            <td>${estados}</td>
+            <td>
+              <button 
+                class="btn btn-danger" 
+                onclick="deleteUser('${u.id}', '${u.email}')"
+                style="padding:6px 10px; font-size:13px;"
+              >
+                🗑️ Eliminar
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
 
-        let modulos = [];
-        if (rolId === 2) {
-          modulos = Array.from(document.getElementById('modulosSelect').selectedOptions).map(o => o.value);
-          if (modulos.length === 0) return alert('Seleccione al menos un módulo');
-        }
+      usersTableBody.innerHTML = rows;
+    } catch (err) {
+      console.error('Error al cargar usuarios:', err);
+      usersTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#c00">Error al cargar usuarios.</td></tr>`;
+    }
+  }
 
-        try {
-          const {  { session } } = await supabase.auth.getSession();
-          if (!session) throw new Error('Sesión inválida');
+  // ✅ Crear usuario
+  createForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const email = document.getElementById('newEmail').value.trim();
+    const password = document.getElementById('newPassword').value;
+    const rol_id = parseInt(document.getElementById('newRol').value);
+    const boton = document.getElementById('newBoton').value;
 
-          // ✅ Llamada segura a Edge Function (con apikey)
-          const res = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-              'apikey': SUPABASE_ANON_KEY,  // ← 🔑 Obligatorio
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              email,
-              rol_id: rolId,
-              estados_asignados: estados,
-              secciones_acceso: rolId === 2 ? modulos : null
-            })
-          });
+    const selectedEstados = Array.from(estadosCheckboxes.querySelectorAll('input:checked'))
+      .map(cb => cb.value);
 
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    if (selectedEstados.length === 0) {
+      showAlert('Seleccione al menos un estado.', 'error');
+      return;
+    }
 
-          alert(`✅ Usuario creado: ${email}`);
-          userForm.reset();
-          modulosSection.style.display = 'none';
+    try {
+      adminAlert.style.display = 'none';
 
-        } catch (err) {
-          alert('❌ ' + (err.message || 'Error'));
-        }
+      // 1️⃣ Crear auth user
+      const {  user, error: authError } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true
       });
 
-      logoutBtn.addEventListener('click', async () => {
-        await supabase.auth.signOut();
-        location.href = 'index.html';
-      });
+      if (authError) throw authError;
 
-      if (await checkAccess()) {
-        modulosSection.style.display = 'none';
+      // 2️⃣ Crear perfil
+      const { error: profileError } = await supabase
+        .from('usuarios_perfil')
+        .insert([{
+          user_id: user.id,
+          rol_id: rol_id,
+          estados_asignados: selectedEstados,
+          secciones_acceso: [boton] // se usará para controlar acceso por área
+        }]);
+
+      if (profileError) {
+        // Intentar limpiar el auth user si falla el perfil
+        await supabase.auth.admin.deleteUser(user.id);
+        throw profileError;
       }
-    });
-  </script>
+
+      showAlert(`✅ Usuario creado: ${email}`, 'success');
+      createForm.reset();
+      document.querySelectorAll('#estadosCheckboxes input').forEach(cb => cb.checked = false);
+      loadUsers();
+
+    } catch (err) {
+      console.error('Error creando usuario:', err);
+      const msg = err.message || 'Error al crear usuario.';
+      showAlert(msg.includes('already registered') ? '⚠️ El correo ya está registrado.' : msg, 'error');
+    }
+  });
+
+  // ✅ Eliminar usuario (función global para onclick inline)
+  window.deleteUser = async function(userId, email) {
+    if (!confirm(`¿Eliminar definitivamente a ${email}? Esta acción no se puede deshacer.`)) return;
+
+    try {
+      // 1. Eliminar auth
+      const { error: authErr } = await supabase.auth.admin.deleteUser(userId);
+      if (authErr) throw authErr;
+
+      // 2. Eliminar perfil (opcional, ya se elimina por FK CASCADE)
+      const { error: profErr } = await supabase
+        .from('usuarios_perfil')
+        .delete()
+        .eq('user_id', userId);
+
+      if (profErr && !profErr.message.includes('no rows')) throw profErr;
+
+      showAlert(`🗑️ Usuario eliminado: ${email}`, 'success');
+      loadUsers();
+    } catch (err) {
+      console.error('Error eliminando usuario:', err);
+      showAlert(`Error al eliminar ${email}.`, 'error');
+    }
+  };
+
+  logoutBtn.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'index.html';
+  });
+
+  // ✅ Iniciar
+  checkAdminSession();
+</script>
 </body>
 </html>
