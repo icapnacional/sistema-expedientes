@@ -27,7 +27,7 @@
       border-radius: 16px;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
       width: 100%;
-      max-width: 420px;
+      max-width: 440px;
       padding: 40px 32px;
       text-align: center;
       border: 1px solid #eee;
@@ -125,15 +125,15 @@
     .panel-buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
+      gap: 16px;
       margin: 24px 0;
     }
     .panel-btn {
       background: white;
       border: 2px solid #eaeaea;
       border-radius: 14px;
-      padding: 20px 12px;
-      font-size: 15px;
+      padding: 16px 10px;
+      font-size: 14px;
       font-weight: 600;
       color: #722F37;
       cursor: pointer;
@@ -143,8 +143,9 @@
       align-items: center;
       justify-content: center;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
-      min-height: 85px;
+      min-height: 90px;
       text-align: center;
+      line-height: 1.3;
     }
     .panel-btn:hover {
       transform: translateY(-4px);
@@ -210,13 +211,13 @@
       <strong>Estado(s):</strong> <span id="userEstado">—</span>
     </div>
     <div class="panel-buttons">
-      <button class="panel-btn" onclick="window.location.href='registrar.html'">📝 Registrar</button>
-      <button class="panel-btn" onclick="window.location.href='consultar.html'">🔍 Consultar</button>
-      <button class="panel-btn" onclick="window.location.href='cargas.html'">💼 Cargas</button>
-      <button class="panel-btn" onclick="alert('📋 Listados')">📋 Listados</button>
-      <button class="panel-btn" onclick="alert('🖨️ Exportar')">🖨️ Exportar</button>
-      <button class="panel-btn" onclick="alert('📊 Reportes')">📊 Reportes</button>
-      <button class="panel-btn" onclick="alert('⚙️ Configuración')">⚙️ Config</button>
+      <button class="panel-btn" onclick="window.location.href='rh.html'">👥 Recursos Humanos</button>
+      <button class="panel-btn" onclick="window.location.href='analisis.html'">🔍 Análisis</button>
+      <button class="panel-btn" onclick="window.location.href='logistica.html'">📦 Logística</button>
+      <button class="panel-btn" onclick="window.location.href='dppc.html'">⚖️ DPPC</button>
+      <button class="panel-btn" onclick="window.location.href='asesoria.html'">⚖️ Asesoría Legal</button>
+      <button class="panel-btn" onclick="window.location.href='disciplinarios.html'">📇 D.E. Disciplinarios</button>
+      <button class="panel-btn" onclick="window.location.href='secretaria.html'">✒️ Secretaría</button>
       <button class="panel-btn" id="adminBtn">👑 Admin</button>
     </div>
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
@@ -239,7 +240,7 @@
   let currentUser = null;
 
   async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {  { session } } = await supabase.auth.getSession();
     if (!session) {
       showLogin();
       return;
@@ -248,7 +249,7 @@
     currentUser = session.user;
 
     // 🔍 Buscar perfil en `usuarios_perfil`
-    const { data: perfil, error } = await supabase
+    const {  perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id, estados_asignados')
       .eq('user_id', session.user.id)
@@ -264,7 +265,7 @@
     }
 
     if (!perfil) {
-      // ❌ Sin perfil → acceso denegado (nada de auto-creación)
+      // ❌ Sin perfil → acceso denegado (según tu preferencia: no auto-creación)
       alertDiv.textContent = 'Acceso denegado: usuario no autorizado.';
       alertDiv.className = 'alert alert-error';
       alertDiv.style.display = 'block';
@@ -290,7 +291,7 @@
     userEmailSpan.textContent = email;
     userEstadoSpan.textContent = estado;
 
-    // 👑 Configurar botón Admin (siempre visible)
+    // 👑 Botón Admin: visible siempre, pero funcionalidad restringida
     adminBtn.onclick = () => {
       if (rol_id === 1) {
         window.location.href = 'admin.html';
