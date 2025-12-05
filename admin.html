@@ -250,7 +250,7 @@
       usersTable.classList.add('hidden');
 
       try {
-        const { data: perfiles, error } = await supabase
+        const {  perfiles, error } = await supabase
           .from('usuarios_perfil')
           .select('id, user_id, email, rol_id, estados_asignados, created_at');
 
@@ -316,7 +316,7 @@
       createBtn.textContent = 'Creando…';
 
       try {
-        // ✅ Llamada segura a Edge Function
+        // ✅ Llamada a Edge Function create-user
         const response = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
           method: 'POST',
           headers: {
@@ -347,25 +347,36 @@
     });
 
     window.deleteUser = async function(userId, email) {
-      if (!confirm(`¿Eliminar perfil de ${email}?`)) return;
+      if (!confirm(`¿Eliminar permanentemente a ${email}? Esta acción no se puede deshacer.`)) return;
 
       try {
-        const { error } = await supabase
-          .from('usuarios_perfil')
-          .delete()
-          .eq('user_id', userId);
+        // ✅ Llamada a Edge Function delete-user
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/delete-user`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${currentSession.access_token}`,
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({ user_id: userId })
+        });
 
-        if (error) throw error;
+        const result = await response.json();
 
-        // ✅ Opcional: llamar a otra Edge Function para borrar auth user
-        // Por ahora, solo perfil (seguro y suficiente)
-        showAlert(`✅ Perfil eliminado.`, 'success');
+        if (!response.ok) {
+          throw new Error(result.error || result.warning || 'Error desconocido');
+        }
+
+        showAlert(`✅ Usuario ${email} eliminado exitosamente.`, 'success');
         loadUsers();
+
       } catch (err) {
-        showAlert(`Error: ${err.message}`, 'error');
+        console.error('Error eliminando:', err);
+        showAlert(err.message, 'error');
       }
     };
 
+    // ✅ Iniciar
     checkAdminAccess();
   </script>
 </body>
