@@ -284,32 +284,78 @@
     </div>
   </div>
 
-  <script>
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cIDI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const authAlert = document.getElementById('authAlert');
-    const userForm = document.querySelector('form');
+    const userForm = document.getElementById('userForm');
     const formTitle = document.getElementById('formTitle');
+    const btnText = document.getElementById('btnText');
+    const estadosChecklist = document.getElementById('estadosChecklist');
+    const seccionesChecklist = document.getElementById('seccionesChecklist');
+    const seccionesGroup = document.getElementById('seccionesGroup');
     const userRol = document.getElementById('userRol');
-    const estadosSelect = document.getElementById('estadosSelect');
-    const modulosSelect = document.getElementById('modulosSelect');
-    const modulosSection = document.getElementById('modulosSection');
     const logoutBtn = document.getElementById('logoutBtn');
     const usuariosBody = document.getElementById('usuariosBody');
 
-    // Mostrar/ocultar módulos según rol
+    // 🔹 Listas estáticas
+    const ESTADOS = [
+      "Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar", "Carabobo",
+      "Cojedes", "Delta Amacuro", "Falcón", "Guárico", "Lara", "Mérida", "Miranda",
+      "Monagas", "Nueva Esparta", "Portuguesa", "Sucre", "Táchira", "Trujillo",
+      "La Guaira", "Yaracuy", "Zulia"
+    ];
+
+    const SECCIONES = [
+      { id: 'rh', name: 'Recursos Humanos' },
+      { id: 'analisis', name: 'Análisis' },
+      { id: 'logistica', name: 'Logística' },
+      { id: 'dppc', name: 'DPPC' },
+      { id: 'legal', name: 'Asesoría Legal' },
+      { id: 'disciplinarios', name: 'D.E. Disciplinarios' },
+      { id: 'secretaria', name: 'Secretaría' }
+    ];
+
+    let editingUser = null;
+
+    // 🎨 Renderizar checklist de estados
+    function renderEstadosChecklist(selected = []) {
+      estadosChecklist.innerHTML = ESTADOS.map(estado => `
+        <label class="checkbox-item">
+          <input type="checkbox" value="${estado}" ${selected.includes(estado) ? 'checked' : ''}>
+          ${estado}
+        </label>
+      `).join('');
+    }
+
+    // 🎨 Renderizar checklist de secciones
+    function renderSeccionesChecklist(selected = []) {
+      seccionesChecklist.innerHTML = SECCIONES.map(sec => `
+        <label class="checkbox-item">
+          <input type="checkbox" value="${sec.id}" ${selected.includes(sec.id) ? 'checked' : ''}>
+          ${sec.name}
+        </label>
+      `).join('');
+    }
+
+    // 🎯 Mostrar/ocultar secciones
     userRol.addEventListener('change', () => {
-      modulosSection.style.display = userRol.value === '2' ? 'block' : 'none';
+      seccionesGroup.classList.toggle('hidden', userRol.value !== '2');
     });
 
-    // 🔐 Verificación de acceso (CORREGIDO: sin {{ session }})
+    // ✅ Inicializar
+    renderEstadosChecklist();
+    renderSeccionesChecklist();
+
+    // 🔐 Verificar acceso (CORREGIDO: sin {{ session }})
     async function checkAccess() {
       const { data, error } = await supabase.auth.getSession();
       const session = data?.session;
 
-      if (error || !session) {
+      if (!session) {
         authAlert.textContent = 'Sesión no válida. Redirigiendo…';
         authAlert.className = 'alert alert-error';
         authAlert.style.display = 'block';
@@ -317,7 +363,7 @@
         return false;
       }
 
-      const { data: perfilData, error: perfilError } = await supabase
+      const {  perfilData, error: perfilError } = await supabase
         .from('usuarios_perfil')
         .select('rol_id')
         .eq('user_id', session.user.id)
@@ -335,22 +381,15 @@
 
     // 📋 Cargar usuarios
     async function loadUsuarios() {
-      const { data: usuarios, error } = await supabase
+      const {  usuarios, error } = await supabase
         .from('usuarios_perfil')
         .select('user_id, rol_id, estados_asignados, secciones_acceso')
         .order('created_at', { ascending: false });
 
-      if (error) return;
-
-      const MODULOS_MAP = {
-        'rh': '🧑‍💼 RH',
-        'analisis': '🔍 Análisis',
-        'logistica': '📦 Log.',
-        'dppc': '🛡️ DPPC',
-        'legal': '⚖️ Legal',
-        'disciplinarios': '📑 Disc.',
-        'secretaria': '📝 Sec.'
-      };
+      if (error) {
+        console.error('Error al cargar usuarios:', error);
+        return;
+      }
 
       usuariosBody.innerHTML = usuarios.map(u => {
         const rolTag = 
@@ -358,23 +397,26 @@
           u.rol_id === 2 ? '<span class="tag tag-moderador">Moderador</span>' :
           '<span class="tag tag-usuario">Usuario</span>';
 
-        const estados = u.estados_asignados.length 
+        const estadosTxt = u.estados_asignados.length 
           ? u.estados_asignados.join(', ') 
           : '—';
 
-        const modulos = u.secciones_acceso?.length
-          ? u.secciones_acceso.map(id => MODULOS_MAP[id] || id).join(', ')
-          : u.rol_id === 1 ? 'Todos' : '—';
+        const seccionesTxt = u.secciones_acceso && u.secciones_acceso.length
+          ? u.secciones_acceso.map(id => 
+              SECCIONES.find(s => s.id === id)?.name || id
+            ).join(', ')
+          : u.rol_id === 1 ? 'Todas' : '—';
 
         return `
           <tr>
             <td style="font-family: monospace; font-size:13px;">${u.user_id.substring(0,8)}…</td>
             <td>${rolTag}</td>
-            <td>${estados}</td>
-            <td>${modulos}</td>
+            <td>${estadosTxt}</td>
+            <td>${seccionesTxt}</td>
             <td class="btn-actions">
               <button class="btn btn-outline btn-sm" onclick="editUser('${u.user_id}', ${u.rol_id}, ${JSON.stringify(u.estados_asignados)}, ${JSON.stringify(u.secciones_acceso || [])})">✏️ Editar</button>
-              <button class="btn btn-outline btn-sm" style="background:#ffebee;color:#c62828;" onclick="deleteUser('${u.user_id}')">🗑️</button>
+              <button class="btn btn-outline btn-sm" style="background:#ffebee;color:#c62828;"
+                onclick="deleteUser('${u.user_id}')">🗑️ Eliminar</button>
             </td>
           </tr>
         `;
@@ -383,27 +425,16 @@
 
     // ✏️ Editar
     function editUser(user_id, rol_id, estados, secciones) {
+      editingUser = user_id;
       formTitle.textContent = '✏️ Editar Usuario';
-      document.getElementById('userEmail').value = '';
-      document.getElementById('userEmail').disabled = true;
+      btnText.textContent = 'Actualizar Usuario';
+      
+      document.getElementById('userEmail').value = ''; // placeholder
       userRol.value = rol_id;
-
-      // Reset selección
-      Array.from(estadosSelect.options).forEach(opt => opt.selected = false);
-      Array.from(modulosSelect.options).forEach(opt => opt.selected = false);
-
-      // Aplicar valores
-      estados.forEach(e => {
-        const opt = Array.from(estadosSelect.options).find(o => o.value === e);
-        if (opt) opt.selected = true;
-      });
-      secciones.forEach(s => {
-        const opt = Array.from(modulosSelect.options).find(o => o.value === s);
-        if (opt) opt.selected = true;
-      });
-
-      modulosSection.style.display = rol_id === 2 ? 'block' : 'none';
-      document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
+      
+      renderEstadosChecklist(estados);
+      renderSeccionesChecklist(secciones);
+      seccionesGroup.classList.toggle('hidden', rol_id !== 2);
     }
 
     // 🗑️ Eliminar (CORREGIDO: con \n)
@@ -421,33 +452,39 @@
         authAlert.textContent = '✅ Usuario eliminado.';
         authAlert.className = 'alert alert-success';
         authAlert.style.display = 'block';
-        setTimeout(() => { 
-          authAlert.style.display = 'none'; 
-          loadUsuarios(); 
+        setTimeout(() => {
+          authAlert.style.display = 'none';
+          loadUsuarios();
         }, 2000);
       } catch (err) {
+        console.error('Error al eliminar:', err);
         authAlert.textContent = '❌ ' + (err.message || 'Error interno');
         authAlert.className = 'alert alert-error';
         authAlert.style.display = 'block';
       }
     }
 
-    // 🔄 Reset
+    // 🔄 Reset formulario
     function toggleForm() {
+      editingUser = null;
       formTitle.textContent = '➕ Crear Nuevo Usuario';
+      btnText.textContent = 'Crear Usuario';
       userForm.reset();
-      document.getElementById('userEmail').disabled = false;
-      modulosSection.style.display = 'none';
+      seccionesGroup.classList.add('hidden');
+      renderEstadosChecklist();
+      renderSeccionesChecklist();
     }
 
-    // ✅ Envío (solo creación de perfil; usuario ya debe existir en Auth)
+    // ✅ Enviar formulario (CORREGIDO: sin crear usuario en Auth desde frontend)
     userForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const email = document.getElementById('userEmail').value.trim();
       const rolId = parseInt(userRol.value);
-
-      const estados = Array.from(estadosSelect.selectedOptions).map(o => o.value);
+      
+      const estados = Array.from(estadosChecklist.querySelectorAll('input:checked'))
+        .map(el => el.value);
+      
       if (estados.length === 0) {
         authAlert.textContent = '❌ Seleccione al menos un estado.';
         authAlert.className = 'alert alert-error';
@@ -455,11 +492,12 @@
         return;
       }
 
-      let modulos = [];
+      let secciones = [];
       if (rolId === 2) {
-        modulos = Array.from(modulosSelect.selectedOptions).map(o => o.value);
-        if (modulos.length === 0) {
-          authAlert.textContent = '❌ Moderador: seleccione al menos un módulo.';
+        secciones = Array.from(seccionesChecklist.querySelectorAll('input:checked'))
+          .map(el => el.value);
+        if (secciones.length === 0) {
+          authAlert.textContent = '❌ Moderador: seleccione al menos una sección.';
           authAlert.className = 'alert alert-error';
           authAlert.style.display = 'block';
           return;
@@ -469,16 +507,16 @@
       try {
         const { data, error } = await supabase.auth.getSession();
         const session = data?.session;
-        if (error || !session) throw new Error('Sesión inválida');
+        if (error || !session) throw new Error('Sesión no válida');
 
-        // ✅ Solo insertar perfil (usuario ya debe estar en Auth manualmente)
+        // ✅ Solo crear perfil (usuario ya debe existir en Auth)
         const { error: err } = await supabase
           .from('usuarios_perfil')
           .insert([{
-            user_id: session.user.id, // temporal: para prueba, luego usar UUID del usuario nuevo
+            user_id: session.user.id, // 👈 temporal: para prueba. En producción, usa UUID del nuevo usuario.
             rol_id: rolId,
             estados_asignados: estados,
-            secciones_acceso: rolId === 2 ? modulos : null
+            secciones_acceso: rolId === 2 ? secciones : null
           }]);
 
         if (err) throw err;
@@ -491,7 +529,9 @@
           toggleForm();
           loadUsuarios();
         }, 2500);
+
       } catch (err) {
+        console.error('Error al guardar perfil:', err);
         authAlert.textContent = '❌ ' + (err.message || 'No se pudo guardar el perfil');
         authAlert.className = 'alert alert-error';
         authAlert.style.display = 'block';
@@ -505,10 +545,11 @@
     });
 
     // 🚀 Iniciar
-    (async () => {
-      const access = await checkAccess();
-      if (access) loadUsuarios();
-    })();
-  </script>
+    const access = await checkAccess();
+    if (access) {
+      loadUsuarios();
+    }
+  });
+</script>
 </body>
 </html>
