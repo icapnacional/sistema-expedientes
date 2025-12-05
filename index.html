@@ -290,6 +290,8 @@
     }
 
     currentUser = session.user;
+
+    // 🔍 Buscar perfil en `usuarios_perfil`
     const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id, estados_asignados')
@@ -306,12 +308,14 @@
     }
 
     if (!perfil) {
-    
+      // 👉 Primer acceso: ir a selección de estado para auto-crear como rol 3
       showEstadoSelection();
       return;
     }
-    localStorage.setItem('perfil', JSON.stringify(perfil));
-    window.location.href = 'panel.html';
+
+    // ✅ Ya tiene perfil → mostrar panel inline (o redirigir a panel.html luego)
+    const estadosTxt = perfil.estados_asignados.join(', ') || '—';
+    showPanel(session.user.email, estadosTxt);
   }
 
   function showLogin() {
@@ -324,6 +328,14 @@
     loginView.classList.add('hidden');
     estadoView.classList.remove('hidden');
     panelView.classList.add('hidden');
+  }
+
+  function showPanel(email, estado) {
+    userEmailSpan.textContent = email;
+    userEstadoSpan.textContent = estado;
+    loginView.classList.add('hidden');
+    estadoView.classList.add('hidden');
+    panelView.classList.remove('hidden');
   }
 
   loginForm.addEventListener('submit', async (e) => {
@@ -356,7 +368,8 @@
     estadoAlert.style.display = 'none';
 
     try {
-      
+      // ✅ Auto-crear perfil como USUARIO (rol_id: 3) con 1 estado
+      // Esta operación está permitida por la política "Self-insert-once"
       const { error } = await supabase
         .from('usuarios_perfil')
         .insert([{
@@ -367,12 +380,8 @@
         }]);
 
       if (error) throw error;
-      
-      localStorage.setItem('perfil', JSON.stringify({
-        rol_id: 3,
-        estados_asignados: [estado]
-      }));
-      window.location.href = 'panel.html';
+
+      showPanel(currentUser.email, estado);
     } catch (err) {
       console.error('Error al crear perfil:', err);
       estadoAlert.textContent = 'Error al registrar su perfil. Intente nuevamente.';
@@ -383,11 +392,11 @@
 
   logoutBtn.addEventListener('click', async () => {
     await supabase.auth.signOut();
-    localStorage.removeItem('perfil');
     currentUser = null;
     showLogin();
   });
-  
+
+  // Iniciar
   checkSession();
 </script>
 </body>
