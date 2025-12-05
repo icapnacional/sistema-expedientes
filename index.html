@@ -231,7 +231,7 @@
     const loginForm = document.getElementById('loginForm');
     const logoutBtn = document.getElementById('logoutBtn');
 
-    // 🔹 Botones fijos (7)
+    // 🔹 Los 7 botones solicitados
     const BOTONES = [
       { name: 'Recursos Humanos', icon: '🧑‍💼', href: 'rh.html' },
       { name: 'Análisis', icon: '🔍', href: 'analisis.html' },
@@ -242,19 +242,18 @@
       { name: 'Secretaría', icon: '📝', href: 'secretaria.html' }
     ];
 
-    // ✅ Mostrar panel con botones según rol
+    // ✅ Mostrar panel con 7 botones + admin condicional
     function showPanel(email, estados, rol_id) {
       userEmailSpan.textContent = email;
       userEstadoSpan.textContent = estados.length ? estados.join(', ') : '—';
 
-      // Generar los 7 botones
       let html = BOTONES.map(b => `
         <button class="panel-btn" onclick="window.location.href='${b.href}'">
           ${b.icon} ${b.name}
         </button>
       `).join('');
 
-      // ✅ Añadir botón de Admin SOLO si es rol 1
+      // ✅ Solo si es admin (rol_id === 1)
       if (rol_id === 1) {
         html += `
           <button class="panel-btn" onclick="window.location.href='admin.html'">
@@ -264,7 +263,6 @@
       }
 
       document.getElementById('panelButtonsContainer').innerHTML = html;
-
       loginView.classList.add('hidden');
       panelView.classList.remove('hidden');
     }
