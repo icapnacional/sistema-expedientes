@@ -206,7 +206,6 @@
       © Desarrollado por OTIC ZULIA — Información: 0424-6962840 / 0412-2714179
     </p>
   </div>
-
   <!-- Panel -->
   <div id="panelView" class="panel-card hidden">
     <img 
@@ -227,117 +226,113 @@
       <button class="panel-btn" onclick="window.location.href='asesoria.html'">⚖️ Asesoría Legal</button>
       <button class="panel-btn" onclick="window.location.href='disciplinarios.html'">📇 D.E. Disciplinarios</button>
       <button class="panel-btn" onclick="window.location.href='secretaria.html'">✒️ Secretaría</button>
-      <button class="panel-btn" id="adminBtn">👑 Admin</button>
+      <button class="panel-btn hidden" id="adminBtn">👑 Admin</button>
     </div>
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
   </div>
 
-<script>
-  const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <script>
+    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const loginView = document.getElementById('loginView');
+    const panelView = document.getElementById('panelView');
+    const userEmailSpan = document.getElementById('userEmail');
+    const userEstadoSpan = document.getElementById('userEstado');
+    const alertDiv = document.getElementById('alertMessage');
+    const loginForm = document.getElementById('loginForm');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const adminBtn = document.getElementById('adminBtn');
 
-  const loginView = document.getElementById('loginView');
-  const panelView = document.getElementById('panelView');
-  const userEmailSpan = document.getElementById('userEmail');
-  const userEstadoSpan = document.getElementById('userEstado');
-  const alertDiv = document.getElementById('alertMessage');
-  const loginForm = document.getElementById('loginForm');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const adminBtn = document.getElementById('adminBtn');
+    let currentUser = null;
 
-  let currentUser = null;
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        showLogin();
+        return;
+      }
+      currentUser = session.user;
 
-  async function checkSession() {
-    // ✅ CORREGIDO: sintaxis válida (línea crítica — antes causaba el error)
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      showLogin();
-      return;
+      const { data: perfil, error } = await supabase
+        .from('usuarios_perfil')
+        .select('rol_id, estados_asignados')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error al cargar perfil:', error);
+        showError('Error interno. Contacte al administrador.');
+        showLogin();
+        return;
+      }
+
+      if (!perfil) {
+        // ✅ Solo muestra mensaje, NO cierra sesión ni redirige automáticamente
+        showError('⚠️ Usuario sin perfil asignado. Contacte al administrador.');
+        showLogin();
+        return;
+      }
+
+      const estadosTxt = perfil.estados_asignados?.length
+        ? perfil.estados_asignados.join(', ')
+        : '—';
+      
+      showPanel(session.user.email, estadosTxt, perfil.rol_id);
     }
 
-    currentUser = session.user;
-
-    // 🔍 Perfil en `usuarios_perfil`
-    const { data: perfil, error } = await supabase
-      .from('usuarios_perfil')
-      .select('rol_id, estados_asignados')
-      .eq('user_id', session.user.id)
-      .single();
-
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error al cargar perfil:', error);
-      showError('Error interno. Contacte al administrador.');
-      showLogin();
-      return;
+    function showError(msg) {
+      alertDiv.textContent = msg;
+      alertDiv.className = 'alert alert-error';
+      alertDiv.style.display = 'block';
     }
 
-    if (!perfil) {
-      // ❌ Sin perfil → acceso denegado (según preferencia: no autoregistro)
-      showError('Acceso denegado: usuario no autorizado.');
+    function showLogin() {
+      loginView.classList.remove('hidden');
+      panelView.classList.add('hidden');
+    }
+
+    function showPanel(email, estado, rol_id) {
+      userEmailSpan.textContent = email;
+      userEstadoSpan.textContent = estado;
+
+      // 👑 Admin: visible y funcional SOLO si rol_id === 1
+      if (rol_id === 1) {
+        adminBtn.classList.remove('hidden');
+        adminBtn.onclick = () => {
+          window.location.href = 'crear-usuario.html';
+        };
+      } else {
+        adminBtn.classList.add('hidden');
+      }
+
+      loginView.classList.add('hidden');
+      panelView.classList.remove('hidden');
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      alertDiv.style.display = 'none';
+
+      try {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        checkSession();
+      } catch (err) {
+        showError(err.message || 'Credenciales inválidas.');
+      }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
       await supabase.auth.signOut();
+      currentUser = null;
       showLogin();
-      return;
-    }
+    });
 
-    const estadosTxt = perfil.estados_asignados?.length
-      ? perfil.estados_asignados.join(', ')
-      : '—';
-
-    showPanel(session.user.email, estadosTxt, perfil.rol_id);
-  }
-
-  function showError(msg) {
-    alertDiv.textContent = msg;
-    alertDiv.className = 'alert alert-error';
-    alertDiv.style.display = 'block';
-  }
-
-  function showLogin() {
-    loginView.classList.remove('hidden');
-    panelView.classList.add('hidden');
-  }
-
-  function showPanel(email, estado, rol_id) {
-    userEmailSpan.textContent = email;
-    userEstadoSpan.textContent = estado;
-    
-if (rol_id === 1) {
-  adminBtn.classList.remove('hidden');
-  adminBtn.onclick = () => {
-    window.location.href = 'crear-usuario.html';
-  };
-} else {
-  adminBtn.classList.add('hidden');
-}
-
-    loginView.classList.add('hidden');
-    panelView.classList.remove('hidden');
-  }
-
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    alertDiv.style.display = 'none';
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      checkSession();
-    } catch (err) {
-      showError(err.message || 'Credenciales inválidas.');
-    }
-  });
-
-  logoutBtn.addEventListener('click', async () => {
-    await supabase.auth.signOut();
-    currentUser = null;
-    showLogin();
-  });
-
-  // ✅ Iniciar
-  checkSession();
-</script>
+    // ✅ Iniciar
+    checkSession();
+  </script>
 </body>
 </html>
