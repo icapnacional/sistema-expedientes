@@ -301,14 +301,15 @@
   function showPanel(email, estado, rol_id) {
     userEmailSpan.textContent = email;
     userEstadoSpan.textContent = estado;
-
-adminBtn.onclick = () => {
-  if (rol_id === 1) {
+    
+if (rol_id === 1) {
+  adminBtn.classList.remove('hidden');
+  adminBtn.onclick = () => {
     window.location.href = 'crear-usuario.html';
-  } else {
-    alert('🔒 Acceso restringido: Solo administradores.');
-  }
-};
+  };
+} else {
+  adminBtn.classList.add('hidden');
+}
 
     loginView.classList.add('hidden');
     panelView.classList.remove('hidden');
