@@ -315,7 +315,7 @@
 
     // 🔐 Verificación de acceso
     async function checkAccess() {
-      const {  { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         authAlert.textContent = 'Sesión no válida. Redirigiendo…';
         authAlert.className = 'alert alert-error';
