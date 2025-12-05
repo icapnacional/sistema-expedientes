@@ -122,7 +122,6 @@
 
     <div id="alert" class="alert"></div>
 
-    <!-- Formulario Crear Usuario -->
     <div class="card">
       <h2>➕ Crear Nuevo Usuario</h2>
       <form id="createForm" class="form-grid">
@@ -151,7 +150,6 @@
       </form>
     </div>
 
-    <!-- Tabla de Usuarios -->
     <div class="card">
       <h2>👥 Usuarios Registrados</h2>
       <table id="usersTable">
@@ -187,13 +185,33 @@
       setTimeout(() => alertDiv.style.display = 'none', 5000);
     }
 
+    async function validateSessionAndRole() {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || !session) throw new Error('Sesión inválida');
+
+      const { data: perfil, error: profileError } = await supabase
+        .from('usuarios_perfil')
+        .select('rol_id, active_session_token')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (profileError) throw profileError;
+      if (!perfil || perfil.rol_id !== 1) throw new Error('Acceso denegado');
+
+      // 🔒 Validar 1 dispositivo (si active_session_token está presente)
+      const sessionTokenShort = session.access_token.substring(0, 32);
+      if (perfil.active_session_token && perfil.active_session_token !== sessionTokenShort) {
+        await supabase.auth.signOut();
+        throw new Error('Sesión cerrada: otro dispositivo inició sesión.');
+      }
+
+      return { session, perfil };
+    }
+
     async function loadUsers() {
       usersBody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
-
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !session) throw new Error('Sesión inválida');
-
+        const { session } = await validateSessionAndRole();
         const res = await fetch(`${SUPABASE_URL}/functions/v1/admin/users`, {
           method: 'GET',
           headers: {
@@ -201,40 +219,30 @@
             'apikey': SUPABASE_ANON_KEY
           }
         });
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
-
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         usersBody.innerHTML = '';
-        if (!data || data.length === 0) {
-          usersBody.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay usuarios</td></tr>';
-          return;
-        }
-
         data.forEach(row => {
           const rolClass = row.rol_id === 1 ? 'rol-1' : 'rol-3';
           const rolText = row.rol_id === 1 ? 'Admin' : 'Usuario';
           const estados = row.estados_asignados?.join(', ') || '—';
           const fecha = new Date(row.created_at).toLocaleDateString();
-
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td>${row.email || '—'}</td>
             <td>${estados}</td>
             <td><span class="status ${rolClass}">${rolText}</span></td>
             <td>${fecha}</td>
-            <td>
-              ${row.user_id !== session.user.id && row.rol_id !== 1 ?
-                `<button class="btn-danger" onclick="deleteUser('${row.user_id}')">🗑️ Eliminar</button>` :
-                `<span style="color:#999">🔒 Protegido</span>`}
-            </td>
-          `;
+            <td>${row.user_id !== session.user.id ? 
+              `<button class="btn-danger" onclick="deleteUser('${row.user_id}')">🗑️ Eliminar</button>` :
+              `<span style="color:#999">🔒 Yo</span>`}
+            </td>`;
           usersBody.appendChild(tr);
         });
-
       } catch (err) {
-        console.error('Error al cargar usuarios:', err);
-        usersBody.innerHTML = `<tr><td colspan="5" style="color:red">Error: ${err.message}</td></tr>`;
+        console.error(err);
+        showAlert(err.message || 'Error al cargar', 'error');
+        setTimeout(() => window.location.href = 'index.html', 2000);
       }
     }
 
@@ -243,15 +251,10 @@
       const email = document.getElementById('newEmail').value.trim();
       const password = document.getElementById('newPassword').value;
       const rol_id = parseInt(document.getElementById('newRol').value);
-      const estadosRaw = document.getElementById('newEstados').value;
-      const estados_asignados = estadosRaw.split(',').map(s => s.trim()).filter(Boolean);
-
-      if (!email || !password) return showAlert('Completa todos los campos', 'error');
-
+      const estados = document.getElementById('newEstados').value
+        .split(',').map(s => s.trim()).filter(Boolean);
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !session) throw new Error('Sesión expirada');
-
+        const { session } = await validateSessionAndRole();
         const res = await fetch(`${SUPABASE_URL}/functions/v1/admin/users`, {
           method: 'POST',
           headers: {
@@ -259,30 +262,25 @@
             'Content-Type': 'application/json',
             'apikey': SUPABASE_ANON_KEY
           },
-          body: JSON.stringify({ email, password, rol_id, estados_asignados })
+          body: JSON.stringify({ email, password, rol_id, estados_asignados: estados })
         });
-
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.error || `HTTP ${res.status}`);
         }
-
-        showAlert('✅ Usuario creado exitosamente');
+        showAlert('✅ Usuario creado');
         createForm.reset();
         loadUsers();
       } catch (err) {
-        console.error('Error al crear usuario:', err);
-        showAlert('❌ Error: ' + (err.message || 'falló la creación'), 'error');
+        console.error(err);
+        showAlert(err.message || 'Error al crear', 'error');
       }
     });
 
     async function deleteUser(user_id) {
-      if (!confirm('¿Eliminar usuario? Esta acción es irreversible.')) return;
-
+      if (!confirm('¿Eliminar usuario?')) return;
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !session) throw new Error('Sesión inválida');
-
+        const { session } = await validateSessionAndRole();
         const res = await fetch(`${SUPABASE_URL}/functions/v1/admin/users`, {
           method: 'DELETE',
           headers: {
@@ -292,42 +290,24 @@
           },
           body: JSON.stringify({ user_id })
         });
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || `HTTP ${res.status}`);
-        }
-
-        showAlert('✅ Usuario eliminado');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        showAlert('✅ Eliminado');
         loadUsers();
       } catch (err) {
-        console.error('Error al eliminar:', err);
-        showAlert('❌ Error: ' + (err.message || ''), 'error');
+        console.error(err);
+        showAlert(err.message || 'Error al eliminar', 'error');
       }
     }
 
-    // ✅ Iniciar — redirigir si no es admin
+    // ✅ Iniciar
     (async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error || !session) {
-        window.location.href = 'index.html';
-        return;
+      try {
+        await validateSessionAndRole();
+        loadUsers();
+      } catch (err) {
+        showAlert(err.message, 'error');
+        setTimeout(() => window.location.href = 'index.html', 2000);
       }
-
-      // Verificar rol = 1
-      const { data: perfil } = await supabase
-        .from('usuarios_perfil')
-        .select('rol_id')
-        .eq('user_id', session.user.id)
-        .single();
-
-      if (!perfil || perfil.rol_id !== 1) {
-        alert('🔒 Acceso denegado');
-        window.location.href = 'index.html';
-        return;
-      }
-
-      loadUsers();
     })();
   </script>
 </body>
