@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel Principal - ICAP Nacional</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .panel-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 500px;
+      padding: 40px 32px;
+      text-align: center;
+      border: 1px solid #eee;
+    }
+    .logo {
+      width: 90px;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+      margin-bottom: 16px;
+    }
+    .user-info {
+      margin: 24px 0;
+      padding: 14px;
+      background: #f9f9f9;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #333;
+      border: 1px solid #eee;
+    }
+    .panel-buttons {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin: 28px 0;
+    }
+    @media (min-width: 600px) {
+      .panel-buttons {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .panel-btn {
+      background: white;
+      border: 2px solid #eaeaea;
+      border-radius: 14px;
+      padding: 18px 12px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #722F37;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+      min-height: 70px;
+      text-align: center;
+    }
+    .panel-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 14px rgba(114, 47, 55, 0.18);
+      border-color: #722F37;
+      background-color: #fdf7f7;
+      color: #5e262d;
+    }
+    .btn-logout {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      box-shadow: 0 3px 8px rgba(114, 47, 55, 0.2);
+    }
+    .btn-logout:hover {
+      background-color: #5e262d;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 14px rgba(114, 47, 55, 0.25);
+    }
+    .alert {
+      margin-top: 18px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      background-color: #fff5f5;
+      color: #c00;
+      border: 1px solid #ffd0d0;
+      display: none;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div id="panelView" class="panel-card">
+    <img 
+      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+      alt="ICAP Nacional - PNB" 
+      class="logo"
+    />
+    <h1>Panel Principal</h1>
+    <div class="user-info">
+      <strong>Usuario:</strong> <span id="userEmail">—</span><br>
+      <strong>Estado:</strong> <span id="userEstado">—</span>
+    </div>
+
+    <div class="panel-buttons">
+      <button class="panel-btn" onclick="goTo('rh')">🧑‍💼 Recursos Humanos</button>
+      <button class="panel-btn" onclick="goTo('analisis')">🔍 Análisis</button>
+      <button class="panel-btn" onclick="goTo('logistica')">📦 Logística</button>
+      <button class="panel-btn" onclick="goTo('dppc')">🛡️ DPPC</button>
+      <button class="panel-btn" onclick="goTo('legal')">⚖️ Asesoría Legal</button>
+      <button class="panel-btn" onclick="goTo('disciplinarios')">📑 D.E. Disciplinarios</button>
+      <button class="panel-btn" onclick="goTo('secretaria')">📝 Secretaría</button>
+    </div>
+
+    <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
+    <div id="authAlert" class="alert"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const userEmailSpan = document.getElementById('userEmail');
+    const userEstadoSpan = document.getElementById('userEstado');
+    const authAlert = document.getElementById('authAlert');
+
+    // Redirección genérica (puedes ajustar las rutas más adelante)
+    function goTo(section) {
+      // Ej: rh.html, analisis.html, etc.
+      const paths = {
+        rh: 'rh.html',
+        analisis: 'analisis.html',
+        logistica: 'logistica.html',
+        dppc: 'dppc.html',
+        legal: 'legal.html',
+        disciplinarios: 'disciplinarios.html',
+        secretaria: 'secretaria.html'
+      };
+      const url = paths[section] || '#';
+      window.location.href = url;
+    }
+
+    async function checkAuthAndRedirect() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        authAlert.textContent = 'Sesión no válida. Redirigiendo al login…';
+        authAlert.style.display = 'block';
+        setTimeout(() => window.location.href = 'index.html', 2000);
+        return;
+      }
+
+      const { data: estadoData, error } = await supabase
+        .from('usuarios_estados')
+        .select('estado')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error al verificar estado:', error);
+        authAlert.textContent = 'Error al cargar tu información. Intenta nuevamente.';
+        authAlert.style.display = 'block';
+        return;
+      }
+
+      if (!estadoData) {
+        authAlert.textContent = 'Estado no asignado. Redirigiendo a selección de estado…';
+        authAlert.style.display = 'block';
+        setTimeout(() => window.location.href = 'index.html', 2000);
+        return;
+      }
+
+      // ✅ Todo OK → mostrar datos
+      userEmailSpan.textContent = session.user.email;
+      userEstadoSpan.textContent = estadoData.estado;
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+    });
+
+    // Iniciar verificación
+    checkAuthAndRedirect();
+  </script>
+</body>
+</html>
