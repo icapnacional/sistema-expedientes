@@ -163,6 +163,11 @@
       color: #666;
       margin-top: 8px;
     }
+    .form-note {
+      font-size: 13px;
+      color: #777;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -175,9 +180,7 @@
       />
       <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
       <p class="subtitle">Panel de Administración — Gestión de Usuarios</p>
-
       <div id="adminAlert" class="alert"></div>
-
       <h2 class="section-title">➕ Crear Nuevo Usuario</h2>
       <form id="createForm">
         <div class="form-group">
@@ -187,6 +190,7 @@
         <div class="form-group">
           <label for="newPassword">Contraseña *</label>
           <input type="password" id="newPassword" required minlength="8" placeholder="Mín. 8 caracteres">
+          <p class="form-note">⚠️ Se enviará por correo interno. Guárdela en lugar seguro.</p>
         </div>
         <div class="form-group">
           <label for="newRol">Rol *</label>
@@ -210,16 +214,16 @@
             <option value="secretaria">Secretaría</option>
           </select>
         </div>
-        <div class="form-group">
+        <div class="form-group" id="estadosSection">
           <label>Estados Asignados *</label>
           <div class="flex" id="estadosCheckboxes">
-            <!-- checkboxes generados dinámicamente -->
+            <!-- Se renderizará solo si rol = 1 o 2 -->
           </div>
+          <p class="form-note">Solo requerido para Admin y Moderador.</p>
         </div>
         <button type="submit" class="btn" id="createBtn">✅ Crear Usuario</button>
       </form>
     </div>
-
     <div class="card">
       <h2 class="section-title">👥 Lista de Usuarios</h2>
       <div id="loadingUsers" style="text-align: center; padding: 20px;">Cargando...</div>
@@ -237,7 +241,6 @@
         </tbody>
       </table>
     </div>
-
     <div class="card">
       <button id="logoutBtn" class="btn">🚪 Cerrar Sesión</button>
       <p class="developer-note">
@@ -245,12 +248,15 @@
       </p>
     </div>
   </div>
-
 <script>
   const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  // ✅ Variables globales
+  let currentUser;
+
+  // DOM elements
   const adminAlert = document.getElementById('adminAlert');
   const createForm = document.getElementById('createForm');
   const createBtn = document.getElementById('createBtn');
@@ -259,6 +265,8 @@
   const loadingUsers = document.getElementById('loadingUsers');
   const logoutBtn = document.getElementById('logoutBtn');
   const estadosCheckboxes = document.getElementById('estadosCheckboxes');
+  const estadosSection = document.getElementById('estadosSection');
+  const newRolSelect = document.getElementById('newRol');
 
   const ESTADOS = [
     "Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar", "Carabobo", "Cojedes",
@@ -266,7 +274,7 @@
     "Portuguesa", "Sucre", "Táchira", "Trujillo", "La Guaira", "Yaracuy", "Zulia"
   ];
 
-  // ✅ Render checkboxes
+  // ✅ Render checkboxes de estados
   function renderEstadosCheckboxes() {
     const html = ESTADOS.map(e => `
       <label class="estado-item">
@@ -276,80 +284,105 @@
     estadosCheckboxes.innerHTML = html;
   }
 
-async function checkAdminSession() {
-  // ✅ Copiado 1:1 de tu index.html.txt — funciona
-  const {  { session } } = await supabase.auth.getSession();
-  if (!session) {
-    window.location.href = 'index.html';
-    return;
+  // ✅ Mostrar/ocultar sección de estados según rol
+  function toggleEstadosSection() {
+    const rol = newRolSelect.value;
+    if (rol === '3') {
+      // Rol 3 (Usuario) → no necesita estados
+      estadosSection.classList.add('hidden');
+    } else {
+      // Rol 1 o 2 → sí necesita estados
+      estadosSection.classList.remove('hidden');
+      renderEstadosCheckboxes(); // asegurar que estén renderizados
+    }
   }
 
-  currentUser = session.user;
+  // ✅ Verificar sesión y permisos
+  async function checkAdminSession() {
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        throw new Error('Error al obtener sesión: ' + error.message);
+      }
+      const session = data?.session;
+      if (!session) {
+        window.location.href = 'index.html';
+        return;
+      }
 
-  // ✅ Copiado 1:1 — incluye manejo de PGRST116
-  const {  perfil, error } = await supabase
-    .from('usuarios_perfil')
-    .select('rol_id, estados_asignados')
-    .eq('user_id', session.user.id)
-    .single();
+      currentUser = session.user;
 
-  if (error && error.code !== 'PGRST116') {
-    console.error('Error al cargar perfil:', error);
-    alert('Error interno. Contacte al administrador.');
-    window.location.href = 'index.html';
-    return;
+      const { data: perfil, error: perfilError } = await supabase
+        .from('usuarios_perfil')
+        .select('rol_id, estados_asignados')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (perfilError && perfilError.code !== 'PGRST116') {
+        console.error('Error al cargar perfil:', perfilError);
+        alert('Error interno al cargar perfil. Contacte al administrador.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      if (!perfil) {
+        alert('❌ No tienes perfil asignado. Contacta al administrador.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      if (perfil.rol_id !== 1) {
+        alert('🔒 Acceso restringido: Solo administradores.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // ✅ Es admin → continuar
+      renderEstadosCheckboxes();
+      newRolSelect.addEventListener('change', toggleEstadosSection);
+      toggleEstadosSection(); // inicial
+      loadUsers();
+    } catch (err) {
+      console.error('Error en checkAdminSession:', err);
+      alert('⚠️ Error de autenticación. Redirigiendo...');
+      window.location.href = 'index.html';
+    }
   }
 
-  if (!perfil) {
-    alert('❌ No tienes perfil asignado. Contacta al administrador.');
-    window.location.href = 'index.html';
-    return;
-  }
-
-  // ✅ Solo admins entran aquí
-  if (perfil.rol_id !== 1) {
-    alert('🔒 Acceso restringido: Solo administradores.');
-    window.location.href = 'index.html';
-    return;
-  }
-
-  // ✅ Si llega aquí: es admin → mostrar UI
-  renderEstadosCheckboxes();
-  loadUsers();
-}
   function showAlert(msg, type = 'success') {
     adminAlert.textContent = msg;
     adminAlert.className = `alert alert-${type}`;
     adminAlert.style.display = 'block';
-    setTimeout(() => { adminAlert.style.display = 'none'; }, 5000);
+    setTimeout(() => { adminAlert.style.display = 'none'; }, 6000);
   }
 
-async function callEdge(method, path, body = null) {
-  const session = (await supabase.auth.getSession()).data.session;
-  if (!session) throw new Error('Sesión expirada');
+  async function callEdge(method, path, body = null) {
+    const { data, error } = await supabase.auth.getSession();
+    if (error || !data?.session) {
+      throw new Error('Sesión expirada o inválida');
+    }
+    const token = data.session.access_token;
+    const url = `${SUPABASE_URL}/functions/v1/${path}`;
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: body ? JSON.stringify(body) : null
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error?.message || result.error || `HTTP ${response.status}`);
+    }
+    return result;
+  }
 
-  const url = `${SUPABASE_URL}/functions/v1/${path}`;
-  const response = await fetch(url, {
-    method,
-    headers: {
-      'Authorization': `Bearer ${session.access_token}`,
-      'Content-Type': 'application/json'
-    },
-    body: body ? JSON.stringify(body) : null
-  });
-
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.error || `Error ${response.status}`);
-  return result;
-}
-  // ✅ Cargar usuarios
   async function loadUsers() {
     try {
       loadingUsers.style.display = 'block';
       usersTable.classList.add('hidden');
-
       const data = await callEdge('GET', 'listar_usuarios_admin');
-      
       if (!Array.isArray(data) || data.length === 0) {
         usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay usuarios registrados.</td></tr>';
       } else {
@@ -362,13 +395,13 @@ async function callEdge(method, path, body = null) {
           'disciplinarios': 'D.E. Disciplinarios',
           'secretaria': 'Secretaría'
         };
-
         const rows = data.map(u => {
           const rolText = {1: 'Admin', 2: 'Moderador', 3: 'Usuario'}[u.rol_id] || '—';
           const rolClass = `role-${u.rol_id}`;
-          const estados = u.estados_asignados?.length ? u.estados_asignados.join(', ') : '—';
+          const estados = u.estados_asignados && u.estados_asignados.length
+            ? u.estados_asignados.join(', ')
+            : '—';
           const botonText = botonMap[u.boton_asignado] || u.boton_asignado || '—';
-          
           return `
             <tr>
               <td>${u.email}</td>
@@ -389,17 +422,15 @@ async function callEdge(method, path, body = null) {
         }).join('');
         usersTableBody.innerHTML = rows;
       }
-
       loadingUsers.style.display = 'none';
       usersTable.classList.remove('hidden');
-
     } catch (err) {
       console.error('Error al cargar usuarios:', err);
       loadingUsers.innerHTML = '⚠️ Error al cargar. Ver consola.';
+      loadingUsers.style.display = 'block';
     }
   }
 
-  // ✅ Crear usuario
   createForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('newEmail').value.trim();
@@ -407,16 +438,21 @@ async function callEdge(method, path, body = null) {
     const rol_id = document.getElementById('newRol').value;
     const boton = document.getElementById('newBoton').value;
 
-    const selectedEstados = Array.from(estadosCheckboxes.querySelectorAll('input:checked'))
-      .map(cb => cb.value);
+    if (!email || !password || !rol_id || !boton) {
+      return showAlert('Complete todos los campos obligatorios.', 'error');
+    }
 
-    if (!email || !password || !rol_id || !boton || selectedEstados.length === 0) {
-      return showAlert('Complete todos los campos y seleccione al menos un estado.', 'error');
+    let selectedEstados = [];
+    if (rol_id !== '3') {
+      selectedEstados = Array.from(estadosCheckboxes.querySelectorAll('input:checked')).map(cb => cb.value);
+      if (selectedEstados.length === 0) {
+        return showAlert('Seleccione al menos un estado (requerido para Admin/Moderador).', 'error');
+      }
     }
 
     try {
       createBtn.disabled = true;
-      createBtn.textContent = 'Creando...';
+      createBtn.textContent = '⏳ Creando...';
 
       await callEdge('POST', 'crear_usuario_admin', {
         email,
@@ -426,38 +462,41 @@ async function callEdge(method, path, body = null) {
         estados_asignados: selectedEstados
       });
 
-      showAlert(`✅ Usuario creado: ${email}`);
+      showAlert(`✅ Usuario creado con éxito: ${email}`);
       createForm.reset();
-      Array.from(estadosCheckboxes.querySelectorAll('input')).forEach(cb => cb.checked = false);
+      newRolSelect.value = '';
+      toggleEstadosSection();
       loadUsers();
-
     } catch (err) {
-      showAlert(err.message || 'Error al crear usuario.', 'error');
+      showAlert(`❌ Error: ${err.message || 'Falló la creación del usuario'}`, 'error');
     } finally {
       createBtn.disabled = false;
       createBtn.textContent = '✅ Crear Usuario';
     }
   });
 
-  // ✅ Eliminar usuario (global para onclick)
   window.deleteUser = async function(userId, email) {
-    if (!confirm(`⚠️ ¿Eliminar definitivamente a ${email}?\nEsta acción no se puede deshacer.`)) return;
-
+    if (!confirm(`⚠️ ¿Eliminar definitivamente a ${email}?\nEsta acción es irreversible.`)) return;
     try {
       await callEdge('POST', 'eliminar_usuario_admin', { user_id: userId });
       showAlert(`🗑️ Usuario eliminado: ${email}`);
       loadUsers();
     } catch (err) {
-      showAlert(`Error eliminando ${email}: ${err.message}`, 'error');
+      showAlert(`❌ Error eliminando: ${err.message}`, 'error');
     }
   };
 
   logoutBtn.addEventListener('click', async () => {
-    await supabase.auth.signOut();
-    window.location.href = 'index.html';
+    try {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+    } catch (err) {
+      console.error('Error al cerrar sesión:', err);
+      alert('No se pudo cerrar sesión. Intente nuevamente.');
+    }
   });
 
-  // ✅ Iniciar
+  // ✅ Iniciar app
   checkAdminSession();
 </script>
 </body>
