@@ -116,95 +116,97 @@
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    document.addEventListener('DOMContentLoaded', async () => {
+      const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const loginView = document.getElementById('loginView');
-    const panelView = document.getElementById('panelView');
-    const alertDiv = document.getElementById('alertMessage');
-    const logoutBtn = document.getElementById('logoutBtn');
+      const loginView = document.getElementById('loginView');
+      const panelView = document.getElementById('panelView');
+      const alertDiv = document.getElementById('alertMessage');
+      const logoutBtn = document.getElementById('logoutBtn');
 
-    const BOTONES = [
-      { name: 'Recursos Humanos', icon: '🧑‍💼', href: 'rh.html' },
-      { name: 'Análisis', icon: '🔍', href: 'analisis.html' },
-      { name: 'Logística', icon: '📦', href: 'logistica.html' },
-      { name: 'DPPC', icon: '🛡️', href: 'dppc.html' },
-      { name: 'Asesoría Legal', icon: '⚖️', href: 'legal.html' },
-      { name: 'D.E. Disciplinarios', icon: '📑', href: 'disciplinarios.html' },
-      { name: 'Secretaría', icon: '📝', href: 'secretaria.html' }
-    ];
+      const BOTONES = [
+        { name: 'Recursos Humanos', icon: '🧑‍💼', href: 'rh.html' },
+        { name: 'Análisis', icon: '🔍', href: 'analisis.html' },
+        { name: 'Logística', icon: '📦', href: 'logistica.html' },
+        { name: 'DPPC', icon: '🛡️', href: 'dppc.html' },
+        { name: 'Asesoría Legal', icon: '⚖️', href: 'legal.html' },
+        { name: 'D.E. Disciplinarios', icon: '📑', href: 'disciplinarios.html' },
+        { name: 'Secretaría', icon: '📝', href: 'secretaria.html' }
+      ];
 
-    async function checkSession() {
-      const { data: { session }, error: sessErr } = await supabase.auth.getSession();
-      if (sessErr || !session) return showLogin();
+      async function checkSession() {
+        const {  { session } } = await supabase.auth.getSession();
+        if (!session) return showLogin();
 
-      const { data: perfil, error } = await supabase
-        .from('usuarios_perfil')
-        .select('rol_id, estados_asignados')
-        .eq('user_id', session.user.id)
-        .single();
+        const {  perfil, error } = await supabase
+          .from('usuarios_perfil')
+          .select('rol_id, estados_asignados')
+          .eq('user_id', session.user.id)
+          .single();
 
-      if (error) {
-        alertDiv.textContent = 'Error interno. Contacte al admin.';
-        alertDiv.style.display = 'block';
-        return showLogin();
+        if (error) {
+          alertDiv.textContent = 'Error interno. Contacte al admin.';
+          alertDiv.style.display = 'block';
+          return showLogin();
+        }
+
+        if (!perfil) {
+          alertDiv.textContent = 'Perfil no asignado.';
+          alertDiv.style.display = 'block';
+          return showLogin();
+        }
+
+        const estados = perfil.estados_asignados.join(', ') || '—';
+        showPanel(session.user.email, estados, perfil.rol_id);
       }
 
-      if (!perfil) {
-        alertDiv.textContent = 'Perfil no asignado.';
-        alertDiv.style.display = 'block';
-        return showLogin();
+      function showLogin() {
+        loginView.classList.remove('hidden');
+        panelView.classList.add('hidden');
       }
 
-      const estados = perfil.estados_asignados.join(', ') || '—';
-      showPanel(session.user.email, estados, perfil.rol_id);
-    }
+      function showPanel(email, estados, rol_id) {
+        document.getElementById('userEmail').textContent = email;
+        document.getElementById('userEstado').textContent = estados;
 
-    function showLogin() {
-      loginView.classList.remove('hidden');
-      panelView.classList.add('hidden');
-    }
+        let html = BOTONES.map(b => `
+          <button class="panel-btn" onclick="location.href='${b.href}'">
+            ${b.icon} ${b.name}
+          </button>
+        `).join('');
 
-    function showPanel(email, estados, rol_id) {
-      document.getElementById('userEmail').textContent = email;
-      document.getElementById('userEstado').textContent = estados;
+        if (rol_id === 1) {
+          html += `<button class="panel-btn" onclick="location.href='admin.html'">👑 Admin</button>`;
+        }
 
-      let html = BOTONES.map(b => `
-        <button class="panel-btn" onclick="location.href='${b.href}'">
-          ${b.icon} ${b.name}
-        </button>
-      `).join('');
-
-      if (rol_id === 1) {
-        html += `<button class="panel-btn" onclick="location.href='admin.html'">👑 Admin</button>`;
+        document.getElementById('panelButtonsContainer').innerHTML = html;
+        loginView.classList.add('hidden');
+        panelView.classList.remove('hidden');
       }
 
-      document.getElementById('panelButtonsContainer').innerHTML = html;
-      loginView.classList.add('hidden');
-      panelView.classList.remove('hidden');
-    }
+      document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+          const email = document.getElementById('email').value.trim();
+          const password = document.getElementById('password').value;
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          checkSession();
+        } catch (err) {
+          alertDiv.textContent = err.message || 'Error al iniciar sesión';
+          alertDiv.style.display = 'block';
+        }
+      });
 
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      try {
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        checkSession();
-      } catch (err) {
-        alertDiv.textContent = err.message || 'Error al iniciar sesión';
-        alertDiv.style.display = 'block';
-      }
+      logoutBtn.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        showLogin();
+      });
+
+      checkSession();
     });
-
-    logoutBtn.addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      showLogin();
-    });
-
-    checkSession();
   </script>
 </body>
 </html>
