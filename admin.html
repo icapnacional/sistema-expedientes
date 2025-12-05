@@ -206,7 +206,6 @@
     const usersBody = document.getElementById('usersBody');
 
     let currentUserId = null;
-    let currentSession = null;
 
     function showAlert(msg, type = 'error') {
       globalAlert.textContent = msg;
@@ -216,16 +215,16 @@
     }
 
     async function checkAdminAccess() {
-      const { data: { session } } = await supabase.auth.getSession();
+      // ✅ EXACTAMENTE como en index.html (línea 264) — sin errores de sintaxis
+      const {  { session } } = await supabase.auth.getSession();
       if (!session) {
         window.location.href = 'index.html';
         return false;
       }
 
       currentUserId = session.user.id;
-      currentSession = session;
 
-      const { data: perfil, error } = await supabase
+      const {  perfil, error } = await supabase
         .from('usuarios_perfil')
         .select('rol_id')
         .eq('user_id', session.user.id)
@@ -245,157 +244,158 @@
       return true;
     }
 
-async function loadUsers() {
-  loading.style.display = 'block';
-  usersTable.classList.add('hidden');
+    async function loadUsers() {
+      loading.style.display = 'block';
+      usersTable.classList.add('hidden');
 
-  try {
-    // ✅ Obtener sesión FRESA justo antes de la llamada
-    const {  { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error('Sesión caducada. Vuelva a iniciar.');
+      try {
+        // ✅ Sesión fresca — como en index.html
+        const {  { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error('Sesión expirada.');
 
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/list-users`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${session.access_token}`,
-        'apikey': SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json'
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/list-users`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || `Error ${response.status}`);
+        }
+
+        const users = await response.json();
+
+        usersBody.innerHTML = '';
+        users.forEach(u => {
+          const email = u.email || '—';
+          const estadosTxt = u.estados_asignados?.length
+            ? u.estados_asignados.join(', ')
+            : '—';
+
+          const rolBadge = {
+            '1': '<span class="badge badge-admin">Admin</span>',
+            '2': '<span class="badge">Asistente</span>',
+            '3': '<span class="badge">Estándar</span>'
+          }[u.rol_id] || `<span class="badge">Rol ${u.rol_id}</span>`;
+
+          const deleteBtn = u.user_id !== session.user.id
+            ? `<button onclick="deleteUser('${u.user_id}', '${email}')" class="btn btn-outline" style="padding:6px 10px;font-size:13px;">🗑️ Eliminar</button>`
+            : `<span style="color:#999;font-size:13px;">(tú)</span>`;
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><strong>${email}</strong></td>
+            <td>${rolBadge}</td>
+            <td>${estadosTxt}</td>
+            <td>${new Date(u.created_at).toLocaleDateString()}</td>
+            <td class="action-buttons">${deleteBtn}</td>
+          `;
+          usersBody.appendChild(row);
+        });
+
+        loading.style.display = 'none';
+        usersTable.classList.remove('hidden');
+
+      } catch (err) {
+        loading.style.display = 'none';
+        console.error('Error en loadUsers:', err);
+        showAlert('Error al cargar usuarios: ' + (err.message || 'interno'));
+      }
+    }
+
+    createForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('newEmail').value.trim();
+      const password = document.getElementById('newPassword').value;
+      const rol = document.getElementById('newRol').value;
+      const estadosRaw = document.getElementById('newEstados').value.trim();
+
+      if (!email || !password || !rol) {
+        showAlert('Completa todos los campos obligatorios.');
+        return;
+      }
+
+      let estados = [];
+      if (estadosRaw) {
+        estados = estadosRaw.split(',').map(s => s.trim()).filter(s => s);
+      }
+
+      createBtn.disabled = true;
+      createBtn.textContent = 'Creando…';
+
+      try {
+        // ✅ Sesión fresca — como en index.html
+        const {  { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error('Sesión expirada.');
+
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({ email, password, rol_id: rol, estados_asignados: estados })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Error desconocido');
+        }
+
+        showAlert(`✅ Usuario ${email} creado exitosamente.`, 'success');
+        createForm.reset();
+        loadUsers();
+
+      } catch (err) {
+        console.error(err);
+        showAlert(err.message || 'Error al crear usuario.', 'error');
+      } finally {
+        createBtn.disabled = false;
+        createBtn.textContent = 'Crear Usuario';
       }
     });
 
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error || `Error ${response.status}`);
-    }
+    window.deleteUser = async function(userId, email) {
+      if (!confirm(`¿Eliminar permanentemente a ${email}? Esta acción no se puede deshacer.`)) return;
 
-    const users = await response.json();
+      try {
+        // ✅ Sesión fresca
+        const {  { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error('Sesión expirada.');
 
-    usersBody.innerHTML = '';
-    users.forEach(u => {
-      const email = u.email || '—';
-      const estadosTxt = u.estados_asignados?.length
-        ? u.estados_asignados.join(', ')
-        : '—';
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/delete-user`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({ user_id: userId })
+        });
 
-      const rolBadge = {
-        '1': '<span class="badge badge-admin">Admin</span>',
-        '2': '<span class="badge">Asistente</span>',
-        '3': '<span class="badge">Estándar</span>'
-      }[u.rol_id] || `<span class="badge">Rol ${u.rol_id}</span>`;
+        const result = await response.json();
 
-      const deleteBtn = u.user_id !== session.user.id
-        ? `<button onclick="deleteUser('${u.user_id}', '${email}')" class="btn btn-outline" style="padding:6px 10px;font-size:13px;">🗑️ Eliminar</button>`
-        : `<span style="color:#999;font-size:13px;">(tú)</span>`;
+        if (!response.ok) {
+          throw new Error(result.error || result.warning || 'Error desconocido');
+        }
 
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td><strong>${email}</strong></td>
-        <td>${rolBadge}</td>
-        <td>${estadosTxt}</td>
-        <td>${new Date(u.created_at).toLocaleDateString()}</td>
-        <td class="action-buttons">${deleteBtn}</td>
-      `;
-      usersBody.appendChild(row);
-    });
+        showAlert(`✅ Usuario ${email} eliminado exitosamente.`, 'success');
+        loadUsers();
 
-    loading.style.display = 'none';
-    usersTable.classList.remove('hidden');
+      } catch (err) {
+        console.error('Error eliminando:', err);
+        showAlert(err.message, 'error');
+      }
+    };
 
-  } catch (err) {
-    loading.style.display = 'none';
-    console.error('Error en loadUsers:', err);
-    showAlert('Error al cargar usuarios: ' + (err.message || 'interno'));
-  }
-}
-
-createForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const email = document.getElementById('newEmail').value.trim();
-  const password = document.getElementById('newPassword').value;
-  const rol = document.getElementById('newRol').value;
-  const estadosRaw = document.getElementById('newEstados').value.trim();
-
-  if (!email || !password || !rol) {
-    showAlert('Completa todos los campos obligatorios.');
-    return;
-  }
-
-  let estados = [];
-  if (estadosRaw) {
-    estados = estadosRaw.split(',').map(s => s.trim()).filter(s => s);
-  }
-
-  createBtn.disabled = true;
-  createBtn.textContent = 'Creando…';
-
-  try {
-    // ✅ Sesión fresca
-    const {  { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error('Sesión caducada.');
-
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY
-      },
-      body: JSON.stringify({ email, password, rol_id: rol, estados_asignados: estados })
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || 'Error desconocido');
-    }
-
-    showAlert(`✅ Usuario ${email} creado exitosamente.`, 'success');
-    createForm.reset();
-    loadUsers();
-
-  } catch (err) {
-    console.error(err);
-    showAlert(err.message || 'Error al crear usuario.', 'error');
-  } finally {
-    createBtn.disabled = false;
-    createBtn.textContent = 'Crear Usuario';
-  }
-});
-
-window.deleteUser = async function(userId, email) {
-  if (!confirm(`¿Eliminar permanentemente a ${email}? Esta acción no se puede deshacer.`)) return;
-
-  try {
-    // ✅ Sesión fresca
-    const {  { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error('Sesión caducada.');
-
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/delete-user`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY
-      },
-      body: JSON.stringify({ user_id: userId })
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || result.warning || 'Error desconocido');
-    }
-
-    showAlert(`✅ Usuario ${email} eliminado exitosamente.`, 'success');
-    loadUsers();
-
-  } catch (err) {
-    console.error('Error eliminando:', err);
-    showAlert(err.message, 'error');
-  }
-};
-
+    // ✅ Iniciar — igual que index.html
     checkAdminAccess();
   </script>
 </body>
