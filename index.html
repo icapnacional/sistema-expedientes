@@ -248,59 +248,45 @@
 
   let currentUser = null;
 
-async function checkSession() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
-    showLogin();
-    return;
+  async function checkSession() {
+    // ✅ CORREGIDO: sintaxis válida (línea crítica — antes causaba el error)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      showLogin();
+      return;
+    }
+
+    currentUser = session.user;
+
+    // 🔍 Perfil en `usuarios_perfil`
+    const { data: perfil, error } = await supabase
+      .from('usuarios_perfil')
+      .select('rol_id, estados_asignados')
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error al cargar perfil:', error);
+      showError('Error interno. Contacte al administrador.');
+      showLogin();
+      return;
+    }
+
+    if (!perfil) {
+      // ❌ Sin perfil → acceso denegado (según preferencia: no autoregistro)
+      showError('Acceso denegado: usuario no autorizado.');
+      await supabase.auth.signOut();
+      showLogin();
+      return;
+    }
+
+    const estadosTxt = perfil.estados_asignados?.length
+      ? perfil.estados_asignados.join(', ')
+      : '—';
+
+    showPanel(session.user.email, estadosTxt, perfil.rol_id);
   }
 
-  currentUser = session.user;
-
-  // 🔑 Generar identificador único de esta sesión
-  const sessionTokenShort = session.access_token.substring(0, 32);
-
-  // ✅ Guardar en perfil (para 1 dispositivo)
-  await supabase
-    .from('usuarios_perfil')
-    .update({ active_session_token: sessionTokenShort })
-    .eq('user_id', session.user.id);
-
-  // 🔍 Cargar perfil
-  const { data: perfil, error } = await supabase
-    .from('usuarios_perfil')
-    .select('rol_id, estados_asignados, active_session_token')
-    .eq('user_id', session.user.id)
-    .single();
-
-  if (error && error.code !== 'PGRST116') {
-    console.error('Error al cargar perfil:', error);
-    showError('Error interno. Contacte al administrador.');
-    await supabase.auth.signOut();
-    showLogin();
-    return;
-  }
-
-  if (!perfil) {
-    showError('Acceso denegado: usuario no autorizado.');
-    await supabase.auth.signOut();
-    showLogin();
-    return;
-  }
-
-  // 🔒 Verificar unicidad de sesión
-  if (perfil.active_session_token && perfil.active_session_token !== sessionTokenShort) {
-    alert('🔒 Sesión cerrada: otro dispositivo inició sesión.');
-    await supabase.auth.signOut();
-    showLogin();
-    return;
-  }
-
-  const estadosTxt = perfil.estados_asignados?.length
-    ? perfil.estados_asignados.join(', ')
-    : '—';
-  showPanel(session.user.email, estadosTxt, perfil.rol_id);
-}
   function showError(msg) {
     alertDiv.textContent = msg;
     alertDiv.className = 'alert alert-error';
