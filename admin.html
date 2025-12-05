@@ -70,10 +70,6 @@
       border-radius: 10px;
       font-size: 15px;
     }
-    textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
     .btn {
       background-color: #722F37;
       color: white;
@@ -84,9 +80,6 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
     }
     .btn:disabled {
       opacity: 0.6;
@@ -100,9 +93,6 @@
       background: white;
       color: #722F37;
       border: 2px solid #722F37;
-    }
-    .btn-outline:hover:not(:disabled) {
-      background: #fdf7f7;
     }
     table {
       width: 100%;
@@ -158,10 +148,8 @@
     </div>
 
     <div id="adminPanel" class="card hidden">
-      <!-- Mensajes -->
       <div id="globalAlert" class="alert"></div>
 
-      <!-- Crear Usuario -->
       <h2>➕ Crear Nuevo Usuario</h2>
       <form id="createForm">
         <div class="form-group">
@@ -188,7 +176,6 @@
         <button type="submit" id="createBtn" class="btn">Crear Usuario</button>
       </form>
 
-      <!-- Lista de Usuarios -->
       <h2 style="margin-top: 40px;">👥 Lista de Usuarios</h2>
       <div id="loading" style="text-align:center; padding:20px;">Cargando...</div>
       <table id="usersTable" class="hidden">
@@ -222,7 +209,13 @@
 
     let currentUserId = null;
 
-    // 🔐 Verificar si es admin
+    function showAlert(msg, type = 'error') {
+      globalAlert.textContent = msg;
+      globalAlert.className = `alert alert-${type}`;
+      globalAlert.style.display = 'block';
+      setTimeout(() => { globalAlert.style.display = 'none'; }, 5000);
+    }
+
     async function checkAdminAccess() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -232,13 +225,18 @@
 
       currentUserId = session.user.id;
 
+      // ✅ Igual que en index.html: .single() + manejo de PGRST116
       const { data: perfil, error } = await supabase
         .from('usuarios_perfil')
         .select('rol_id')
         .eq('user_id', session.user.id)
         .single();
 
-      if (error || !perfil || perfil.rol_id !== 1) {
+      if (error && error.code !== 'PGRST116') {
+        showAlert('Error al verificar perfil: ' + error.message);
+        return false;
+      }
+      if (!perfil || perfil.rol_id !== 1) {
         unauthorized.classList.remove('hidden');
         return false;
       }
@@ -248,38 +246,34 @@
       return true;
     }
 
-    function showAlert(msg, type = 'error') {
-      globalAlert.textContent = msg;
-      globalAlert.className = `alert alert-${type}`;
-      globalAlert.style.display = 'block';
-      setTimeout(() => { globalAlert.style.display = 'none'; }, 5000);
-    }
-
-    // 📥 Cargar lista de usuarios
     async function loadUsers() {
       loading.style.display = 'block';
       usersTable.classList.add('hidden');
 
       try {
-        // Obtenemos todos los perfiles + join con auth.users
+        // 1. Perfiles
         const { data: perfiles, error: err1 } = await supabase
           .from('usuarios_perfil')
-          .select(`
-            id,
-            user_id,
-            rol_id,
-            estados_asignados,
-            created_at,
-            auth_users:auth.users!inner(email)
-          `);
+          .select('id, user_id, rol_id, estados_asignados, created_at, boton_asignado');
 
         if (err1) throw err1;
 
+        // 2. Emails de auth.users (solo IDs y emails — sin joins)
+        const userIds = perfiles.map(p => p.user_id);
+        const { data: authUsers, error: err2 } = await supabase
+          .from('auth.users')
+          .select('id, email')
+          .in('id', userIds);
+
+        if (err2) throw err2;
+
+        const emailMap = {};
+        authUsers.forEach(u => { emailMap[u.id] = u.email });
+
+        // 3. Render
         usersBody.innerHTML = '';
         perfiles.forEach(p => {
-          const email = p.auth_users?.email || '—';
-          const row = document.createElement('tr');
-
+          const email = emailMap[p.user_id] || '—';
           const estadosTxt = p.estados_asignados?.length
             ? p.estados_asignados.join(', ')
             : '—';
@@ -288,25 +282,19 @@
             '1': '<span class="badge badge-admin">Admin</span>',
             '2': '<span class="badge">Asistente</span>',
             '3': '<span class="badge">Estándar</span>'
-          }[p.rol_id] || '<span class="badge">—</span>';
+          }[p.rol_id] || `<span class="badge">Rol ${p.rol_id}</span>`;
 
-          const canDelete = p.user_id !== currentUserId;
+          const deleteBtn = p.user_id !== currentUserId
+            ? `<button onclick="deleteUser('${p.user_id}', '${email}')" class="btn btn-outline" style="padding:6px 10px;font-size:13px;">🗑️ Eliminar</button>`
+            : `<span style="color:#999;font-size:13px;">(tú)</span>`;
 
-          let deleteBtn = '';
-          if (canDelete) {
-            deleteBtn = `<button onclick="deleteUser('${p.user_id}', '${email}')" class="btn btn-outline" style="padding:6px 10px;font-size:13px;">🗑️ Eliminar</button>`;
-          } else {
-            deleteBtn = `<span style="color:#999;font-size:13px;">(tú)</span>`;
-          }
-
+          const row = document.createElement('tr');
           row.innerHTML = `
             <td><strong>${email}</strong></td>
             <td>${rolBadge}</td>
             <td>${estadosTxt}</td>
             <td>${new Date(p.created_at).toLocaleDateString()}</td>
-            <td class="action-buttons">
-              ${deleteBtn}
-            </td>
+            <td class="action-buttons">${deleteBtn}</td>
           `;
           usersBody.appendChild(row);
         });
@@ -316,11 +304,11 @@
 
       } catch (err) {
         loading.style.display = 'none';
-        showAlert('Error al cargar usuarios: ' + (err.message || err), 'error');
+        console.error('Error en loadUsers:', err);
+        showAlert('Error al cargar usuarios: ' + (err.message || 'interno'));
       }
     }
 
-    // ➕ Crear usuario
     createForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -334,7 +322,6 @@
         return;
       }
 
-      // Parsear estados
       let estados = [];
       if (estadosRaw) {
         estados = estadosRaw.split(',').map(s => s.trim()).filter(s => s);
@@ -344,91 +331,65 @@
       createBtn.textContent = 'Creando…';
 
       try {
-        // Paso 1: Crear auth user (solo con anon key → necesita RLS ajustado, ver PASO 2 abajo)
+        // ✅ signUp() funciona con anon key (por defecto en Supabase)
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email,
-          password,
-          options: {
-            data: { 
-              // Opcional: metadata inicial (no usada aún, pero buena práctica)
-              created_by: currentUserId,
-              role_requested: rol
-            }
-          }
+          password
         });
 
         if (signUpError) throw signUpError;
-        if (!authData.user) throw new Error('No se creó el usuario. Verifica permisos.');
+        if (!authData.user) throw new Error('Usuario no creado. Revisa permisos.');
 
         const userId = authData.user.id;
 
-        // Paso 2: Insertar en `usuarios_perfil`
+        // ✅ Insert en usuarios_perfil (requiere RLS o permisos — si falla, avisamos)
         const { error: insertError } = await supabase
           .from('usuarios_perfil')
           .insert({
             user_id: userId,
             rol_id: rol,
             estados_asignados: estados,
-            boton_asignado: 'rh' // valor por defecto (puedes cambiarlo)
+            boton_asignado: 'rh'
           });
 
         if (insertError) {
-          // ⚠️ Si falla la inserción, eliminamos el auth user para no dejar huérfanos
-          await supabase.auth.admin.deleteUser(userId); // ❗esto requiere service_role → solución abajo
-          throw new Error('Usuario creado, pero fallo al asignar perfil. Contacte al soporte.');
+          // Notificamos, pero no borramos (porque no podemos sin service_role)
+          showAlert(`⚠️ Usuario ${email} creado, pero sin perfil. Asigne manualmente en Supabase.`, 'success');
+        } else {
+          showAlert(`✅ Usuario ${email} creado y perfil asignado.`, 'success');
         }
 
-        showAlert(`✅ Usuario ${email} creado exitosamente.`, 'success');
         createForm.reset();
-        loadUsers(); // refrescar lista
+        loadUsers();
 
       } catch (err) {
         console.error(err);
-        showAlert(err.message || 'Error inesperado al crear usuario.', 'error');
+        showAlert(err.message || 'Error al crear usuario.', 'error');
       } finally {
         createBtn.disabled = false;
         createBtn.textContent = 'Crear Usuario';
       }
     });
 
-    // 🗑️ Eliminar usuario
     window.deleteUser = async function(userId, email) {
-      if (!confirm(`¿Eliminar permanentemente a ${email}? Esta acción no se puede deshacer.`)) return;
+      if (!confirm(`¿Eliminar perfil de ${email}? (El usuario seguirá existiendo en auth)`)) return;
 
       try {
-        // Paso 1: Eliminar perfil (RLS debe permitirlo a admins)
-        const { error: delPerfilErr } = await supabase
+        const { error } = await supabase
           .from('usuarios_perfil')
           .delete()
           .eq('user_id', userId);
 
-        if (delPerfilErr) throw delPerfilErr;
+        if (error) throw error;
 
-        // Paso 2: Eliminar auth user
-        // → Con `anon` key NO se puede hacer directamente. Solución: usar RLS + función trigger, o método alternativo 👇
-        
-        // ✅ Solución segura SIN service_role: 
-        //   - Crear una **Edge Function** `delete-user` (opcional), pero como prefieres sin entorno local,
-        //   - Usaremos un **hook postgrest con RLS + política que permita a admins borrar su propia fila en `usuarios_perfil` → y un trigger que elimine el auth user automáticamente.
-        //   - Mientras tanto, como fallback seguro: desactivamos sesión y mostramos advertencia.
-
-        // 🔒 Por ahora, *desactivamos* el usuario (sin borrar auth) hasta que configures la política.
-        const { error: updateErr } = await supabase
-          .from('usuarios_perfil')
-          .update({ active_session_token: null })
-          .eq('user_id', userId);
-
-        showAlert(`⚠️ Usuario ${email} desactivado (eliminación total requiere ajuste en Supabase).`, 'success');
+        showAlert(`✅ Perfil de ${email} eliminado.`, 'success');
         loadUsers();
-
-        // 📝 Nota: en PASO 2 te explico cómo habilitar eliminación completa sin service_role.
-
       } catch (err) {
-        showAlert(`Error al eliminar: ${err.message}`, 'error');
+        showAlert(`Error: ${err.message}`, 'error');
       }
     };
 
-    // 🚀 Iniciar
+    // ✅ Iniciar
     checkAdminAccess();
   </script>
 </body>
