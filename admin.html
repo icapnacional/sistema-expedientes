@@ -3,277 +3,89 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Panel de Administración - ICAP Nacional</title>
+  <title>Admin - ICAP Nacional</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background-color: #fafafa;
-      font-family: 'Inter', sans-serif;
-      color: #2d2d2d;
-      padding: 20px;
-    }
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    .card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-      margin-bottom: 24px;
-      padding: 32px;
-      border: 1px solid #eee;
-    }
-    .logo-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .logo {
-      width: 60px;
-    }
-    h1, h2, h3 {
-      font-weight: 700;
-      color: #2d2d2d;
-    }
-    h1 { font-size: 24px; }
-    h2 { font-size: 20px; margin: 24px 0 16px; }
-    h3 { font-size: 16px; margin: 20px 0 12px; color: #555; }
-    .subtitle {
-      font-size: 15px;
-      color: #555;
-      margin-top: 6px;
-    }
-    .btn {
-      background-color: #722F37;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 12px 20px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.25s;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn:hover {
-      background-color: #5e262d;
-      transform: translateY(-2px);
-    }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #722F37;
-      color: #722F37;
-    }
-    .btn-outline:hover {
-      background: #fdf7f7;
-    }
-    .btn-sm {
-      padding: 8px 16px;
-      font-size: 14px;
-    }
-    .form-section {
-      margin-bottom: 28px;
-    }
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-    @media (max-width: 768px) {
-      .form-row { grid-template-columns: 1fr; }
-    }
-    .form-group {
-      text-align: left;
-    }
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
-    }
-    input, select {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 15px;
-      color: #222;
-    }
-    select[multiple] {
-      height: 150px;
-      background: #fdfdfd;
-    }
-    .help-text {
-      font-size: 13px;
-      color: #666;
-      margin-top: 6px;
-    }
-    .table-container {
-      overflow-x: auto;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 16px;
-    }
-    th, td {
-      padding: 14px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-    }
-    th {
-      background-color: #f9f9f9;
-      font-weight: 600;
-      color: #555;
-    }
-    tr:hover td {
-      background-color: #fdfdfd;
-    }
-    .tag {
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .tag-admin { background: #ffebee; color: #c62828; }
-    .tag-moderador { background: #e3f2fd; color: #1565c0; }
-    .tag-usuario { background: #f3e5f5; color: #7b1fa2; }
-    .btn-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .alert {
-      padding: 12px;
-      border-radius: 8px;
-      margin: 16px 0;
-      font-size: 14px;
-      display: none;
-    }
-    .alert-success { background: #f5fff5; color: #080; border: 1px solid #d0ffd0; }
-    .alert-error { background: #fff5f5; color: #c00; border: 1px solid #ffd0d0; }
+    body { background: #fafafa; font-family: 'Inter', sans-serif; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    .card { background: white; border-radius: 16px; box-shadow: 0 6px 20px #0001; margin-bottom: 24px; padding: 32px; }
+    .btn { background: #722F37; color: white; border: none; border-radius: 10px; padding: 12px 20px; font-weight: 600; cursor: pointer; }
+    .form-group { text-align: left; margin: 16px 0; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; }
+    input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+    select[multiple] { height: 140px; }
+    .alert { padding: 12px; border-radius: 8px; margin: 16px 0; display: none; }
+    .alert-error { background: #fff5f5; color: #c00; }
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo-header">
-        <img 
-          src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
-          alt="ICAP Nacional - PNB" 
-          class="logo"
-        />
-        <div>
-          <h1>👑 Panel de Administración</h1>
-          <p class="subtitle">Gestión de usuarios y permisos</p>
+      <h2>👑 Panel de Administración</h2>
+      <div id="authAlert" class="alert alert-error"></div>
+
+      <form id="userForm">
+        <div class="form-group">
+          <label for="userEmail">Correo *</label>
+          <input type="email" id="userEmail" required placeholder="usuario@icap.gob.ve">
         </div>
-      </div>
-
-      <div id="authAlert" class="alert"></div>
-
-      <!-- Formulario -->
-      <div class="card" style="background:#fdf7f7;">
-        <h2 id="formTitle">➕ Crear Nuevo Usuario</h2>
-
-        <div class="form-section">
-          <h3>📧 Datos básicos</h3>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="userEmail">Correo Institucional *</label>
-              <input type="email" id="userEmail" placeholder="usuario@icap.gob.ve" required>
-            </div>
-            <div class="form-group">
-              <label for="userRol">Rol *</label>
-              <select id="userRol" required>
-                <option value="1">Administrador</option>
-                <option value="2">Moderador</option>
-                <option value="3">Usuario</option>
-              </select>
-            </div>
-          </div>
+        <div class="form-group">
+          <label for="userRol">Rol *</label>
+          <select id="userRol" required>
+            <option value="1">Administrador</option>
+            <option value="2">Moderador</option>
+            <option value="3">Usuario</option>
+          </select>
         </div>
-
-        <div class="form-section">
-          <h3>📍 Estados asignados *</h3>
-          <div class="form-group">
-            <label for="estadosSelect">Seleccione uno o más estados</label>
-            <select id="estadosSelect" multiple size="6" required>
-              <option value="Amazonas">Amazonas</option>
-              <option value="Anzoátegui">Anzoátegui</option>
-              <option value="Apure">Apure</option>
-              <option value="Aragua">Aragua</option>
-              <option value="Barinas">Barinas</option>
-              <option value="Bolívar">Bolívar</option>
-              <option value="Carabobo">Carabobo</option>
-              <option value="Cojedes">Cojedes</option>
-              <option value="Delta Amacuro">Delta Amacuro</option>
-              <option value="Falcón">Falcón</option>
-              <option value="Guárico">Guárico</option>
-              <option value="Lara">Lara</option>
-              <option value="Mérida">Mérida</option>
-              <option value="Miranda">Miranda</option>
-              <option value="Monagas">Monagas</option>
-              <option value="Nueva Esparta">Nueva Esparta</option>
-              <option value="Portuguesa">Portuguesa</option>
-              <option value="Sucre">Sucre</option>
-              <option value="Táchira">Táchira</option>
-              <option value="Trujillo">Trujillo</option>
-              <option value="La Guaira">La Guaira</option>
-              <option value="Yaracuy">Yaracuy</option>
-              <option value="Zulia">Zulia</option>
-            </select>
-            <p class="help-text">⌨️ Mantenga <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> para múltiple</p>
-          </div>
+        <div class="form-group">
+          <label for="estadosSelect">Estados *</label>
+          <select id="estadosSelect" multiple size="6" required>
+            <option value="Amazonas">Amazonas</option>
+            <option value="Anzoátegui">Anzoátegui</option>
+            <option value="Apure">Apure</option>
+            <option value="Aragua">Aragua</option>
+            <option value="Barinas">Barinas</option>
+            <option value="Bolívar">Bolívar</option>
+            <option value="Carabobo">Carabobo</option>
+            <option value="Cojedes">Cojedes</option>
+            <option value="Delta Amacuro">Delta Amacuro</option>
+            <option value="Falcón">Falcón</option>
+            <option value="Guárico">Guárico</option>
+            <option value="Lara">Lara</option>
+            <option value="Mérida">Mérida</option>
+            <option value="Miranda">Miranda</option>
+            <option value="Monagas">Monagas</option>
+            <option value="Nueva Esparta">Nueva Esparta</option>
+            <option value="Portuguesa">Portuguesa</option>
+            <option value="Sucre">Sucre</option>
+            <option value="Táchira">Táchira</option>
+            <option value="Trujillo">Trujillo</option>
+            <option value="La Guaira">La Guaira</option>
+            <option value="Yaracuy">Yaracuy</option>
+            <option value="Zulia">Zulia</option>
+          </select>
         </div>
-
-        <div class="form-section" id="modulosSection" style="display:none;">
-          <h3>🔐 Acceso a módulos</h3>
-          <div class="form-group">
-            <label for="modulosSelect">Seleccione los módulos permitidos</label>
-            <select id="modulosSelect" multiple size="6">
-              <option value="rh">🧑‍💼 Recursos Humanos</option>
-              <option value="analisis">🔍 Análisis</option>
-              <option value="logistica">📦 Logística</option>
-              <option value="dppc">🛡️ DPPC</option>
-              <option value="legal">⚖️ Asesoría Legal</option>
-              <option value="disciplinarios">📑 D.E. Disciplinarios</option>
-              <option value="secretaria">📝 Secretaría</option>
-            </select>
-          </div>
+        <div class="form-group" id="modulosSection">
+          <label for="modulosSelect">Módulos (Moderador)</label>
+          <select id="modulosSelect" multiple size="6">
+            <option value="rh">🧑‍💼 Recursos Humanos</option>
+            <option value="analisis">🔍 Análisis</option>
+            <option value="logistica">📦 Logística</option>
+            <option value="dppc">🛡️ DPPC</option>
+            <option value="legal">⚖️ Asesoría Legal</option>
+            <option value="disciplinarios">📑 D.E. Disciplinarios</option>
+            <option value="secretaria">📝 Secretaría</option>
+          </select>
         </div>
+        <button type="submit" class="btn">Crear Usuario</button>
+      </form>
 
-        <button type="submit" id="submitBtn" class="btn" style="margin-top:16px;">
-          <span id="btnText">Crear Usuario</span>
-        </button>
-      </div>
-
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-          <h2>👥 Usuarios Registrados</h2>
-          <button class="btn btn-outline btn-sm" onclick="toggleForm()">➕ Nuevo Usuario</button>
-        </div>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Usuario</th>
-                <th>Rol</th>
-                <th>Estados</th>
-                <th>Módulos</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="usuariosBody">
-            </tbody>
-          </table>
-        </div>
+      <div class="card" style="margin-top:32px;">
+        <h3>👥 Usuarios</h3>
+        <div id="usuariosList"></div>
       </div>
 
       <button id="logoutBtn" class="btn" style="width:100%;">Cerrar Sesión</button>
@@ -286,222 +98,89 @@
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      const authAlert = document.getElementById('authAlert');
-      const userForm = document.querySelector('form');
-      const formTitle = document.getElementById('formTitle');
+      const userForm = document.getElementById('userForm');
       const userRol = document.getElementById('userRol');
-      const estadosSelect = document.getElementById('estadosSelect');
-      const modulosSelect = document.getElementById('modulosSelect');
       const modulosSection = document.getElementById('modulosSection');
+      const authAlert = document.getElementById('authAlert');
       const logoutBtn = document.getElementById('logoutBtn');
-      const usuariosBody = document.getElementById('usuariosBody');
 
-      // Mostrar/ocultar módulos según rol
+      // Mostrar/ocultar módulos
       userRol.addEventListener('change', () => {
         modulosSection.style.display = userRol.value === '2' ? 'block' : 'none';
       });
 
-      // 🔐 Verificación de acceso (CORREGIDO: sin {{ session }})
+      // 🔐 Verificar acceso
       async function checkAccess() {
-        const { data, error } = await supabase.auth.getSession();
-        const session = data?.session;
-
-        if (error || !session) {
-          authAlert.textContent = 'Sesión no válida. Redirigiendo…';
-          authAlert.className = 'alert alert-error';
+        const { data: { session } } = await supabase.auth.getSession(); // ✅ Correcto: { data: { session } }
+        if (!session) {
+          authAlert.textContent = 'Sesión no válida';
           authAlert.style.display = 'block';
-          setTimeout(() => window.location.href = 'index.html', 2000);
+          setTimeout(() => location.href = 'index.html', 2000);
           return false;
         }
 
-        const { data: perfilData, error: perfilError } = await supabase
+        const { data: perfil } = await supabase
           .from('usuarios_perfil')
           .select('rol_id')
           .eq('user_id', session.user.id)
           .single();
 
-        if (perfilError || !perfilData || perfilData.rol_id !== 1) {
-          authAlert.textContent = 'Acceso denegado. Solo administradores.';
-          authAlert.className = 'alert alert-error';
+        if (!perfil || perfil.rol_id !== 1) {
+          authAlert.textContent = 'Acceso denegado';
           authAlert.style.display = 'block';
-          setTimeout(() => window.location.href = 'index.html', 2500);
+          setTimeout(() => location.href = 'index.html', 2000);
           return false;
         }
         return true;
       }
 
-      // 📋 Cargar usuarios
-      async function loadUsuarios() {
-        const { data: usuarios, error } = await supabase
-          .from('usuarios_perfil')
-          .select('user_id, rol_id, estados_asignados, secciones_acceso')
-          .order('created_at', { ascending: false });
-
-        if (error) return;
-
-        const MODULOS_MAP = {
-          'rh': '🧑‍💼 RH',
-          'analisis': '🔍 Análisis',
-          'logistica': '📦 Log.',
-          'dppc': '🛡️ DPPC',
-          'legal': '⚖️ Legal',
-          'disciplinarios': '📑 Disc.',
-          'secretaria': '📝 Sec.'
-        };
-
-        usuariosBody.innerHTML = usuarios.map(u => {
-          const rolTag = 
-            u.rol_id === 1 ? '<span class="tag tag-admin">Admin</span>' :
-            u.rol_id === 2 ? '<span class="tag tag-moderador">Moderador</span>' :
-            '<span class="tag tag-usuario">Usuario</span>';
-
-          const estados = u.estados_asignados.length 
-            ? u.estados_asignados.join(', ') 
-            : '—';
-
-          const modulos = u.secciones_acceso?.length
-            ? u.secciones_acceso.map(id => MODULOS_MAP[id] || id).join(', ')
-            : u.rol_id === 1 ? 'Todos' : '—';
-
-          return `
-            <tr>
-              <td style="font-family: monospace; font-size:13px;">${u.user_id.substring(0,8)}…</td>
-              <td>${rolTag}</td>
-              <td>${estados}</td>
-              <td>${modulos}</td>
-              <td class="btn-actions">
-                <button class="btn btn-outline btn-sm" onclick="editUser('${u.user_id}', ${u.rol_id}, ${JSON.stringify(u.estados_asignados)}, ${JSON.stringify(u.secciones_acceso || [])})">✏️ Editar</button>
-                <button class="btn btn-outline btn-sm" style="background:#ffebee;color:#c62828;" onclick="deleteUser('${u.user_id}')">🗑️</button>
-              </td>
-            </tr>
-          `;
-        }).join('');
-      }
-
-      // ✏️ Editar
-      window.editUser = function(user_id, rol_id, estados, secciones) {
-        formTitle.textContent = '✏️ Editar Usuario';
-        document.getElementById('userEmail').value = '';
-        document.getElementById('userEmail').disabled = true;
-        userRol.value = rol_id;
-
-        Array.from(estadosSelect.options).forEach(opt => opt.selected = false);
-        Array.from(modulosSelect.options).forEach(opt => opt.selected = false);
-
-        estados.forEach(e => {
-          const opt = Array.from(estadosSelect.options).find(o => o.value === e);
-          if (opt) opt.selected = true;
-        });
-        secciones.forEach(s => {
-          const opt = Array.from(modulosSelect.options).find(o => o.value === s);
-          if (opt) opt.selected = true;
-        });
-
-        modulosSection.style.display = rol_id === 2 ? 'block' : 'none';
-        document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
-      };
-
-      // 🗑️ Eliminar (CORREGIDO: con \n)
-      window.deleteUser = async function(user_id) {
-        if (!confirm('¿Eliminar usuario y su perfil?\nEsta acción es irreversible.')) return;
-
-        try {
-          const { error } = await supabase
-            .from('usuarios_perfil')
-            .delete()
-            .eq('user_id', user_id);
-
-          if (error) throw error;
-
-          authAlert.textContent = '✅ Usuario eliminado.';
-          authAlert.className = 'alert alert-success';
-          authAlert.style.display = 'block';
-          setTimeout(() => { 
-            authAlert.style.display = 'none'; 
-            loadUsuarios(); 
-          }, 2000);
-        } catch (err) {
-          authAlert.textContent = '❌ ' + (err.message || 'Error interno');
-          authAlert.className = 'alert alert-error';
-          authAlert.style.display = 'block';
-        }
-      };
-
-      // 🔄 Reset
-      window.toggleForm = function() {
-        formTitle.textContent = '➕ Crear Nuevo Usuario';
-        userForm.reset();
-        document.getElementById('userEmail').disabled = false;
-        modulosSection.style.display = 'none';
-      };
-
       // ✅ Envío (solo perfil; usuario ya debe estar en Auth)
       userForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-
         const email = document.getElementById('userEmail').value.trim();
         const rolId = parseInt(userRol.value);
-
-        const estados = Array.from(estadosSelect.selectedOptions).map(o => o.value);
-        if (estados.length === 0) {
-          authAlert.textContent = '❌ Seleccione al menos un estado.';
-          authAlert.className = 'alert alert-error';
-          authAlert.style.display = 'block';
-          return;
-        }
+        const estados = Array.from(document.getElementById('estadosSelect').selectedOptions).map(o => o.value);
+        if (estados.length === 0) return alert('Seleccione al menos un estado');
 
         let modulos = [];
         if (rolId === 2) {
-          modulos = Array.from(modulosSelect.selectedOptions).map(o => o.value);
-          if (modulos.length === 0) {
-            authAlert.textContent = '❌ Moderador: seleccione al menos un módulo.';
-            authAlert.className = 'alert alert-error';
-            authAlert.style.display = 'block';
-            return;
-          }
+          modulos = Array.from(document.getElementById('modulosSelect').selectedOptions).map(o => o.value);
+          if (modulos.length === 0) return alert('Seleccione al menos un módulo');
         }
 
         try {
-          const { data, error } = await supabase.auth.getSession();
-          const session = data?.session;
-          if (error || !session) throw new Error('Sesión inválida');
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) throw new Error('Sesión inválida');
 
-          // ✅ Solo insertar perfil (usuario ya debe existir en Auth)
-          const { error: err } = await supabase
+          // 🛑 En producción real, usa Edge Function para crear usuario + perfil.
+          // Por ahora, solo creamos perfil (asumiendo que el usuario ya existe en Auth).
+          const { error } = await supabase
             .from('usuarios_perfil')
-            .insert([{
-              user_id: session.user.id, // temporal: para prueba
-              rol_id: rolId,
-              estados_asignados: estados,
-              secciones_acceso: rolId === 2 ? modulos : null
+            .insert([{ 
+              user_id: session.user.id, // temporal: usar UUID del nuevo usuario
+              rol_id: rolId, 
+              estados_asignados: estados, 
+              secciones_acceso: rolId === 2 ? modulos : null 
             }]);
 
-          if (err) throw err;
+          if (error) throw error;
+          alert(`✅ Perfil creado para ${email}`);
+          userForm.reset();
+          modulosSection.style.display = 'none';
 
-          authAlert.textContent = `✅ Perfil creado para ${email}`;
-          authAlert.className = 'alert alert-success';
-          authAlert.style.display = 'block';
-          setTimeout(() => {
-            authAlert.style.display = 'none';
-            toggleForm();
-            loadUsuarios();
-          }, 2500);
         } catch (err) {
-          authAlert.textContent = '❌ ' + (err.message || 'No se pudo guardar el perfil');
-          authAlert.className = 'alert alert-error';
-          authAlert.style.display = 'block';
+          alert('❌ ' + (err.message || 'Error'));
         }
       });
 
-      // 🚪 Cerrar sesión
       logoutBtn.addEventListener('click', async () => {
         await supabase.auth.signOut();
-        window.location.href = 'index.html';
+        location.href = 'index.html';
       });
 
-      // 🚀 Iniciar
-      const access = await checkAccess();
-      if (access) loadUsuarios();
+      if (await checkAccess()) {
+        modulosSection.style.display = 'none';
+      }
     });
   </script>
 </body>
