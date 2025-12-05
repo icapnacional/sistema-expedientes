@@ -125,8 +125,6 @@
       color: #333;
     }
     .badge-admin { background: #ffebee; color: #c62828; }
-    .badge-rh { background: #e8f5e9; color: #2e7d32; }
-    .badge-analisis { background: #e3f2fd; color: #1565c0; }
     .hidden { display: none !important; }
   </style>
 </head>
@@ -208,6 +206,7 @@
     const usersBody = document.getElementById('usersBody');
 
     let currentUserId = null;
+    let currentSession = null;
 
     function showAlert(msg, type = 'error') {
       globalAlert.textContent = msg;
@@ -224,8 +223,8 @@
       }
 
       currentUserId = session.user.id;
+      currentSession = session;
 
-      // ✅ Igual que en index.html: .single() + manejo de PGRST116
       const { data: perfil, error } = await supabase
         .from('usuarios_perfil')
         .select('rol_id')
@@ -251,29 +250,15 @@
       usersTable.classList.add('hidden');
 
       try {
-        // 1. Perfiles
-        const { data: perfiles, error: err1 } = await supabase
+        const { data: perfiles, error } = await supabase
           .from('usuarios_perfil')
-          .select('id, user_id, rol_id, estados_asignados, created_at, boton_asignado');
+          .select('id, user_id, email, rol_id, estados_asignados, created_at');
 
-        if (err1) throw err1;
+        if (error) throw error;
 
-        // 2. Emails de auth.users (solo IDs y emails — sin joins)
-        const userIds = perfiles.map(p => p.user_id);
-        const { data: authUsers, error: err2 } = await supabase
-          .from('auth.users')
-          .select('id, email')
-          .in('id', userIds);
-
-        if (err2) throw err2;
-
-        const emailMap = {};
-        authUsers.forEach(u => { emailMap[u.id] = u.email });
-
-        // 3. Render
         usersBody.innerHTML = '';
         perfiles.forEach(p => {
-          const email = emailMap[p.user_id] || '—';
+          const email = p.email || '—';
           const estadosTxt = p.estados_asignados?.length
             ? p.estados_asignados.join(', ')
             : '—';
@@ -314,7 +299,7 @@
 
       const email = document.getElementById('newEmail').value.trim();
       const password = document.getElementById('newPassword').value;
-      const rol = parseInt(document.getElementById('newRol').value);
+      const rol = document.getElementById('newRol').value;
       const estadosRaw = document.getElementById('newEstados').value.trim();
 
       if (!email || !password || !rol) {
@@ -331,34 +316,24 @@
       createBtn.textContent = 'Creando…';
 
       try {
-        // ✅ signUp() funciona con anon key (por defecto en Supabase)
-        const { data: authData, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password
+        // ✅ Llamada segura a Edge Function
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${currentSession.access_token}`,
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({ email, password, rol_id: rol, estados_asignados: estados })
         });
 
-        if (signUpError) throw signUpError;
-        if (!authData.user) throw new Error('Usuario no creado. Revisa permisos.');
+        const result = await response.json();
 
-        const userId = authData.user.id;
-
-        // ✅ Insert en usuarios_perfil (requiere RLS o permisos — si falla, avisamos)
-        const { error: insertError } = await supabase
-          .from('usuarios_perfil')
-          .insert({
-            user_id: userId,
-            rol_id: rol,
-            estados_asignados: estados,
-            boton_asignado: 'rh'
-          });
-
-        if (insertError) {
-          // Notificamos, pero no borramos (porque no podemos sin service_role)
-          showAlert(`⚠️ Usuario ${email} creado, pero sin perfil. Asigne manualmente en Supabase.`, 'success');
-        } else {
-          showAlert(`✅ Usuario ${email} creado y perfil asignado.`, 'success');
+        if (!response.ok) {
+          throw new Error(result.error || 'Error desconocido');
         }
 
+        showAlert(`✅ Usuario ${email} creado exitosamente.`, 'success');
         createForm.reset();
         loadUsers();
 
@@ -372,7 +347,7 @@
     });
 
     window.deleteUser = async function(userId, email) {
-      if (!confirm(`¿Eliminar perfil de ${email}? (El usuario seguirá existiendo en auth)`)) return;
+      if (!confirm(`¿Eliminar perfil de ${email}?`)) return;
 
       try {
         const { error } = await supabase
@@ -382,14 +357,15 @@
 
         if (error) throw error;
 
-        showAlert(`✅ Perfil de ${email} eliminado.`, 'success');
+        // ✅ Opcional: llamar a otra Edge Function para borrar auth user
+        // Por ahora, solo perfil (seguro y suficiente)
+        showAlert(`✅ Perfil eliminado.`, 'success');
         loadUsers();
       } catch (err) {
         showAlert(`Error: ${err.message}`, 'error');
       }
     };
 
-    // ✅ Iniciar
     checkAdminAccess();
   </script>
 </body>
