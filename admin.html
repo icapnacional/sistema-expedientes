@@ -250,27 +250,37 @@
       usersTable.classList.add('hidden');
 
       try {
-        const {  perfiles, error } = await supabase
-          .from('usuarios_perfil')
-          .select('id, user_id, email, rol_id, estados_asignados, created_at');
+        // ✅ Usar Edge Function list-users (no depende de columna email en la tabla)
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/list-users`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${currentSession.access_token}`,
+            'apikey': SUPABASE_ANON_KEY
+          }
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Error al cargar lista');
+        }
+
+        const users = await response.json();
 
         usersBody.innerHTML = '';
-        perfiles.forEach(p => {
-          const email = p.email || '—';
-          const estadosTxt = p.estados_asignados?.length
-            ? p.estados_asignados.join(', ')
+        users.forEach(u => {
+          const email = u.email || '—';
+          const estadosTxt = u.estados_asignados?.length
+            ? u.estados_asignados.join(', ')
             : '—';
 
           const rolBadge = {
             '1': '<span class="badge badge-admin">Admin</span>',
             '2': '<span class="badge">Asistente</span>',
             '3': '<span class="badge">Estándar</span>'
-          }[p.rol_id] || `<span class="badge">Rol ${p.rol_id}</span>`;
+          }[u.rol_id] || `<span class="badge">Rol ${u.rol_id}</span>`;
 
-          const deleteBtn = p.user_id !== currentUserId
-            ? `<button onclick="deleteUser('${p.user_id}', '${email}')" class="btn btn-outline" style="padding:6px 10px;font-size:13px;">🗑️ Eliminar</button>`
+          const deleteBtn = u.user_id !== currentUserId
+            ? `<button onclick="deleteUser('${u.user_id}', '${email}')" class="btn btn-outline" style="padding:6px 10px;font-size:13px;">🗑️ Eliminar</button>`
             : `<span style="color:#999;font-size:13px;">(tú)</span>`;
 
           const row = document.createElement('tr');
@@ -278,7 +288,7 @@
             <td><strong>${email}</strong></td>
             <td>${rolBadge}</td>
             <td>${estadosTxt}</td>
-            <td>${new Date(p.created_at).toLocaleDateString()}</td>
+            <td>${new Date(u.created_at).toLocaleDateString()}</td>
             <td class="action-buttons">${deleteBtn}</td>
           `;
           usersBody.appendChild(row);
@@ -316,7 +326,6 @@
       createBtn.textContent = 'Creando…';
 
       try {
-        // ✅ Llamada a Edge Function create-user
         const response = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
           method: 'POST',
           headers: {
@@ -350,7 +359,6 @@
       if (!confirm(`¿Eliminar permanentemente a ${email}? Esta acción no se puede deshacer.`)) return;
 
       try {
-        // ✅ Llamada a Edge Function delete-user
         const response = await fetch(`${SUPABASE_URL}/functions/v1/delete-user`, {
           method: 'POST',
           headers: {
@@ -376,7 +384,6 @@
       }
     };
 
-    // ✅ Iniciar
     checkAdminAccess();
   </script>
 </body>
