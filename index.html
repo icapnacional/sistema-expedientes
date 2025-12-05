@@ -128,6 +128,13 @@
       color: #333;
       border: 1px solid #eee;
     }
+    .user-info-line {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .user-info-line:last-child {
+      margin-bottom: 0;
+    }
     .panel-buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -214,10 +221,8 @@
       class="logo"
     />
     <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
-    <div class="user-info">
-      <strong>Usuario:</strong> <span id="userEmail">—</span><br>
-      <strong>Estado(s):</strong> <span id="userEstado">—</span><br>
-      <span id="userRol" style="font-weight: 600; color: #722F37;"></span>
+    <div class="user-info" id="userInfoContainer">
+      <!-- Líneas dinámicas inyectadas por JS -->
     </div>
     <div class="panel-buttons">
       <button class="panel-btn" onclick="window.location.href='rh.html'">👥 Recursos Humanos</button>
@@ -237,9 +242,7 @@
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const loginView = document.getElementById('loginView');
   const panelView = document.getElementById('panelView');
-  const userEmailSpan = document.getElementById('userEmail');
-  const userEstadoSpan = document.getElementById('userEstado');
-  const userRolSpan = document.getElementById('userRol'); // ✅ nuevo
+  const userInfoContainer = document.getElementById('userInfoContainer');
   const alertDiv = document.getElementById('alertMessage');
   const loginForm = document.getElementById('loginForm');
   const logoutBtn = document.getElementById('logoutBtn');
@@ -288,12 +291,19 @@
   }
 
   function showPanel(email, estado, rol_id) {
-    userEmailSpan.textContent = email;
-    userEstadoSpan.textContent = estado;
+    // ✅ Render dinámico del bloque de info
+    let html = `<div class="user-info-line"><strong>Usuario:</strong> ${email}</div>`;
+    
+    if (rol_id !== 1) {
+      // Solo muestra estados si NO es admin
+      html += `<div class="user-info-line"><strong>Estado(s):</strong> ${estado}</div>`;
+    }
 
-    // ✅ Mostrar SOLO el rol, sin "Rol:"
+    // Rol en vinotinto, sin "Rol:"
     const rolTexto = rol_id === 1 ? 'Administrador' : 'Usuario';
-    userRolSpan.textContent = rolTexto;
+    html += `<div class="user-info-line" style="font-weight: 600; color: #722F37;">${rolTexto}</div>`;
+
+    userInfoContainer.innerHTML = html;
 
     adminBtn.onclick = () => {
       if (rol_id === 1) {
@@ -305,7 +315,6 @@
 
     loginView.classList.add('hidden');
     panelView.classList.remove('hidden');
-    // ✅ Ningún borde vinotinto → ya no se aplica nada extra
   }
 
   loginForm.addEventListener('submit', async (e) => {
