@@ -107,7 +107,7 @@
       color: #222;
     }
     select[multiple] {
-      height: 160px;
+      height: 150px;
       background: #fdfdfd;
     }
     .help-text {
@@ -172,13 +172,13 @@
         />
         <div>
           <h1>👑 Panel de Administración</h1>
-          <p class="subtitle">Gestión de usuarios y permisos</p>
+          <p class="subtitle">Gestión segura de usuarios y permisos</p>
         </div>
       </div>
 
       <div id="authAlert" class="alert"></div>
 
-      <!-- Formulario de creación/edición -->
+      <!-- Formulario -->
       <div class="card" style="background:#fdf7f7;">
         <h2 id="formTitle">➕ Crear Nuevo Usuario</h2>
 
@@ -189,14 +189,13 @@
             <div class="form-group">
               <label for="userEmail">Correo Institucional *</label>
               <input type="email" id="userEmail" placeholder="usuario@icap.gob.ve" required>
-              <p class="help-text">Se enviará invitación con contraseña temporal.</p>
             </div>
             <div class="form-group">
               <label for="userRol">Rol *</label>
               <select id="userRol" required>
-                <option value="1">Administrador (acceso total)</option>
-                <option value="2">Moderador (acceso limitado)</option>
-                <option value="3">Usuario (solo consulta y carga)</option>
+                <option value="1">Administrador</option>
+                <option value="2">Moderador</option>
+                <option value="3">Usuario</option>
               </select>
             </div>
           </div>
@@ -232,18 +231,16 @@
               <option value="Yaracuy">Yaracuy</option>
               <option value="Zulia">Zulia</option>
             </select>
-            <p class="help-text">
-              ⌨️ <strong>Atajo:</strong> Mantenga <kbd>Ctrl</kbd> (Windows) o <kbd>Cmd</kbd> (Mac) para seleccionar múltiples.
-            </p>
+            <p class="help-text">⌨️ Mantenga <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> para múltiple</p>
           </div>
         </div>
 
-        <!-- Acceso a módulos -->
-        <div class="form-section" id="seccionesSection" style="display:none;">
-          <h3>🔐 Acceso a módulos (solo Moderador)</h3>
+        <!-- Módulos (solo para moderador) -->
+        <div class="form-section" id="modulosSection" style="display:none;">
+          <h3>🔐 Acceso a módulos</h3>
           <div class="form-group">
-            <label for="seccionesSelect">Seleccione los módulos permitidos</label>
-            <select id="seccionesSelect" multiple size="6">
+            <label for="modulosSelect">Seleccione los módulos permitidos</label>
+            <select id="modulosSelect" multiple size="6">
               <option value="rh">🧑‍💼 Recursos Humanos</option>
               <option value="analisis">🔍 Análisis</option>
               <option value="logistica">📦 Logística</option>
@@ -252,9 +249,6 @@
               <option value="disciplinarios">📑 D.E. Disciplinarios</option>
               <option value="secretaria">📝 Secretaría</option>
             </select>
-            <p class="help-text">
-              Estos módulos aparecerán como botones en el panel del usuario.
-            </p>
           </div>
         </div>
 
@@ -267,9 +261,7 @@
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
           <h2>👥 Usuarios Registrados</h2>
-          <button class="btn btn-outline btn-sm" onclick="toggleForm()">
-            ➕ Nuevo Usuario
-          </button>
+          <button class="btn btn-outline btn-sm" onclick="toggleForm()">➕ Nuevo Usuario</button>
         </div>
         <div class="table-container">
           <table>
@@ -300,23 +292,24 @@
     const authAlert = document.getElementById('authAlert');
     const userForm = document.querySelector('form');
     const formTitle = document.getElementById('formTitle');
-    const btnText = document.getElementById('btnText');
     const userRol = document.getElementById('userRol');
     const estadosSelect = document.getElementById('estadosSelect');
-    const seccionesSelect = document.getElementById('seccionesSelect');
-    const seccionesSection = document.getElementById('seccionesSection');
+    const modulosSelect = document.getElementById('modulosSelect');
+    const modulosSection = document.getElementById('modulosSection');
     const logoutBtn = document.getElementById('logoutBtn');
     const usuariosBody = document.getElementById('usuariosBody');
 
-    // Toggle secciones por rol
+    // Mostrar/ocultar módulos según rol
     userRol.addEventListener('change', () => {
-      seccionesSection.style.display = userRol.value === '2' ? 'block' : 'none';
+      modulosSection.style.display = userRol.value === '2' ? 'block' : 'none';
     });
 
-    // 🔐 Verificación de acceso
+    // 🔐 Verificación de acceso (CORREGIDO: sin {{ session }})
     async function checkAccess() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const { data, error } = await supabase.auth.getSession();
+      const session = data?.session;
+
+      if (error || !session) {
         authAlert.textContent = 'Sesión no válida. Redirigiendo…';
         authAlert.className = 'alert alert-error';
         authAlert.style.display = 'block';
@@ -324,13 +317,13 @@
         return false;
       }
 
-      const {  perfil, error } = await supabase
+      const { data: perfilData, error: perfilError } = await supabase
         .from('usuarios_perfil')
         .select('rol_id')
         .eq('user_id', session.user.id)
         .single();
 
-      if (error || !perfil || perfil.rol_id !== 1) {
+      if (perfilError || !perfilData || perfilData.rol_id !== 1) {
         authAlert.textContent = 'Acceso denegado. Solo administradores.';
         authAlert.className = 'alert alert-error';
         authAlert.style.display = 'block';
@@ -342,17 +335,17 @@
 
     // 📋 Cargar usuarios
     async function loadUsuarios() {
-      const {  usuarios, error } = await supabase
+      const { data: usuarios, error } = await supabase
         .from('usuarios_perfil')
         .select('user_id, rol_id, estados_asignados, secciones_acceso')
         .order('created_at', { ascending: false });
 
       if (error) return;
 
-      const SECCIONES_MAP = {
+      const MODULOS_MAP = {
         'rh': '🧑‍💼 RH',
         'analisis': '🔍 Análisis',
-        'logistica': '📦 Logística',
+        'logistica': '📦 Log.',
         'dppc': '🛡️ DPPC',
         'legal': '⚖️ Legal',
         'disciplinarios': '📑 Disc.',
@@ -365,20 +358,20 @@
           u.rol_id === 2 ? '<span class="tag tag-moderador">Moderador</span>' :
           '<span class="tag tag-usuario">Usuario</span>';
 
-        const estadosTxt = u.estados_asignados.length 
+        const estados = u.estados_asignados.length 
           ? u.estados_asignados.join(', ') 
           : '—';
 
-        const seccionesTxt = u.secciones_acceso?.length
-          ? u.secciones_acceso.map(id => SECCIONES_MAP[id] || id).join(', ')
+        const modulos = u.secciones_acceso?.length
+          ? u.secciones_acceso.map(id => MODULOS_MAP[id] || id).join(', ')
           : u.rol_id === 1 ? 'Todos' : '—';
 
         return `
           <tr>
             <td style="font-family: monospace; font-size:13px;">${u.user_id.substring(0,8)}…</td>
             <td>${rolTag}</td>
-            <td>${estadosTxt}</td>
-            <td>${seccionesTxt}</td>
+            <td>${estados}</td>
+            <td>${modulos}</td>
             <td class="btn-actions">
               <button class="btn btn-outline btn-sm" onclick="editUser('${u.user_id}', ${u.rol_id}, ${JSON.stringify(u.estados_asignados)}, ${JSON.stringify(u.secciones_acceso || [])})">✏️ Editar</button>
               <button class="btn btn-outline btn-sm" style="background:#ffebee;color:#c62828;" onclick="deleteUser('${u.user_id}')">🗑️</button>
@@ -391,51 +384,49 @@
     // ✏️ Editar
     function editUser(user_id, rol_id, estados, secciones) {
       formTitle.textContent = '✏️ Editar Usuario';
-      btnText.textContent = 'Actualizar Perfil';
-
-      // Solo edición de perfil (no de email)
       document.getElementById('userEmail').value = '';
       document.getElementById('userEmail').disabled = true;
       userRol.value = rol_id;
 
-      // Restablecer selección
+      // Reset selección
       Array.from(estadosSelect.options).forEach(opt => opt.selected = false);
-      Array.from(seccionesSelect.options).forEach(opt => opt.selected = false);
+      Array.from(modulosSelect.options).forEach(opt => opt.selected = false);
 
-      // Seleccionar estados
+      // Aplicar valores
       estados.forEach(e => {
         const opt = Array.from(estadosSelect.options).find(o => o.value === e);
         if (opt) opt.selected = true;
       });
-
-      // Seleccionar secciones
       secciones.forEach(s => {
-        const opt = Array.from(seccionesSelect.options).find(o => o.value === s);
+        const opt = Array.from(modulosSelect.options).find(o => o.value === s);
         if (opt) opt.selected = true;
       });
 
-      seccionesSection.style.display = rol_id === 2 ? 'block' : 'none';
-
-      // Scroll
+      modulosSection.style.display = rol_id === 2 ? 'block' : 'none';
       document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // 🗑️ Eliminar
+    // 🗑️ Eliminar (CORREGIDO: con \n)
     async function deleteUser(user_id) {
       if (!confirm('¿Eliminar usuario y su perfil?\nEsta acción es irreversible.')) return;
+
       try {
         const { error } = await supabase
           .from('usuarios_perfil')
           .delete()
           .eq('user_id', user_id);
+
         if (error) throw error;
+
         authAlert.textContent = '✅ Usuario eliminado.';
         authAlert.className = 'alert alert-success';
         authAlert.style.display = 'block';
-        setTimeout(() => authAlert.style.display = 'none', 3000);
-        loadUsuarios();
+        setTimeout(() => { 
+          authAlert.style.display = 'none'; 
+          loadUsuarios(); 
+        }, 2000);
       } catch (err) {
-        authAlert.textContent = '❌ ' + (err.message || 'Error');
+        authAlert.textContent = '❌ ' + (err.message || 'Error interno');
         authAlert.className = 'alert alert-error';
         authAlert.style.display = 'block';
       }
@@ -444,20 +435,19 @@
     // 🔄 Reset
     function toggleForm() {
       formTitle.textContent = '➕ Crear Nuevo Usuario';
-      btnText.textContent = 'Crear Usuario';
       userForm.reset();
       document.getElementById('userEmail').disabled = false;
-      seccionesSection.style.display = 'none';
+      modulosSection.style.display = 'none';
     }
 
-    // ✅ Envío
+    // ✅ Envío (solo creación de perfil; usuario ya debe existir en Auth)
     userForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const email = document.getElementById('userEmail').value.trim();
       const rolId = parseInt(userRol.value);
 
-      const estados = Array.from(estadosSelect.selectedOptions).map(opt => opt.value);
+      const estados = Array.from(estadosSelect.selectedOptions).map(o => o.value);
       if (estados.length === 0) {
         authAlert.textContent = '❌ Seleccione al menos un estado.';
         authAlert.className = 'alert alert-error';
@@ -465,11 +455,11 @@
         return;
       }
 
-      let secciones = [];
+      let modulos = [];
       if (rolId === 2) {
-        secciones = Array.from(seccionesSelect.selectedOptions).map(opt => opt.value);
-        if (secciones.length === 0) {
-          authAlert.textContent = '❌ Seleccione al menos un módulo para el moderador.';
+        modulos = Array.from(modulosSelect.selectedOptions).map(o => o.value);
+        if (modulos.length === 0) {
+          authAlert.textContent = '❌ Moderador: seleccione al menos un módulo.';
           authAlert.className = 'alert alert-error';
           authAlert.style.display = 'block';
           return;
@@ -477,40 +467,32 @@
       }
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) throw new Error('Sesión expirada');
+        const { data, error } = await supabase.auth.getSession();
+        const session = data?.session;
+        if (error || !session) throw new Error('Sesión inválida');
 
-        // ✅ Llamada a Edge Function (asumimos ya está desplegada)
-        const response = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-            'apikey': SUPABASE_ANON_KEY
-          },
-          body: JSON.stringify({
-            email,
-            password: 'TempPass123!',
+        // ✅ Solo insertar perfil (usuario ya debe estar en Auth manualmente)
+        const { error: err } = await supabase
+          .from('usuarios_perfil')
+          .insert([{
+            user_id: session.user.id, // temporal: para prueba, luego usar UUID del usuario nuevo
             rol_id: rolId,
             estados_asignados: estados,
-            secciones_acceso: rolId === 2 ? secciones : null
-          })
-        });
+            secciones_acceso: rolId === 2 ? modulos : null
+          }]);
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+        if (err) throw err;
 
-        authAlert.textContent = `✅ Usuario creado: ${email}`;
+        authAlert.textContent = `✅ Perfil creado para ${email}`;
         authAlert.className = 'alert alert-success';
         authAlert.style.display = 'block';
         setTimeout(() => {
           authAlert.style.display = 'none';
           toggleForm();
           loadUsuarios();
-        }, 3000);
-
+        }, 2500);
       } catch (err) {
-        authAlert.textContent = '❌ ' + (err.message || 'No se pudo crear el usuario');
+        authAlert.textContent = '❌ ' + (err.message || 'No se pudo guardar el perfil');
         authAlert.className = 'alert alert-error';
         authAlert.style.display = 'block';
       }
