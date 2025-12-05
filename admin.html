@@ -95,4 +95,100 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MD
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      const userForm = document.getElementById('userForm');
+      const userRol = document.getElementById('userRol');
+      const modulosSection = document.getElementById('modulosSection');
+      const authAlert = document.getElementById('authAlert');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      // Mostrar/ocultar módulos
+      userRol.addEventListener('change', () => {
+        modulosSection.style.display = userRol.value === '2' ? 'block' : 'none';
+      });
+
+      // 🔐 Verificar acceso
+      async function checkAccess() {
+        const {  { session } } = await supabase.auth.getSession();
+        if (!session) {
+          authAlert.textContent = 'Sesión no válida';
+          authAlert.style.display = 'block';
+          setTimeout(() => location.href = 'index.html', 2000);
+          return false;
+        }
+
+        const {  perfil } = await supabase
+          .from('usuarios_perfil')
+          .select('rol_id')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (!perfil || perfil.rol_id !== 1) {
+          authAlert.textContent = 'Acceso denegado';
+          authAlert.style.display = 'block';
+          setTimeout(() => location.href = 'index.html', 2000);
+          return false;
+        }
+        return true;
+      }
+
+      // ✅ Envío (con Edge Function)
+      userForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('userEmail').value.trim();
+        const rolId = parseInt(userRol.value);
+        const estados = Array.from(document.getElementById('estadosSelect').selectedOptions).map(o => o.value);
+        if (estados.length === 0) return alert('Seleccione al menos un estado');
+
+        let modulos = [];
+        if (rolId === 2) {
+          modulos = Array.from(document.getElementById('modulosSelect').selectedOptions).map(o => o.value);
+          if (modulos.length === 0) return alert('Seleccione al menos un módulo');
+        }
+
+        try {
+          const {  { session } } = await supabase.auth.getSession();
+          if (!session) throw new Error('Sesión inválida');
+
+          // ✅ Llamada segura a Edge Function (con apikey)
+          const res = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'apikey': SUPABASE_ANON_KEY,  // ← 🔑 Obligatorio
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              email,
+              rol_id: rolId,
+              estados_asignados: estados,
+              secciones_acceso: rolId === 2 ? modulos : null
+            })
+          });
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+          alert(`✅ Usuario creado: ${email}`);
+          userForm.reset();
+          modulosSection.style.display = 'none';
+
+        } catch (err) {
+          alert('❌ ' + (err.message || 'Error'));
+        }
+      });
+
+      logoutBtn.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        location.href = 'index.html';
+      });
+
+      if (await checkAccess()) {
+        modulosSection.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
