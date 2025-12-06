@@ -165,13 +165,12 @@
     }
 
     /* ✅ Estilo para botón Admin deshabilitado */
-    .panel-btn.btn-admin-disabled {
+    .panel-btn.admin-disabled {
       opacity: 0.6;
       cursor: not-allowed;
-      color: #722F37;
       position: relative;
     }
-    .panel-btn.btn-admin-disabled::after {
+    .panel-btn.admin-disabled::after {
       content: " ⛔";
       font-size: 16px;
       color: #c00;
@@ -179,7 +178,7 @@
       top: 4px;
       right: 8px;
     }
-    .panel-btn.btn-admin-disabled:hover::after {
+    .panel-btn.admin-disabled:hover::after {
       content: " ⛔ Acceso restringido";
       font-size: 12px;
       color: #fff;
@@ -267,7 +266,7 @@
   const panelView = document.getElementById('panelView');
   const userEmailSpan = document.getElementById('userEmail');
   const userEstadoSpan = document.getElementById('userEstado');
-  const userRolSpan = document.getElementById('userRol');
+  const userRolSpan = document.getElementById('userRol'); // ✅ nuevo
   const alertDiv = document.getElementById('alertMessage');
   const loginForm = document.getElementById('loginForm');
   const logoutBtn = document.getElementById('logoutBtn');
@@ -282,7 +281,6 @@
     }
     currentUser = session.user;
 
-    // 🔍 Cargar perfil
     const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id, estados_asignados')
@@ -337,17 +335,15 @@
       userEstadoSpan.textContent = estado;
     }
 
-    // ✅ Estilo y comportamiento del botón Admin
-    adminBtn.classList.remove('btn-admin-disabled');
+    // ✅ Botón Admin: normal si es admin, deshabilitado + ⛔ si no
+    adminBtn.classList.remove('admin-disabled');
     adminBtn.onclick = null;
 
     if (rol_id === 1) {
-      // ✔️ Admin: normal
       adminBtn.onclick = () => window.location.href = 'admin.html';
     } else {
-      // ❌ No admin: deshabilitado + ícono rojo
-      adminBtn.classList.add('btn-admin-disabled');
-      adminBtn.onclick = () => {}; // no hacer nada
+      adminBtn.classList.add('admin-disabled');
+      adminBtn.onclick = () => {};
     }
 
     loginView.classList.add('hidden');
