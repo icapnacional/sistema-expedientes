@@ -214,8 +214,9 @@
       class="logo"
     />
     <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
-    <div class="user-info" id="userInfoContainer">
-      <!-- Dinámico -->
+    <div class="user-info">
+      <strong>Usuario:</strong> <span id="userEmail">—</span><br>
+      <strong>Estado(s):</strong> <span id="userEstado">—</span>
     </div>
     <div class="panel-buttons">
       <button class="panel-btn" onclick="window.location.href='rh.html'">👥 Recursos Humanos</button>
@@ -236,23 +237,23 @@
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const loginView = document.getElementById('loginView');
   const panelView = document.getElementById('panelView');
-  const userEmailSpan = document.getElementById('userEmail');
-  const userEstadoSpan = document.getElementById('userEstado');
+  const userEmailSpan = document.getElementById('userEmail');     // ✅ EXISTE
+  const userEstadoSpan = document.getElementById('userEstado');   // ✅ EXISTE
   const alertDiv = document.getElementById('alertMessage');
   const loginForm = document.getElementById('loginForm');
   const logoutBtn = document.getElementById('logoutBtn');
   const adminBtn = document.getElementById('adminBtn');
   let currentUser = null;
 
-  // IDs de botones → selectores CSS
+  // ✅ Mapeo de botones (índices fijos)
   const BOTON_SELECTORS = {
-    rh: '.panel-btn:nth-child(1)',
-    analisis: '.panel-btn:nth-child(2)',
-    logistica: '.panel-btn:nth-child(3)',
-    dppc: '.panel-btn:nth-child(4)',
-    asesoria: '.panel-btn:nth-child(5)',
-    disciplinarios: '.panel-btn:nth-child(6)',
-    secretaria: '.panel-btn:nth-child(7)',
+    rh: '.panel-buttons .panel-btn:nth-of-type(1)',
+    analisis: '.panel-buttons .panel-btn:nth-of-type(2)',
+    logistica: '.panel-buttons .panel-btn:nth-of-type(3)',
+    dppc: '.panel-buttons .panel-btn:nth-of-type(4)',
+    asesoria: '.panel-buttons .panel-btn:nth-of-type(5)',
+    disciplinarios: '.panel-buttons .panel-btn:nth-of-type(6)',
+    secretaria: '.panel-buttons .panel-btn:nth-of-type(7)',
     admin: '#adminBtn'
   };
 
@@ -264,7 +265,7 @@
     }
     currentUser = session.user;
 
-    // 🔍 Ahora también carga permisos_botones
+    // 🔍 Incluir permisos_botones (agregado en SQL)
     const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id, estados_asignados, permisos_botones')
@@ -308,25 +309,19 @@
   }
 
   function showPanel(email, estado, rol_id, permisos_botones) {
-    // ✅ Estos elementos SÍ existen (primera versión del HTML)
+    // ✅ Estos existen → no hay más 'null'
     userEmailSpan.textContent = email;
 
-    // Ocultar/mostrar línea de estados según rol
-    const estadoLine = userEstadoSpan.parentElement; // el <strong>Estado(s):</strong> + span
+    // ✅ Ocultar/s mostrar Estado(s)
+    const estadoLine = userEstadoSpan.parentNode; // el <strong> + <span>
     if (rol_id === 1) {
-      estadoLine.style.display = 'none'; // Admin: ocultar
+      estadoLine.style.display = 'none';
     } else {
       estadoLine.style.display = 'block';
       userEstadoSpan.textContent = estado;
     }
 
-    // ✅ Mostrar rol como nueva línea (sin "Rol:")
-    const rolTexto = 
-      rol_id === 1 ? 'Administrador' :
-      rol_id === 2 ? 'Moderador' :
-      'Consultor';
-
-    // Insertar después de Estado(s)
+    // ✅ Insertar rol como nueva línea (sin "Rol:")
     let rolLine = document.getElementById('userRolLine');
     if (!rolLine) {
       rolLine = document.createElement('div');
@@ -335,10 +330,25 @@
     }
     rolLine.style.fontWeight = '600';
     rolLine.style.color = '#722F37';
-    rolLine.textContent = rolTexto;
+    rolLine.textContent = 
+      rol_id === 1 ? 'Administrador' :
+      rol_id === 2 ? 'Moderador' :
+      'Consultor';
 
-    // ✅ Control de botones
-    const habilitarBoton = (id) => {
+    // ✅ Deshabilitar todos los botones
+    Object.values(BOTON_SELECTORS).forEach(sel => {
+      const btn = document.querySelector(sel);
+      if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+        const clone = btn.cloneNode(true);
+        btn.parentNode.replaceChild(clone, btn);
+      }
+    });
+
+    // ✅ Habilitar según rol y permisos
+    const habilitar = (id) => {
       const btn = document.querySelector(BOTON_SELECTORS[id]);
       if (btn) {
         btn.disabled = false;
@@ -352,27 +362,16 @@
       }
     };
 
-    // Deshabilitar todos
-    Object.values(BOTON_SELECTORS).forEach(sel => {
-      const btn = document.querySelector(sel);
-      if (btn) {
-        btn.disabled = true;
-        btn.style.opacity = '0.5';
-        btn.style.cursor = 'not-allowed';
-        const clone = btn.cloneNode(true);
-        btn.parentNode.replaceChild(clone, btn);
-      }
-    });
-
-    // Habilitar según rol y permisos
     if (rol_id === 1) {
-      Object.keys(BOTON_SELECTORS).forEach(habilitarBoton);
+      // Admin: todos
+      Object.keys(BOTON_SELECTORS).forEach(habilitar);
     } else if (rol_id === 2) {
+      // Moderador: todos menos admin, o según permisos
       const defaults = ['rh','analisis','logistica','dppc','asesoria','disciplinarios','secretaria'];
-      const habilitados = permisos_botones.length ? permisos_botones : defaults;
-      habilitados.forEach(habilitarBoton);
+      (permisos_botones.length ? permisos_botones : defaults).forEach(habilitar);
     } else if (rol_id === 3) {
-      permisos_botones.forEach(habilitarBoton);
+      // Consultor: solo lo asignado
+      permisos_botones.forEach(habilitar);
     }
   }
 
