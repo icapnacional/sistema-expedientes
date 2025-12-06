@@ -38,13 +38,14 @@
       margin-bottom: 24px;
     }
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
     label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       font-weight: 600;
-      color: #333;
+      color: #222;
+      font-size: 15px;
     }
     input, select {
       width: 100%;
@@ -56,40 +57,93 @@
     select[multiple] {
       height: 180px;
     }
-    .modules-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+    /* ✅ MÓDULOS MEJORADOS */
+    .modules-section {
+      background: #fbfbfb;
+      border-radius: 12px;
+      padding: 20px;
       margin-top: 8px;
+      border: 1px solid #eee;
     }
-    .module-item {
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 12px;
+    }
+    @media (max-width: 768px) {
+      .module-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 480px) {
+      .module-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .module-card {
+      background: white;
+      border: 2px solid #eaeaea;
+      border-radius: 12px;
+      padding: 14px 16px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
-    .module-item input[type="checkbox"] {
-      width: auto;
-      margin: 0;
+    .module-card:hover {
+      border-color: #722F37;
+      background-color: #fdf7f7;
     }
+    .module-card.selected {
+      border-color: #722F37;
+      background-color: #fdf7f7;
+      box-shadow: 0 3px 6px rgba(114, 47, 55, 0.1);
+    }
+    .module-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #722F37;
+    }
+    .module-card.selected .module-icon::before {
+      content: "✅";
+    }
+    .module-card:not(.selected) .module-icon::before {
+      content: "🔲";
+    }
+    .module-label {
+      font-weight: 500;
+      font-size: 14px;
+      color: #222;
+    }
+    .module-info {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+    /* Fin módulos */
     .btn {
       background: #722F37;
       color: white;
       border: none;
       border-radius: 12px;
-      padding: 12px 20px;
-      font-size: 15px;
+      padding: 14px 20px;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-    }
-    .btn-sm {
-      padding: 8px 14px;
-      font-size: 14px;
+      gap: 8px;
+      transition: all 0.25s;
     }
     .btn:hover {
       background: #5e262d;
+      transform: translateY(-2px);
     }
     .btn-outline {
       background: transparent;
@@ -107,7 +161,7 @@
       background: #a00;
     }
     .alert {
-      padding: 12px;
+      padding: 14px;
       border-radius: 8px;
       margin: 16px 0;
       display: none;
@@ -121,7 +175,7 @@
     .back-btn:hover {
       background: #ddd;
     }
-    /* Tabla de usuarios */
+    /* Tabla */
     .table-responsive {
       overflow-x: auto;
     }
@@ -155,21 +209,26 @@
     .rol-admin { background: #ffebee; color: #c62828; }
     .rol-moderador { background: #e8f5e9; color: #2e7d32; }
     .rol-consultor { background: #e3f2fd; color: #1565c0; }
-    /* Paginación */
+    /* ✅ Paginación mejorada */
     .pagination {
       display: flex;
       justify-content: center;
-      gap: 8px;
-      margin-top: 20px;
+      gap: 6px;
+      margin-top: 24px;
     }
     .page-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 6px;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
       border: 1px solid #ddd;
       background: white;
       font-weight: 500;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.2s;
     }
     .page-btn.active {
       background: #722F37;
@@ -179,12 +238,23 @@
     .page-btn:hover:not(.active) {
       background: #f5f5f5;
     }
+    .page-dots {
+      color: #888;
+    }
     .flex-between {
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 12px;
+    }
+    .total-badge {
+      background: #722F37;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 13px;
     }
   </style>
 </head>
@@ -251,14 +321,22 @@
         </div>
         <div class="form-group">
           <label>✅ Asignar módulos (botones visibles)</label>
-          <div class="modules-grid" id="modulesCheckboxes"></div>
+          <div class="modules-section">
+            <p style="margin:0 0 12px 0; color:#555; font-size:14px;">
+              Seleccione los módulos que el usuario podrá ver.
+            </p>
+            <div class="module-grid" id="modulesGrid"></div>
+          </div>
         </div>
         <button type="submit" class="btn">✅ Crear Usuario</button>
       </form>
     </div>
     <!-- Listado de usuarios -->
     <div class="card">
-      <h2>👥 Usuarios Registrados (<span id="totalUsers">0</span>)</h2>
+      <div class="flex-between">
+        <h2>👥 Usuarios Registrados</h2>
+        <span class="total-badge" id="totalUsers">0</span>
+      </div>
       <div class="table-responsive">
         <table>
           <thead>
@@ -281,86 +359,28 @@
 
   <script>
     const MODULOS = {
-      rh: "RH", analisis: "Análisis", logistica: "Logística",
-      dppc: "DPPC", asesoria: "Asesoría", disciplinarios: "Disciplinarios",
-      secretaria: "Secretaría", admin: "Admin"
+      rh: { label: "Recursos Humanos", icon: "👥", desc: "Gestión de personal" },
+      analisis: { label: "Análisis", icon: "🔍", desc: "Reportes e insights" },
+      logistica: { label: "Logística", icon: "📦", desc: "Gestión de recursos" },
+      dppc: { label: "DPPC", icon: "⚖️", desc: "Procedimientos" },
+      asesoria: { label: "Asesoría Legal", icon: "⚖️", desc: "Orientación jurídica" },
+      disciplinarios: { label: "Disciplinarios", icon: "📇", desc: "Expedientes" },
+      secretaria: { label: "Secretaría", icon: "✒️", desc: "Documentos oficiales" },
+      admin: { label: "Admin", icon: "👑", desc: "Panel de gestión" }
     };
     const ROL_LABELS = { 1: "Administrador", 2: "Moderador", 3: "Consultor" };
     const ROL_COLORS = { 1: "rol-admin", 2: "rol-moderador", 3: "rol-consultor" };
 
-    // 🧪 Mock data
-    let usuarios = [
-      {
-        id: "u001",
-        email: "admin@icap.gob.ve",
-        rol_id: 1,
-        estados_asignados: ["Distrito Capital", "Miranda"],
-        modulos_asignados: ["rh", "admin", "dppc"]
-      },
-      {
-        id: "u002",
-        email: "moderador@pn.gob.ve",
-        rol_id: 2,
-        estados_asignados: ["Zulia", "Lara"],
-        modulos_asignados: ["analisis", "logistica"]
-      },
-      {
-        id: "u003",
-        email: "consultor@pn.gob.ve",
-        rol_id: 3,
-        estados_asignados: ["Carabobo"],
-        modulos_asignados: ["asesoria"]
-      },
-      {
-        id: "u004",
-        email: "rh@icap.gob.ve",
-        rol_id: 2,
-        estados_asignados: ["Aragua", "Carabobo", "Guárico"],
-        modulos_asignados: ["rh"]
-      },
-      {
-        id: "u005",
-        email: "admin2@icap.gob.ve",
-        rol_id: 1,
-        estados_asignados: ["Trujillo", "Táchira"],
-        modulos_asignados: ["admin", "secretaria"]
-      },
-      {
-        id: "u006",
-        email: "dppc@pn.gob.ve",
-        rol_id: 2,
-        estados_asignados: ["Vargas"],
-        modulos_asignados: ["dppc"]
-      },
-      {
-        id: "u007",
-        email: "disc@icap.gob.ve",
-        rol_id: 3,
-        estados_asignados: ["Anzoátegui"],
-        modulos_asignados: ["disciplinarios"]
-      },
-      {
-        id: "u008",
-        email: "analista@icap.gob.ve",
-        rol_id: 2,
-        estados_asignados: ["Monagas", "Sucre"],
-        modulos_asignados: ["analisis", "logistica"]
-      },
-      {
-        id: "u009",
-        email: "asesor@pn.gob.ve",
-        rol_id: 3,
-        estados_asignados: ["Nueva Esparta"],
-        modulos_asignados: ["asesoria"]
-      },
-      {
-        id: "u010",
-        email: "coordinador@icap.gob.ve",
-        rol_id: 1,
-        estados_asignados: ["Amazonas", "Bolívar"],
-        modulos_asignados: ["admin", "rh", "dppc"]
-      }
-    ];
+    // 🧪 Mock data: 15 usuarios para probar paginación
+    let usuarios = Array.from({ length: 15 }, (_, i) => ({
+      id: `u${String(i+1).padStart(3, '0')}`,
+      email: `usuario${i+1}@icap.gob.ve`,
+      rol_id: [1,2,3][i % 3],
+      estados_asignados: i % 2 === 0 
+        ? ["Distrito Capital", "Miranda"] 
+        : ["Zulia", "Lara", "Carabobo"],
+      modulos_asignados: Object.keys(MODULOS).filter((_, idx) => (i + idx) % 3 === 0)
+    }));
 
     const alertDiv = document.getElementById('alertMessage');
     const usersTableBody = document.getElementById('usersTableBody');
@@ -369,19 +389,35 @@
     let currentPage = 1;
     const perPage = 10;
 
-    // Render checkboxes
-    function renderModulesCheckboxes() {
-      const container = document.getElementById('modulesCheckboxes');
+    // ✅ Render módulos estilizados
+    function renderModulesGrid() {
+      const container = document.getElementById('modulesGrid');
       container.innerHTML = '';
-      Object.entries(MODULOS).forEach(([id, label]) => {
-        const div = document.createElement('div');
-        div.className = 'module-item';
-        div.innerHTML = `<input type="checkbox" id="mod_${id}" name="modulo" value="${id}"><label for="mod_${id}">${label}</label>`;
-        container.appendChild(div);
+      
+      Object.entries(MODULOS).forEach(([id, info]) => {
+        const card = document.createElement('div');
+        card.className = 'module-card';
+        card.dataset.module = id;
+        card.innerHTML = `
+          <div class="module-icon"></div>
+          <div>
+            <div class="module-label">${info.icon} ${info.label}</div>
+            <div class="module-info">${info.desc}</div>
+          </div>
+        `;
+        
+        card.addEventListener('click', () => {
+          card.classList.toggle('selected');
+        });
+        container.appendChild(card);
       });
     }
 
-    // Mostrar alerta
+    function getSelectedModules() {
+      return Array.from(document.querySelectorAll('.module-card.selected'))
+        .map(card => card.dataset.module);
+    }
+
     function showAlert(msg, type) {
       alertDiv.textContent = msg;
       alertDiv.className = `alert alert-${type}`;
@@ -391,12 +427,6 @@
       }
     }
 
-    // Mock: simular checkAdmin (siempre true en mock)
-    function checkAdmin() {
-      return Promise.resolve(true);
-    }
-
-    // Cargar usuarios (mock)
     function loadUsers(page = 1) {
       currentPage = page;
       totalUsersSpan.textContent = usuarios.length;
@@ -414,19 +444,20 @@
         return;
       }
       usersTableBody.innerHTML = users.map(u => {
-        const modulosTxt = u.modulos_asignados?.map(m => MODULOS[m] || m).join(', ') || '—';
+        const modulosTxt = u.modulos_asignados?.map(m => MODULOS[m]?.label || m.toUpperCase()).join(', ') || '—';
         const estadosTxt = u.estados_asignados?.join(', ') || '—';
         const rolTag = `<span class="rol-tag ${ROL_COLORS[u.rol_id]}">${ROL_LABELS[u.rol_id]}</span>`;
-        // Simular auto-protección: no permitir eliminar al primer usuario (admin)
         const canDelete = u.id !== 'u001'; 
         return `
           <tr>
             <td>${u.email}</td>
             <td>${rolTag}</td>
-            <td title="${estadosTxt}">${estadosTxt.length > 30 ? estadosTxt.substring(0,27)+'...' : estadosTxt}</td>
+            <td title="${estadosTxt}">${estadosTxt.length > 25 ? estadosTxt.substring(0,22)+'...' : estadosTxt}</td>
             <td title="${modulosTxt}">${modulosTxt.length > 30 ? modulosTxt.substring(0,27)+'...' : modulosTxt}</td>
             <td>
-              ${canDelete ? `<button class="btn btn-sm btn-delete" onclick="confirmDelete('${u.id}', '${u.email}')">🗑️ Eliminar</button>` : `<span style="color:#999">—</span>`}
+              ${canDelete 
+                ? `<button class="btn btn-sm btn-delete" onclick="confirmDelete('${u.id}', '${u.email}')">🗑️ Eliminar</button>` 
+                : `<span style="color:#999">—</span>`}
             </td>
           </tr>
         `;
@@ -437,38 +468,41 @@
       paginationDiv.innerHTML = '';
       if (total <= 1) return;
 
-      const range = 2;
-      let start = Math.max(1, current - range);
-      let end = Math.min(total, current + range);
-
-      if (current > 1) {
+      const createBtn = (text, page, active = false, disabled = false) => {
         const btn = document.createElement('button');
-        btn.className = 'page-btn';
-        btn.textContent = '«';
-        btn.onclick = () => loadUsers(current - 1);
-        paginationDiv.appendChild(btn);
+        btn.className = 'page-btn' + (active ? ' active' : '') + (disabled ? ' page-dots' : '');
+        btn.textContent = text;
+        if (!disabled && page !== undefined) {
+          btn.onclick = () => loadUsers(page);
+        }
+        return btn;
+      };
+
+      paginationDiv.appendChild(createBtn('«', current - 1, false, current === 1));
+
+      if (total <= 7) {
+        for (let i = 1; i <= total; i++) {
+          paginationDiv.appendChild(createBtn(i, i, i === current));
+        }
+      } else {
+        paginationDiv.appendChild(createBtn(1, 1, current === 1));
+        if (current > 4) paginationDiv.appendChild(createBtn('…', undefined, false, true));
+
+        const start = Math.max(2, current - 2);
+        const end = Math.min(total - 1, current + 2);
+        for (let i = start; i <= end; i++) {
+          paginationDiv.appendChild(createBtn(i, i, i === current));
+        }
+
+        if (current < total - 3) paginationDiv.appendChild(createBtn('…', undefined, false, true));
+        paginationDiv.appendChild(createBtn(total, total, current === total));
       }
 
-      for (let i = start; i <= end; i++) {
-        const btn = document.createElement('button');
-        btn.className = `page-btn ${i === current ? 'active' : ''}`;
-        btn.textContent = i;
-        btn.onclick = () => loadUsers(i);
-        paginationDiv.appendChild(btn);
-      }
-
-      if (current < total) {
-        const btn = document.createElement('button');
-        btn.className = 'page-btn';
-        btn.textContent = '»';
-        btn.onclick = () => loadUsers(current + 1);
-        paginationDiv.appendChild(btn);
-      }
+      paginationDiv.appendChild(createBtn('»', current + 1, false, current === total));
     }
 
     function confirmDelete(userId, email) {
       if (!confirm(`⚠️ ¿Eliminar usuario ${email}?\nEsta acción es irreversible.`)) return;
-      
       usuarios = usuarios.filter(u => u.id !== userId);
       showAlert(`✅ Usuario ${email} eliminado.`, 'success');
       loadUsers(currentPage);
@@ -479,13 +513,13 @@
       const password = document.getElementById('password').value;
       const rol_id = parseInt(document.getElementById('rol_id').value);
       const estados = Array.from(document.getElementById('estados').selectedOptions).map(o => o.value);
-      const modulos = Array.from(document.querySelectorAll('input[name="modulo"]:checked')).map(cb => cb.value);
+      const modulos = getSelectedModules();
 
       if (!email || !password || !rol_id || !estados.length || !modulos.length) {
         return showAlert('Todos los campos son obligatorios.', 'error');
       }
 
-      const nuevoId = 'u' + (usuarios.length + 1).toString().padStart(3, '0');
+      const nuevoId = `u${String(usuarios.length + 1).padStart(3, '0')}`;
       usuarios.push({
         id: nuevoId,
         email,
@@ -496,7 +530,8 @@
 
       showAlert(`✅ Usuario creado: ${email}`, 'success');
       document.getElementById('createUserForm').reset();
-      document.querySelectorAll('input[name="modulo"]').forEach(cb => cb.checked = false);
+      document.querySelectorAll('.module-card').forEach(card => card.classList.remove('selected'));
+      document.getElementById('estados').selectedIndex = -1;
       loadUsers(1);
     }
 
@@ -505,7 +540,7 @@
       createUserLocal();
     });
 
-    renderModulesCheckboxes();
+    renderModulesGrid();
     loadUsers();
   </script>
 </body>
