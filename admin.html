@@ -197,39 +197,63 @@ admin.html<!DOCTYPE html>
     return true;
   }
 
-  async function loadUsers() {
-    const { data, error } = await supabase
-      .from('usuarios_perfil')
-      .select(`
-        user_id,
-        rol_id,
-        estados_asignados,
-        auth.users!inner(email)
-      `)
-      .order('created_at', { ascending: true });
+ async function loadUsers() {
+  // 1️⃣ Obtener todos los perfiles
+  const { data: perfiles, error: err1 } = await supabase
+    .from('usuarios_perfil')
+    .select('user_id, rol_id, estados_asignados, created_at')
+    .order('created_at', { ascending: true });
 
-    if (error) {
-      console.error('Error:', error);
-      usersBody.innerHTML = `<tr><td colspan="4" class="empty">❌ Error al cargar usuarios.</td></tr>`;
-      return;
-    }
+  if (err1) {
+    console.error('Error perfiles:', err1);
+    usersBody.innerHTML = `<tr><td colspan="4" class="empty">❌ Error al cargar perfiles.</td></tr>`;
+    return;
+  }
 
-    if (!data || data.length === 0) {
-      usersBody.innerHTML = `<tr><td colspan="4" class="empty">✅ No hay usuarios registrados.</td></tr>`;
-      return;
-    }
+  if (!perfiles || perfiles.length === 0) {
+    usersBody.innerHTML = `<tr><td colspan="4" class="empty">✅ No hay usuarios registrados.</td></tr>`;
+    return;
+  }
 
-    usersBody.innerHTML = data.map(u => `
+  // 2️⃣ Obtener emails de auth.users (solo los IDs que necesitamos)
+  const userIds = perfiles.map(p => p.user_id);
+  const { data: authUsers, error: err2 } = await supabase
+    .from('users')
+    .select('id, email')
+    .in('id', userIds);
+
+  if (err2) {
+    console.error('Error auth.users:', err2);
+    usersBody.innerHTML = `<tr><td colspan="4" class="empty">❌ Error al cargar correos.</td></tr>`;
+    return;
+  }
+
+  // Emparejar perfiles con emails
+  const userMap = {};
+  (authUsers || []).forEach(u => {
+    userMap[u.id] = u.email;
+  });
+
+  // Render
+  usersBody.innerHTML = perfiles.map(p => {
+    const email = userMap[p.user_id] || '—';
+    const rolTexto = p.rol_id === 1 ? 'Administrador' : 'Usuario';
+    const rolClass = p.rol_id === 1 ? 'rol-admin' : 'rol-user';
+    const estados = p.estados_asignados?.length ? p.estados_asignados.join(', ') : '—';
+    const canDelete = p.rol_id !== 1;
+
+    return `
       <tr>
-        <td class="email">${u.auth.users.email}</td>
-        <td><span class="rol rol-${u.rol_id === 1 ? 'admin' : 'user'}">${u.rol_id === 1 ? 'Administrador' : 'Usuario'}</span></td>
-        <td>${u.estados_asignados?.length ? u.estados_asignados.join(', ') : '—'}</td>
+        <td class="email">${email}</td>
+        <td><span class="rol ${rolClass}">${rolTexto}</span></td>
+        <td>${estados}</td>
         <td>
-          ${u.rol_id !== 1 ? `<button class="btn-delete" onclick="deleteUser('${u.user_id}')">🗑️ Eliminar</button>` : '<span>—</span>'}
+          ${canDelete ? `<button class="btn-delete" onclick="deleteUser('${p.user_id}')">🗑️ Eliminar</button>` : '<span>—</span>'}
         </td>
       </tr>
-    `).join('');
-  }
+    `;
+  }).join('');
+}
 
   async function deleteUser(userId) {
     if (!confirm('⚠️ ¿Está seguro de eliminar este usuario? Esta acción no se puede deshacer.')) return;
