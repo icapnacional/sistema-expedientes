@@ -177,113 +177,117 @@
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
   </div>
 
-  <script>
-    // 🔑 Configuración de Supabase — ¡REEMPLAZA ESTOS VALORES!
-    const supabase = createClient(
-      'https://xvqcgdbdwrocfcdfqpxv.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw'
-    );
+<script type="module">
+  // ✅ Cargar Supabase dinámicamente (sin CDN en <head>)
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const loginView = document.getElementById('loginView');
-    const panelView = document.getElementById('panelView');
-    const userEmailSpan = document.getElementById('userEmail');
-    const userEstadoSpan = document.getElementById('userEstado');
-    const userRolSpan = document.getElementById('userRol');
-    const alertDiv = document.getElementById('alertMessage');
-    const loginForm = document.getElementById('loginForm');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const adminBtn = document.getElementById('adminBtn');
+  // 🔑 Configuración — ¡REEMPLAZA ESTOS VALORES!
+  const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
 
-    function showError(msg) {
-      alertDiv.textContent = msg;
-      alertDiv.className = 'alert alert-error';
-      alertDiv.style.display = 'block';
+  const supabase = createClient(SUPABASE_URL, ANON_KEY);
+
+  // ✅ Ahora sí puedes usar `supabase` con seguridad
+  const loginView = document.getElementById('loginView');
+  const panelView = document.getElementById('panelView');
+  const userEmailSpan = document.getElementById('userEmail');
+  const userEstadoSpan = document.getElementById('userEstado');
+  const userRolSpan = document.getElementById('userRol');
+  const alertDiv = document.getElementById('alertMessage');
+  const loginForm = document.getElementById('loginForm');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const adminBtn = document.getElementById('adminBtn');
+
+  function showError(msg) {
+    alertDiv.textContent = msg;
+    alertDiv.className = 'alert alert-error';
+    alertDiv.style.display = 'block';
+  }
+
+  function hideAlert() {
+    alertDiv.style.display = 'none';
+  }
+
+  function showLogin() {
+    loginView.classList.remove('hidden');
+    panelView.classList.add('hidden');
+    hideAlert();
+  }
+
+  function showPanel(email, estado, rol) {
+    userEmailSpan.textContent = email;
+    
+    const rolText = 
+      rol === 'admin' ? 'Administrador' :
+      rol === 'moderador' ? 'Moderador' :
+      'Consultor';
+    userRolSpan.textContent = rolText;
+    userRolSpan.setAttribute('data-role', rol);
+
+    const estadoLine = userEstadoSpan.parentNode;
+    if (rol === 'admin') {
+      estadoLine.style.display = 'none';
+    } else {
+      estadoLine.style.display = 'block';
+      userEstadoSpan.textContent = estado || '—';
     }
 
-    function hideAlert() {
-      alertDiv.style.display = 'none';
-    }
+    adminBtn.disabled = !(rol === 'admin');
+    adminBtn.classList.toggle('admin-disabled', !(rol === 'admin'));
+    adminBtn.onclick = (rol === 'admin') 
+      ? () => { window.location.href = 'admin.html'; }
+      : null;
 
-    function showLogin() {
-      loginView.classList.remove('hidden');
-      panelView.classList.add('hidden');
-      hideAlert();
-    }
+    loginView.classList.add('hidden');
+    panelView.classList.remove('hidden');
+  }
 
-    function showPanel(email, estado, rol) {
-      userEmailSpan.textContent = email;
-      
-      // ✅ Mostrar solo "Administrador"/"Moderador"/"Consultor" — sin "Rol:"
-      const rolText = rol === 'admin' ? 'Administrador' : rol === 'moderador' ? 'Moderador' : 'Consultor';
-      userRolSpan.textContent = rolText;
-      userRolSpan.setAttribute('data-role', rol); // para tooltip rojo si es admin
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAlert();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
 
-      // ✅ Ocultar línea de estados solo para Administrador
-      const estadoLine = userEstadoSpan.parentNode;
-      if (rol === 'admin') {
-        estadoLine.style.display = 'none';
-      } else {
-        estadoLine.style.display = 'block';
-        userEstadoSpan.textContent = estado || '—';
-      }
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return showError(error.message || 'Error al iniciar sesión.');
 
-      // ✅ Botón Admin: activo solo si rol == admin
-      adminBtn.disabled = !(rol === 'admin');
-      adminBtn.classList.toggle('admin-disabled', !(rol === 'admin'));
-      adminBtn.onclick = (rol === 'admin') 
-        ? () => { window.location.href = 'admin.html'; }
-        : null;
+    // ✅ Una sola sesión activa por usuario
+    await supabase.auth.signOut({ scope: 'others' });
 
-      loginView.classList.add('hidden');
-      panelView.classList.remove('hidden');
-    }
+    // Cargar perfil
+    const { data: perfil, error: perfilError } = await supabase
+      .from('perfiles')
+      .select('rol, estados_asignados')
+      .eq('id', data.user.id)
+      .single();
 
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      hideAlert();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
+    if (perfilError) return showError('No se pudo cargar tu perfil.');
 
-      const {  data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return showError(error.message || 'Error al iniciar sesión.');
+    const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
+    showPanel(email, estadosTxt, perfil.rol);
+  });
 
-      // ✅ Cerrar otras sesiones del mismo usuario (una sola sesión activa)
-      await supabase.auth.signOut({ scope: 'others' });
+  logoutBtn.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    showLogin();
+    document.getElementById('password').value = '';
+  });
 
-      // Cargar perfil desde tabla `perfiles`
-      const {  perfil, error: perfilError } = await supabase
+  // Verificar sesión al cargar
+  (async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const { data: perfil } = await supabase
         .from('perfiles')
-        .select('rol, estados_asignados')
-        .eq('id', data.user.id)
+        .select('rol, estados_asignados, email')
+        .eq('id', session.user.id)
         .single();
-
-      if (perfilError) return showError('No se pudo cargar tu perfil.');
-
-      const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
-      showPanel(email, estadosTxt, perfil.rol);
-    });
-
-    logoutBtn.addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      showLogin();
-      document.getElementById('password').value = '';
-    });
-
-    // ✅ Verificar sesión al cargar
-    (async () => {
-      const {  session } = await supabase.auth.getSession();
-      if (session?.user) {
-        const {  perfil } = await supabase
-          .from('perfiles')
-          .select('rol, estados_asignados, email')
-          .eq('id', session.user.id)
-          .single();
-        if (perfil) {
-          const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
-          showPanel(perfil.email, estadosTxt, perfil.rol);
-        }
+      if (perfil) {
+        const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
+        showPanel(perfil.email, estadosTxt, perfil.rol);
       }
-    })();
-  </script>
+    }
+  })();
+</script>
 </body>
 </html>
