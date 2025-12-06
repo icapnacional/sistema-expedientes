@@ -301,6 +301,7 @@
   const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   const usersBody = document.getElementById('usersBody');
   const alertDiv = document.getElementById('alertMessage');
   const btnCreate = document.getElementById('btnCreate');
@@ -312,27 +313,21 @@
     setTimeout(() => alertDiv.style.display = 'none', 5000);
   }
 
-async function checkAdminSession() {
+  async function checkAdmin() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'index.html';
+      return false;
+    }
 
-  const { data, error: authError } = await supabase.auth.getUser(authHeader);
-if (authError || !data?.user) {
-  return new Response(JSON.stringify({ error: 'Sesión inválida' }), { status: 401 });
-}
-const user = data.user;
-  if (!session) {
-    window.location.href = 'index.html';
-    return;
-  }
-
-
-    const {  perfil, error } = await supabase
+    const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id')
       .eq('user_id', session.user.id)
       .single();
 
-    if (!perfil || perfil.rol_id !== 1) {
-      showAlert('Acceso denegado: solo administradores.', 'error');
+    if (error || !perfil || perfil.rol_id !== 1) {
+      showAlert('🔒 Acceso denegado: solo administradores.', 'error');
       setTimeout(() => window.location.href = 'index.html', 2000);
       return false;
     }
@@ -340,54 +335,41 @@ const user = data.user;
   }
 
   async function loadUsers() {
-    const {  perfiles, error: err1 } = await supabase
-      .from('usuarios_perfil')
-      .select('user_id, rol_id, estados_asignados')
-      .order('created_at', { ascending: true });
+    try {
+      const { data: perfiles, error: err1 } = await supabase
+        .from('usuarios_perfil')
+        .select('user_id, rol_id, estados_asignados')
+        .order('created_at', { ascending: true });
 
-    if (err1) {
-      usersBody.innerHTML = `<tr><td colspan="4" class="empty">❌ Error al cargar perfiles.</td></tr>`;
-      return;
+      if (err1) throw err1;
+
+      usersBody.innerHTML = perfiles.map(p => {
+        const rolTexto = 
+          p.rol_id === 1 ? 'Administrador' :
+          p.rol_id === 2 ? 'Moderador' :
+          'Consultor';
+        const rolClass = 
+          p.rol_id === 1 ? 'rol-admin' :
+          p.rol_id === 2 ? 'rol-moderator' :
+          'rol-consultor';
+        const estados = p.estados_asignados?.length ? p.estados_asignados.join(', ') : '—';
+        const canDelete = p.rol_id !== 1;
+        const shortId = p.user_id.substring(0, 8) + '…';
+        return `
+          <tr>
+            <td class="email">ID: ${shortId}</td>
+            <td><span class="rol ${rolClass}">${rolTexto}</span></td>
+            <td>${estados}</td>
+            <td>
+              ${canDelete ? `<button class="btn-delete" onclick="deleteUser('${p.user_id}')">🗑️ Eliminar</button>` : '<span>—</span>'}
+            </td>
+          </tr>
+        `;
+      }).join('') || `<tr><td colspan="4" class="empty">📭 No hay usuarios creados aún.</td></tr>`;
+    } catch (err) {
+      usersBody.innerHTML = `<tr><td colspan="4" class="empty">❌ Error: ${err.message || 'no se pudo cargar la lista.'}</td></tr>`;
+      console.error('loadUsers error:', err);
     }
-
-    const userIds = perfiles.map(p => p.user_id);
-    const {  authUsers, error: err2 } = await supabase
-      .from('users')
-      .select('id, email')
-      .in('id', userIds);
-
-    if (err2) {
-      usersBody.innerHTML = `<tr><td colspan="4" class="empty">❌ Error al cargar correos.</td></tr>`;
-      return;
-    }
-
-    const userMap = {};
-    (authUsers || []).forEach(u => userMap[u.id] = u.email);
-
-    usersBody.innerHTML = perfiles.map(p => {
-      const email = userMap[p.user_id] || '—';
-      const rolTexto = 
-        p.rol_id === 1 ? 'Administrador' :
-        p.rol_id === 2 ? 'Moderador' :
-        'Consultor';
-      const rolClass = 
-        p.rol_id === 1 ? 'rol-admin' :
-        p.rol_id === 2 ? 'rol-moderator' :
-        'rol-consultor';
-      const estados = p.estados_asignados?.length ? p.estados_asignados.join(', ') : '—';
-      const canDelete = p.rol_id !== 1;
-
-      return `
-        <tr>
-          <td class="email">${email}</td>
-          <td><span class="rol ${rolClass}">${rolTexto}</span></td>
-          <td>${estados}</td>
-          <td>
-            ${canDelete ? `<button class="btn-delete" onclick="deleteUser('${p.user_id}')">🗑️ Eliminar</button>` : '<span>—</span>'}
-          </td>
-        </tr>
-      `;
-    }).join('');
   }
 
   async function createUser() {
@@ -397,33 +379,35 @@ const user = data.user;
     const estadosSelect = document.getElementById('newEstados');
     const estados_asignados = Array.from(estadosSelect.selectedOptions).map(opt => opt.value);
 
-    if (!email || !password) return showAlert('Ingrese email y contraseña.');
-    if (password.length < 6) return showAlert('La contraseña debe tener ≥6 caracteres.');
-    if (![1, 2, 3].includes(rol_id)) return showAlert('Rol inválido.');
+    if (!email || !password) return showAlert('📧 Ingrese email y contraseña.');
+    if (password.length < 6) return showAlert('🔐 La contraseña debe tener ≥6 caracteres.');
+    if (![1, 2, 3].includes(rol_id)) return showAlert('🧩 Rol inválido.');
 
     btnCreate.disabled = true;
-    btnCreate.textContent = 'Creando...';
+    btnCreate.textContent = '⏳ Creando...';
 
     try {
-      // ✅ SIN Authorization header — deja que las cookies lo gestionen
       const res = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // ✅ incluye cookies
+        credentials: 'include', 
         body: JSON.stringify({ email, password, rol_id, estados_asignados })
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error desconocido');
+
+      if (!res.ok) throw new Error(data.error || 'Error desconocido en función');
 
       showAlert('✅ Usuario creado correctamente.', 'success');
+      
       document.getElementById('newEmail').value = '';
       document.getElementById('newPassword').value = '';
-      estadosSelect.selectedIndex = -1;
-      loadUsers();
+      estadosSelect.querySelectorAll('option').forEach(opt => opt.selected = false);
 
+      loadUsers();
     } catch (err) {
-      showAlert(err.message || 'No se pudo crear el usuario.', 'error');
+      console.error('createUser error:', err);
+      showAlert(`❌ ${err.message || 'No se pudo crear el usuario.'}`, 'error');
     } finally {
       btnCreate.disabled = false;
       btnCreate.textContent = '✅ Crear Usuario';
@@ -432,35 +416,28 @@ const user = data.user;
 
   async function deleteUser(userId) {
     if (!confirm('⚠️ ¿Está seguro? Esta acción no se puede deshacer.')) return;
-    const { error } = await supabase
-      .from('usuarios_perfil')
-      .delete()
-      .eq('user_id', userId);
-    if (error) return showAlert('Error al eliminar: ' + (error.message || 'interno'));
-    showAlert('✅ Usuario eliminado correctamente.', 'success');
-    loadUsers();
-  }
 
-async function checkAdmin() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
-    window.location.href = 'index.html';
-    return false;
-  }
+    try {
+      const { error } = await supabase
+        .from('usuarios_perfil')
+        .delete()
+        .eq('user_id', userId);
 
-  const { data: perfil, error } = await supabase
-    .from('usuarios_perfil')
-    .select('rol_id')
-    .eq('user_id', session.user.id)
-    .single();
+      if (error) throw error;
 
-  if (!perfil || perfil.rol_id !== 1) {
-    alert('🔒 Acceso denegado: solo administradores.');
-    window.location.href = 'index.html';
-    return false;
+      showAlert('✅ Usuario eliminado correctamente.', 'success');
+      loadUsers();
+    } catch (err) {
+      showAlert(`❌ Error al eliminar: ${err.message || 'interno'}`, 'error');
+    }
   }
-  return true;
-}
+  document.addEventListener('DOMContentLoaded', async () => {
+    const isAdmin = await checkAdmin();
+    if (isAdmin) {
+      loadUsers();
+      btnCreate.addEventListener('click', createUser); // ✅ ¡esto faltaba!
+    }
+  });
 </script>
 </body>
 </html>
