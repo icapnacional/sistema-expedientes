@@ -471,13 +471,13 @@
       if (savedTab) switchTab(savedTab);
 
       try {
-        const { data: { session }, error: sessionError } = await client.auth.getSession();
+        const {  { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError || !session) {
           window.location.href = '../index.html';
           return;
         }
 
-        const { data: perfil, error: perfilError } = await client
+        const {  perfil, error: perfilError } = await client
           .from('perfiles')
           .select('rol, estados_asignados, email')
           .eq('id', session.user.id)
@@ -488,16 +488,16 @@
           return;
         }
 
-const userRol = perfil.rol || 'consultor';
-if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
-  alert('🔒 Acceso denegado: no tienes permiso para Recursos Humanos.');
-  window.location.href = '../index.html';
-  return;
-}
+        // ✅ Permitir acceso a admin siempre, independiente de modulos_asignados
+        const userRol = perfil.rol || 'consultor';
+        if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
+          alert('🔒 Acceso denegado: no tienes permiso para Recursos Humanos.');
+          window.location.href = '../index.html';
+          return;
+        }
 
         const userEmail = perfil.email || session.user.email;
         const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
-        const userRol = perfil.rol || 'consultor';
         const rolText = userRol === 'admin' ? 'Administrador' : userRol === 'moderador' ? 'Moderador' : 'Consultor';
 
         userEmailSpan.textContent = userEmail;
