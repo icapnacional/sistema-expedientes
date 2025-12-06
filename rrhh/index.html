@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Recursos Humanos | ICAP Nacional - PNB</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- ✅ Supabase CDN (versión estable) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -146,6 +145,47 @@
       color: #666;
       line-height: 1.5;
     }
+    .actions-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+    .btn {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn:hover {
+      background-color: #5e262d;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(114, 47, 55, 0.3);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #722F37;
+      color: #722F37;
+    }
+    .btn-outline:hover {
+      background: #fdf7f7;
+    }
+    .btn-logout {
+      background-color: #c00;
+    }
+    .btn-logout:hover {
+      background-color: #a00;
+    }
     .breadcrumb {
       background: #f8f9fa;
       border-radius: 12px;
@@ -191,47 +231,37 @@
       color: #666;
     }
     .hidden { display: none !important; }
-    .actions-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 24px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
+    .panel-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
     }
-    .btn {
-      background-color: #722F37;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 14px 28px;
-      font-size: 16px;
+    .panel-btn {
+      background: white;
+      border: 2px solid #eaeaea;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 15px;
       font-weight: 600;
+      color: #722F37;
       cursor: pointer;
       transition: all 0.3s ease;
-      display: inline-flex;
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 10px;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+      text-align: center;
+      line-height: 1.4;
+      height: 100%;
     }
-    .btn:hover {
-      background-color: #5e262d;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(114, 47, 55, 0.3);
-    }
-    .btn-outline {
-      background: transparent;
-      border: 2px solid #722F37;
-      color: #722F37;
-    }
-    .btn-outline:hover {
-      background: #fdf7f7;
-    }
-    .logout-btn {
-      background-color: #c00;
-      margin-left: auto;
-    }
-    .logout-btn:hover {
-      background-color: #a00;
+    .panel-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 14px rgba(114, 47, 55, 0.18);
+      border-color: #722F37;
+      background-color: #fdf7f7;
+      color: #5e262d;
     }
     @media (max-width: 768px) {
       .tabs-header {
@@ -260,8 +290,8 @@
     </div>
     <div class="user-info">
       <strong>Usuario:</strong> <span id="userEmail">—</span> |
-      <strong>Departamento:</strong> Recursos Humanos |
-      <strong>Acceso:</strong> <span style="color:#722F37; font-weight:600">Completo</span>
+      <strong>Estado(s):</strong> <span id="userEstado">—</span> |
+      <span id="userRol"></span>
     </div>
     <div class="tabs-container">
       <div class="tabs-header">
@@ -275,12 +305,10 @@
         <button class="tab-btn" data-tab="cambio-servicios">🔄 Cambio de Servicios</button>
         <button class="tab-btn" data-tab="documentos">📁 Documentos</button>
       </div>
-      
       <div class="tabs-content">
         <!-- Dashboard Tab -->
         <div id="dashboard" class="tab-content active">
           <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">📊 Dashboard de Recursos Humanos</h2>
-          
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-label">Personal Activo</div>
@@ -303,36 +331,18 @@
               <div style="color:#5d4037; font-size:14px">Solicitudes por revisar</div>
             </div>
           </div>
-          
-          <h3 style="font-size: 18px; margin: 24px 0 16px; color: #2d2d2d;">Resumen de Actividades</h3>
-          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
-            Bienvenido al panel de control de Recursos Humanos. Seleccione una pestaña para acceder a las diferentes áreas de gestión.
-          </p>
-          
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-label">Nuevas Solicitudes</div>
-              <div class="stat-value">8</div>
-              <div style="color:#c62828; font-size:14px">Pendientes de aprobación</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Movimientos</div>
-              <div class="stat-value">3</div>
-              <div style="color:#5d4037; font-size:14px">Personal reasignado</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Capacitaciones</div>
-              <div class="stat-value">5</div>
-              <div style="color:#0288d1; font-size:14px">Programadas esta semana</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Evaluaciones</div>
-              <div class="stat-value">12</div>
-              <div style="color:#2e7d32; font-size:14px">Pendientes de revisión</div>
-            </div>
+          <h3 style="font-size: 18px; margin: 24px 0 16px; color: #2d2d2d;">Acceso Rápido:</h3>
+          <div class="panel-buttons">
+            <button class="panel-btn" onclick="switchTab('auditoria')">📋 Auditoría Nacional</button>
+            <button class="panel-btn" onclick="switchTab('pie-fuerza')">👥 Pie de Fuerza</button>
+            <button class="panel-btn" onclick="switchTab('orden-servicio')">📄 Orden de Servicio</button>
+            <button class="panel-btn" onclick="switchTab('reposo')">🛏️ Reposo</button>
+            <button class="panel-btn" onclick="switchTab('vacaciones')">🌴 Vacaciones</button>
+            <button class="panel-btn" onclick="switchTab('cambio-servicios')">🔄 Cambio de Servicios</button>
+            <button class="panel-btn" onclick="switchTab('documentos')">📁 Documentos</button>
+            <button class="panel-btn" onclick="location.href='../admin.html'">👑 Administración</button>
           </div>
         </div>
-        
         <!-- Auditoría Nacional Tab -->
         <div id="auditoria" class="tab-content">
           <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">📋 Auditoría Nacional</h2>
@@ -340,12 +350,11 @@
             Sistema de auditoría para seguimiento y control de personal a nivel nacional. 
             Permite generar reportes, revisar historiales y gestionar incidencias.
           </p>
-          
           <div class="module-grid">
             <div class="module-card" onclick="location.href='auditoria-nacional.html'">
               <div class="module-icon">📊</div>
-              <div class="module-title">Consulta</div>
-              <div class="module-desc">Visualiza y genera reportes de auditoría por región, estado o nacional.</div>
+              <div class="module-title">Reportes Generales</div>
+              <div class="module-desc">Genera y visualiza reportes de auditoría por región, estado o nacional.</div>
             </div>
             <div class="module-card" onclick="location.href='auditoria-nacional.html#incidencias'">
               <div class="module-icon">⚠️</div>
@@ -359,7 +368,6 @@
             </div>
           </div>
         </div>
-        
         <!-- RRHH ICAP Tab -->
         <div id="rrhh-icap" class="tab-content">
           <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">👥 RRHH ICAP</h2>
@@ -367,7 +375,6 @@
             Gestión de recursos humanos específicos para la ICAP Nacional. 
             Incluye control de personal, capacitaciones y seguimiento de desempeño.
           </p>
-          
           <div class="module-grid">
             <div class="module-card" onclick="location.href='rrhh-icap.html'">
               <div class="module-icon">🎯</div>
@@ -386,7 +393,6 @@
             </div>
           </div>
         </div>
-        
         <!-- Pie de Fuerza Tab -->
         <div id="pie-fuerza" class="tab-content">
           <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">👥 Pie de Fuerza</h2>
@@ -394,7 +400,6 @@
             Control y gestión del personal activo en la institución. 
             Permite visualizar disponibilidad, asignaciones y movimientos de personal.
           </p>
-          
           <div class="module-grid">
             <div class="module-card" onclick="location.href='pie-de-fuerza.html'">
               <div class="module-icon">👨‍✈️</div>
@@ -413,7 +418,6 @@
             </div>
           </div>
         </div>
-        
         <!-- Orden de Servicio Tab -->
         <div id="orden-servicio" class="tab-content">
           <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">📄 Orden de Servicio</h2>
@@ -421,7 +425,6 @@
             Sistema para generar, gestionar y dar seguimiento a órdenes de servicio. 
             Incluye creación de órdenes, asignación de personal y cierre de actividades.
           </p>
-          
           <div class="module-grid">
             <div class="module-card" onclick="location.href='orden-servicio.html'">
               <div class="module-icon">➕</div>
@@ -440,7 +443,6 @@
             </div>
           </div>
         </div>
-        
         <!-- Reposo Tab -->
         <div id="reposo" class="tab-content">
           <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">🛏️ Reposo</h2>
@@ -448,7 +450,6 @@
             Gestión de licencias por reposo médico y descanso. 
             Permite registrar, aprobar y dar seguimiento a solicitudes de reposo.
           </p>
-          
           <div class="module-grid">
             <div class="module-card" onclick="location.href='reposo.html'">
               <div class="module-icon">📝</div>
@@ -467,7 +468,6 @@
             </div>
           </div>
         </div>
-        
         <!-- Vacaciones Tab -->
         <div id="vacaciones" class="tab-content">
           <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">🌴 Vacaciones</h2>
@@ -475,7 +475,6 @@
             Sistema de gestión de vacaciones del personal. 
             Incluye planificación, solicitud, aprobación y registro de períodos vacacionales.
           </p>
-          
           <div class="module-grid">
             <div class="module-card" onclick="location.href='vacaciones.html'">
               <div class="module-icon">🏖️</div>
@@ -494,7 +493,6 @@
             </div>
           </div>
         </div>
-        
         <!-- Cambio de Servicios Tab -->
         <div id="cambio-servicios" class="tab-content">
           <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">🔄 Cambio de Servicios</h2>
@@ -502,7 +500,6 @@
             Gestión de solicitudes y autorizaciones para cambios de servicio. 
             Permite registrar, aprobar y dar seguimiento a los cambios de asignación.
           </p>
-          
           <div class="module-grid">
             <div class="module-card" onclick="location.href='cambio-servicios.html'">
               <div class="module-icon">🔄</div>
@@ -521,7 +518,6 @@
             </div>
           </div>
         </div>
-        
         <!-- Documentos Tab -->
         <div id="documentos" class="tab-content">
           <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">📁 Documentos</h2>
@@ -529,7 +525,6 @@
             Repositorio centralizado de documentos institucionales. 
             Incluye formularios, manuales, normativas y plantillas oficiales.
           </p>
-          
           <div class="module-grid">
             <div class="module-card" onclick="location.href='documentos.html#formularios'">
               <div class="module-icon">📝</div>
@@ -549,13 +544,11 @@
           </div>
         </div>
       </div>
-      
       <div class="actions-bar">
         <button class="btn btn-outline" onclick="location.href='../index.html'">← Volver al Panel Principal</button>
-        <button class="btn logout-btn" onclick="cerrarSesion()">Cerrar Sesión</button>
+        <button class="btn btn-logout" id="logoutBtn">Cerrar Sesión</button>
       </div>
     </div>
-    
     <footer style="text-align:center; padding:20px; color:#666; font-size:14px; margin-top:20px; border-top:1px solid #eee;">
       <p>© Desarrollado por OTIC ZULIA — Plataforma institucional de la ICAP Nacional del Cuerpo de Policía Nacional Bolivariana</p>
       <p>Información: 0424-6962840 / 0412-2714179</p>
@@ -563,134 +556,109 @@
   </div>
 
   <script>
-// ✅ Inicialización segura tras carga del DOM
-document.addEventListener('DOMContentLoaded', async () => {
-  // 🔑 Tus credenciales reales de Supabase
-  const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
-  
-  // ✅ CORRECCIÓN DEFINITIVA: usa `client` para evitar conflictos de nombres
-  const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
-
-  try {
-    // ✅ Sintaxis CORRECTA para obtener la sesión
-    const { data: { session }, error: sessionError } = await client.auth.getSession();
-    
-    if (sessionError) throw sessionError;
-    if (!session) throw new Error("Sesión no encontrada. Por favor inicia sesión.");
-    
-    // ✅ Obtener el perfil del usuario (incluyendo su rol)
-    const { data: perfil, error: perfilError } = await client
-      .from('perfiles')
-      .select('rol, estados_asignados, modulos_asignados')
-      .eq('id', session.user.id)
-      .single();
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 🔑 Configuración de Supabase (igual que en index.html y admin.html)
+      const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+      const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+      const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
       
-    if (perfilError) throw perfilError;
-    
-    // ✅ Validar que el usuario tenga un rol asignado
-    if (!perfil.rol) throw new Error("Tu cuenta no tiene un rol asignado. Contacta al administrador.");
-    
-    // ✅ Mostrar elementos del panel según el rol del usuario
-    mostrarPanelPorRol(session.user.email, perfil.estados_asignados, perfil.rol, perfil.modulos_asignados);
-    
-  } catch (err) {
-    console.error('Error al verificar sesión:', err);
-    
-    // ✅ Si hay error, mostrar pantalla de login
-    document.getElementById('loginView').classList.remove('hidden');
-    document.getElementById('panelView').classList.add('hidden');
-    
-    // ✅ Mostrar mensaje de error si es relevante
-    if (err.message.includes('Sesión no encontrada')) {
-      const alertDiv = document.getElementById('alertMessage');
-      if (alertDiv) {
-        alertDiv.textContent = 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.';
-        alertDiv.className = 'alert alert-error';
-        alertDiv.style.display = 'block';
-      }
-    }
-  }
-});
+      const userEmailSpan = document.getElementById('userEmail');
+      const userEstadoSpan = document.getElementById('userEstado');
+      const userRolSpan = document.getElementById('userRol');
+      const logoutBtn = document.getElementById('logoutBtn');
 
-// ✅ Función para mostrar el panel según el rol del usuario
-function mostrarPanelPorRol(email, estados_asignados, rol, modulos_asignados) {
-  const panelView = document.getElementById('panelView');
-  const loginView = document.getElementById('loginView');
-  
-  // ✅ Mostrar correo y rol del usuario
-  document.getElementById('userEmail').textContent = email;
-  
-  // ✅ Mostrar rol formateado
-  const rolText = 
-    rol === 'admin' ? 'Administrador' :
-    rol === 'moderador' ? 'Moderador' :
-    'Consultor';
-    
-  document.getElementById('userRol').textContent = rolText;
-  document.getElementById('userRol').setAttribute('data-role', rol);
-  
-  // ✅ Mostrar estados asignados o mensaje por defecto
-  const estadosTxt = Array.isArray(estados_asignados) ? 
-    estados_asignados.join(', ') : 
-    (estados_asignados || '—');
-  
-  document.getElementById('userEstado').textContent = estadosTxt;
-  
-  // ✅ Ocultar línea de estados solo para Administrador
-  if (rol === 'admin') {
-    document.getElementById('userEstado').parentNode.style.display = 'none';
-  }
-  
-  // ✅ Configurar visibilidad de botones según los módulos asignados
-  configurarModulos(modulos_asignados);
-  
-  // ✅ Mostrar/ocultar botón de administración según el rol
-  const adminBtn = document.getElementById('adminBtn');
-  if (adminBtn) {
-    if (rol === 'admin') {
-      adminBtn.classList.remove('admin-disabled');
-      adminBtn.onclick = () => {
-        window.location.href = 'admin.html';
-      };
-    } else {
-      adminBtn.classList.add('admin-disabled');
-      adminBtn.onclick = () => {};
-    }
-  }
-  
-  // ✅ Mostrar el panel y ocultar el formulario de login
-  loginView.classList.add('hidden');
-  panelView.classList.remove('hidden');
-}
-
-// ✅ Función para configurar visibilidad de módulos según permisos
-function configurarModulos(modulos_asignados) {
-  // ✅ Módulos disponibles en el sistema
-  const modulosDisponibles = [
-    'rh', 'analisis', 'logistica', 'dppc', 
-    'asesoria', 'disciplinarios', 'secretaria'
-  ];
-  
-  modulosDisponibles.forEach(modulo => {
-    const moduloBtn = document.querySelector(`button[data-modulo="${modulo}"]`);
-    if (moduloBtn) {
-      if (modulos_asignados && modulos_asignados.includes(modulo)) {
-        moduloBtn.classList.remove('disabled');
-        moduloBtn.onclick = () => {
-          // ✅ Acción al hacer clic en módulo habilitado
-          window.location.href = `modulos/${modulo}.html`;
-        };
-      } else {
-        moduloBtn.classList.add('disabled');
-        moduloBtn.onclick = () => {
-          // ✅ Mensaje al intentar acceder a módulo no autorizado
-          alert('No tienes permiso para acceder a este módulo');
-        };
+      // ✅ Restaurar pestaña activa (sin depender de localStorage para usuario)
+      const savedTab = localStorage.getItem('activeRrhhTab');
+      if (savedTab) {
+        switchTab(savedTab);
       }
+
+      // ✅ Cargar perfil del usuario actual (verifica sesión y acceso a RRHH)
+      try {
+        const { data: { session }, error: sessionError } = await client.auth.getSession();
+        if (sessionError || !session) {
+          // ✅ Redirige SIN mensaje ni confirmación (como prefieres)
+          window.location.href = '../index.html';
+          return;
+        }
+
+        const { data: perfil, error: perfilError } = await client
+          .from('perfiles')
+          .select('rol, estados_asignados, modulos_asignados, email')
+          .eq('id', session.user.id)
+          .single();
+
+        if (perfilError || !perfil) {
+          window.location.href = '../index.html';
+          return;
+        }
+
+        // ✅ Verificar que tenga acceso al módulo 'rh'
+        if (!perfil.modulos_asignados?.includes('rh')) {
+          alert('🔒 Acceso denegado: no tienes permiso para ingresar a Recursos Humanos.');
+          window.location.href = '../index.html';
+          return;
+        }
+
+        // ✅ Mostrar datos del usuario (como en index.html)
+        const userEmail = perfil.email || session.user.email;
+        const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
+        const userRol = perfil.rol || 'consultor';
+        const rolText = userRol === 'admin' ? 'Administrador' : userRol === 'moderador' ? 'Moderador' : 'Consultor';
+
+        userEmailSpan.textContent = userEmail;
+        userEstadoSpan.textContent = estadosTxt;
+        userRolSpan.textContent = rolText;
+        userRolSpan.setAttribute('data-role', userRol);
+
+        // ✅ Estilo para rol (sin "Rol:" / con tooltip rojo si admin)
+        const estadoLine = document.querySelector('.user-info').innerHTML;
+        if (userRol === 'admin') {
+          document.querySelector('.user-info').innerHTML = `
+            <strong>Usuario:</strong> <span id="userEmail">${userEmail}</span> |
+            <span id="userRol" data-role="admin">${rolText}</span>
+          `;
+          // Tooltip rojo
+          const userRolEl = document.getElementById('userRol');
+          userRolEl.style.fontWeight = '600';
+          userRolEl.style.position = 'relative';
+          userRolEl.innerHTML += ' ⓘ';
+          userRolEl.title = 'Administrador';
+        }
+
+        // ✅ Eventos de UX
+        document.querySelectorAll('.tab-btn').forEach(button => {
+          button.addEventListener('click', () => {
+            const tabId = button.getAttribute('data-tab');
+            switchTab(tabId);
+          });
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+          if (confirm('¿Seguro que deseas cerrar sesión?')) {
+            try {
+              await client.auth.signOut();
+              window.location.href = '../index.html';
+            } catch (err) {
+              console.error('Error al cerrar sesión:', err);
+              alert('Error al cerrar sesión. Por favor, recarga la página.');
+            }
+          }
+        });
+
+      } catch (err) {
+        console.error('Error en RRHH:', err);
+        window.location.href = '../index.html';
+      }
+    });
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      localStorage.setItem('activeRrhhTab', tabId);
     }
-  });
-}
   </script>
 </body>
 </html>
