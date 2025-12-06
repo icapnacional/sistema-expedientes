@@ -312,13 +312,14 @@
     setTimeout(() => alertDiv.style.display = 'none', 5000);
   }
 
-  // ✅ checkAdmin: async con await válido
-  async function checkAdmin() {
-    const {  { session } } = await supabase.auth.getSession();
-    if (!session) {
-      window.location.href = 'index.html';
-      return false;
-    }
+async function checkAdminSession() {
+  // ✅ Copiado 1:1 de tu index.html.txt — funciona
+  const {  { session } } = await supabase.auth.getSession();
+  if (!session) {
+    window.location.href = 'index.html';
+    return;
+  }
+
 
     const {  perfil, error } = await supabase
       .from('usuarios_perfil')
