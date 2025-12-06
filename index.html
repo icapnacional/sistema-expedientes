@@ -242,8 +242,7 @@
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const loginView = document.getElementById('loginView');
   const panelView = document.getElementById('panelView');
-  const userEmailSpan = document.getElementById('userEmail');
-  const userEstadoSpan = document.getElementById('userEstado');
+  const userInfoContainer = document.getElementById('userInfoContainer');
   const alertDiv = document.getElementById('alertMessage');
   const loginForm = document.getElementById('loginForm');
   const logoutBtn = document.getElementById('logoutBtn');
@@ -256,25 +255,12 @@
       showLogin();
       return;
     }
-    
-    const { data: saved } = await supabase
-      .from('sesiones_activas')
-      .select('refresh_token')
-      .eq('user_id', session.user.id)
-      .single();
-    if (!saved || saved.refresh_token !== session.refresh_token) {
-      await supabase.auth.signOut();
-      showError('🔒 Sesión cerrada: iniciada desde otro dispositivo.');
-      showLogin();
-      return;
-    }
     currentUser = session.user;
     const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id, estados_asignados')
       .eq('user_id', session.user.id)
       .single();
-
     if (error && error.code !== 'PGRST116') {
       console.error('Error al cargar perfil:', error);
       showError('Error interno. Contacte al administrador.');
@@ -287,7 +273,6 @@
       showLogin();
       return;
     }
-
     const estadosTxt = perfil.estados_asignados?.length
       ? perfil.estados_asignados.join(', ')
       : '—';
@@ -306,8 +291,19 @@
   }
 
   function showPanel(email, estado, rol_id) {
-    userEmailSpan.textContent = email;
-    userEstadoSpan.textContent = estado;
+    // ✅ Render dinámico del bloque de info
+    let html = `<div class="user-info-line"><strong>Usuario:</strong> ${email}</div>`;
+    
+    if (rol_id !== 1) {
+      // Solo muestra estados si NO es admin
+      html += `<div class="user-info-line"><strong>Estado(s):</strong> ${estado}</div>`;
+    }
+
+    // Rol en vinotinto, sin "Rol:"
+    const rolTexto = rol_id === 1 ? 'Administrador' : 'Usuario';
+    html += `<div class="user-info-line" style="font-weight: 600; color: #722F37;">${rolTexto}</div>`;
+
+    userInfoContainer.innerHTML = html;
 
     adminBtn.onclick = () => {
       if (rol_id === 1) {
@@ -326,49 +322,22 @@
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     alertDiv.style.display = 'none';
-
     try {
-      // ✅ Llamar a Edge Function en vez de signInWithPassword directo
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/login-single-session`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al iniciar sesión');
-
-      // Establecer sesión en el cliente
-      await supabase.auth.setSession({
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
-      });
-
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
       checkSession();
     } catch (err) {
-      showError(err.message || 'No se pudo iniciar sesión.');
+      showError(err.message || 'Credenciales inválidas.');
     }
   });
 
   logoutBtn.addEventListener('click', async () => {
-    // Opcional: limpiar en tabla
-    if (currentUser) {
-      await fetch(`${SUPABASE_URL}/rest/v1/sesiones_activas`, {
-        method: 'DELETE',
-        headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ user_id: `eq.${currentUser.id}` }),
-      });
-    }
     await supabase.auth.signOut();
     currentUser = null;
     showLogin();
   });
 
   checkSession();
-</script>>
+</script>
 </body>
 </html>
