@@ -128,13 +128,6 @@
       color: #333;
       border: 1px solid #eee;
     }
-    .user-info-line {
-      display: block;
-      margin-bottom: 4px;
-    }
-    .user-info-line:last-child {
-      margin-bottom: 0;
-    }
     .panel-buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -222,7 +215,7 @@
     />
     <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
     <div class="user-info" id="userInfoContainer">
-      <!-- Líneas dinámicas inyectadas por JS -->
+      <!-- Dinámico -->
     </div>
     <div class="panel-buttons">
       <button class="panel-btn" onclick="window.location.href='rh.html'">👥 Recursos Humanos</button>
@@ -236,6 +229,7 @@
     </div>
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
   </div>
+
 <script>
   const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
@@ -291,20 +285,25 @@
   }
 
   function showPanel(email, estado, rol_id) {
-    // ✅ Render dinámico del bloque de info
-    let html = `<div class="user-info-line"><strong>Usuario:</strong> ${email}</div>`;
+    // ✅ Construir dinámicamente
+    let html = `<div><strong>Usuario:</strong> ${email}</div>`;
     
+    // Mostrar estados solo si NO es Administrador
     if (rol_id !== 1) {
-      // Solo muestra estados si NO es admin
-      html += `<div class="user-info-line"><strong>Estado(s):</strong> ${estado}</div>`;
+      html += `<div><strong>Estado(s):</strong> ${estado}</div>`;
     }
 
-    // Rol en vinotinto, sin "Rol:"
-    const rolTexto = rol_id === 1 ? 'Administrador' : 'Usuario';
-    html += `<div class="user-info-line" style="font-weight: 600; color: #722F37;">${rolTexto}</div>`;
+    // Mostrar rol como texto plano en vinotinto
+    const rolTexto = 
+      rol_id === 1 ? 'Administrador' :
+      rol_id === 2 ? 'Moderador' :
+      'Consultor';
+    
+    html += `<div style="font-weight:600;color:#722F37;">${rolTexto}</div>`;
 
     userInfoContainer.innerHTML = html;
 
+    // Comportamiento del botón Admin
     adminBtn.onclick = () => {
       if (rol_id === 1) {
         window.location.href = 'admin.html';
