@@ -563,105 +563,134 @@
   </div>
 
   <script>
-    // ✅ Inicialización segura tras carga del DOM
-    document.addEventListener('DOMContentLoaded', async () => {
-      // 🔑 Credenciales de Supabase
-      const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-      const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
-      
-      // ✅ Crear instancia de Supabase
-      const supabase = supabase.createClient(SUPABASE_URL, ANON_KEY);
-      
-      // ✅ Verificar sesión
-      const { data: { session }, error: sessionError } = await client.auth.getSession();
-      
-      if (sessionError || !session) {
-        // ✅ Si no hay sesión válida, redirigir automáticamente al login
-        window.location.href = '../index.html';
-        return;
-      }
-      
-      try {
-        // ✅ Obtener perfil del usuario
-        const {  perfil, error: perfilError } = await supabase
-          .from('perfiles')
-          .select('email, modulos_asignados')
-          .eq('id', session.user.id)
-          .single();
-          
-        if (perfilError || !perfil) {
-          // ✅ Si no hay perfil, redirigir al login
-          window.location.href = '../index.html';
-          return;
-        }
-        
-        // ✅ Verificar si tiene acceso al módulo de RRHH
-        if (!perfil.modulos_asignados.includes('rh')) {
-          // ✅ Si no tiene permisos, redirigir al panel principal
-          window.location.href = '../index.html';
-          return;
-        }
-        
-        // ✅ Si todo está bien, mostrar datos del usuario
-        document.getElementById('userEmail').textContent = perfil.email;
-        
-        // ✅ Configurar eventos para las pestañas
-        document.querySelectorAll('.tab-btn').forEach(button => {
-          button.addEventListener('click', () => {
-            const tabId = button.getAttribute('data-tab');
-            switchTab(tabId);
-          });
-        });
-        
-        // ✅ Restaurar pestaña activa al cargar
-        const savedTab = localStorage.getItem('activeRrhhTab');
-        if (savedTab) {
-          switchTab(savedTab);
-        }
-        
-      } catch (err) {
-        console.error('Error al verificar permisos:', err);
-        window.location.href = '../index.html';
-      }
-    });
+// ✅ Inicialización segura tras carga del DOM
+document.addEventListener('DOMContentLoaded', async () => {
+  // 🔑 Tus credenciales reales de Supabase
+  const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+  
+  // ✅ CORRECCIÓN DEFINITIVA: usa `client` para evitar conflictos de nombres
+  const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+
+  try {
+    // ✅ Sintaxis CORRECTA para obtener la sesión
+    const { data: { session }, error: sessionError } = await client.auth.getSession();
     
-    // ✅ Función para cambiar entre pestañas
-    function switchTab(tabId) {
-      // ✅ Desactivar todas las pestañas
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      
-      // ✅ Activar la pestaña seleccionada
-      document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
-      
-      // ✅ Ocultar todos los contenidos
-      document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-      });
-      
-      // ✅ Mostrar el contenido seleccionado
-      document.getElementById(tabId).classList.add('active');
-      
-      // ✅ Guardar en localStorage para mantener estado al recargar
-      localStorage.setItem('activeRrhhTab', tabId);
-    }
+    if (sessionError) throw sessionError;
+    if (!session) throw new Error("Sesión no encontrada. Por favor inicia sesión.");
     
-    // ✅ Función para cerrar sesión
-    function cerrarSesion() {
-      if (confirm('¿Seguro que deseas cerrar sesión?')) {
-        // 🔑 Credenciales de Supabase
-        const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-        const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
-        
-        // ✅ Crear instancia de Supabase
-        const supabase = supabase.createClient(SUPABASE_URL, ANON_KEY);
-        
-        supabase.auth.signOut().then(() => {
-          window.location.href = '../index.html';
-        });
+    // ✅ Obtener el perfil del usuario (incluyendo su rol)
+    const { data: perfil, error: perfilError } = await client
+      .from('perfiles')
+      .select('rol, estados_asignados, modulos_asignados')
+      .eq('id', session.user.id)
+      .single();
+      
+    if (perfilError) throw perfilError;
+    
+    // ✅ Validar que el usuario tenga un rol asignado
+    if (!perfil.rol) throw new Error("Tu cuenta no tiene un rol asignado. Contacta al administrador.");
+    
+    // ✅ Mostrar elementos del panel según el rol del usuario
+    mostrarPanelPorRol(session.user.email, perfil.estados_asignados, perfil.rol, perfil.modulos_asignados);
+    
+  } catch (err) {
+    console.error('Error al verificar sesión:', err);
+    
+    // ✅ Si hay error, mostrar pantalla de login
+    document.getElementById('loginView').classList.remove('hidden');
+    document.getElementById('panelView').classList.add('hidden');
+    
+    // ✅ Mostrar mensaje de error si es relevante
+    if (err.message.includes('Sesión no encontrada')) {
+      const alertDiv = document.getElementById('alertMessage');
+      if (alertDiv) {
+        alertDiv.textContent = 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.';
+        alertDiv.className = 'alert alert-error';
+        alertDiv.style.display = 'block';
       }
     }
+  }
+});
+
+// ✅ Función para mostrar el panel según el rol del usuario
+function mostrarPanelPorRol(email, estados_asignados, rol, modulos_asignados) {
+  const panelView = document.getElementById('panelView');
+  const loginView = document.getElementById('loginView');
+  
+  // ✅ Mostrar correo y rol del usuario
+  document.getElementById('userEmail').textContent = email;
+  
+  // ✅ Mostrar rol formateado
+  const rolText = 
+    rol === 'admin' ? 'Administrador' :
+    rol === 'moderador' ? 'Moderador' :
+    'Consultor';
+    
+  document.getElementById('userRol').textContent = rolText;
+  document.getElementById('userRol').setAttribute('data-role', rol);
+  
+  // ✅ Mostrar estados asignados o mensaje por defecto
+  const estadosTxt = Array.isArray(estados_asignados) ? 
+    estados_asignados.join(', ') : 
+    (estados_asignados || '—');
+  
+  document.getElementById('userEstado').textContent = estadosTxt;
+  
+  // ✅ Ocultar línea de estados solo para Administrador
+  if (rol === 'admin') {
+    document.getElementById('userEstado').parentNode.style.display = 'none';
+  }
+  
+  // ✅ Configurar visibilidad de botones según los módulos asignados
+  configurarModulos(modulos_asignados);
+  
+  // ✅ Mostrar/ocultar botón de administración según el rol
+  const adminBtn = document.getElementById('adminBtn');
+  if (adminBtn) {
+    if (rol === 'admin') {
+      adminBtn.classList.remove('admin-disabled');
+      adminBtn.onclick = () => {
+        window.location.href = 'admin.html';
+      };
+    } else {
+      adminBtn.classList.add('admin-disabled');
+      adminBtn.onclick = () => {};
+    }
+  }
+  
+  // ✅ Mostrar el panel y ocultar el formulario de login
+  loginView.classList.add('hidden');
+  panelView.classList.remove('hidden');
+}
+
+// ✅ Función para configurar visibilidad de módulos según permisos
+function configurarModulos(modulos_asignados) {
+  // ✅ Módulos disponibles en el sistema
+  const modulosDisponibles = [
+    'rh', 'analisis', 'logistica', 'dppc', 
+    'asesoria', 'disciplinarios', 'secretaria'
+  ];
+  
+  modulosDisponibles.forEach(modulo => {
+    const moduloBtn = document.querySelector(`button[data-modulo="${modulo}"]`);
+    if (moduloBtn) {
+      if (modulos_asignados && modulos_asignados.includes(modulo)) {
+        moduloBtn.classList.remove('disabled');
+        moduloBtn.onclick = () => {
+          // ✅ Acción al hacer clic en módulo habilitado
+          window.location.href = `modulos/${modulo}.html`;
+        };
+      } else {
+        moduloBtn.classList.add('disabled');
+        moduloBtn.onclick = () => {
+          // ✅ Mensaje al intentar acceder a módulo no autorizado
+          alert('No tienes permiso para acceder a este módulo');
+        };
+      }
+    }
+  });
+}
   </script>
 </body>
 </html>
