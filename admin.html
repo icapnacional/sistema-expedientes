@@ -57,6 +57,21 @@
     select[multiple] {
       height: 180px;
     }
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .module-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .module-item input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
     .btn {
       background: #722F37;
       color: white;
@@ -105,20 +120,21 @@
       <form id="createUserForm">
         <div class="form-group">
           <label for="email">Correo electrónico</label>
-          <input type="email" id="email" required placeholder="ejemplo@icap.gob.ve">
+          <input type="email" id="email" required placeholder="ejemplo@pn.gob.ve">
         </div>
         <div class="form-group">
           <label for="password">Contraseña (mín. 8 caracteres)</label>
           <input type="password" id="password" required minlength="8">
         </div>
         <div class="form-group">
-          <label for="rol_id">Rol</label>
+          <label for="rol_id">Rol (solo para identificación)</label>
           <select id="rol_id" required>
             <option value="">-- Seleccionar --</option>
             <option value="1">Administrador</option>
             <option value="2">Moderador</option>
             <option value="3">Consultor</option>
           </select>
+          <small style="display:block; margin-top:6px; color:#666;">⚠️ El rol NO define los módulos. Asigne módulos manualmente abajo.</small>
         </div>
         <div class="form-group">
           <label for="estados">Estados asignados (Ctrl/Cmd + clic para múltiples)</label>
@@ -150,37 +166,68 @@
             <option value="Dependencias Federales">Dependencias Federales</option>
           </select>
         </div>
+
+        <div class="form-group">
+          <label>✅ Asignar módulos (botones visibles en el panel)</label>
+          <div class="modules-grid" id="modulesCheckboxes">
+            <!-- Se generan dinámicamente -->
+          </div>
+        </div>
+
         <button type="submit" class="btn">✅ Crear Usuario</button>
       </form>
     </div>
   </div>
 
   <script>
+    // Módulos disponibles (id → nombre visible)
+    const MODULOS = {
+      rh: "👥 Recursos Humanos",
+      analisis: "🔍 Análisis",
+      logistica: "📦 Logística",
+      dppc: "⚖️ DPPC",
+      asesoria: "⚖️ Asesoría Legal",
+      disciplinarios: "📇 D.E. Disciplinarios",
+      secretaria: "✒️ Secretaría",
+      admin: "👑 Admin"
+    };
+
     const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
     const supabase = window.supabase.createClient(SUPABASE_URL, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g');
-
     const alertDiv = document.getElementById('alertMessage');
     const form = document.getElementById('createUserForm');
+    const modulesContainer = document.getElementById('modulesCheckboxes');
+
+    // Renderizar checkboxes de módulos
+    function renderModulesCheckboxes() {
+      modulesContainer.innerHTML = '';
+      Object.entries(MODULOS).forEach(([id, label]) => {
+        const div = document.createElement('div');
+        div.className = 'module-item';
+        div.innerHTML = `
+          <input type="checkbox" id="mod_${id}" name="modulo" value="${id}">
+          <label for="mod_${id}">${label}</label>
+        `;
+        modulesContainer.appendChild(div);
+      });
+    }
+
+    // Inicializar
+    renderModulesCheckboxes();
 
     async function getSession() {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        window.location.href = 'index.html';
-        return null;
-      }
       return session;
     }
 
     async function checkAdmin() {
       const session = await getSession();
       if (!session) return false;
-
-      const { data: perfil } = await supabase
+      const {  perfil } = await supabase
         .from('usuarios_perfil')
         .select('rol_id')
         .eq('user_id', session.user.id)
         .single();
-
       return perfil && perfil.rol_id === 1;
     }
 
@@ -196,14 +243,21 @@
       const password = document.getElementById('password').value;
       const rol_id = parseInt(document.getElementById('rol_id').value);
       const estadosSelect = Array.from(document.getElementById('estados').selectedOptions).map(o => o.value);
+      const modulosCheckboxes = document.querySelectorAll('input[name="modulo"]:checked');
+      const modulos_asignados = Array.from(modulosCheckboxes).map(cb => cb.value);
 
       if (!email || !password || !rol_id || !estadosSelect.length) {
-        showAlert('Todos los campos son obligatorios.', 'error');
+        showAlert('Correo, contraseña, rol y al menos un estado son obligatorios.', 'error');
+        return;
+      }
+
+      if (modulos_asignados.length === 0) {
+        showAlert('⚠️ Debe asignar al menos un módulo/botón.', 'error');
         return;
       }
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const session = await getSession();
         const token = session.access_token;
 
         const res = await fetch(`${SUPABASE_URL}/functions/v1/create_user`, {
@@ -212,14 +266,16 @@
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ email, password, rol_id, estados_asignados: estadosSelect })
+          body: JSON.stringify({ email, password, rol_id, estados_asignados: estadosSelect, modulos_asignados })
         });
 
         const result = await res.json();
 
         if (res.ok) {
-          showAlert(`✅ Usuario creado con éxito.\nAhora puede iniciar sesión.`, 'success');
+          showAlert(`✅ Usuario creado con éxito.\nMódulos asignados: ${modulos_asignados.map(m => MODULOS[m]).join(', ')}`, 'success');
           form.reset();
+          // Reset checkboxes
+          document.querySelectorAll('input[name="modulo"]').forEach(cb => cb.checked = false);
         } else {
           throw new Error(result.error || 'Error desconocido');
         }
@@ -235,15 +291,8 @@
       alertDiv.style.display = 'block';
       setTimeout(() => {
         if (type === 'success') alertDiv.style.display = 'none';
-      }, 5000);
+      }, 6000);
     }
-
-    // Inicializar
-    checkAdmin().then(isAdmin => {
-      if (!isAdmin) {
-        showAlert('Acceso restringido a administradores.', 'error');
-      }
-    });
   </script>
 </body>
 </html>
