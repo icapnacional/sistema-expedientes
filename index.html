@@ -250,59 +250,27 @@
   const adminBtn = document.getElementById('adminBtn');
   let currentUser = null;
 
-  // ✅ Invalidar sesiones anteriores del mismo usuario
-  async function invalidateOtherSessions(userId) {
-    const { error } = await supabase
-      .from('sesiones_activas')
-      .delete()
-      .eq('user_id', userId);
-    if (error) console.warn('No se pudo limpiar sesiones previas:', error);
-  }
-
-  // ✅ Registrar la nueva sesión
-  async function registerCurrentSession(userId, refreshToken) {
-    const { error } = await supabase
-      .from('sesiones_activas')
-      .upsert(
-        { user_id: userId, refresh_token: refreshToken },
-        { onConflict: 'user_id' }
-      );
-    if (error) console.error('Error al registrar sesión:', error);
-  }
-
-  // ✅ Verificar que la sesión actual sea la válida
-  async function isSessionValid() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return false;
-
-    const { data: saved, error } = await supabase
-      .from('sesiones_activas')
-      .select('refresh_token')
-      .eq('user_id', session.user.id)
-      .single();
-
-    if (error || !saved) return false;
-    return saved.refresh_token === session.refresh_token;
-  }
-
   async function checkSession() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       showLogin();
       return;
     }
-
-    // ✅ Verificación de sesión única
-    const valid = await isSessionValid();
-    if (!valid) {
+    
+    const { data: saved } = await supabase
+      .from('sesiones_activas')
+      .select('refresh_token')
+      .eq('user_id', session.user.id)
+      .single();
+    if (!saved || saved.refresh_token !== session.refresh_token) {
       await supabase.auth.signOut();
       showError('🔒 Sesión cerrada: iniciada desde otro dispositivo.');
       showLogin();
       return;
     }
+    */
 
     currentUser = session.user;
-
     const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id, estados_asignados')
@@ -315,7 +283,6 @@
       showLogin();
       return;
     }
-
     if (!perfil) {
       showError('Acceso denegado: usuario no autorizado.');
       await supabase.auth.signOut();
@@ -363,26 +330,40 @@
     alertDiv.style.display = 'none';
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      // ✅ Llamar a Edge Function en vez de signInWithPassword directo
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/login-single-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // ✅ Paso clave: invalidar sesiones previas y registrar la nueva
-      await invalidateOtherSessions(data.user.id);
-      await registerCurrentSession(data.user.id, data.session.refresh_token);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al iniciar sesión');
+
+      // Establecer sesión en el cliente
+      await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+      });
 
       checkSession();
     } catch (err) {
-      showError(err.message || 'Credenciales inválidas.');
+      showError(err.message || 'No se pudo iniciar sesión.');
     }
   });
 
   logoutBtn.addEventListener('click', async () => {
-    // ✅ Opcional: limpiar también de la tabla (no estrictamente necesario, pero limpio)
+    // Opcional: limpiar en tabla
     if (currentUser) {
-      await supabase
-        .from('sesiones_activas')
-        .delete()
-        .eq('user_id', currentUser.id);
+      await fetch(`${SUPABASE_URL}/rest/v1/sesiones_activas`, {
+        method: 'DELETE',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_id: `eq.${currentUser.id}` }),
+      });
     }
     await supabase.auth.signOut();
     currentUser = null;
@@ -390,6 +371,6 @@
   });
 
   checkSession();
-</script>
+</script>>
 </body>
 </html>
