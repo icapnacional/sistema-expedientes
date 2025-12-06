@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ICAP Nacional - PNB</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- ✅ Supabase CDN (versión estable y compatible) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -97,10 +98,12 @@
       border-radius: 14px; padding: 16px 10px;
       font-size: 14px; font-weight: 600; color: #722F37;
       cursor: pointer; transition: all 0.3s ease;
-      display: flex; flex-direction: column;
+      display: flex;
+      flex-direction: column;
       align-items: center; justify-content: center;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
-      min-height: 90px; text-align: center;
+      min-height: 90px;
+      text-align: center;
       line-height: 1.3;
     }
     .panel-btn:hover {
@@ -110,7 +113,7 @@
       color: #5e262d;
     }
     .hidden { display: none !important; }
-    /* Tooltip rojo para Administrador */
+    /* ✅ Tooltip rojo para Administrador */
     #userRol {
       font-weight: 600;
       position: relative;
@@ -125,25 +128,70 @@
       content: " ⓘ Administrador";
       background: #333; color: white;
       padding: 2px 6px; border-radius: 4px;
-      position: absolute; top: -22px; left: 0;
+      position: absolute;
+      top: -22px;
+      left: 0;
       white-space: nowrap;
       font-size: 12px;
+      pointer-events: none;
+    }
+    .panel-btn.admin-disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      position: relative;
+    }
+    .panel-btn.admin-disabled::after {
+      content: " ⛔";
+      font-size: 16px;
+      color: #c00;
+      position: absolute;
+      top: 4px;
+      right: 8px;
+    }
+    .panel-btn.admin-disabled:hover::after {
+      content: " ⛔ Acceso restringido";
+      font-size: 12px;
+      color: #fff;
+      background: #333;
+      padding: 2px 6px;
+      border-radius: 4px;
+      top: -20px;
+      right: 8px;
+      white-space: nowrap;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
+  <!-- Login -->
   <div id="loginView" class="login-card">
-    <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" class="logo"/>
+    <img 
+      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+      alt="ICAP Nacional - PNB" 
+      class="logo"
+    />
     <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
     <p class="subtitle">Acceso restringido a personal autorizado</p>
     <form id="loginForm">
       <div class="form-group">
         <label for="email">Correo electrónico</label>
-        <input type="email" id="email" required autocomplete="username" placeholder="usuario@ejemplo.com" />
+        <input 
+          type="email" 
+          id="email" 
+          required 
+          autocomplete="username"
+          placeholder="tu@email.com"
+        />
       </div>
       <div class="form-group">
         <label for="password">Contraseña</label>
-        <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••" />
+        <input 
+          type="password" 
+          id="password" 
+          required 
+          autocomplete="current-password"
+          placeholder="••••••••"
+        />
       </div>
       <button type="submit" class="btn-login">Iniciar Sesión</button>
     </form>
@@ -156,8 +204,13 @@
     </p>
   </div>
 
+  <!-- Panel -->
   <div id="panelView" class="panel-card hidden">
-    <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" class="logo"/>
+    <img 
+      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+      alt="ICAP Nacional - PNB" 
+      class="logo"
+    />
     <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
     <div class="user-info">
       <strong>Usuario:</strong> <span id="userEmail">—</span><br>
@@ -177,117 +230,145 @@
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
   </div>
 
-<script type="module">
-  // ✅ Cargar Supabase dinámicamente (sin CDN en <head>)
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  <script>
+    // ✅ Inicialización segura después de cargar DOM y librería
+    document.addEventListener('DOMContentLoaded', () => {
+      // 🔑 Tus credenciales reales de Supabase
+      const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+      const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
 
-  // 🔑 Configuración — ¡REEMPLAZA ESTOS VALORES!
-  const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+      // ✅ Correcto: `supabase.createClient`, no `createClient()` solo
+      const supabase = supabase.createClient(SUPABASE_URL, ANON_KEY);
 
-  const supabase = createClient(SUPABASE_URL, ANON_KEY);
+      // Elementos DOM
+      const loginView = document.getElementById('loginView');
+      const panelView = document.getElementById('panelView');
+      const userEmailSpan = document.getElementById('userEmail');
+      const userEstadoSpan = document.getElementById('userEstado');
+      const userRolSpan = document.getElementById('userRol');
+      const alertDiv = document.getElementById('alertMessage');
+      const loginForm = document.getElementById('loginForm');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const adminBtn = document.getElementById('adminBtn');
 
-  // ✅ Ahora sí puedes usar `supabase` con seguridad
-  const loginView = document.getElementById('loginView');
-  const panelView = document.getElementById('panelView');
-  const userEmailSpan = document.getElementById('userEmail');
-  const userEstadoSpan = document.getElementById('userEstado');
-  const userRolSpan = document.getElementById('userRol');
-  const alertDiv = document.getElementById('alertMessage');
-  const loginForm = document.getElementById('loginForm');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const adminBtn = document.getElementById('adminBtn');
-
-  function showError(msg) {
-    alertDiv.textContent = msg;
-    alertDiv.className = 'alert alert-error';
-    alertDiv.style.display = 'block';
-  }
-
-  function hideAlert() {
-    alertDiv.style.display = 'none';
-  }
-
-  function showLogin() {
-    loginView.classList.remove('hidden');
-    panelView.classList.add('hidden');
-    hideAlert();
-  }
-
-  function showPanel(email, estado, rol) {
-    userEmailSpan.textContent = email;
-    
-    const rolText = 
-      rol === 'admin' ? 'Administrador' :
-      rol === 'moderador' ? 'Moderador' :
-      'Consultor';
-    userRolSpan.textContent = rolText;
-    userRolSpan.setAttribute('data-role', rol);
-
-    const estadoLine = userEstadoSpan.parentNode;
-    if (rol === 'admin') {
-      estadoLine.style.display = 'none';
-    } else {
-      estadoLine.style.display = 'block';
-      userEstadoSpan.textContent = estado || '—';
-    }
-
-    adminBtn.disabled = !(rol === 'admin');
-    adminBtn.classList.toggle('admin-disabled', !(rol === 'admin'));
-    adminBtn.onclick = (rol === 'admin') 
-      ? () => { window.location.href = 'admin.html'; }
-      : null;
-
-    loginView.classList.add('hidden');
-    panelView.classList.remove('hidden');
-  }
-
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideAlert();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return showError(error.message || 'Error al iniciar sesión.');
-
-    // ✅ Una sola sesión activa por usuario
-    await supabase.auth.signOut({ scope: 'others' });
-
-    // Cargar perfil
-    const { data: perfil, error: perfilError } = await supabase
-      .from('perfiles')
-      .select('rol, estados_asignados')
-      .eq('id', data.user.id)
-      .single();
-
-    if (perfilError) return showError('No se pudo cargar tu perfil.');
-
-    const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
-    showPanel(email, estadosTxt, perfil.rol);
-  });
-
-  logoutBtn.addEventListener('click', async () => {
-    await supabase.auth.signOut();
-    showLogin();
-    document.getElementById('password').value = '';
-  });
-
-  // Verificar sesión al cargar
-  (async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      const { data: perfil } = await supabase
-        .from('perfiles')
-        .select('rol, estados_asignados, email')
-        .eq('id', session.user.id)
-        .single();
-      if (perfil) {
-        const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
-        showPanel(perfil.email, estadosTxt, perfil.rol);
+      function showError(msg) {
+        alertDiv.textContent = msg;
+        alertDiv.className = 'alert alert-error';
+        alertDiv.style.display = 'block';
       }
-    }
-  })();
-</script>
+
+      function hideAlert() {
+        alertDiv.style.display = 'none';
+      }
+
+      function showLogin() {
+        loginView.classList.remove('hidden');
+        panelView.classList.add('hidden');
+        hideAlert();
+      }
+
+      function showPanel(email, estado, rol) {
+        userEmailSpan.textContent = email;
+        
+        // ✅ Mostrar solo 'Administrador', 'Moderador', 'Consultor'
+        const rolText = 
+          rol === 'admin' ? 'Administrador' :
+          rol === 'moderador' ? 'Moderador' :
+          'Consultor';
+        userRolSpan.textContent = rolText;
+        userRolSpan.setAttribute('data-role', rol);
+
+        // ✅ Ocultar línea de estados solo para Administrador
+        const estadoLine = userEstadoSpan.parentNode;
+        if (rol === 'admin') {
+          estadoLine.style.display = 'none';
+        } else {
+          estadoLine.style.display = 'block';
+          userEstadoSpan.textContent = estado;
+        }
+
+        // ✅ Botón Admin: funcional solo si rol = admin
+        adminBtn.classList.remove('admin-disabled');
+        adminBtn.onclick = null;
+        if (rol === 'admin') {
+          adminBtn.onclick = () => {
+            window.location.href = 'admin.html';
+          };
+        } else {
+          adminBtn.classList.add('admin-disabled');
+          adminBtn.onclick = () => {};
+        }
+
+        loginView.classList.add('hidden');
+        panelView.classList.remove('hidden');
+      }
+
+      // ✅ Login real con Supabase Auth
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideAlert();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!email || !password) {
+          return showError('Por favor complete todos los campos.');
+        }
+
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          // Mensajes más amigables
+          if (error.message.includes('Invalid login credentials')) {
+            showError('Correo o contraseña incorrectos.');
+          } else if (error.message.includes('Email not confirmed')) {
+            showError('Correo no verificado. Revisa tu bandeja de entrada.');
+          } else {
+            showError('Error al iniciar sesión: ' + error.message);
+          }
+          return;
+        }
+
+        // ✅ Cerrar otras sesiones del mismo usuario (acceso único)
+        await supabase.auth.signOut({ scope: 'others' });
+
+        // Cargar perfil desde tabla `perfiles`
+        const { data: perfil, error: perfilError } = await supabase
+          .from('perfiles')
+          .select('rol, estados_asignados')
+          .eq('id', data.user.id)
+          .single();
+
+        if (perfilError) {
+          console.error('Error perfil:', perfilError);
+          return showError('No se pudo cargar tu perfil. Contacta al administrador.');
+        }
+
+        const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
+        showPanel(email, estadosTxt, perfil.rol);
+      });
+
+      logoutBtn.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        showLogin();
+        document.getElementById('password').value = '';
+      });
+
+      // ✅ Verificar sesión al cargar la página
+      (async () => {
+        const {  { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const { data: perfil } = await supabase
+            .from('perfiles')
+            .select('rol, estados_asignados, email')
+            .eq('id', session.user.id)
+            .single();
+
+          if (perfil) {
+            const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
+            showPanel(perfil.email, estadosTxt, perfil.rol);
+          }
+        }
+      })();
+    });
+  </script>
 </body>
 </html>
