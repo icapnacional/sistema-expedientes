@@ -373,97 +373,57 @@
       addBtn('»', current + 1, false, current === total);
     }
 
-    // ✅ Función global para eliminar (usada en onclick)
-    window.deleteUser = async function(userId, email) {
-      if (!confirm(`⚠️ ¿Eliminar usuario ${email}?\nEsta acción es irreversible.`)) return;
+// ✅ Función global para eliminar (usada en onclick)
+window.deleteUser = async function(userId, email) {
+  if (!confirm(`⚠️ ¿Eliminar usuario ${email}?\nEsta acción es irreversible.`)) return;
 
-      try {
-        // ✅ Corrección: usar getSession() en lugar de session()
-        const { data: { session }, error: sessionError } = await client.auth.getSession();
-        if (sessionError) throw sessionError;
-        if (!session) throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
+  try {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Eliminando...';
+    
+    const { data: { session }, error: sessionError } = await client.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!session) throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
 
-        const res = await fetch(MANAGE_USER_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({ action: 'delete', user_id_to_delete: userId })
-        });
+    // ✅ Solicitud corregida con formato exacto que espera la Edge Function
+    const res = await fetch(MANAGE_USER_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({ 
+        action: 'delete', 
+        user_id_to_delete: userId 
+      })
+    });
 
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.message || `Error HTTP: ${res.status}`);
-        }
-
-        showAlert(`✅ Usuario ${email} eliminado correctamente.`, 'success');
-        loadUsers(currentPage);
-      } catch (err) {
-        console.error('Error al eliminar usuario:', err);
-        showAlert(`❌ Error al eliminar: ${err.message || 'Error desconocido'}`, 'error');
-      }
-    };
-
-    async function createUserReal() {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const rol = document.getElementById('rol_id').value;
-      const estados = Array.from(document.getElementById('estados').selectedOptions).map(o => o.value);
-      const modulos = getSelectedModules();
-
-      if (!email || !password || !rol || estados.length === 0 || modulos.length === 0) {
-        return showAlert('Todos los campos son obligatorios.', 'error');
-      }
-
-      if (password.length < 8) {
-        return showAlert('La contraseña debe tener al menos 8 caracteres.', 'error');
-      }
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Creando…';
-
-      try {
-        // ✅ Corrección: usar getSession() en lugar de session()
-        const { data: { session }, error: sessionError } = await client.auth.getSession();
-        if (sessionError) throw sessionError;
-        if (!session) throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
-
-        const res = await fetch(MANAGE_USER_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({
-            action: 'create',
-            email,
-            password,
-            rol,
-            estados_asignados: estados,
-            modulos_asignados: modulos
-          })
-        });
-
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.message || `Error HTTP: ${res.status}`);
-        }
-
-        showAlert(`✅ Usuario creado: ${email}`, 'success');
-        document.getElementById('createUserForm').reset();
-        document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
-        document.getElementById('estados').selectedIndex = -1;
-        loadUsers(1);
-      } catch (err) {
-        console.error('Error al crear usuario:', err);
-        showAlert(`❌ ${err.message || 'Error al crear usuario'}`, 'error');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = '✅ Crear Usuario';
-      }
+    // ✅ Leer toda la respuesta para depuración
+    const responseText = await res.text();
+    console.log('🔍 Respuesta de eliminación:', responseText);
+    
+    let responseData;
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (e) {
+      throw new Error('Respuesta inválida del servidor: ' + responseText.substring(0, 100) + '...');
     }
 
+    if (!res.ok) {
+      const errorMessage = responseData.message || `Error HTTP ${res.status}`;
+      throw new Error(errorMessage);
+    }
+
+    showAlert(`✅ Usuario ${email} eliminado correctamente.`, 'success');
+    await loadUsers(currentPage);
+  } catch (err) {
+    console.error('🔥 Error al eliminar usuario:', err);
+    showAlert(`❌ ${err.message || 'Error al eliminar usuario'}`, 'error');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '✅ Crear Usuario';
+  }
+};
     document.getElementById('createUserForm').addEventListener('submit', (e) => {
       e.preventDefault();
       createUserReal();
