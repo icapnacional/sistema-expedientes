@@ -236,12 +236,25 @@
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const loginView = document.getElementById('loginView');
   const panelView = document.getElementById('panelView');
-  const userInfoContainer = document.getElementById('userInfoContainer');
+  const userEmailSpan = document.getElementById('userEmail');
+  const userEstadoSpan = document.getElementById('userEstado');
   const alertDiv = document.getElementById('alertMessage');
   const loginForm = document.getElementById('loginForm');
   const logoutBtn = document.getElementById('logoutBtn');
   const adminBtn = document.getElementById('adminBtn');
   let currentUser = null;
+
+  // 🔑 IDs de botones → nombres de archivos
+  const BOTONES = {
+    rh: '.panel-btn:nth-child(1)',
+    analisis: '.panel-btn:nth-child(2)',
+    logistica: '.panel-btn:nth-child(3)',
+    dppc: '.panel-btn:nth-child(4)',
+    asesoria: '.panel-btn:nth-child(5)',
+    disciplinarios: '.panel-btn:nth-child(6)',
+    secretaria: '.panel-btn:nth-child(7)',
+    admin: '#adminBtn'
+  };
 
   async function checkSession() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -252,9 +265,10 @@
     currentUser = session.user;
     const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
-      .select('rol_id, estados_asignados')
+      .select('rol_id, estados_asignados, permisos_botones')
       .eq('user_id', session.user.id)
       .single();
+
     if (error && error.code !== 'PGRST116') {
       console.error('Error al cargar perfil:', error);
       showError('Error interno. Contacte al administrador.');
@@ -267,10 +281,11 @@
       showLogin();
       return;
     }
+
     const estadosTxt = perfil.estados_asignados?.length
       ? perfil.estados_asignados.join(', ')
       : '—';
-    showPanel(session.user.email, estadosTxt, perfil.rol_id);
+    showPanel(session.user.email, estadosTxt, perfil.rol_id, perfil.permisos_botones || []);
   }
 
   function showError(msg) {
@@ -284,36 +299,75 @@
     panelView.classList.add('hidden');
   }
 
-  function showPanel(email, estado, rol_id) {
-    // ✅ Construir dinámicamente
-    let html = `<div><strong>Usuario:</strong> ${email}</div>`;
-    
-    // Mostrar estados solo si NO es Administrador
-    if (rol_id !== 1) {
-      html += `<div><strong>Estado(s):</strong> ${estado}</div>`;
+  function showPanel(email, estado, rol_id, permisos_botones) {
+    userEmailSpan.textContent = email;
+
+    // ✅ Ocultar "Estado(s):" para administradores
+    const estadoLine = userEstadoSpan.closest('div'); // <strong>Estado(s):</strong> <span>...
+    if (rol_id === 1) {
+      estadoLine.style.display = 'none';
+    } else {
+      estadoLine.style.display = 'block';
+      userEstadoSpan.textContent = estado;
     }
 
-    // Mostrar rol como texto plano en vinotinto
+    // ✅ Mostrar solo el rol (sin "Rol:")
     const rolTexto = 
       rol_id === 1 ? 'Administrador' :
       rol_id === 2 ? 'Moderador' :
       'Consultor';
-    
-    html += `<div style="font-weight:600;color:#722F37;">${rolTexto}</div>`;
 
-    userInfoContainer.innerHTML = html;
+    // Insertar o reemplazar línea del rol
+    let rolLine = document.getElementById('userRolLine');
+    if (!rolLine) {
+      rolLine = document.createElement('div');
+      rolLine.id = 'userRolLine';
+      estadoLine.parentNode.insertBefore(rolLine, estadoLine.nextSibling);
+    }
+    rolLine.style.fontWeight = '600';
+    rolLine.style.color = '#722F37';
+    rolLine.textContent = rolTexto;
 
-    // Comportamiento del botón Admin
-    adminBtn.onclick = () => {
-      if (rol_id === 1) {
-        window.location.href = 'admin.html';
-      } else {
-        alert('🔒 Acceso restringido: Solo administradores.');
+    // ✅ Deshabilitar TODOS los botones primero
+    Object.values(BOTONES).forEach(selector => {
+      const btn = document.querySelector(selector);
+      if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+        // Clonar para eliminar onclick original
+        const clone = btn.cloneNode(true);
+        btn.parentNode.replaceChild(clone, btn);
+      }
+    });
+
+    // ✅ Habilitar según rol y permisos
+    const habilitarBoton = (id) => {
+      const btn = document.querySelector(BOTONES[id]);
+      if (btn) {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        if (id === 'admin') {
+          btn.onclick = () => window.location.href = 'admin.html';
+        } else {
+          btn.onclick = () => window.location.href = `${id}.html`;
+        }
       }
     };
 
-    loginView.classList.add('hidden');
-    panelView.classList.remove('hidden');
+    if (rol_id === 1) {
+      // ✅ Administrador: todos los botones
+      Object.keys(BOTONES).forEach(habilitarBoton);
+    } else if (rol_id === 2) {
+      // ✅ Moderador: todos menos admin + respetar permisos si existen
+      const defaults = ['rh', 'analisis', 'logistica', 'dppc', 'asesoria', 'disciplinarios', 'secretaria'];
+      const habilitados = permisos_botones.length > 0 ? permisos_botones : defaults;
+      habilitados.forEach(habilitarBoton);
+    } else if (rol_id === 3) {
+      // ✅ Consultor: solo los explícitamente asignados
+      permisos_botones.forEach(habilitarBoton);
+    }
   }
 
   loginForm.addEventListener('submit', async (e) => {
