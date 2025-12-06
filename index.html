@@ -3,225 +3,221 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin | ICAP Nacional - PNB</title>
+  <title>Admin - ICAP Nacional</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
+      background-color: #fafafa;
       font-family: 'Inter', sans-serif;
-      background: #f5f7fa;
       color: #2d2d2d;
       padding: 20px;
     }
     .container {
-      max-width: 1200px;
+      max-width: 900px;
       margin: 0 auto;
     }
     .header {
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
-    .header img {
+    .logo {
       width: 80px;
-      margin-bottom: 16px;
+      margin: 0 auto 16px;
     }
     h1 {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 700;
-      color: #722F37;
+      color: #2d2d2d;
+      margin-bottom: 8px;
     }
-    .card {
+    .subtitle {
+      color: #555;
+      font-size: 15px;
+    }
+    .btn-back {
+      background: #722F37;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 20px;
+      transition: all 0.2s;
+    }
+    .btn-back:hover {
+      background: #5e262d;
+      transform: translateY(-1px);
+    }
+    .panel-card {
       background: white;
       border-radius: 16px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.08);
       padding: 32px;
       margin-bottom: 24px;
+      border: 1px solid #eee;
     }
     .form-group {
-      margin-bottom: 20px;
+      text-align: left;
+      margin-bottom: 16px;
     }
     label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
+      font-size: 14px;
       font-weight: 600;
       color: #333;
     }
     input, select {
       width: 100%;
-      padding: 14px;
+      padding: 12px;
       border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 15px;
+      border-radius: 8px;
+      font-size: 14px;
     }
-    select[multiple] {
-      height: 180px;
+    input:focus, select:focus {
+      outline: none;
+      border-color: #722F37;
+      box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
     }
-    .modules-grid {
+    .form-row {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-top: 8px;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
     }
-    .module-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .module-item input[type="checkbox"] {
-      width: auto;
-      margin: 0;
-    }
-    .btn {
-      background: #722F37;
+    .btn-create {
+      background: #2e7d32;
       color: white;
       border: none;
-      border-radius: 12px;
-      padding: 12px 20px;
+      border-radius: 10px;
+      padding: 12px;
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      width: 100%;
+      margin-top: 8px;
     }
-    .btn-sm {
-      padding: 8px 14px;
-      font-size: 14px;
+    .btn-create:hover {
+      background: #1b5e20;
     }
-    .btn:hover {
-      background: #5e262d;
-    }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #722F37;
-      color: #722F37;
-    }
-    .btn-outline:hover {
-      background: #fdf7f7;
-    }
-    .btn-delete {
-      background: #c00;
-      color: white;
-    }
-    .btn-delete:hover {
-      background: #a00;
-    }
-    .alert {
-      padding: 12px;
-      border-radius: 8px;
-      margin: 16px 0;
-      display: none;
-    }
-    .alert-success { background: #e6f7ee; color: #1a7f37; border: 1px solid #b7e8c7; }
-    .alert-error { background: #fff5f5; color: #c00; border: 1px solid #ffd0d0; }
-    .back-btn {
-      background: #eee;
-      color: #555;
-    }
-    .back-btn:hover {
-      background: #ddd;
-    }
-    /* Tabla de usuarios */
-    .table-responsive {
-      overflow-x: auto;
+    .table-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      overflow: hidden;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 16px;
     }
-    th, td {
-      padding: 14px 12px;
+    th {
+      background-color: #f5f5f5;
+      padding: 16px 12px;
       text-align: left;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 2px solid #eee;
+    }
+    td {
+      padding: 14px 12px;
       border-bottom: 1px solid #eee;
       font-size: 14px;
     }
-    th {
-      background: #fafafa;
-      font-weight: 600;
-      color: #333;
+    tr:last-child td {
+      border-bottom: none;
     }
-    tr:hover td {
-      background: #fcfcfc;
-    }
-    .rol-tag {
+    .email { font-weight: 500; color: #222; }
+    .rol {
       display: inline-block;
       padding: 4px 10px;
       border-radius: 20px;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
-      text-transform: uppercase;
     }
     .rol-admin { background: #ffebee; color: #c62828; }
-    .rol-moderador { background: #e8f5e9; color: #2e7d32; }
-    .rol-consultor { background: #e3f2fd; color: #1565c0; }
-    /* Paginación */
-    .pagination {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 20px;
-    }
-    .page-btn {
-      width: 36px;
-      height: 36px;
+    .rol-moderator { background: #e3f2fd; color: #1565c0; }
+    .rol-consultor { background: #fff8e1; color: #f57f17; }
+    .btn-delete {
+      background: #f44336;
+      color: white;
+      border: none;
       border-radius: 6px;
-      border: 1px solid #ddd;
-      background: white;
-      font-weight: 500;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
       cursor: pointer;
     }
-    .page-btn.active {
-      background: #722F37;
-      color: white;
-      border-color: #722F37;
+    .btn-delete:hover {
+      background: #d32f2f;
     }
-    .page-btn:hover:not(.active) {
-      background: #f5f5f5;
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: #777;
+      font-style: italic;
     }
-    .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+    .alert-success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+    }
+    .alert-error {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ffcdd2;
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <a href="index.html" class="btn-back">← Volver al Panel</a>
     <div class="header">
-      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP">
-      <h1>Panel de Administración — Gestión de Usuarios</h1>
+      <img 
+        src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+        alt="ICAP Nacional - PNB" 
+        class="logo"
+      />
+      <h1>Panel de Administración</h1>
+      <p class="subtitle">Gestión de usuarios autorizados</p>
     </div>
-    <div class="card">
-      <div class="flex-between">
-        <h2>➕ Crear Nuevo Usuario</h2>
-        <button class="btn back-btn" onclick="window.location.href='index.html'">← Volver al Panel</button>
+    <div id="alertMessage" class="alert"></div>
+
+    <!-- ✅ Sección Crear Usuario -->
+    <div class="panel-card">
+      <h2 style="font-size:18px; margin-bottom:16px; color:#222;">➕ Crear Nuevo Usuario</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="newEmail">Correo Electrónico</label>
+          <input type="email" id="newEmail" placeholder="ejemplo@icap.gob.ve" required>
+        </div>
+        <div class="form-group">
+          <label for="newPassword">Contraseña</label>
+          <input type="password" id="newPassword" placeholder="••••••••" required minlength="6">
+        </div>
       </div>
-      <div id="alertMessage" class="alert"></div>
-      <form id="createUserForm">
+      <div class="form-row">
         <div class="form-group">
-          <label for="email">Correo electrónico</label>
-          <input type="email" id="email" required placeholder="ejemplo@pn.gob.ve">
-        </div>
-        <div class="form-group">
-          <label for="password">Contraseña (mín. 8 caracteres)</label>
-          <input type="password" id="password" required minlength="8">
-        </div>
-        <div class="form-group">
-          <label for="rol_id">Rol (identificación visual)</label>
-          <select id="rol_id" required>
-            <option value="">-- Seleccionar --</option>
-            <option value="1">Administrador</option>
-            <option value="2">Moderador</option>
+          <label for="newRol">Rol</label>
+          <select id="newRol">
             <option value="3">Consultor</option>
+            <option value="2">Moderador</option>
+            <option value="1">Administrador</option>
           </select>
-          <small style="display:block; margin-top:6px; color:#666;">ℹ️ El rol no define permisos. Asigne módulos manualmente.</small>
         </div>
         <div class="form-group">
-          <label for="estados">Estados asignados (Ctrl/Cmd + clic)</label>
-          <select id="estados" multiple required>
+          <label for="newEstados">Estados Asignados</label>
+          <select id="newEstados" multiple size="4" style="height: auto;">
             <option value="Amazonas">Amazonas</option>
             <option value="Anzoátegui">Anzoátegui</option>
             <option value="Apure">Apure</option>
@@ -246,266 +242,115 @@
             <option value="Vargas">Vargas</option>
             <option value="Yaracuy">Yaracuy</option>
             <option value="Zulia">Zulia</option>
-            <option value="Dependencias Federales">Dependencias Federales</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>✅ Asignar módulos (botones visibles)</label>
-          <div class="modules-grid" id="modulesCheckboxes"></div>
-        </div>
-        <button type="submit" class="btn">✅ Crear Usuario</button>
-      </form>
-    </div>
-    <!-- Listado de usuarios -->
-    <div class="card">
-      <h2>👥 Usuarios Registrados (<span id="totalUsers">0</span>)</h2>
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>Correo</th>
-              <th>Rol</th>
-              <th>Estados</th>
-              <th>Módulos</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="usersTableBody">
-            <tr><td colspan="5" style="text-align:center">Cargando...</td></tr>
-          </tbody>
-        </table>
       </div>
-      <div class="pagination" id="pagination"></div>
+      <button id="btnCreate" class="btn-create">✅ Crear Usuario</button>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Usuario (Email)</th>
+            <th>Rol</th>
+            <th>Estados Asignados</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="usersBody">
+          <tr><td colspan="4" class="empty">Cargando usuarios...</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
   <script>
-    const MODULOS = {
-      rh: "RH", analisis: "Análisis", logistica: "Logística",
-      dppc: "DPPC", asesoria: "Asesoría", disciplinarios: "Disciplinarios",
-      secretaria: "Secretaría", admin: "Admin"
-    };
     const ROL_LABELS = { 1: "Administrador", 2: "Moderador", 3: "Consultor" };
-    const ROL_COLORS = { 1: "rol-admin", 2: "rol-moderador", 3: "rol-consultor" };
+    const ROL_CLASSES = { 1: "rol-admin", 2: "rol-moderator", 3: "rol-consultor" };
 
     // 🧪 Mock data
     let usuarios = [
-      {
-        id: "u001",
-        email: "admin@icap.gob.ve",
-        rol_id: 1,
-        estados_asignados: ["Distrito Capital", "Miranda"],
-        modulos_asignados: ["rh", "admin", "dppc"]
-      },
-      {
-        id: "u002",
-        email: "moderador@pn.gob.ve",
-        rol_id: 2,
-        estados_asignados: ["Zulia", "Lara"],
-        modulos_asignados: ["analisis", "logistica"]
-      },
-      {
-        id: "u003",
-        email: "consultor@pn.gob.ve",
-        rol_id: 3,
-        estados_asignados: ["Carabobo"],
-        modulos_asignados: ["asesoria"]
-      },
-      {
-        id: "u004",
-        email: "rh@icap.gob.ve",
-        rol_id: 2,
-        estados_asignados: ["Aragua", "Carabobo", "Guárico"],
-        modulos_asignados: ["rh"]
-      },
-      {
-        id: "u005",
-        email: "admin2@icap.gob.ve",
-        rol_id: 1,
-        estados_asignados: ["Trujillo", "Táchira"],
-        modulos_asignados: ["admin", "secretaria"]
-      },
-      {
-        id: "u006",
-        email: "dppc@pn.gob.ve",
-        rol_id: 2,
-        estados_asignados: ["Vargas"],
-        modulos_asignados: ["dppc"]
-      },
-      {
-        id: "u007",
-        email: "disc@icap.gob.ve",
-        rol_id: 3,
-        estados_asignados: ["Anzoátegui"],
-        modulos_asignados: ["disciplinarios"]
-      },
-      {
-        id: "u008",
-        email: "analista@icap.gob.ve",
-        rol_id: 2,
-        estados_asignados: ["Monagas", "Sucre"],
-        modulos_asignados: ["analisis", "logistica"]
-      },
-      {
-        id: "u009",
-        email: "asesor@pn.gob.ve",
-        rol_id: 3,
-        estados_asignados: ["Nueva Esparta"],
-        modulos_asignados: ["asesoria"]
-      },
-      {
-        id: "u010",
-        email: "coordinador@icap.gob.ve",
-        rol_id: 1,
-        estados_asignados: ["Amazonas", "Bolívar"],
-        modulos_asignados: ["admin", "rh", "dppc"]
-      }
+      { id: "u001", email: "admin@icap.gob.ve", rol_id: 1, estados_asignados: ["Distrito Capital"] },
+      { id: "u002", email: "moderador@pn.gob.ve", rol_id: 2, estados_asignados: ["Zulia", "Lara"] },
+      { id: "u003", email: "consultor@pn.gob.ve", rol_id: 3, estados_asignados: ["Carabobo"] },
+      { id: "u004", email: "rh@icap.gob.ve", rol_id: 2, estados_asignados: ["Aragua", "Carabobo", "Guárico"] },
+      { id: "u005", email: "admin2@icap.gob.ve", rol_id: 1, estados_asignados: ["Trujillo", "Táchira"] }
     ];
 
+    const usersBody = document.getElementById('usersBody');
     const alertDiv = document.getElementById('alertMessage');
-    const usersTableBody = document.getElementById('usersTableBody');
-    const totalUsersSpan = document.getElementById('totalUsers');
-    const paginationDiv = document.getElementById('pagination');
-    let currentPage = 1;
-    const perPage = 10;
+    const btnCreate = document.getElementById('btnCreate');
 
-    // Render checkboxes
-    function renderModulesCheckboxes() {
-      const container = document.getElementById('modulesCheckboxes');
-      container.innerHTML = '';
-      Object.entries(MODULOS).forEach(([id, label]) => {
-        const div = document.createElement('div');
-        div.className = 'module-item';
-        div.innerHTML = `<input type="checkbox" id="mod_${id}" name="modulo" value="${id}"><label for="mod_${id}">${label}</label>`;
-        container.appendChild(div);
-      });
-    }
-
-    // Mostrar alerta
-    function showAlert(msg, type) {
+    function showAlert(msg, type = 'error') {
       alertDiv.textContent = msg;
       alertDiv.className = `alert alert-${type}`;
       alertDiv.style.display = 'block';
-      if (type === 'success') {
-        setTimeout(() => alertDiv.style.display = 'none', 5000);
-      }
+      setTimeout(() => alertDiv.style.display = 'none', 5000);
     }
 
-    // Mock: simular checkAdmin (siempre true en mock)
-    function checkAdmin() {
-      return Promise.resolve(true);
-    }
-
-    // Cargar usuarios (mock)
-    function loadUsers(page = 1) {
-      currentPage = page;
-      totalUsersSpan.textContent = usuarios.length;
-
-      const from = (page - 1) * perPage;
-      const to = from + perPage;
-      const pageData = usuarios.slice(from, to);
-      renderUsersTable(pageData);
-      renderPagination(page, Math.ceil(usuarios.length / perPage));
-    }
-
-    function renderUsersTable(users) {
-      if (users.length === 0) {
-        usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay usuarios registrados.</td></tr>';
+    function loadUsers() {
+      if (usuarios.length === 0) {
+        usersBody.innerHTML = `<tr><td colspan="4" class="empty">No hay usuarios registrados.</td></tr>`;
         return;
       }
-      usersTableBody.innerHTML = users.map(u => {
-        const modulosTxt = u.modulos_asignados?.map(m => MODULOS[m] || m).join(', ') || '—';
-        const estadosTxt = u.estados_asignados?.join(', ') || '—';
-        const rolTag = `<span class="rol-tag ${ROL_COLORS[u.rol_id]}">${ROL_LABELS[u.rol_id]}</span>`;
-        // Simular auto-protección: no permitir eliminar al primer usuario (admin)
-        const canDelete = u.id !== 'u001'; 
+      usersBody.innerHTML = usuarios.map(u => {
+        const rolTexto = ROL_LABELS[u.rol_id];
+        const rolClass = ROL_CLASSES[u.rol_id];
+        const estados = u.estados_asignados?.length ? u.estados_asignados.join(', ') : '—';
+        // Proteger admins: no permitir eliminar si es admin (rol_id === 1)
+        const canDelete = u.rol_id !== 1;
         return `
           <tr>
-            <td>${u.email}</td>
-            <td>${rolTag}</td>
-            <td title="${estadosTxt}">${estadosTxt.length > 30 ? estadosTxt.substring(0,27)+'...' : estadosTxt}</td>
-            <td title="${modulosTxt}">${modulosTxt.length > 30 ? modulosTxt.substring(0,27)+'...' : modulosTxt}</td>
+            <td class="email">${u.email}</td>
+            <td><span class="rol ${rolClass}">${rolTexto}</span></td>
+            <td>${estados}</td>
             <td>
-              ${canDelete ? `<button class="btn btn-sm btn-delete" onclick="confirmDelete('${u.id}', '${u.email}')">🗑️ Eliminar</button>` : `<span style="color:#999">—</span>`}
+              ${canDelete ? `<button class="btn-delete" onclick="deleteUser('${u.id}')">🗑️ Eliminar</button>` : '<span>—</span>'}
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    function renderPagination(current, total) {
-      paginationDiv.innerHTML = '';
-      if (total <= 1) return;
+    function createUser() {
+      const email = document.getElementById('newEmail').value.trim();
+      const password = document.getElementById('newPassword').value;
+      const rol_id = parseInt(document.getElementById('newRol').value);
+      const estadosSelect = document.getElementById('newEstados');
+      const estados_asignados = Array.from(estadosSelect.selectedOptions).map(opt => opt.value);
 
-      const range = 2;
-      let start = Math.max(1, current - range);
-      let end = Math.min(total, current + range);
+      if (!email || !password) return showAlert('Ingrese email y contraseña.');
+      if (password.length < 6) return showAlert('La contraseña debe tener ≥6 caracteres.');
+      if (![1, 2, 3].includes(rol_id)) return showAlert('Rol inválido.');
 
-      if (current > 1) {
-        const btn = document.createElement('button');
-        btn.className = 'page-btn';
-        btn.textContent = '«';
-        btn.onclick = () => loadUsers(current - 1);
-        paginationDiv.appendChild(btn);
-      }
+      btnCreate.disabled = true;
+      btnCreate.textContent = 'Creando...';
 
-      for (let i = start; i <= end; i++) {
-        const btn = document.createElement('button');
-        btn.className = `page-btn ${i === current ? 'active' : ''}`;
-        btn.textContent = i;
-        btn.onclick = () => loadUsers(i);
-        paginationDiv.appendChild(btn);
-      }
-
-      if (current < total) {
-        const btn = document.createElement('button');
-        btn.className = 'page-btn';
-        btn.textContent = '»';
-        btn.onclick = () => loadUsers(current + 1);
-        paginationDiv.appendChild(btn);
-      }
+      // Simular delay ligero
+      setTimeout(() => {
+        const nuevoId = 'u' + (usuarios.length + 1).toString().padStart(3, '0');
+        usuarios.push({ id: nuevoId, email, rol_id, estados_asignados });
+        showAlert('✅ Usuario creado correctamente.', 'success');
+        document.getElementById('newEmail').value = '';
+        document.getElementById('newPassword').value = '';
+        estadosSelect.selectedIndex = -1;
+        loadUsers();
+        btnCreate.disabled = false;
+        btnCreate.textContent = '✅ Crear Usuario';
+      }, 300);
     }
 
-    function confirmDelete(userId, email) {
-      if (!confirm(`⚠️ ¿Eliminar usuario ${email}?\nEsta acción es irreversible.`)) return;
-      
+    function deleteUser(userId) {
+      if (!confirm('⚠️ ¿Está seguro? Esta acción no se puede deshacer.')) return;
       usuarios = usuarios.filter(u => u.id !== userId);
-      showAlert(`✅ Usuario ${email} eliminado.`, 'success');
-      loadUsers(currentPage);
+      showAlert('✅ Usuario eliminado correctamente.', 'success');
+      loadUsers();
     }
 
-    function createUserLocal() {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const rol_id = parseInt(document.getElementById('rol_id').value);
-      const estados = Array.from(document.getElementById('estados').selectedOptions).map(o => o.value);
-      const modulos = Array.from(document.querySelectorAll('input[name="modulo"]:checked')).map(cb => cb.value);
-
-      if (!email || !password || !rol_id || !estados.length || !modulos.length) {
-        return showAlert('Todos los campos son obligatorios.', 'error');
-      }
-
-      const nuevoId = 'u' + (usuarios.length + 1).toString().padStart(3, '0');
-      usuarios.push({
-        id: nuevoId,
-        email,
-        rol_id,
-        estados_asignados: estados,
-        modulos_asignados: modulos
-      });
-
-      showAlert(`✅ Usuario creado: ${email}`, 'success');
-      document.getElementById('createUserForm').reset();
-      document.querySelectorAll('input[name="modulo"]').forEach(cb => cb.checked = false);
-      loadUsers(1);
-    }
-
-    document.getElementById('createUserForm')?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      createUserLocal();
-    });
-
-    renderModulesCheckboxes();
+    // Inicializar
+    document.getElementById('btnCreate').addEventListener('click', createUser);
     loadUsers();
   </script>
 </body>
