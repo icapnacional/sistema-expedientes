@@ -416,57 +416,6 @@
         console.error('Error al verificar sesión inicial:', err);
       }
     })();
-  });
- // ✅ Configurar botón de Recursos Humanos (versión corregida)
-document.getElementById('rrhhBtn')?.addEventListener('click', async () => {
-  try {
-    // Verificar sesión actual usando la variable 'supabase' existente
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError || !session) {
-      throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
-    }
-    
-    // Obtener perfil del usuario
-    const { data: perfil, error: perfilError } = await supabase
-      .from('perfiles')
-      .select('modulos_asignados')
-      .eq('id', session.user.id)
-      .single();
-      
-    if (perfilError) throw perfilError;
-    
-    // Verificar si tiene acceso al módulo de RRHH
-    if (!perfil.modulos_asignados?.includes('rh')) {
-      // ✅ Función showAlert definida localmente
-      const showAlert = (msg, type) => {
-        const alertDiv = document.getElementById('alertMessage');
-        alertDiv.textContent = msg;
-        alertDiv.className = `alert alert-${type}`;
-        alertDiv.style.display = 'block';
-        if (type === 'success') setTimeout(() => alertDiv.style.display = 'none', 5000);
-      };
-      
-      showAlert('🔒 No tienes permisos para acceder a Recursos Humanos.', 'error');
-      return;
-    }
-    
-    // Redirigir a la sección de RRHH
-    window.location.href = 'rrhh/index.html';
-  } catch (err) {
-    console.error('Error al acceder a RRHH:', err);
-    
-    // ✅ Función showAlert definida localmente para el error
-    const showAlert = (msg, type) => {
-      const alertDiv = document.getElementById('alertMessage');
-      alertDiv.textContent = msg;
-      alertDiv.className = `alert alert-${type}`;
-      alertDiv.style.display = 'block';
-      if (type === 'success') setTimeout(() => alertDiv.style.display = 'none', 5000);
-    };
-    
-    showAlert(`❌ ${err.message || 'Error al acceder a Recursos Humanos'}`, 'error');
-  }
-});
 </script>
 </body>
 </html>
