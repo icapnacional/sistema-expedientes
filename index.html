@@ -163,6 +163,42 @@
     .hidden {
       display: none !important;
     }
+
+    /* ✅ Estilo para botón Admin deshabilitado */
+    .btn-admin-disabled {
+      opacity: 0.5;
+      cursor: not-allowed !important;
+      pointer-events: none;
+    }
+    .btn-admin-disabled::after {
+      content: " ⛔";
+      font-size: 16px;
+    }
+    .btn-admin-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    .btn-admin-tooltip {
+      visibility: hidden;
+      width: 140px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 6px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -70px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 12px;
+    }
+    .btn-admin-wrapper:hover .btn-admin-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -227,7 +263,12 @@
       <button class="panel-btn" onclick="window.location.href='asesoria.html'">⚖️ Asesoría Legal</button>
       <button class="panel-btn" onclick="window.location.href='disciplinarios.html'">📇 D.E. Disciplinarios</button>
       <button class="panel-btn" onclick="window.location.href='secretaria.html'">✒️ Secretaría</button>
-      <button class="panel-btn" id="adminBtn">👑 Admin</button>
+      
+      <!-- ✅ Contenedor para tooltip y estilo condicional -->
+      <div class="btn-admin-wrapper">
+        <button class="panel-btn" id="adminBtn">👑 Admin</button>
+        <span class="btn-admin-tooltip">Acceso restringido</span>
+      </div>
     </div>
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
   </div>
@@ -240,7 +281,7 @@
   const panelView = document.getElementById('panelView');
   const userEmailSpan = document.getElementById('userEmail');
   const userEstadoSpan = document.getElementById('userEstado');
-  const userRolSpan = document.getElementById('userRol'); // ✅ nuevo
+  const userRolSpan = document.getElementById('userRol');
   const alertDiv = document.getElementById('alertMessage');
   const loginForm = document.getElementById('loginForm');
   const logoutBtn = document.getElementById('logoutBtn');
@@ -255,7 +296,6 @@
     }
     currentUser = session.user;
 
-    // 🔍 Cargar perfil
     const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id, estados_asignados')
@@ -302,7 +342,7 @@
       'Consultor';
 
     // ✅ Ocultar SOLO la línea de "Estado(s): ..." para Administrador
-    const estadoLine = userEstadoSpan.parentNode; // el <strong>Estado(s):</strong> + span
+    const estadoLine = userEstadoSpan.parentNode;
     if (rol_id === 1) {
       estadoLine.style.display = 'none';
     } else {
@@ -310,13 +350,21 @@
       userEstadoSpan.textContent = estado;
     }
 
-    adminBtn.onclick = () => {
-      if (rol_id === 1) {
-        window.location.href = 'admin.html';
-      } else {
-        alert('🔒 Acceso restringido: Solo administradores.');
-      }
-    };
+    // ✅ Estilo y comportamiento del botón Admin
+    const adminBtnWrapper = adminBtn.parentElement;
+    adminBtn.onclick = null; // limpiar previo
+
+    if (rol_id === 1) {
+      // ✔️ Admin: normal
+      adminBtn.classList.remove('btn-admin-disabled');
+      adminBtnWrapper.style.pointerEvents = 'auto';
+      adminBtn.onclick = () => window.location.href = 'admin.html';
+    } else {
+      // ❌ No admin: deshabilitado + tooltip
+      adminBtn.classList.add('btn-admin-disabled');
+      adminBtnWrapper.style.pointerEvents = 'auto'; // permite hover tooltip
+      adminBtn.onclick = () => {}; // no hacer nada
+    }
 
     loginView.classList.add('hidden');
     panelView.classList.remove('hidden');
