@@ -421,7 +421,7 @@
 document.getElementById('rrhhBtn')?.addEventListener('click', async () => {
   try {
     // Verificar sesión actual
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const { data: { session }, error: sessionError } = await client.auth.getSession();
     if (sessionError || !session) {
       throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
     }
