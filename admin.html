@@ -55,7 +55,6 @@
       transform: translateY(-1px);
     }
 
-    /* Estilo panel (igual que index.html) */
     .panel-card {
       background: white;
       border-radius: 16px;
@@ -65,7 +64,6 @@
       border: 1px solid #eee;
     }
 
-    /* Formulario crear */
     .form-group {
       text-align: left;
       margin-bottom: 16px;
@@ -110,7 +108,6 @@
       background: #1b5e20;
     }
 
-    /* Tabla */
     .table-container {
       background: white;
       border-radius: 12px;
@@ -138,7 +135,7 @@
       border-bottom: none;
     }
     .email { font-weight: 500; color: #222; }
-    .rol { 
+    .rol {
       display: inline-block;
       padding: 4px 10px;
       border-radius: 20px;
@@ -146,7 +143,8 @@
       font-weight: 600;
     }
     .rol-admin { background: #ffebee; color: #c62828; }
-    .rol-user { background: #e8f5e9; color: #2e7d32; }
+    .rol-moderator { background: #e3f2fd; color: #1565c0; }
+    .rol-consultor { background: #fff8e1; color: #f57f17; }
     .btn-delete {
       background: #f44336;
       color: white;
@@ -217,7 +215,8 @@
         <div class="form-group">
           <label for="newRol">Rol</label>
           <select id="newRol">
-            <option value="2">Usuario</option>
+            <option value="3">Consultor</option>
+            <option value="2">Moderador</option>
             <option value="1">Administrador</option>
           </select>
         </div>
@@ -287,7 +286,6 @@
     setTimeout(() => alertDiv.style.display = 'none', 5000);
   }
 
-  // ✅ Verifica que sea admin (como index.html.txt)
   async function checkAdmin() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
@@ -332,8 +330,14 @@
 
     usersBody.innerHTML = perfiles.map(p => {
       const email = userMap[p.user_id] || '—';
-      const rolTexto = p.rol_id === 1 ? 'Administrador' : 'Usuario';
-      const rolClass = p.rol_id === 1 ? 'rol-admin' : 'rol-user';
+      const rolTexto = 
+        p.rol_id === 1 ? 'Administrador' :
+        p.rol_id === 2 ? 'Moderador' :
+        'Consultor';
+      const rolClass = 
+        p.rol_id === 1 ? 'rol-admin' :
+        p.rol_id === 2 ? 'rol-moderator' :
+        'rol-consultor';
       const estados = p.estados_asignados?.length ? p.estados_asignados.join(', ') : '—';
       const canDelete = p.rol_id !== 1;
 
@@ -353,12 +357,13 @@
   async function createUser() {
     const email = document.getElementById('newEmail').value.trim();
     const password = document.getElementById('newPassword').value;
-    const rol_id = document.getElementById('newRol').value;
+    const rol_id = parseInt(document.getElementById('newRol').value);
     const estadosSelect = document.getElementById('newEstados');
     const estados_asignados = Array.from(estadosSelect.selectedOptions).map(opt => opt.value);
 
     if (!email || !password) return showAlert('Ingrese email y contraseña.');
     if (password.length < 6) return showAlert('La contraseña debe tener ≥6 caracteres.');
+    if (![1, 2, 3].includes(rol_id)) return showAlert('Rol inválido.');
 
     btnCreate.disabled = true;
     btnCreate.textContent = 'Creando...';
@@ -402,7 +407,6 @@
     loadUsers();
   }
 
-  // ✅ Iniciar
   (async () => {
     if (await checkAdmin()) {
       loadUsers();
