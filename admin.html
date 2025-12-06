@@ -214,12 +214,12 @@
   </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', async () => {
+  document.addEventListener('DOMContentLoaded', () => {
     // 🔑 Tus credenciales reales de Supabase
     const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
     
-    // ✅ CORRECCIÓN DEFINITIVA: usa `client`
+    // ✅ CORRECCIÓN DEFINITIVA: usa `client` para evitar conflictos de nombres
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const MANAGE_USER_URL = `${SUPABASE_URL}/functions/v1/manage-user`;
 
@@ -245,17 +245,6 @@
 
     let currentPage = 1;
     const perPage = 10;
-
-    // ✅ Función para obtener usuario actual (asíncrona)
-    async function getCurrentUser() {
-      try {
-        const { data: { session }, error: sessionError } = await client.auth.getSession();
-        return session?.user;
-      } catch (err) {
-        console.error('Error getting current user:', err);
-        return null;
-      }
-    }
 
     function renderModulesGrid() {
       const container = document.getElementById('modulesGrid');
@@ -301,7 +290,7 @@
         if (error) throw error;
 
         totalUsersSpan.textContent = count || 0;
-        await renderUsersTable(data || []); // ✅ Ahora es asíncrona
+        renderUsersTable(data || []);
         renderPagination(page, count ? Math.ceil(count / perPage) : 1);
       } catch (err) {
         console.error('Error al cargar usuarios:', err);
@@ -309,16 +298,15 @@
       }
     }
 
-    // ✅ Convertida a función asíncrona
-    async function renderUsersTable(users) {
+    function renderUsersTable(users) {
       if (users.length === 0) {
         usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay usuarios registrados.</td></tr>';
         return;
       }
 
-      // ✅ Corrección: usar getSession() en lugar de session()
-      const currentUser = await getCurrentUser();
-      const currentUserId = currentUser?.id;
+      // Obtener ID del usuario actual (para evitar autoeliminación)
+      const { data: { session } } = client.auth.session();
+      const currentUserId = session?.user?.id;
 
       usersTableBody.innerHTML = users.map(u => {
         const modulosTxt = (u.modulos_asignados || [])
@@ -373,66 +361,105 @@
       addBtn('»', current + 1, false, current === total);
     }
 
-// ✅ Función global para eliminar (usada en onclick)
-window.deleteUser = async function(userId, email) {
-  if (!confirm(`⚠️ ¿Eliminar usuario ${email}?\nEsta acción es irreversible.`)) return;
+    // ✅ FUNCIÓN CORREGIDA PARA ELIMINAR USUARIOS
+    window.deleteUser = async function(userId, email) {
+      if (!confirm(`⚠️ ¿Eliminar usuario ${email}?\nEsta acción es irreversible.`)) return;
 
-  try {
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Eliminando...';
-    
-    const { data: { session }, error: sessionError } = await client.auth.getSession();
-    if (sessionError) throw sessionError;
-    if (!session) throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
+      try {
+        const { data: { session }, error: sessionError } = await client.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!session) throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
 
-    // ✅ Solicitud corregida con formato exacto que espera la Edge Function
-    const res = await fetch(MANAGE_USER_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`
-      },
-      body: JSON.stringify({ 
-        action: 'delete', 
-        user_id_to_delete: userId 
-      })
-    });
+        const res = await fetch(MANAGE_USER_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ action: 'delete', user_id_to_delete: userId })
+        });
 
-    // ✅ Leer toda la respuesta para depuración
-    const responseText = await res.text();
-    console.log('🔍 Respuesta de eliminación:', responseText);
-    
-    let responseData;
-    try {
-      responseData = JSON.parse(responseText);
-    } catch (e) {
-      throw new Error('Respuesta inválida del servidor: ' + responseText.substring(0, 100) + '...');
-    }
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.message || `Error HTTP: ${res.status}`);
+        }
 
-    if (!res.ok) {
-      const errorMessage = responseData.message || `Error HTTP ${res.status}`;
-      throw new Error(errorMessage);
-    }
+        showAlert(`✅ Usuario ${email} eliminado correctamente.`, 'success');
+        loadUsers(currentPage);
+      } catch (err) {
+        console.error('Error al eliminar usuario:', err);
+        showAlert(`❌ Error al eliminar: ${err.message || 'Error desconocido'}`, 'error');
+      }
+    };
 
-    showAlert(`✅ Usuario ${email} eliminado correctamente.`, 'success');
-    await loadUsers(currentPage);
-  } catch (err) {
-    console.error('🔥 Error al eliminar usuario:', err);
-    showAlert(`❌ ${err.message || 'Error al eliminar usuario'}`, 'error');
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = '✅ Crear Usuario';
-  }
-};
+    // ✅ FUNCIÓN CORREGIDA PARA CREAR USUARIOS (FALTABA EN TU CÓDIGO)
+    window.createUserReal = async function() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const rol = document.getElementById('rol_id').value;
+      const estados = Array.from(document.getElementById('estados').selectedOptions).map(o => o.value);
+      const modulos = getSelectedModules();
+
+      if (!email || !password || !rol || estados.length === 0 || modulos.length === 0) {
+        return showAlert('Todos los campos son obligatorios.', 'error');
+      }
+
+      if (password.length < 8) {
+        return showAlert('La contraseña debe tener al menos 8 caracteres.', 'error');
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creando…';
+
+      try {
+        const { data: { session }, error: sessionError } = await client.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!session) throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
+
+        const res = await fetch(MANAGE_USER_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            action: 'create',
+            email,
+            password,
+            rol,
+            estados_asignados: estados,
+            modulos_asignados: modulos
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.message || `Error HTTP: ${res.status}`);
+        }
+
+        showAlert(`✅ Usuario creado: ${email}`, 'success');
+        document.getElementById('createUserForm').reset();
+        document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
+        document.getElementById('estados').selectedIndex = -1;
+        loadUsers(1);
+      } catch (err) {
+        console.error('Error al crear usuario:', err);
+        showAlert(`❌ ${err.message || 'Error al crear usuario'}`, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '✅ Crear Usuario';
+      }
+    };
+
+    // ✅ Asignar el evento submit con la función CORRECTA
     document.getElementById('createUserForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      createUserReal();
+      createUserReal(); // ✅ Ahora sí está definida
     });
 
     // ✅ Verificar sesión antes de cargar usuarios
     (async () => {
       try {
-        // ✅ Corrección: usar getSession() en lugar de session()
         const { data: { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError) throw sessionError;
         
