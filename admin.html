@@ -366,7 +366,7 @@
       if (!confirm(`⚠️ ¿Eliminar usuario ${email}?\nEsta acción es irreversible.`)) return;
 
       try {
-        const {  { session }, error: sessionError } = await client.auth.getSession();
+         const { data: { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError) throw sessionError;
         if (!session) throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
 
