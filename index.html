@@ -273,7 +273,7 @@
     const userEstadoSpan = document.getElementById('userEstado');
     const userRolSpan = document.getElementById('userRol');
     const alertDiv = document.getElementById('alertMessage');
-    const loginForm = document.getElementById('loginForm');
+    const  = document.getElementById('');
     const logoutBtn = document.getElementById('logoutBtn');
     const adminBtn = document.getElementById('adminBtn');
 
@@ -334,25 +334,29 @@
       panelView.classList.remove('hidden');
     }
 
-    loginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
 
-      // ✅ Validación mock (solo verifica que email exista y pass ≥8)
-      if (password.length < 8) {
-        return showError('Contraseña debe tener al menos 8 caracteres.');
-      }
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) return showError(error.message);
 
-      const perfil = mockPerfiles[email];
-      if (!perfil) {
-        return showError('Usuario no autorizado.');
-      }
+  // Recuperar perfil
+  const { data: perfilData, error: perfilError } = await supabase
+    .from('perfiles')
+    .select('rol, estados_asignados, modulos_asignados')
+    .eq('id', data.user.id)
+    .single();
 
-      const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
-      showPanel(email, estadosTxt, perfil.rol_id);
-    });
+  if (perfilError) return showError('Error al cargar perfil.');
 
+  const estadosTxt = perfilData.estados_asignados?.join(', ') || '—';
+  showPanel(email, estadosTxt, 
+    perfilData.rol === 'admin' ? 1 :
+    perfilData.rol === 'moderador' ? 2 : 3
+  );
+});
     logoutBtn.addEventListener('click', () => {
       showLogin();
       document.getElementById('password').value = '';
