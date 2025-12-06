@@ -231,125 +231,192 @@
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
   </div>
 
-  <script>
-    // ✅ Seguro: DOM cargado + librería lista
-    document.addEventListener('DOMContentLoaded', () => {
-      // 🔑 Tus credenciales reales
-      const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-      const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+<script>
+  // ✅ Inicialización segura tras carga del DOM
+  document.addEventListener('DOMContentLoaded', () => {
+    // 🔑 Tus credenciales reales de Supabase
+    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+    
+    // ✅ CORRECCIÓN DEFINITIVA: usa `client` para evitar conflictos de nombres
+    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
 
-      // ✅ CORRECCIÓN DEFINITIVA: `client`, no `supabase`
-      const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+    const loginView = document.getElementById('loginView');
+    const panelView = document.getElementById('panelView');
+    const userEmailSpan = document.getElementById('userEmail');
+    const userEstadoSpan = document.getElementById('userEstado');
+    const userRolSpan = document.getElementById('userRol');
+    const alertDiv = document.getElementById('alertMessage');
+    const loginForm = document.getElementById('loginForm');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const adminBtn = document.getElementById('adminBtn');
 
-      const loginView = document.getElementById('loginView');
-      const panelView = document.getElementById('panelView');
-      const userEmailSpan = document.getElementById('userEmail');
-      const userEstadoSpan = document.getElementById('userEstado');
-      const userRolSpan = document.getElementById('userRol');
-      const alertDiv = document.getElementById('alertMessage');
-      const loginForm = document.getElementById('loginForm');
-      const logoutBtn = document.getElementById('logoutBtn');
-      const adminBtn = document.getElementById('adminBtn');
+    function showError(msg) {
+      alertDiv.textContent = msg;
+      alertDiv.className = 'alert alert-error';
+      alertDiv.style.display = 'block';
+    }
 
-      function showError(msg) {
-        alertDiv.textContent = msg;
-        alertDiv.className = 'alert alert-error';
-        alertDiv.style.display = 'block';
+    function hideAlert() {
+      alertDiv.style.display = 'none';
+    }
+
+    function showLogin() {
+      loginView.classList.remove('hidden');
+      panelView.classList.add('hidden');
+      hideAlert();
+    }
+
+    function showPanel(email, estado, rol) {
+      userEmailSpan.textContent = email;
+      
+      // ✅ Mostrar solo texto del rol sin prefijo
+      const rolText = 
+        rol === 'admin' ? 'Administrador' :
+        rol === 'moderador' ? 'Moderador' :
+        'Consultor';
+      userRolSpan.textContent = rolText;
+      userRolSpan.setAttribute('data-role', rol);
+
+      // ✅ Ocultar línea de estados solo para Administrador
+      const estadoLine = userEstadoSpan.parentNode;
+      if (rol === 'admin') {
+        estadoLine.style.display = 'none';
+      } else {
+        estadoLine.style.display = 'block';
+        userEstadoSpan.textContent = estado || '—';
       }
 
-      function showLogin() {
-        loginView.classList.remove('hidden');
-        panelView.classList.add('hidden');
-        alertDiv.style.display = 'none';
+      // ✅ Botón Admin: funcional solo si es admin
+      adminBtn.classList.remove('admin-disabled');
+      adminBtn.onclick = null;
+      if (rol === 'admin') {
+        adminBtn.onclick = () => {
+          window.location.href = 'admin.html';
+        };
+      } else {
+        adminBtn.classList.add('admin-disabled');
+        adminBtn.onclick = () => {};
       }
 
-      function showPanel(email, estado, rol) {
-        userEmailSpan.textContent = email;
-        const rolText = 
-          rol === 'admin' ? 'Administrador' :
-          rol === 'moderador' ? 'Moderador' :
-          'Consultor';
-        userRolSpan.textContent = rolText;
-        userRolSpan.setAttribute('data-role', rol);
+      loginView.classList.add('hidden');
+      panelView.classList.remove('hidden');
+    }
 
-        const estadoLine = userEstadoSpan.parentNode;
-        if (rol === 'admin') {
-          estadoLine.style.display = 'none';
-        } else {
-          estadoLine.style.display = 'block';
-          userEstadoSpan.textContent = estado;
-        }
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
 
-        adminBtn.classList.remove('admin-disabled');
-        adminBtn.onclick = null;
-        if (rol === 'admin') {
-          adminBtn.onclick = () => {
-            window.location.href = 'admin.html';
-          };
-        } else {
-          adminBtn.classList.add('admin-disabled');
-          adminBtn.onclick = () => {};
-        }
-
-        loginView.classList.add('hidden');
-        panelView.classList.remove('hidden');
+      if (!email || !password) {
+        return showError('Por favor complete todos los campos.');
       }
 
-      loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
+      if (password.length < 8) {
+        return showError('La contraseña debe tener al menos 8 caracteres.');
+      }
 
-        if (password.length < 8) {
-          return showError('Contraseña debe tener al menos 8 caracteres.');
-        }
-
-        const { data, error } = await client.auth.signInWithPassword({ email, password });
+      try {
+        // ✅ Login con Supabase Auth
+        const { data, error } = await client.auth.signInWithPassword({ 
+          email, 
+          password 
+        });
+        
         if (error) {
-          return showError('Usuario no autorizado o credenciales incorrectas.');
+          console.error('Error login:', error);
+          // Mensajes amigables para el usuario
+          if (error.message.includes('Invalid login credentials')) {
+            return showError('Credenciales incorrectas. Verifique su correo y contraseña.');
+          }
+          if (error.message.includes('User not found')) {
+            return showError('Usuario no encontrado en el sistema.');
+          }
+          return showError('Error al iniciar sesión: ' + (error.message || 'Error desconocido'));
         }
 
-        // ✅ Una sola sesión activa
+        // ✅ Cerrar otras sesiones del mismo usuario (acceso único)
         await client.auth.signOut({ scope: 'others' });
 
-        // ✅ Cargar perfil desde tabla `perfiles`
-        const {  perfil, error: perfilError } = await client
+        // ✅ Cargar perfil desde tabla `perfiles` con validación robusta
+        const { data: perfil, error: perfilError } = await client
           .from('perfiles')
-          .select('rol, estados_asignados')
+          .select('rol, estados_asignados, email') // Seleccionar email también para seguridad
           .eq('id', data.user.id)
           .single();
 
-        if (perfilError) {
-          console.error('Error perfil:', perfilError);
-          return showError('No se pudo cargar tu perfil.');
+        // ✅ VALIDACIÓN SEGURA: verificar si el perfil existe y no hay errores
+        if (perfilError || !perfil) {
+          console.error('Error o perfil no encontrado:', perfilError || 'Perfil no existe para este usuario');
+          
+          // ✅ Forzar cierre de sesión si no hay perfil
+          await client.auth.signOut();
+          
+          return showError('Tu cuenta no tiene perfil asignado. Contacta al administrador del sistema.');
         }
 
+        // ✅ Asignar rol por defecto si no existe (seguridad adicional)
+        const userRol = perfil.rol || 'consultor';
         const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
-        showPanel(email, estadosTxt, perfil.rol);
-      });
+        const userEmail = perfil.email || email;
+        
+        showPanel(userEmail, estadosTxt, userRol);
+        
+      } catch (err) {
+        console.error('Error inesperado:', err);
+        showError('Error inesperado: ' + (err.message || 'Ocurrió un problema al procesar tu solicitud'));
+      }
+    });
 
-      logoutBtn.addEventListener('click', async () => {
+    logoutBtn.addEventListener('click', async () => {
+      try {
         await client.auth.signOut();
         showLogin();
         document.getElementById('password').value = '';
-      });
+      } catch (err) {
+        console.error('Error logout:', err);
+        showError('Error al cerrar sesión. Por favor, recarga la página.');
+      }
+    });
 
-      // ✅ Verificar sesión al cargar
-      (async () => {
-        const { data: { session } } = await client.auth.getSession();
+    // ✅ Verificar sesión al cargar la página
+    (async () => {
+      try {
+        const { data: { session }, error: sessionError } = await client.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Error getSession:', sessionError);
+          return;
+        }
+        
         if (session?.user) {
-          const {  perfil } = await client
+          // ✅ Cargar perfil con la misma validación robusta
+          const { data: perfil, error: perfilError } = await client
             .from('perfiles')
             .select('rol, estados_asignados, email')
             .eq('id', session.user.id)
             .single();
-          if (perfil) {
-            const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
-            showPanel(perfil.email, estadosTxt, perfil.rol);
+
+          if (perfilError || !perfil) {
+            console.warn('Perfil no encontrado para usuario logueado');
+            // Opcional: cerrar sesión automáticamente si no hay perfil
+            // await client.auth.signOut();
+            return;
           }
+
+          const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
+          const userEmail = perfil.email || session.user.email;
+          const userRol = perfil.rol || 'consultor';
+          
+          showPanel(userEmail, estadosTxt, userRol);
         }
-      })();
-    });
-  </script>
+      } catch (err) {
+        console.error('Error al verificar sesión inicial:', err);
+      }
+    })();
+  });
+</script>
 </body>
 </html>
