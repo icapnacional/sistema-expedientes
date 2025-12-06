@@ -1,23 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  const supabase = createClient(
-    'https://icapnacional.github.io/sistema-expedientes/index.html',  // ← reemplaza con tu URL
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw'  // Project Settings > API > anon public key
-  );
-</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ICAP Nacional - PNB</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background-color: #fafafa;
       font-family: 'Inter', sans-serif;
@@ -38,60 +28,37 @@
       text-align: center;
       border: 1px solid #eee;
     }
-    .logo {
-      width: 90px;
-      margin-bottom: 24px;
-    }
+    .logo { width: 90px; margin-bottom: 24px; }
     h1 {
-      font-size: 22px;
-      font-weight: 700;
+      font-size: 22px; font-weight: 700;
       color: #2d2d2d;
       margin-bottom: 12px;
       line-height: 1.3;
     }
     .subtitle {
-      font-size: 15px;
-      color: #555;
-      margin-bottom: 28px;
-      line-height: 1.5;
+      font-size: 15px; color: #555;
+      margin-bottom: 28px; line-height: 1.5;
     }
-    .form-group {
-      text-align: left;
-      margin-bottom: 20px;
-    }
+    .form-group { text-align: left; margin-bottom: 20px; }
     label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
+      display: block; margin-bottom: 8px;
+      font-size: 14px; font-weight: 600; color: #333;
     }
     input {
-      width: 100%;
-      padding: 14px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 15px;
-      color: #222;
-      background-color: #fdfdfd;
-      transition: all 0.25s;
+      width: 100%; padding: 14px;
+      border: 1px solid #ddd; border-radius: 10px;
+      font-size: 15px; color: #222;
+      background-color: #fdfdfd; transition: all 0.25s;
     }
     input:focus {
-      outline: none;
-      border-color: #722F37;
+      outline: none; border-color: #722F37;
       box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
     }
     .btn-login, .btn-logout {
-      background-color: #722F37;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 16px;
-      font-size: 16px;
-      font-weight: 600;
-      width: 100%;
-      cursor: pointer;
-      transition: all 0.3s ease;
+      background-color: #722F37; color: white;
+      border: none; border-radius: 12px; padding: 16px;
+      font-size: 16px; font-weight: 600; width: 100%;
+      cursor: pointer; transition: all 0.3s ease;
       margin-top: 10px;
       box-shadow: 0 3px 8px rgba(114, 47, 55, 0.2);
     }
@@ -101,133 +68,82 @@
       box-shadow: 0 5px 14px rgba(114, 47, 55, 0.25);
     }
     .institutional-note {
-      margin-top: 22px;
-      font-size: 13px;
-      color: #444;
-      line-height: 1.5;
-      font-style: italic;
-      padding: 0 10px;
+      margin-top: 22px; font-size: 13px; color: #444;
+      line-height: 1.5; font-style: italic; padding: 0 10px;
     }
     .developer-note {
-      margin-top: 8px;
-      font-size: 12px;
-      color: #666;
+      margin-top: 8px; font-size: 12px; color: #666;
     }
     .alert {
-      margin-top: 18px;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 14px;
-      display: none;
+      margin-top: 18px; padding: 12px;
+      border-radius: 8px; font-size: 14px; display: none;
     }
     .alert-error {
-      background-color: #fff5f5;
-      color: #c00;
+      background-color: #fff5f5; color: #c00;
       border: 1px solid #ffd0d0;
     }
     .user-info {
-      margin: 24px 0;
-      padding: 14px;
-      background: #f9f9f9;
-      border-radius: 10px;
-      font-size: 14px;
-      color: #333;
+      margin: 24px 0; padding: 14px;
+      background: #f9f9f9; border-radius: 10px;
+      font-size: 14px; color: #333;
       border: 1px solid #eee;
     }
     .panel-buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin: 24px 0;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 16px; margin: 24px 0;
     }
     .panel-btn {
-      background: white;
-      border: 2px solid #eaeaea;
-      border-radius: 14px;
-      padding: 16px 10px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #722F37;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      background: white; border: 2px solid #eaeaea;
+      border-radius: 14px; padding: 16px 10px;
+      font-size: 14px; font-weight: 600; color: #722F37;
+      cursor: pointer; transition: all 0.3s ease;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
-      min-height: 90px;
-      text-align: center;
+      min-height: 90px; text-align: center;
       line-height: 1.3;
     }
     .panel-btn:hover {
       transform: translateY(-4px);
       box-shadow: 0 6px 14px rgba(114, 47, 55, 0.18);
-      border-color: #722F37;
-      background-color: #fdf7f7;
+      border-color: #722F37; background-color: #fdf7f7;
       color: #5e262d;
     }
-    .hidden {
-      display: none !important;
-    }
-    /* ✅ Botón Admin deshabilitado */
-    .panel-btn.admin-disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
+    .hidden { display: none !important; }
+    /* Tooltip rojo para Administrador */
+    #userRol {
+      font-weight: 600;
       position: relative;
+      display: inline-block;
     }
-    .panel-btn.admin-disabled::after {
-      content: " ⛔";
-      font-size: 16px;
-      color: #c00;
-      position: absolute;
-      top: 4px;
-      right: 8px;
+    #userRol[data-role="admin"]::after {
+      content: " ⓘ";
+      color: #c62828;
+      cursor: help;
     }
-    .panel-btn.admin-disabled:hover::after {
-      content: " ⛔ Acceso restringido";
-      font-size: 12px;
-      color: #fff;
-      background: #333;
-      padding: 2px 6px;
-      border-radius: 4px;
-      top: -20px;
-      right: 8px;
+    #userRol[data-role="admin"]:hover::after {
+      content: " ⓘ Administrador";
+      background: #333; color: white;
+      padding: 2px 6px; border-radius: 4px;
+      position: absolute; top: -22px; left: 0;
       white-space: nowrap;
+      font-size: 12px;
     }
   </style>
 </head>
 <body>
-  <!-- Login -->
   <div id="loginView" class="login-card">
-    <img 
-      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
-      alt="ICAP Nacional - PNB" 
-      class="logo"
-    />
+    <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" class="logo"/>
     <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
     <p class="subtitle">Acceso restringido a personal autorizado</p>
     <form id="loginForm">
       <div class="form-group">
-        <label for="email">Correo Institucional</label>
-        <input 
-          type="email" 
-          id="email" 
-          required 
-          autocomplete="username"
-          placeholder="usuario@icap.gob.ve"
-          value="admin@icap.gob.ve"  <!-- ✅ Prellenado para testing -->
-        />
+        <label for="email">Correo electrónico</label>
+        <input type="email" id="email" required autocomplete="username" placeholder="usuario@ejemplo.com" />
       </div>
       <div class="form-group">
         <label for="password">Contraseña</label>
-        <input 
-          type="password" 
-          id="password" 
-          required 
-          autocomplete="current-password"
-          placeholder="••••••••"
-          value="12345678"  <!-- ✅ Prellenado -->
-        />
+        <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••" />
       </div>
       <button type="submit" class="btn-login">Iniciar Sesión</button>
     </form>
@@ -240,18 +156,13 @@
     </p>
   </div>
 
-  <!-- Panel -->
   <div id="panelView" class="panel-card hidden">
-    <img 
-      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
-      alt="ICAP Nacional - PNB" 
-      class="logo"
-    />
+    <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" class="logo"/>
     <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
     <div class="user-info">
       <strong>Usuario:</strong> <span id="userEmail">—</span><br>
       <strong>Estado(s):</strong> <span id="userEstado">—</span><br>
-      <span id="userRol" style="font-weight:600; color:#722F37;"></span>
+      <span id="userRol"></span>
     </div>
     <div class="panel-buttons">
       <button class="panel-btn">👥 Recursos Humanos</button>
@@ -267,31 +178,21 @@
   </div>
 
   <script>
+    // 🔑 Configuración de Supabase — ¡REEMPLAZA ESTOS VALORES!
+    const supabase = createClient(
+      'https://xvqcgdbdwrocfcdfqpxv.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw'
+    );
+
     const loginView = document.getElementById('loginView');
     const panelView = document.getElementById('panelView');
     const userEmailSpan = document.getElementById('userEmail');
     const userEstadoSpan = document.getElementById('userEstado');
     const userRolSpan = document.getElementById('userRol');
     const alertDiv = document.getElementById('alertMessage');
-    const  = document.getElementById('');
+    const loginForm = document.getElementById('loginForm');
     const logoutBtn = document.getElementById('logoutBtn');
     const adminBtn = document.getElementById('adminBtn');
-
-    // 🧪 Mock perfiles (simula base de datos local)
-    const mockPerfiles = {
-      'admin@icap.gob.ve': { 
-        rol_id: 1, 
-        estados_asignados: ['Distrito Capital'] 
-      },
-      'moderador@pn.gob.ve': { 
-        rol_id: 2, 
-        estados_asignados: ['Zulia', 'Lara'] 
-      },
-      'consultor@pn.gob.ve': { 
-        rol_id: 3, 
-        estados_asignados: ['Carabobo'] 
-      }
-    };
 
     function showError(msg) {
       alertDiv.textContent = msg;
@@ -299,71 +200,90 @@
       alertDiv.style.display = 'block';
     }
 
+    function hideAlert() {
+      alertDiv.style.display = 'none';
+    }
+
     function showLogin() {
       loginView.classList.remove('hidden');
       panelView.classList.add('hidden');
+      hideAlert();
     }
 
-    function showPanel(email, estado, rol_id) {
+    function showPanel(email, estado, rol) {
       userEmailSpan.textContent = email;
-      userRolSpan.textContent = 
-        rol_id === 1 ? 'Administrador' :
-        rol_id === 2 ? 'Moderador' :
-        'Consultor';
+      
+      // ✅ Mostrar solo "Administrador"/"Moderador"/"Consultor" — sin "Rol:"
+      const rolText = rol === 'admin' ? 'Administrador' : rol === 'moderador' ? 'Moderador' : 'Consultor';
+      userRolSpan.textContent = rolText;
+      userRolSpan.setAttribute('data-role', rol); // para tooltip rojo si es admin
 
       // ✅ Ocultar línea de estados solo para Administrador
       const estadoLine = userEstadoSpan.parentNode;
-      if (rol_id === 1) {
+      if (rol === 'admin') {
         estadoLine.style.display = 'none';
       } else {
         estadoLine.style.display = 'block';
-        userEstadoSpan.textContent = estado;
+        userEstadoSpan.textContent = estado || '—';
       }
 
-      // ✅ Botón Admin: funcional solo si es admin
-      adminBtn.classList.remove('admin-disabled');
-      adminBtn.onclick = null;
-      if (rol_id === 1) {
-        adminBtn.onclick = () => alert('✅ Redirigiendo a admin...');
-      } else {
-        adminBtn.classList.add('admin-disabled');
-        adminBtn.onclick = () => {};
-      }
+      // ✅ Botón Admin: activo solo si rol == admin
+      adminBtn.disabled = !(rol === 'admin');
+      adminBtn.classList.toggle('admin-disabled', !(rol === 'admin'));
+      adminBtn.onclick = (rol === 'admin') 
+        ? () => { window.location.href = 'admin.html'; }
+        : null;
 
       loginView.classList.add('hidden');
       panelView.classList.remove('hidden');
     }
 
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return showError(error.message);
+      const {  data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return showError(error.message || 'Error al iniciar sesión.');
 
-  // Recuperar perfil
-  const { data: perfilData, error: perfilError } = await supabase
-    .from('perfiles')
-    .select('rol, estados_asignados, modulos_asignados')
-    .eq('id', data.user.id)
-    .single();
+      // ✅ Cerrar otras sesiones del mismo usuario (una sola sesión activa)
+      await supabase.auth.signOut({ scope: 'others' });
 
-  if (perfilError) return showError('Error al cargar perfil.');
+      // Cargar perfil desde tabla `perfiles`
+      const {  perfil, error: perfilError } = await supabase
+        .from('perfiles')
+        .select('rol, estados_asignados')
+        .eq('id', data.user.id)
+        .single();
 
-  const estadosTxt = perfilData.estados_asignados?.join(', ') || '—';
-  showPanel(email, estadosTxt, 
-    perfilData.rol === 'admin' ? 1 :
-    perfilData.rol === 'moderador' ? 2 : 3
-  );
-});
-    logoutBtn.addEventListener('click', () => {
+      if (perfilError) return showError('No se pudo cargar tu perfil.');
+
+      const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
+      showPanel(email, estadosTxt, perfil.rol);
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      await supabase.auth.signOut();
       showLogin();
       document.getElementById('password').value = '';
     });
 
-    // ✅ Simular inicio automático al cargar (opcional para testing)
-    // showPanel('admin@icap.gob.ve', 'Distrito Capital', 1);
+    // ✅ Verificar sesión al cargar
+    (async () => {
+      const {  session } = await supabase.auth.getSession();
+      if (session?.user) {
+        const {  perfil } = await supabase
+          .from('perfiles')
+          .select('rol, estados_asignados, email')
+          .eq('id', session.user.id)
+          .single();
+        if (perfil) {
+          const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
+          showPanel(perfil.email, estadosTxt, perfil.rol);
+        }
+      }
+    })();
   </script>
 </body>
 </html>
