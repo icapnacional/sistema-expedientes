@@ -3,355 +3,356 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - ICAP Nacional</title>
+  <title>ICAP Nacional - PNB</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
       background-color: #fafafa;
       font-family: 'Inter', sans-serif;
       color: #2d2d2d;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
       padding: 20px;
     }
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    .header {
+    .login-card, .panel-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 440px;
+      padding: 40px 32px;
       text-align: center;
-      margin-bottom: 20px;
+      border: 1px solid #eee;
     }
     .logo {
-      width: 80px;
-      margin: 0 auto 16px;
+      width: 90px;
+      margin-bottom: 24px;
     }
     h1 {
       font-size: 22px;
       font-weight: 700;
       color: #2d2d2d;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      line-height: 1.3;
     }
     .subtitle {
+      font-size: 15px;
       color: #555;
-      font-size: 15px;
-    }
-    .btn-back {
-      background: #722F37;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 10px 20px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-      margin-bottom: 20px;
-      transition: all 0.2s;
-    }
-    .btn-back:hover {
-      background: #5e262d;
-      transform: translateY(-1px);
-    }
-    .panel-card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-      padding: 32px;
-      margin-bottom: 24px;
-      border: 1px solid #eee;
+      margin-bottom: 28px;
+      line-height: 1.5;
     }
     .form-group {
       text-align: left;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
     label {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       font-size: 14px;
       font-weight: 600;
       color: #333;
     }
-    input, select {
+    input {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 14px;
+      border-radius: 10px;
+      font-size: 15px;
+      color: #222;
+      background-color: #fdfdfd;
+      transition: all 0.25s;
     }
-    input:focus, select:focus {
+    input:focus {
       outline: none;
       border-color: #722F37;
       box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
     }
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-    .btn-create {
-      background: #2e7d32;
+    .btn-login, .btn-logout {
+      background-color: #722F37;
       color: white;
       border: none;
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 8px;
-    }
-    .btn-create:hover {
-      background: #1b5e20;
-    }
-    .table-container {
-      background: white;
       border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-      overflow: hidden;
-    }
-    table {
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 600;
       width: 100%;
-      border-collapse: collapse;
-    }
-    th {
-      background-color: #f5f5f5;
-      padding: 16px 12px;
-      text-align: left;
-      font-weight: 600;
-      color: #333;
-      border-bottom: 2px solid #eee;
-    }
-    td {
-      padding: 14px 12px;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-    }
-    tr:last-child td {
-      border-bottom: none;
-    }
-    .email { font-weight: 500; color: #222; }
-    .rol {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .rol-admin { background: #ffebee; color: #c62828; }
-    .rol-moderator { background: #e3f2fd; color: #1565c0; }
-    .rol-consultor { background: #fff8e1; color: #f57f17; }
-    .btn-delete {
-      background: #f44336;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 13px;
-      font-weight: 600;
       cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      box-shadow: 0 3px 8px rgba(114, 47, 55, 0.2);
     }
-    .btn-delete:hover {
-      background: #d32f2f;
+    .btn-login:hover, .btn-logout:hover {
+      background-color: #5e262d;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 14px rgba(114, 47, 55, 0.25);
     }
-    .empty {
-      text-align: center;
-      padding: 40px;
-      color: #777;
+    .institutional-note {
+      margin-top: 22px;
+      font-size: 13px;
+      color: #444;
+      line-height: 1.5;
       font-style: italic;
+      padding: 0 10px;
+    }
+    .developer-note {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #666;
     }
     .alert {
+      margin-top: 18px;
       padding: 12px;
       border-radius: 8px;
-      margin-bottom: 20px;
       font-size: 14px;
       display: none;
     }
-    .alert-success {
-      background: #e8f5e9;
-      color: #2e7d32;
-      border: 1px solid #c8e6c9;
-    }
     .alert-error {
-      background: #ffebee;
-      color: #c62828;
-      border: 1px solid #ffcdd2;
+      background-color: #fff5f5;
+      color: #c00;
+      border: 1px solid #ffd0d0;
+    }
+    .user-info {
+      margin: 24px 0;
+      padding: 14px;
+      background: #f9f9f9;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #333;
+      border: 1px solid #eee;
+    }
+    .panel-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 24px 0;
+    }
+    .panel-btn {
+      background: white;
+      border: 2px solid #eaeaea;
+      border-radius: 14px;
+      padding: 16px 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #722F37;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+      min-height: 90px;
+      text-align: center;
+      line-height: 1.3;
+    }
+    .panel-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 14px rgba(114, 47, 55, 0.18);
+      border-color: #722F37;
+      background-color: #fdf7f7;
+      color: #5e262d;
+    }
+    .hidden {
+      display: none !important;
+    }
+    /* ✅ Botón Admin deshabilitado */
+    .panel-btn.admin-disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      position: relative;
+    }
+    .panel-btn.admin-disabled::after {
+      content: " ⛔";
+      font-size: 16px;
+      color: #c00;
+      position: absolute;
+      top: 4px;
+      right: 8px;
+    }
+    .panel-btn.admin-disabled:hover::after {
+      content: " ⛔ Acceso restringido";
+      font-size: 12px;
+      color: #fff;
+      background: #333;
+      padding: 2px 6px;
+      border-radius: 4px;
+      top: -20px;
+      right: 8px;
+      white-space: nowrap;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <a href="index.html" class="btn-back">← Volver al Panel</a>
-    <div class="header">
-      <img 
-        src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
-        alt="ICAP Nacional - PNB" 
-        class="logo"
-      />
-      <h1>Panel de Administración</h1>
-      <p class="subtitle">Gestión de usuarios autorizados</p>
-    </div>
+  <!-- Login -->
+  <div id="loginView" class="login-card">
+    <img 
+      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+      alt="ICAP Nacional - PNB" 
+      class="logo"
+    />
+    <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
+    <p class="subtitle">Acceso restringido a personal autorizado</p>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Correo Institucional</label>
+        <input 
+          type="email" 
+          id="email" 
+          required 
+          autocomplete="username"
+          placeholder="usuario@icap.gob.ve"
+          value="admin@icap.gob.ve"  <!-- ✅ Prellenado para testing -->
+        />
+      </div>
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input 
+          type="password" 
+          id="password" 
+          required 
+          autocomplete="current-password"
+          placeholder="••••••••"
+          value="12345678"  <!-- ✅ Prellenado -->
+        />
+      </div>
+      <button type="submit" class="btn-login">Iniciar Sesión</button>
+    </form>
     <div id="alertMessage" class="alert"></div>
+    <p class="institutional-note">
+      Plataforma institucional de la ICAP Nacional del Cuerpo de Policía Nacional Bolivariana
+    </p>
+    <p class="developer-note">
+      © Desarrollado por OTIC ZULIA — Información: 0424-6962840 / 0412-2714179
+    </p>
+  </div>
 
-    <!-- ✅ Sección Crear Usuario -->
-    <div class="panel-card">
-      <h2 style="font-size:18px; margin-bottom:16px; color:#222;">➕ Crear Nuevo Usuario</h2>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="newEmail">Correo Electrónico</label>
-          <input type="email" id="newEmail" placeholder="ejemplo@icap.gob.ve" required>
-        </div>
-        <div class="form-group">
-          <label for="newPassword">Contraseña</label>
-          <input type="password" id="newPassword" placeholder="••••••••" required minlength="6">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="newRol">Rol</label>
-          <select id="newRol">
-            <option value="3">Consultor</option>
-            <option value="2">Moderador</option>
-            <option value="1">Administrador</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="newEstados">Estados Asignados</label>
-          <select id="newEstados" multiple size="4" style="height: auto;">
-            <option value="Amazonas">Amazonas</option>
-            <option value="Anzoátegui">Anzoátegui</option>
-            <option value="Apure">Apure</option>
-            <option value="Aragua">Aragua</option>
-            <option value="Barinas">Barinas</option>
-            <option value="Bolívar">Bolívar</option>
-            <option value="Carabobo">Carabobo</option>
-            <option value="Cojedes">Cojedes</option>
-            <option value="Delta Amacuro">Delta Amacuro</option>
-            <option value="Distrito Capital">Distrito Capital</option>
-            <option value="Falcón">Falcón</option>
-            <option value="Guárico">Guárico</option>
-            <option value="Lara">Lara</option>
-            <option value="Mérida">Mérida</option>
-            <option value="Miranda">Miranda</option>
-            <option value="Monagas">Monagas</option>
-            <option value="Nueva Esparta">Nueva Esparta</option>
-            <option value="Portuguesa">Portuguesa</option>
-            <option value="Sucre">Sucre</option>
-            <option value="Táchira">Táchira</option>
-            <option value="Trujillo">Trujillo</option>
-            <option value="Vargas">Vargas</option>
-            <option value="Yaracuy">Yaracuy</option>
-            <option value="Zulia">Zulia</option>
-          </select>
-        </div>
-      </div>
-      <button id="btnCreate" class="btn-create">✅ Crear Usuario</button>
+  <!-- Panel -->
+  <div id="panelView" class="panel-card hidden">
+    <img 
+      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+      alt="ICAP Nacional - PNB" 
+      class="logo"
+    />
+    <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
+    <div class="user-info">
+      <strong>Usuario:</strong> <span id="userEmail">—</span><br>
+      <strong>Estado(s):</strong> <span id="userEstado">—</span><br>
+      <span id="userRol" style="font-weight:600; color:#722F37;"></span>
     </div>
-
-    <!-- Tabla -->
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Usuario (Email)</th>
-            <th>Rol</th>
-            <th>Estados Asignados</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="usersBody">
-          <tr><td colspan="4" class="empty">Cargando usuarios...</td></tr>
-        </tbody>
-      </table>
+    <div class="panel-buttons">
+      <button class="panel-btn">👥 Recursos Humanos</button>
+      <button class="panel-btn">🔍 Análisis</button>
+      <button class="panel-btn">📦 Logística</button>
+      <button class="panel-btn">⚖️ DPPC</button>
+      <button class="panel-btn">⚖️ Asesoría Legal</button>
+      <button class="panel-btn">📇 D.E. Disciplinarios</button>
+      <button class="panel-btn">✒️ Secretaría</button>
+      <button class="panel-btn" id="adminBtn">👑 Admin</button>
     </div>
+    <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
   </div>
 
   <script>
-    const ROL_LABELS = { 1: "Administrador", 2: "Moderador", 3: "Consultor" };
-    const ROL_CLASSES = { 1: "rol-admin", 2: "rol-moderator", 3: "rol-consultor" };
-
-    // 🧪 Mock data
-    let usuarios = [
-      { id: "u001", email: "admin@icap.gob.ve", rol_id: 1, estados_asignados: ["Distrito Capital"] },
-      { id: "u002", email: "moderador@pn.gob.ve", rol_id: 2, estados_asignados: ["Zulia", "Lara"] },
-      { id: "u003", email: "consultor@pn.gob.ve", rol_id: 3, estados_asignados: ["Carabobo"] },
-      { id: "u004", email: "rh@icap.gob.ve", rol_id: 2, estados_asignados: ["Aragua", "Carabobo", "Guárico"] },
-      { id: "u005", email: "admin2@icap.gob.ve", rol_id: 1, estados_asignados: ["Trujillo", "Táchira"] }
-    ];
-
-    const usersBody = document.getElementById('usersBody');
+    const loginView = document.getElementById('loginView');
+    const panelView = document.getElementById('panelView');
+    const userEmailSpan = document.getElementById('userEmail');
+    const userEstadoSpan = document.getElementById('userEstado');
+    const userRolSpan = document.getElementById('userRol');
     const alertDiv = document.getElementById('alertMessage');
-    const btnCreate = document.getElementById('btnCreate');
+    const loginForm = document.getElementById('loginForm');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const adminBtn = document.getElementById('adminBtn');
 
-    function showAlert(msg, type = 'error') {
-      alertDiv.textContent = msg;
-      alertDiv.className = `alert alert-${type}`;
-      alertDiv.style.display = 'block';
-      setTimeout(() => alertDiv.style.display = 'none', 5000);
-    }
-
-    function loadUsers() {
-      if (usuarios.length === 0) {
-        usersBody.innerHTML = `<tr><td colspan="4" class="empty">No hay usuarios registrados.</td></tr>`;
-        return;
+    // 🧪 Mock perfiles (simula base de datos local)
+    const mockPerfiles = {
+      'admin@icap.gob.ve': { 
+        rol_id: 1, 
+        estados_asignados: ['Distrito Capital'] 
+      },
+      'moderador@pn.gob.ve': { 
+        rol_id: 2, 
+        estados_asignados: ['Zulia', 'Lara'] 
+      },
+      'consultor@pn.gob.ve': { 
+        rol_id: 3, 
+        estados_asignados: ['Carabobo'] 
       }
-      usersBody.innerHTML = usuarios.map(u => {
-        const rolTexto = ROL_LABELS[u.rol_id];
-        const rolClass = ROL_CLASSES[u.rol_id];
-        const estados = u.estados_asignados?.length ? u.estados_asignados.join(', ') : '—';
-        // Proteger admins: no permitir eliminar si es admin (rol_id === 1)
-        const canDelete = u.rol_id !== 1;
-        return `
-          <tr>
-            <td class="email">${u.email}</td>
-            <td><span class="rol ${rolClass}">${rolTexto}</span></td>
-            <td>${estados}</td>
-            <td>
-              ${canDelete ? `<button class="btn-delete" onclick="deleteUser('${u.id}')">🗑️ Eliminar</button>` : '<span>—</span>'}
-            </td>
-          </tr>
-        `;
-      }).join('');
+    };
+
+    function showError(msg) {
+      alertDiv.textContent = msg;
+      alertDiv.className = 'alert alert-error';
+      alertDiv.style.display = 'block';
     }
 
-    function createUser() {
-      const email = document.getElementById('newEmail').value.trim();
-      const password = document.getElementById('newPassword').value;
-      const rol_id = parseInt(document.getElementById('newRol').value);
-      const estadosSelect = document.getElementById('newEstados');
-      const estados_asignados = Array.from(estadosSelect.selectedOptions).map(opt => opt.value);
-
-      if (!email || !password) return showAlert('Ingrese email y contraseña.');
-      if (password.length < 6) return showAlert('La contraseña debe tener ≥6 caracteres.');
-      if (![1, 2, 3].includes(rol_id)) return showAlert('Rol inválido.');
-
-      btnCreate.disabled = true;
-      btnCreate.textContent = 'Creando...';
-
-      // Simular delay ligero
-      setTimeout(() => {
-        const nuevoId = 'u' + (usuarios.length + 1).toString().padStart(3, '0');
-        usuarios.push({ id: nuevoId, email, rol_id, estados_asignados });
-        showAlert('✅ Usuario creado correctamente.', 'success');
-        document.getElementById('newEmail').value = '';
-        document.getElementById('newPassword').value = '';
-        estadosSelect.selectedIndex = -1;
-        loadUsers();
-        btnCreate.disabled = false;
-        btnCreate.textContent = '✅ Crear Usuario';
-      }, 300);
+    function showLogin() {
+      loginView.classList.remove('hidden');
+      panelView.classList.add('hidden');
     }
 
-    function deleteUser(userId) {
-      if (!confirm('⚠️ ¿Está seguro? Esta acción no se puede deshacer.')) return;
-      usuarios = usuarios.filter(u => u.id !== userId);
-      showAlert('✅ Usuario eliminado correctamente.', 'success');
-      loadUsers();
+    function showPanel(email, estado, rol_id) {
+      userEmailSpan.textContent = email;
+      userRolSpan.textContent = 
+        rol_id === 1 ? 'Administrador' :
+        rol_id === 2 ? 'Moderador' :
+        'Consultor';
+
+      // ✅ Ocultar línea de estados solo para Administrador
+      const estadoLine = userEstadoSpan.parentNode;
+      if (rol_id === 1) {
+        estadoLine.style.display = 'none';
+      } else {
+        estadoLine.style.display = 'block';
+        userEstadoSpan.textContent = estado;
+      }
+
+      // ✅ Botón Admin: funcional solo si es admin
+      adminBtn.classList.remove('admin-disabled');
+      adminBtn.onclick = null;
+      if (rol_id === 1) {
+        adminBtn.onclick = () => alert('✅ Redirigiendo a admin...');
+      } else {
+        adminBtn.classList.add('admin-disabled');
+        adminBtn.onclick = () => {};
+      }
+
+      loginView.classList.add('hidden');
+      panelView.classList.remove('hidden');
     }
 
-    // Inicializar
-    document.getElementById('btnCreate').addEventListener('click', createUser);
-    loadUsers();
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      // ✅ Validación mock (solo verifica que email exista y pass ≥8)
+      if (password.length < 8) {
+        return showError('Contraseña debe tener al menos 8 caracteres.');
+      }
+
+      const perfil = mockPerfiles[email];
+      if (!perfil) {
+        return showError('Usuario no autorizado.');
+      }
+
+      const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
+      showPanel(email, estadosTxt, perfil.rol_id);
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      showLogin();
+      document.getElementById('password').value = '';
+    });
+
+    // ✅ Simular inicio automático al cargar (opcional para testing)
+    // showPanel('admin@icap.gob.ve', 'Distrito Capital', 1);
   </script>
 </body>
 </html>
