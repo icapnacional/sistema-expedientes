@@ -286,12 +286,28 @@
     setTimeout(() => alertDiv.style.display = 'none', 5000);
   }
 
-  async function checkAdmin() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      window.location.href = 'index.html';
-      return false;
-    }
+async function checkAdmin() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    window.location.href = 'index.html';
+    return false;
+  }
+
+  const {  perfil, error } = await supabase
+    .from('usuarios_perfil')
+    .select('rol_id, user_id')
+    .eq('user_id', session.user.id)
+    .single();
+
+  console.log('Usuario logueado:', session.user.email, 'rol_id:', perfil?.rol_id); // 👈 LOG
+
+  if (!perfil || perfil.rol_id !== 1) {
+    showAlert('Acceso denegado: solo administradores.', 'error');
+    setTimeout(() => window.location.href = 'index.html', 2000);
+    return false;
+  }
+  return true;
+}
     const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id')
