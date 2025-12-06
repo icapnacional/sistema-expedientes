@@ -458,7 +458,7 @@
     // ✅ Verificar sesión antes de cargar usuarios
     (async () => {
       try {
-        const {  { session }, error: sessionError } = await client.auth.getSession();
+         const { data: { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError) throw sessionError;
         
         if (!session) {
