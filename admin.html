@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin | ICAP Nacional - PNB</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -122,7 +121,6 @@
     .back-btn:hover {
       background: #ddd;
     }
-
     /* Tabla de usuarios */
     .table-responsive {
       overflow-x: auto;
@@ -157,7 +155,6 @@
     .rol-admin { background: #ffebee; color: #c62828; }
     .rol-moderador { background: #e8f5e9; color: #2e7d32; }
     .rol-consultor { background: #e3f2fd; color: #1565c0; }
-
     /* Paginación */
     .pagination {
       display: flex;
@@ -182,7 +179,6 @@
     .page-btn:hover:not(.active) {
       background: #f5f5f5;
     }
-
     .flex-between {
       display: flex;
       justify-content: space-between;
@@ -198,15 +194,12 @@
       <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP">
       <h1>Panel de Administración — Gestión de Usuarios</h1>
     </div>
-
     <div class="card">
       <div class="flex-between">
         <h2>➕ Crear Nuevo Usuario</h2>
         <button class="btn back-btn" onclick="window.location.href='index.html'">← Volver al Panel</button>
       </div>
-
       <div id="alertMessage" class="alert"></div>
-
       <form id="createUserForm">
         <div class="form-group">
           <label for="email">Correo electrónico</label>
@@ -256,16 +249,13 @@
             <option value="Dependencias Federales">Dependencias Federales</option>
           </select>
         </div>
-
         <div class="form-group">
           <label>✅ Asignar módulos (botones visibles)</label>
           <div class="modules-grid" id="modulesCheckboxes"></div>
         </div>
-
         <button type="submit" class="btn">✅ Crear Usuario</button>
       </form>
     </div>
-
     <!-- Listado de usuarios -->
     <div class="card">
       <h2>👥 Usuarios Registrados (<span id="totalUsers">0</span>)</h2>
@@ -285,7 +275,6 @@
           </tbody>
         </table>
       </div>
-
       <div class="pagination" id="pagination"></div>
     </div>
   </div>
@@ -296,17 +285,87 @@
       dppc: "DPPC", asesoria: "Asesoría", disciplinarios: "Disciplinarios",
       secretaria: "Secretaría", admin: "Admin"
     };
-
     const ROL_LABELS = { 1: "Administrador", 2: "Moderador", 3: "Consultor" };
     const ROL_COLORS = { 1: "rol-admin", 2: "rol-moderador", 3: "rol-consultor" };
 
-    const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
-    const supabase = supabase.createClient(SUPABASE_URL, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g');
+    // 🧪 Mock data
+    let usuarios = [
+      {
+        id: "u001",
+        email: "admin@icap.gob.ve",
+        rol_id: 1,
+        estados_asignados: ["Distrito Capital", "Miranda"],
+        modulos_asignados: ["rh", "admin", "dppc"]
+      },
+      {
+        id: "u002",
+        email: "moderador@pn.gob.ve",
+        rol_id: 2,
+        estados_asignados: ["Zulia", "Lara"],
+        modulos_asignados: ["analisis", "logistica"]
+      },
+      {
+        id: "u003",
+        email: "consultor@pn.gob.ve",
+        rol_id: 3,
+        estados_asignados: ["Carabobo"],
+        modulos_asignados: ["asesoria"]
+      },
+      {
+        id: "u004",
+        email: "rh@icap.gob.ve",
+        rol_id: 2,
+        estados_asignados: ["Aragua", "Carabobo", "Guárico"],
+        modulos_asignados: ["rh"]
+      },
+      {
+        id: "u005",
+        email: "admin2@icap.gob.ve",
+        rol_id: 1,
+        estados_asignados: ["Trujillo", "Táchira"],
+        modulos_asignados: ["admin", "secretaria"]
+      },
+      {
+        id: "u006",
+        email: "dppc@pn.gob.ve",
+        rol_id: 2,
+        estados_asignados: ["Vargas"],
+        modulos_asignados: ["dppc"]
+      },
+      {
+        id: "u007",
+        email: "disc@icap.gob.ve",
+        rol_id: 3,
+        estados_asignados: ["Anzoátegui"],
+        modulos_asignados: ["disciplinarios"]
+      },
+      {
+        id: "u008",
+        email: "analista@icap.gob.ve",
+        rol_id: 2,
+        estados_asignados: ["Monagas", "Sucre"],
+        modulos_asignados: ["analisis", "logistica"]
+      },
+      {
+        id: "u009",
+        email: "asesor@pn.gob.ve",
+        rol_id: 3,
+        estados_asignados: ["Nueva Esparta"],
+        modulos_asignados: ["asesoria"]
+      },
+      {
+        id: "u010",
+        email: "coordinador@icap.gob.ve",
+        rol_id: 1,
+        estados_asignados: ["Amazonas", "Bolívar"],
+        modulos_asignados: ["admin", "rh", "dppc"]
+      }
+    ];
+
     const alertDiv = document.getElementById('alertMessage');
     const usersTableBody = document.getElementById('usersTableBody');
     const totalUsersSpan = document.getElementById('totalUsers');
     const paginationDiv = document.getElementById('pagination');
-
     let currentPage = 1;
     const perPage = 10;
 
@@ -327,69 +386,39 @@
       alertDiv.textContent = msg;
       alertDiv.className = `alert alert-${type}`;
       alertDiv.style.display = 'block';
-      setTimeout(() => { if (type === 'success') alertDiv.style.display = 'none'; }, 5000);
-    }
-
-    // Obtener sesión y verificar admin
-    async function getSession() {
-      const { data: { session } } = await supabase.auth.getSession();
-      return session;
-    }
-
-    async function checkAdmin() {
-      const session = await getSession();
-      if (!session) return false;
-      const {  perfil } = await supabase
-        .from('usuarios_perfil')
-        .select('rol_id')
-        .eq('user_id', session.user.id)
-        .single();
-      return perfil?.rol_id === 1;
-    }
-
-    async function loadUsers(page = 1) {
-      const isAdmin = await checkAdmin();
-      if (!isAdmin) {
-        usersTableBody.innerHTML = '<tr><td colspan="5" style="color:#c00">Acceso restringido.</td></tr>';
-        return;
-      }
-
-      try {
-
-        const {  count } = await supabase
-          .from('usuarios_perfil')
-          .select('*', { count: 'exact', head: true });
-
-        totalUsersSpan.textContent = count || 0;
-
-        // Cargar página
-        const from = (page - 1) * perPage;
-        const to = from + perPage - 1;
-
-        const {  data, error } = await supabase
-          .rpc('usuarios_con_datos', { limit: perPage, offset: from });
-
-        if (error) throw error;
-
-        renderUsersTable(data || []);
-        renderPagination(page, Math.ceil(count / perPage));
-      } catch (err) {
-        console.error('Error al cargar usuarios:', err);
-        usersTableBody.innerHTML = `<tr><td colspan="5" style="color:#c00">Error: ${err.message}</td></tr>`;
+      if (type === 'success') {
+        setTimeout(() => alertDiv.style.display = 'none', 5000);
       }
     }
+
+    // Mock: simular checkAdmin (siempre true en mock)
+    function checkAdmin() {
+      return Promise.resolve(true);
+    }
+
+    // Cargar usuarios (mock)
+    function loadUsers(page = 1) {
+      currentPage = page;
+      totalUsersSpan.textContent = usuarios.length;
+
+      const from = (page - 1) * perPage;
+      const to = from + perPage;
+      const pageData = usuarios.slice(from, to);
+      renderUsersTable(pageData);
+      renderPagination(page, Math.ceil(usuarios.length / perPage));
+    }
+
     function renderUsersTable(users) {
       if (users.length === 0) {
         usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay usuarios registrados.</td></tr>';
         return;
       }
-
       usersTableBody.innerHTML = users.map(u => {
         const modulosTxt = u.modulos_asignados?.map(m => MODULOS[m] || m).join(', ') || '—';
         const estadosTxt = u.estados_asignados?.join(', ') || '—';
         const rolTag = `<span class="rol-tag ${ROL_COLORS[u.rol_id]}">${ROL_LABELS[u.rol_id]}</span>`;
-        const canDelete = u.id !== (supabase.auth.getUser()?.data?.user?.id); // no auto-eliminar
-
+        // Simular auto-protección: no permitir eliminar al primer usuario (admin)
+        const canDelete = u.id !== 'u001'; 
         return `
           <tr>
             <td>${u.email}</td>
@@ -437,39 +466,15 @@
       }
     }
 
-    async function confirmDelete(userId, email) {
+    function confirmDelete(userId, email) {
       if (!confirm(`⚠️ ¿Eliminar usuario ${email}?\nEsta acción es irreversible.`)) return;
-
-      try {
-        const session = await getSession();
-        const token = session.access_token;
-
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/delete_user`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ user_id: userId })
-        });
-
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || 'Error al eliminar');
-        }
-
-        showAlert(`✅ Usuario ${email} eliminado.`, 'success');
-        loadUsers(currentPage);
-      } catch (err) {
-        showAlert(`❌ Error: ${err.message}`, 'error');
-      }
+      
+      usuarios = usuarios.filter(u => u.id !== userId);
+      showAlert(`✅ Usuario ${email} eliminado.`, 'success');
+      loadUsers(currentPage);
     }
 
-    document.getElementById('createUserForm')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const isAdmin = await checkAdmin();
-      if (!isAdmin) return showAlert('Acceso denegado.', 'error');
-
+    function createUserLocal() {
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const rol_id = parseInt(document.getElementById('rol_id').value);
@@ -480,29 +485,24 @@
         return showAlert('Todos los campos son obligatorios.', 'error');
       }
 
-      try {
-        const session = await getSession();
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/create_user`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password, rol_id, estados_asignados: estados, modulos_asignados: modulos })
-        });
+      const nuevoId = 'u' + (usuarios.length + 1).toString().padStart(3, '0');
+      usuarios.push({
+        id: nuevoId,
+        email,
+        rol_id,
+        estados_asignados: estados,
+        modulos_asignados: modulos
+      });
 
-        const result = await res.json();
-        if (res.ok) {
-          showAlert(`✅ Usuario creado: ${email}`, 'success');
-          document.getElementById('createUserForm').reset();
-          document.querySelectorAll('input[name="modulo"]').forEach(cb => cb.checked = false);
-          loadUsers(1);
-        } else {
-          throw new Error(result.error || 'Error desconocido');
-        }
-      } catch (err) {
-        showAlert(`❌ ${err.message}`, 'error');
-      }
+      showAlert(`✅ Usuario creado: ${email}`, 'success');
+      document.getElementById('createUserForm').reset();
+      document.querySelectorAll('input[name="modulo"]').forEach(cb => cb.checked = false);
+      loadUsers(1);
+    }
+
+    document.getElementById('createUserForm')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      createUserLocal();
     });
 
     renderModulesCheckboxes();
