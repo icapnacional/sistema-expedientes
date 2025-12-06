@@ -1,17 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  const supabase = createClient(
-    'https://icapnacional.github.io/sistema-expedientes/admin.html',  // ← reemplaza con tu URL
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw'  // Project Settings > API > anon public key
-  );
-</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin | ICAP Nacional - PNB</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -20,248 +14,104 @@
       color: #2d2d2d;
       padding: 20px;
     }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .header img {
-      width: 80px;
-      margin-bottom: 16px;
-    }
-    h1 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #722F37;
-    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .header { text-align: center; margin-bottom: 24px; }
+    .header img { width: 80px; margin-bottom: 16px; }
+    h1 { font-size: 24px; font-weight: 700; color: #722F37; }
     .card {
-      background: white;
-      border-radius: 16px;
+      background: white; border-radius: 16px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-      padding: 32px;
-      margin-bottom: 24px;
+      padding: 32px; margin-bottom: 24px;
     }
-    .form-group {
-      margin-bottom: 24px;
-    }
+    .form-group { margin-bottom: 24px; }
     label {
-      display: block;
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: #222;
-      font-size: 15px;
+      display: block; margin-bottom: 10px;
+      font-weight: 600; color: #222; font-size: 15px;
     }
     input, select {
-      width: 100%;
-      padding: 14px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
+      width: 100%; padding: 14px;
+      border: 1px solid #ddd; border-radius: 10px;
       font-size: 15px;
     }
-    select[multiple] {
-      height: 180px;
-    }
-    /* ✅ MÓDULOS MEJORADOS */
+    select[multiple] { height: 180px; }
     .modules-section {
-      background: #fbfbfb;
-      border-radius: 12px;
-      padding: 20px;
-      margin-top: 8px;
-      border: 1px solid #eee;
+      background: #fbfbfb; border-radius: 12px;
+      padding: 20px; margin-top: 8px; border: 1px solid #eee;
     }
     .module-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-top: 12px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 12px;
     }
-    @media (max-width: 768px) {
-      .module-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-    @media (max-width: 480px) {
-      .module-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+    @media (max-width: 768px) { .module-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .module-grid { grid-template-columns: 1fr; } }
     .module-card {
-      background: white;
-      border: 2px solid #eaeaea;
-      border-radius: 12px;
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      background: white; border: 2px solid #eaeaea; border-radius: 12px;
+      padding: 14px 16px; display: flex; align-items: center; gap: 10px;
+      cursor: pointer; transition: all 0.2s ease;
     }
-    .module-card:hover {
-      border-color: #722F37;
-      background-color: #fdf7f7;
-    }
+    .module-card:hover { border-color: #722F37; background-color: #fdf7f7; }
     .module-card.selected {
-      border-color: #722F37;
-      background-color: #fdf7f7;
+      border-color: #722F37; background-color: #fdf7f7;
       box-shadow: 0 3px 6px rgba(114, 47, 55, 0.1);
     }
     .module-icon {
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      color: #722F37;
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; color: #722F37;
     }
-    .module-card.selected .module-icon::before {
-      content: "✅";
-    }
-    .module-card:not(.selected) .module-icon::before {
-      content: "🔲";
-    }
-    .module-label {
-      font-weight: 500;
-      font-size: 14px;
-      color: #222;
-    }
-    .module-info {
-      font-size: 12px;
-      color: #666;
-      margin-top: 4px;
-    }
-    /* Fin módulos */
+    .module-card.selected .module-icon::before { content: "✅"; }
+    .module-card:not(.selected) .module-icon::before { content: "🔲"; }
+    .module-label { font-weight: 500; font-size: 14px; color: #222; }
+    .module-info { font-size: 12px; color: #666; margin-top: 4px; }
     .btn {
-      background: #722F37;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 14px 20px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+      background: #722F37; color: white; border: none; border-radius: 12px;
+      padding: 14px 20px; font-size: 16px; font-weight: 600;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
       transition: all 0.25s;
     }
-    .btn:hover {
-      background: #5e262d;
-      transform: translateY(-2px);
-    }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #722F37;
-      color: #722F37;
-    }
-    .btn-outline:hover {
-      background: #fdf7f7;
-    }
-    .btn-delete {
-      background: #c00;
-      color: white;
-    }
-    .btn-delete:hover {
-      background: #a00;
-    }
+    .btn:hover { background: #5e262d; transform: translateY(-2px); }
+    .btn-outline { background: transparent; border: 1px solid #722F37; color: #722F37; }
+    .btn-outline:hover { background: #fdf7f7; }
+    .btn-delete { background: #c00; color: white; }
+    .btn-delete:hover { background: #a00; }
     .alert {
-      padding: 14px;
-      border-radius: 8px;
-      margin: 16px 0;
-      display: none;
+      padding: 14px; border-radius: 8px; margin: 16px 0; display: none;
     }
     .alert-success { background: #e6f7ee; color: #1a7f37; border: 1px solid #b7e8c7; }
     .alert-error { background: #fff5f5; color: #c00; border: 1px solid #ffd0d0; }
-    .back-btn {
-      background: #eee;
-      color: #555;
-    }
-    .back-btn:hover {
-      background: #ddd;
-    }
-    /* Tabla */
-    .table-responsive {
-      overflow-x: auto;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 16px;
-    }
-    th, td {
-      padding: 14px 12px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-    }
-    th {
-      background: #fafafa;
-      font-weight: 600;
-      color: #333;
-    }
-    tr:hover td {
-      background: #fcfcfc;
-    }
+    .back-btn { background: #eee; color: #555; }
+    .back-btn:hover { background: #ddd; }
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+    th { background: #fafafa; font-weight: 600; color: #333; }
+    tr:hover td { background: #fcfcfc; }
     .rol-tag {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
+      display: inline-block; padding: 4px 10px; border-radius: 20px;
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
     }
     .rol-admin { background: #ffebee; color: #c62828; }
     .rol-moderador { background: #e8f5e9; color: #2e7d32; }
     .rol-consultor { background: #e3f2fd; color: #1565c0; }
-    /* ✅ Paginación mejorada */
     .pagination {
-      display: flex;
-      justify-content: center;
-      gap: 6px;
-      margin-top: 24px;
+      display: flex; justify-content: center; gap: 6px; margin-top: 24px;
     }
     .page-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      background: white;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      transition: all 0.2s;
+      width: 40px; height: 40px; border-radius: 8px;
+      border: 1px solid #ddd; background: white;
+      font-weight: 500; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; transition: all 0.2s;
     }
-    .page-btn.active {
-      background: #722F37;
-      color: white;
-      border-color: #722F37;
-    }
-    .page-btn:hover:not(.active) {
-      background: #f5f5f5;
-    }
-    .page-dots {
-      color: #888;
-    }
+    .page-btn.active { background: #722F37; color: white; border-color: #722F37; }
+    .page-btn:hover:not(.active) { background: #f5f5f5; }
+    .page-dots { color: #888; }
     .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
+      display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 12px;
     }
     .total-badge {
-      background: #722F37;
-      color: white;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 13px;
+      background: #722F37; color: white; padding: 4px 12px;
+      border-radius: 20px; font-weight: 600; font-size: 13px;
     }
   </style>
 </head>
@@ -287,14 +137,13 @@
           <input type="password" id="password" required minlength="8">
         </div>
         <div class="form-group">
-          <label for="rol_id">Rol (identificación visual)</label>
+          <label for="rol_id">Rol</label>
           <select id="rol_id" required>
             <option value="">-- Seleccionar --</option>
-            <option value="1">Administrador</option>
-            <option value="2">Moderador</option>
-            <option value="3">Consultor</option>
+            <option value="admin">Administrador</option>
+            <option value="moderador">Moderador</option>
+            <option value="consultor">Consultor</option>
           </select>
-          <small style="display:block; margin-top:6px; color:#666;">ℹ️ El rol no define permisos. Asigne módulos manualmente.</small>
         </div>
         <div class="form-group">
           <label for="estados">Estados asignados (Ctrl/Cmd + clic)</label>
@@ -327,7 +176,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label>✅ Asignar módulos (botones visibles)</label>
+          <label>✅ Asignar módulos (visibles en panel)</label>
           <div class="modules-section">
             <p style="margin:0 0 12px 0; color:#555; font-size:14px;">
               Seleccione los módulos que el usuario podrá ver.
@@ -335,14 +184,13 @@
             <div class="module-grid" id="modulesGrid"></div>
           </div>
         </div>
-        <button type="submit" class="btn">✅ Crear Usuario</button>
+        <button type="submit" class="btn" id="submitBtn">✅ Crear Usuario</button>
       </form>
     </div>
-    <!-- Listado de usuarios -->
     <div class="card">
       <div class="flex-between">
         <h2>👥 Usuarios Registrados</h2>
-        <span class="total-badge" id="totalUsers">0</span>
+        <span class="total-badge" id="totalUsers">Cargando...</span>
       </div>
       <div class="table-responsive">
         <table>
@@ -356,7 +204,7 @@
             </tr>
           </thead>
           <tbody id="usersTableBody">
-            <tr><td colspan="5" style="text-align:center">Cargando...</td></tr>
+            <tr><td colspan="5" style="text-align:center">Cargando usuarios...</td></tr>
           </tbody>
         </table>
       </div>
@@ -365,6 +213,13 @@
   </div>
 
   <script>
+    // 🔑 Supabase — ¡REEMPLAZA!
+    const SUPABASE_URL = 'https://TU_PROYECTO.supabase.co';
+    const ANON_KEY = 'TU_ANON_KEY';
+    const supabase = createClient(SUPABASE_URL, ANON_KEY);
+
+    const MANAGE_USER_URL = `${SUPABASE_URL}/functions/v1/manage-user`;
+
     const MODULOS = {
       rh: { label: "Recursos Humanos", icon: "👥", desc: "Gestión de personal" },
       analisis: { label: "Análisis", icon: "🔍", desc: "Reportes e insights" },
@@ -375,32 +230,23 @@
       secretaria: { label: "Secretaría", icon: "✒️", desc: "Documentos oficiales" },
       admin: { label: "Admin", icon: "👑", desc: "Panel de gestión" }
     };
-    const ROL_LABELS = { 1: "Administrador", 2: "Moderador", 3: "Consultor" };
-    const ROL_COLORS = { 1: "rol-admin", 2: "rol-moderador", 3: "rol-consultor" };
 
-    // 🧪 Mock data: 15 usuarios para probar paginación
-    let usuarios = Array.from({ length: 15 }, (_, i) => ({
-      id: `u${String(i+1).padStart(3, '0')}`,
-      email: `usuario${i+1}@icap.gob.ve`,
-      rol_id: [1,2,3][i % 3],
-      estados_asignados: i % 2 === 0 
-        ? ["Distrito Capital", "Miranda"] 
-        : ["Zulia", "Lara", "Carabobo"],
-      modulos_asignados: Object.keys(MODULOS).filter((_, idx) => (i + idx) % 3 === 0)
-    }));
+    const ROL_LABELS = { admin: "Administrador", moderador: "Moderador", consultor: "Consultor" };
+    const ROL_COLORS = { admin: "rol-admin", moderador: "rol-moderador", consultor: "rol-consultor" };
 
     const alertDiv = document.getElementById('alertMessage');
     const usersTableBody = document.getElementById('usersTableBody');
     const totalUsersSpan = document.getElementById('totalUsers');
     const paginationDiv = document.getElementById('pagination');
+    const submitBtn = document.getElementById('submitBtn');
+
     let currentPage = 1;
     const perPage = 10;
 
-    // ✅ Render módulos estilizados
+    // ✅ Render tarjetas módulos
     function renderModulesGrid() {
       const container = document.getElementById('modulesGrid');
       container.innerHTML = '';
-      
       Object.entries(MODULOS).forEach(([id, info]) => {
         const card = document.createElement('div');
         card.className = 'module-card';
@@ -412,10 +258,7 @@
             <div class="module-info">${info.desc}</div>
           </div>
         `;
-        
-        card.addEventListener('click', () => {
-          card.classList.toggle('selected');
-        });
+        card.addEventListener('click', () => card.classList.toggle('selected'));
         container.appendChild(card);
       });
     }
@@ -429,126 +272,180 @@
       alertDiv.textContent = msg;
       alertDiv.className = `alert alert-${type}`;
       alertDiv.style.display = 'block';
-      if (type === 'success') {
-        setTimeout(() => alertDiv.style.display = 'none', 5000);
-      }
+      if (type === 'success') setTimeout(() => alertDiv.style.display = 'none', 5000);
     }
 
-    function loadUsers(page = 1) {
-      currentPage = page;
-      totalUsersSpan.textContent = usuarios.length;
+    async function loadUsers(page = 1) {
+      try {
+        const from = (page - 1) * perPage;
+        const to = from + perPage - 1;
 
-      const from = (page - 1) * perPage;
-      const to = from + perPage;
-      const pageData = usuarios.slice(from, to);
-      renderUsersTable(pageData);
-      renderPagination(page, Math.ceil(usuarios.length / perPage));
+        const {  data, error, count } = await supabase
+          .from('perfiles')
+          .select('id, email, rol, estados_asignados, modulos_asignados', { count: 'exact' })
+          .range(from, to);
+
+        if (error) throw error;
+
+        totalUsersSpan.textContent = count || 0;
+        renderUsersTable(data || []);
+        renderPagination(page, count ? Math.ceil(count / perPage) : 1);
+      } catch (err) {
+        console.error(err);
+        usersTableBody.innerHTML = `<tr><td colspan="5" style="color:#c00;text-align:center">❌ Error al cargar usuarios.</td></tr>`;
+      }
     }
 
     function renderUsersTable(users) {
-      if (users.length === 0) {
-        usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay usuarios registrados.</td></tr>';
-        return;
-      }
-      usersTableBody.innerHTML = users.map(u => {
-        const modulosTxt = u.modulos_asignados?.map(m => MODULOS[m]?.label || m.toUpperCase()).join(', ') || '—';
-        const estadosTxt = u.estados_asignados?.join(', ') || '—';
-        const rolTag = `<span class="rol-tag ${ROL_COLORS[u.rol_id]}">${ROL_LABELS[u.rol_id]}</span>`;
-        const canDelete = u.id !== 'u001'; 
-        return `
-          <tr>
-            <td>${u.email}</td>
-            <td>${rolTag}</td>
-            <td title="${estadosTxt}">${estadosTxt.length > 25 ? estadosTxt.substring(0,22)+'...' : estadosTxt}</td>
-            <td title="${modulosTxt}">${modulosTxt.length > 30 ? modulosTxt.substring(0,27)+'...' : modulosTxt}</td>
-            <td>
-              ${canDelete 
-                ? `<button class="btn btn-sm btn-delete" onclick="confirmDelete('${u.id}', '${u.email}')">🗑️ Eliminar</button>` 
-                : `<span style="color:#999">—</span>`}
-            </td>
-          </tr>
-        `;
-      }).join('');
+      usersTableBody.innerHTML = users.length === 0
+        ? '<tr><td colspan="5" style="text-align:center">No hay usuarios registrados.</td></tr>'
+        : users.map(u => {
+            const modulosTxt = u.modulos_asignados?.map(m => MODULOS[m]?.label || m).join(', ') || '—';
+            const estadosTxt = u.estados_asignados?.join(', ') || '—';
+            const rolTag = `<span class="rol-tag ${ROL_COLORS[u.rol]}">${ROL_LABELS[u.rol]}</span>`;
+            // Evitar autoeliminación
+            const {  session } = supabase.auth.session();
+            const canDelete = session?.user?.id !== u.id;
+
+            return `
+              <tr>
+                <td>${u.email}</td>
+                <td>${rolTag}</td>
+                <td title="${estadosTxt}">${estadosTxt.length > 25 ? estadosTxt.substring(0,22)+'...' : estadosTxt}</td>
+                <td title="${modulosTxt}">${modulosTxt.length > 30 ? modulosTxt.substring(0,27)+'...' : modulosTxt}</td>
+                <td>
+                  ${canDelete 
+                    ? `<button class="btn btn-sm btn-delete" onclick="confirmDelete('${u.id}', '${u.email}')">🗑️ Eliminar</button>`
+                    : `<span style="color:#999">—</span>`}
+                </td>
+              </tr>
+            `;
+          }).join('');
     }
 
     function renderPagination(current, total) {
       paginationDiv.innerHTML = '';
       if (total <= 1) return;
 
-      const createBtn = (text, page, active = false, disabled = false) => {
+      const addBtn = (text, page, active = false, disabled = false) => {
         const btn = document.createElement('button');
         btn.className = 'page-btn' + (active ? ' active' : '') + (disabled ? ' page-dots' : '');
         btn.textContent = text;
         if (!disabled && page !== undefined) {
           btn.onclick = () => loadUsers(page);
         }
-        return btn;
+        paginationDiv.appendChild(btn);
       };
 
-      paginationDiv.appendChild(createBtn('«', current - 1, false, current === 1));
-
+      addBtn('«', current - 1, false, current === 1);
       if (total <= 7) {
-        for (let i = 1; i <= total; i++) {
-          paginationDiv.appendChild(createBtn(i, i, i === current));
-        }
+        for (let i = 1; i <= total; i++) addBtn(i, i, i === current);
       } else {
-        paginationDiv.appendChild(createBtn(1, 1, current === 1));
-        if (current > 4) paginationDiv.appendChild(createBtn('…', undefined, false, true));
-
+        addBtn(1, 1, current === 1);
+        if (current > 4) addBtn('…', null, false, true);
         const start = Math.max(2, current - 2);
         const end = Math.min(total - 1, current + 2);
-        for (let i = start; i <= end; i++) {
-          paginationDiv.appendChild(createBtn(i, i, i === current));
+        for (let i = start; i <= end; i++) addBtn(i, i, i === current);
+        if (current < total - 3) addBtn('…', null, false, true);
+        addBtn(total, total, current === total);
+      }
+      addBtn('»', current + 1, false, current === total);
+    }
+
+    async function confirmDelete(userId, email) {
+      if (!confirm(`⚠️ ¿Eliminar usuario ${email}?\nEsta acción es irreversible.`)) return;
+
+      const {  session } = await supabase.auth.getSession();
+      if (!session?.session) return showAlert("Sesión expirada. Inicie sesión nuevamente.", "error");
+
+      try {
+        const res = await fetch(MANAGE_USER_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.session.access_token}`
+          },
+          body: JSON.stringify({ action: 'delete', user_id_to_delete: userId })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.message || `HTTP ${res.status}`);
         }
 
-        if (current < total - 3) paginationDiv.appendChild(createBtn('…', undefined, false, true));
-        paginationDiv.appendChild(createBtn(total, total, current === total));
+        showAlert(`✅ Usuario ${email} eliminado correctamente.`, 'success');
+        loadUsers(currentPage);
+      } catch (err) {
+        console.error(err);
+        showAlert(`❌ Error al eliminar: ${err.message}`, 'error');
       }
-
-      paginationDiv.appendChild(createBtn('»', current + 1, false, current === total));
     }
 
-    function confirmDelete(userId, email) {
-      if (!confirm(`⚠️ ¿Eliminar usuario ${email}?\nEsta acción es irreversible.`)) return;
-      usuarios = usuarios.filter(u => u.id !== userId);
-      showAlert(`✅ Usuario ${email} eliminado.`, 'success');
-      loadUsers(currentPage);
-    }
-
-    function createUserLocal() {
+    async function createUserReal() {
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
-      const rol_id = parseInt(document.getElementById('rol_id').value);
+      const rol = document.getElementById('rol_id').value;
       const estados = Array.from(document.getElementById('estados').selectedOptions).map(o => o.value);
       const modulos = getSelectedModules();
 
-      if (!email || !password || !rol_id || !estados.length || !modulos.length) {
+      if (!email || !password || !rol || estados.length === 0 || modulos.length === 0) {
         return showAlert('Todos los campos son obligatorios.', 'error');
       }
 
-      const nuevoId = `u${String(usuarios.length + 1).padStart(3, '0')}`;
-      usuarios.push({
-        id: nuevoId,
-        email,
-        rol_id,
-        estados_asignados: estados,
-        modulos_asignados: modulos
-      });
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creando…';
 
-      showAlert(`✅ Usuario creado: ${email}`, 'success');
-      document.getElementById('createUserForm').reset();
-      document.querySelectorAll('.module-card').forEach(card => card.classList.remove('selected'));
-      document.getElementById('estados').selectedIndex = -1;
-      loadUsers(1);
+      try {
+        const {  session } = await supabase.auth.getSession();
+        if (!session?.session) throw new Error("Debe estar autenticado como admin.");
+
+        const res = await fetch(MANAGE_USER_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.session.access_token}`
+          },
+          body: JSON.stringify({
+            action: 'create',
+            email,
+            password,
+            rol,
+            estados_asignados: estados,
+            modulos_asignados: modulos
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.message || `HTTP ${res.status}`);
+        }
+
+        showAlert(`✅ Usuario creado: ${email}`, 'success');
+        document.getElementById('createUserForm').reset();
+        document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
+        document.getElementById('estados').selectedIndex = -1;
+        loadUsers(1);
+      } catch (err) {
+        showAlert(`❌ ${err.message}`, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '✅ Crear Usuario';
+      }
     }
 
-    document.getElementById('createUserForm')?.addEventListener('submit', (e) => {
+    // Inicialización
+    document.getElementById('createUserForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      createUserLocal();
+      createUserReal();
     });
 
     renderModulesGrid();
     loadUsers();
+  </script>
+
+  <!-- Función global para uso en botones -->
+  <script>
+    window.confirmDelete = confirmDelete;
   </script>
 </body>
 </html>
