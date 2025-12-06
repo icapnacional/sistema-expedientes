@@ -214,8 +214,9 @@
       class="logo"
     />
     <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
-    <div class="user-info" id="userInfoContainer">
-      <!-- Dinámico -->
+    <div class="user-info">
+      <strong>Usuario:</strong> <span id="userEmail">—</span><br>
+      <strong>Estado(s):</strong> <span id="userEstado">—</span>
     </div>
     <div class="panel-buttons">
       <button class="panel-btn" onclick="window.location.href='rh.html'">👥 Recursos Humanos</button>
@@ -231,12 +232,14 @@
   </div>
 
 <script>
+<script>
   const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const loginView = document.getElementById('loginView');
   const panelView = document.getElementById('panelView');
-  const userInfoContainer = document.getElementById('userInfoContainer');
+  const userEmailSpan = document.getElementById('userEmail');
+  const userEstadoSpan = document.getElementById('userEstado');
   const alertDiv = document.getElementById('alertMessage');
   const loginForm = document.getElementById('loginForm');
   const logoutBtn = document.getElementById('logoutBtn');
@@ -250,26 +253,33 @@
       return;
     }
     currentUser = session.user;
+
+    // 🔍 Cargar perfil
     const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id, estados_asignados')
       .eq('user_id', session.user.id)
       .single();
+
     if (error && error.code !== 'PGRST116') {
       console.error('Error al cargar perfil:', error);
       showError('Error interno. Contacte al administrador.');
       showLogin();
       return;
     }
+
     if (!perfil) {
+      console.log('Usuario sin perfil -> acceso denegado');
       showError('Acceso denegado: usuario no autorizado.');
       await supabase.auth.signOut();
       showLogin();
       return;
     }
+
     const estadosTxt = perfil.estados_asignados?.length
       ? perfil.estados_asignados.join(', ')
       : '—';
+
     showPanel(session.user.email, estadosTxt, perfil.rol_id);
   }
 
@@ -277,6 +287,7 @@
     alertDiv.textContent = msg;
     alertDiv.className = 'alert alert-error';
     alertDiv.style.display = 'block';
+    console.log('ERROR:', msg); // 👈 LOG en consola
   }
 
   function showLogin() {
@@ -285,25 +296,11 @@
   }
 
   function showPanel(email, estado, rol_id) {
-    // ✅ Construir dinámicamente
-    let html = `<div><strong>Usuario:</strong> ${email}</div>`;
-    
-    // Mostrar estados solo si NO es Administrador
-    if (rol_id !== 1) {
-      html += `<div><strong>Estado(s):</strong> ${estado}</div>`;
-    }
+    // ✅ Estos elementos SÍ existen (porque usamos la primera versión del HTML)
+    userEmailSpan.textContent = email;
+    userEstadoSpan.textContent = estado;
 
-    // Mostrar rol como texto plano en vinotinto
-    const rolTexto = 
-      rol_id === 1 ? 'Administrador' :
-      rol_id === 2 ? 'Moderador' :
-      'Consultor';
-    
-    html += `<div style="font-weight:600;color:#722F37;">${rolTexto}</div>`;
-
-    userInfoContainer.innerHTML = html;
-
-    // Comportamiento del botón Admin
+    // 👑 Botón Admin
     adminBtn.onclick = () => {
       if (rol_id === 1) {
         window.location.href = 'admin.html';
@@ -312,8 +309,12 @@
       }
     };
 
+    // ✅ Mostrar panel
     loginView.classList.add('hidden');
     panelView.classList.remove('hidden');
+
+    // ✅ Forzar render (opcional)
+    console.log('Panel mostrado para:', email, 'Rol:', rol_id);
   }
 
   loginForm.addEventListener('submit', async (e) => {
@@ -324,7 +325,8 @@
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      checkSession();
+      // ✅ Llamar a checkSession después de login
+      await checkSession();
     } catch (err) {
       showError(err.message || 'Credenciales inválidas.');
     }
@@ -336,7 +338,10 @@
     showLogin();
   });
 
-  checkSession();
+  // ✅ Iniciar verificación al cargar
+  (async () => {
+    await checkSession();
+  })();
 </script>
 </body>
 </html>
