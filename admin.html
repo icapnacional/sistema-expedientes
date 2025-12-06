@@ -54,7 +54,6 @@
       background: #5e262d;
       transform: translateY(-1px);
     }
-
     .panel-card {
       background: white;
       border-radius: 16px;
@@ -63,7 +62,6 @@
       margin-bottom: 24px;
       border: 1px solid #eee;
     }
-
     .form-group {
       text-align: left;
       margin-bottom: 16px;
@@ -104,10 +102,13 @@
       width: 100%;
       margin-top: 8px;
     }
-    .btn-create:hover {
+    .btn-create:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn-create:hover:not(:disabled) {
       background: #1b5e20;
     }
-
     .table-container {
       background: white;
       border-radius: 12px;
@@ -195,7 +196,6 @@
       <h1>Panel de Administración</h1>
       <p class="subtitle">Gestión de usuarios autorizados</p>
     </div>
-
     <div id="alertMessage" class="alert"></div>
 
     <!-- ✅ Sección Crear Usuario -->
@@ -204,7 +204,7 @@
       <div class="form-row">
         <div class="form-group">
           <label for="newEmail">Correo Electrónico</label>
-          <input type="email" id="newEmail" placeholder="ejemplo@icap.gob.ve" required>
+          <input type="email" id="newEmail" placeholder="ejemplo@dominio.com" required>
         </div>
         <div class="form-group">
           <label for="newPassword">Contraseña</label>
@@ -275,9 +275,12 @@
   const SUPABASE_URL = 'https://stwriaubepeugobgyxjt.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d3JpYXViZXBldWdvYmd5eGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NDU0MDUsImV4cCI6MjA3MDMyMTQwNX0.3Rorn10j19M2nmmv03oSEwm-O-y0bsywAA8_CRR2O1g';
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   const usersBody = document.getElementById('usersBody');
   const alertDiv = document.getElementById('alertMessage');
   const btnCreate = document.getElementById('btnCreate');
+  const newRolSelect = document.getElementById('newRol');
+  const newEstadosSelect = document.getElementById('newEstados');
 
   function showAlert(msg, type = 'error') {
     alertDiv.textContent = msg;
@@ -286,62 +289,68 @@
     setTimeout(() => alertDiv.style.display = 'none', 5000);
   }
 
-  // ✅ checkAdmin: async y con data correcta
+  // ✅ Deshabilitar estados si es Administrador
+  newRolSelect.addEventListener('change', () => {
+    const isAdmin = newRolSelect.value === '1';
+    newEstadosSelect.disabled = isAdmin;
+    if (isAdmin) {
+      // Limpiar selección
+      for (let opt of newEstadosSelect.options) opt.selected = false;
+    }
+  });
+
   async function checkAdmin() {
-    const {  { session } } = await supabase.auth.getSession();
-    if (!session) {
-      window.location.href = 'index.html';
+    const { data: { session }, error: sessErr } = await supabase.auth.getSession();
+    if (sessErr || !session) {
+      showAlert('Sesión caducada.', 'error');
+      setTimeout(() => window.location.href = 'index.html', 1500);
       return false;
     }
-    const {  perfil, error } = await supabase
+
+    const { data: perfil, error: profErr } = await supabase
       .from('usuarios_perfil')
       .select('rol_id')
       .eq('user_id', session.user.id)
       .single();
-    if (!perfil || perfil.rol_id !== 1) {
-      showAlert('Acceso denegado: solo administradores.', 'error');
+
+    if (profErr || !perfil || perfil.rol_id !== 1) {
+      showAlert('🔒 Acceso denegado: solo administradores.', 'error');
       setTimeout(() => window.location.href = 'index.html', 2000);
       return false;
     }
     return true;
   }
 
-  // ✅ loadUsers: con data: perfiles (no perfiles directo)
   async function loadUsers() {
-    const {  perfiles, error: err1 } = await supabase
-      .from('usuarios_perfil')
-      .select('user_id, rol_id, estados_asignados')
+    // ✅ Usa la vista segura (requiere crearla primero en SQL — ver más abajo)
+    const { data, error } = await supabase
+      .from('usuarios_vw')
+      .select('id, user_id, email, rol_id, estados_asignados')
       .order('created_at', { ascending: true });
-    if (err1) {
-      usersBody.innerHTML = `<tr><td colspan="4" class="empty">❌ Error al cargar perfiles.</td></tr>`;
+
+    if (error) {
+      usersBody.innerHTML = `<tr><td colspan="4" class="empty">❌ Error al cargar usuarios.</td></tr>`;
+      console.error('Error al cargar usuarios_vw:', error);
       return;
     }
 
-    const userIds = perfiles.map(p => p.user_id);
-    const {  authUsers, error: err2 } = await supabase
-      .from('users')
-      .select('id, email')
-      .in('id', userIds);
-    if (err2) {
-      usersBody.innerHTML = `<tr><td colspan="4" class="empty">❌ Error al cargar correos.</td></tr>`;
+    if (!data || data.length === 0) {
+      usersBody.innerHTML = `<tr><td colspan="4" class="empty">No hay usuarios registrados.</td></tr>`;
       return;
     }
 
-    const userMap = {};
-    (authUsers || []).forEach(u => userMap[u.id] = u.email);
-
-    usersBody.innerHTML = perfiles.map(p => {
-      const email = userMap[p.user_id] || '—';
+    usersBody.innerHTML = data.map(row => {
+      const email = row.email || '—';
       const rolTexto = 
-        p.rol_id === 1 ? 'Administrador' :
-        p.rol_id === 2 ? 'Moderador' :
+        row.rol_id === 1 ? 'Administrador' :
+        row.rol_id === 2 ? 'Moderador' :
         'Consultor';
       const rolClass = 
-        p.rol_id === 1 ? 'rol-admin' :
-        p.rol_id === 2 ? 'rol-moderator' :
+        row.rol_id === 1 ? 'rol-admin' :
+        row.rol_id === 2 ? 'rol-moderator' :
         'rol-consultor';
-      const estados = p.estados_asignados?.length ? p.estados_asignados.join(', ') : '—';
-      const canDelete = p.rol_id !== 1;
+      const estados = row.estados_asignados?.length ? row.estados_asignados.join(', ') : '—';
+      const canDelete = row.rol_id !== 1; // solo borrar no-admins
 
       return `
         <tr>
@@ -349,45 +358,50 @@
           <td><span class="rol ${rolClass}">${rolTexto}</span></td>
           <td>${estados}</td>
           <td>
-            ${canDelete ? `<button class="btn-delete" onclick="deleteUser('${p.user_id}')">🗑️ Eliminar</button>` : '<span>—</span>'}
+            ${canDelete ? `<button class="btn-delete" onclick="deleteUser('${row.user_id}')">🗑️ Eliminar</button>` : '<span>—</span>'}
           </td>
         </tr>
       `;
     }).join('');
   }
 
-  // ✅ createUser: SIN Authorization header (usa cookies)
   async function createUser() {
     const email = document.getElementById('newEmail').value.trim();
     const password = document.getElementById('newPassword').value;
-    const rol_id = parseInt(document.getElementById('newRol').value);
-    const estadosSelect = document.getElementById('newEstados');
-    const estados_asignados = Array.from(estadosSelect.selectedOptions).map(opt => opt.value);
+    const rol_id = parseInt(newRolSelect.value);
+    const estados_asignados = newEstadosSelect.disabled 
+      ? [] 
+      : Array.from(newEstadosSelect.selectedOptions).map(opt => opt.value);
 
     if (!email || !password) return showAlert('Ingrese email y contraseña.');
     if (password.length < 6) return showAlert('La contraseña debe tener ≥6 caracteres.');
     if (![1, 2, 3].includes(rol_id)) return showAlert('Rol inválido.');
 
     btnCreate.disabled = true;
-    btnCreate.textContent = 'Creando...';
+    btnCreate.textContent = 'Creando…';
 
     try {
-      // ✅ CORRECTO: sin Authorization header
       const res = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        credentials: 'include', // ✅ cookies incluidas
         body: JSON.stringify({ email, password, rol_id, estados_asignados })
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error desconocido');
+
+      if (!res.ok) throw new Error(data.error || 'Error en creación');
 
       showAlert('✅ Usuario creado correctamente.', 'success');
+
+      // Limpiar formulario
       document.getElementById('newEmail').value = '';
       document.getElementById('newPassword').value = '';
-      estadosSelect.selectedIndex = -1;
-      loadUsers();
+      newEstadosSelect.selectedIndex = -1;
+
+      // Recargar y scroll a tabla
+      await loadUsers();
+      document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth' });
 
     } catch (err) {
       showAlert(err.message || 'No se pudo crear el usuario.', 'error');
@@ -398,23 +412,41 @@
   }
 
   async function deleteUser(userId) {
-    if (!confirm('⚠️ ¿Está seguro? Esta acción no se puede deshacer.')) return;
-    const { error } = await supabase
+    if (!confirm('⚠️ ¿Está seguro? No se puede deshacer.')) return;
+
+    // ✅ Primero elimina el perfil, luego el auth.users (para evitar RLS conflict)
+    const { error: delPerfilErr } = await supabase
       .from('usuarios_perfil')
       .delete()
       .eq('user_id', userId);
-    if (error) return showAlert('Error al eliminar: ' + (error.message || 'interno'));
+
+    if (delPerfilErr) {
+      showAlert('Error al eliminar perfil: ' + delPerfilErr.message, 'error');
+      return;
+    }
+
+    // ✅ Luego elimina en auth (requiere admin perms → Edge Function o backend)
+    // Por seguridad, mejor delegar esto a una Edge Function "delete-user"
+    // Pero mientras: si tienes permisos en tu cliente (no recomendado), puedes usar:
+    // await supabase.auth.admin.deleteUser(userId);
+    // ⚠️ ¡Esto solo funciona si el cliente tiene el token de servicio!
+    // Recomendación: crea una Edge Function `delete-user` con ADMIN_SECRET.
+
     showAlert('✅ Usuario eliminado correctamente.', 'success');
     loadUsers();
   }
 
-  // ✅ Iniciar — IIFE async (solución a "await not in async")
-  (async () => {
-    if (await checkAdmin()) {
-      loadUsers();
-      btnCreate.addEventListener('click', createUser);
-    }
-  })();
+  // ✅ Inicialización segura
+  document.addEventListener('DOMContentLoaded', async () => {
+    const isAdmin = await checkAdmin();
+    if (!isAdmin) return;
+    
+    // ✅ Escuchar botón
+    btnCreate.addEventListener('click', createUser);
+    
+    // ✅ Cargar usuarios
+    loadUsers();
+  });
 </script>
 </body>
 </html>
