@@ -265,7 +265,7 @@
       <table>
         <thead>
           <tr>
-            <th>Usuario (Email)</th>
+            <th>Usuario (ID)</th>
             <th>Rol</th>
             <th>Estados Asignados</th>
             <th>Acciones</th>
@@ -291,12 +291,12 @@
     alertDiv.textContent = msg;
     alertDiv.className = `alert alert-${type}`;
     alertDiv.style.display = 'block';
-    setTimeout(() => { alertDiv.style.display = 'none'; }, 5000);
+    setTimeout(() => alertDiv.style.display = 'none', 5000);
   }
 
-  // ✅ Verificación inicial y carga
+  // ✅ Inicialización principal
   async function init() {
-    const { data: { session }, error: sessionErr } = await supabase.auth.getSession();
+    const { data: { session }, error: err } = await supabase.auth.getSession();
     if (!session) return window.location.href = 'index.html';
 
     const { data: perfil, error } = await supabase
@@ -307,11 +307,11 @@
 
     if (!perfil || perfil.rol_id !== 1) {
       showAlert('🔒 Acceso denegado: solo administradores.', 'error');
-      setTimeout(() => window.location.href = 'index.html', 2000);
+      setTimeout(() => window.location.href = 'index.html', 2500);
       return;
     }
 
-    loadUsers();
+    loadUsers(); // ✅ carga inicial
   }
 
   async function loadUsers() {
@@ -323,7 +323,6 @@
 
       if (err1) throw err1;
 
-      // ✅ Como auth.users no es accesible desde cliente → mostramos user_id temporalmente
       usersBody.innerHTML = perfiles.map(p => {
         const shortId = p.user_id.substring(0, 8) + '…';
         const rolTexto = p.rol_id === 1 ? 'Administrador' : p.rol_id === 2 ? 'Moderador' : 'Consultor';
@@ -364,10 +363,9 @@
     btnCreate.textContent = '⏳ Creando...';
 
     try {
-      // ✅ credentials: 'include' + sin Authorization header
       const res = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
         method: 'POST',
-        credentials: 'include',
+        credentials: 'include', // ✅ envía cookies
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, rol_id, estados_asignados })
       });
