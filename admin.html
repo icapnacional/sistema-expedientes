@@ -54,7 +54,6 @@
       background: #5e262d;
       transform: translateY(-1px);
     }
-
     .panel-card {
       background: white;
       border-radius: 16px;
@@ -63,7 +62,6 @@
       margin-bottom: 24px;
       border: 1px solid #eee;
     }
-
     .form-group {
       text-align: left;
       margin-bottom: 16px;
@@ -107,7 +105,6 @@
     .btn-create:hover {
       background: #1b5e20;
     }
-
     .table-container {
       background: white;
       border-radius: 12px;
@@ -130,9 +127,6 @@
       padding: 14px 12px;
       border-bottom: 1px solid #eee;
       font-size: 14px;
-    }
-    tr:last-child td {
-      border-bottom: none;
     }
     .email { font-weight: 500; color: #222; }
     .rol {
@@ -181,32 +175,6 @@
       color: #c62828;
       border: 1px solid #ffcdd2;
     }
-
-    /* ✅ Estilo para botón Admin deshabilitado */
-    .panel-btn.admin-disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      position: relative;
-    }
-    .panel-btn.admin-disabled::after {
-      content: " ⛔";
-      font-size: 16px;
-      color: #c00;
-      position: absolute;
-      top: 4px;
-      right: 8px;
-    }
-    .panel-btn.admin-disabled:hover::after {
-      content: " ⛔ Acceso restringido";
-      font-size: 12px;
-      color: #fff;
-      background: #333;
-      padding: 2px 6px;
-      border-radius: 4px;
-      top: -20px;
-      right: 8px;
-      white-space: nowrap;
-    }
   </style>
 </head>
 <body>
@@ -221,65 +189,78 @@
       <h1>Panel de Administración</h1>
       <p class="subtitle">Gestión de usuarios autorizados</p>
     </div>
-
     <div id="alertMessage" class="alert"></div>
 
-    <!-- ✅ Sección Crear Usuario -->
+    <!-- ✅ FORMULARIO REAL (soluciona advertencia DOM) -->
     <div class="panel-card">
       <h2 style="font-size:18px; margin-bottom:16px; color:#222;">➕ Crear Nuevo Usuario</h2>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="newEmail">Correo Electrónico</label>
-          <input type="email" id="newEmail" placeholder="ejemplo@icap.gob.ve" required>
+      <form id="createForm" onsubmit="event.preventDefault(); createUser();">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="newEmail">Correo Electrónico</label>
+            <input 
+              type="email" 
+              id="newEmail" 
+              name="email"
+              autocomplete="username"
+              placeholder="ejemplo@icap.gob.ve" 
+              required>
+          </div>
+          <div class="form-group">
+            <label for="newPassword">Contraseña</label>
+            <input 
+              type="password" 
+              id="newPassword" 
+              name="password"
+              autocomplete="new-password"
+              placeholder="••••••••" 
+              required minlength="6">
+          </div>
         </div>
-        <div class="form-group">
-          <label for="newPassword">Contraseña</label>
-          <input type="password" id="newPassword" placeholder="••••••••" required minlength="6">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="newRol">Rol</label>
+            <select id="newRol" name="rol">
+              <option value="3">Consultor</option>
+              <option value="2">Moderador</option>
+              <option value="1">Administrador</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="newEstados">Estados Asignados</label>
+            <select id="newEstados" name="estados" multiple size="4" style="height: auto;">
+              <option value="Amazonas">Amazonas</option>
+              <option value="Anzoátegui">Anzoátegui</option>
+              <option value="Apure">Apure</option>
+              <option value="Aragua">Aragua</option>
+              <option value="Barinas">Barinas</option>
+              <option value="Bolívar">Bolívar</option>
+              <option value="Carabobo">Carabobo</option>
+              <option value="Cojedes">Cojedes</option>
+              <option value="Delta Amacuro">Delta Amacuro</option>
+              <option value="Distrito Capital">Distrito Capital</option>
+              <option value="Falcón">Falcón</option>
+              <option value="Guárico">Guárico</option>
+              <option value="Lara">Lara</option>
+              <option value="Mérida">Mérida</option>
+              <option value="Miranda">Miranda</option>
+              <option value="Monagas">Monagas</option>
+              <option value="Nueva Esparta">Nueva Esparta</option>
+              <option value="Portuguesa">Portuguesa</option>
+              <option value="Sucre">Sucre</option>
+              <option value="Táchira">Táchira</option>
+              <option value="Trujillo">Trujillo</option>
+              <option value="Vargas">Vargas</option>
+              <option value="Yaracuy">Yaracuy</option>
+              <option value="Zulia">Zulia</option>
+            </select>
+          </div>
         </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="newRol">Rol</label>
-          <select id="newRol">
-            <option value="3">Consultor</option>
-            <option value="2">Moderador</option>
-            <option value="1">Administrador</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="newEstados">Estados Asignados</label>
-          <select id="newEstados" multiple size="4" style="height: auto;">
-            <option value="Amazonas">Amazonas</option>
-            <option value="Anzoátegui">Anzoátegui</option>
-            <option value="Apure">Apure</option>
-            <option value="Aragua">Aragua</option>
-            <option value="Barinas">Barinas</option>
-            <option value="Bolívar">Bolívar</option>
-            <option value="Carabobo">Carabobo</option>
-            <option value="Cojedes">Cojedes</option>
-            <option value="Delta Amacuro">Delta Amacuro</option>
-            <option value="Distrito Capital">Distrito Capital</option>
-            <option value="Falcón">Falcón</option>
-            <option value="Guárico">Guárico</option>
-            <option value="Lara">Lara</option>
-            <option value="Mérida">Mérida</option>
-            <option value="Miranda">Miranda</option>
-            <option value="Monagas">Monagas</option>
-            <option value="Nueva Esparta">Nueva Esparta</option>
-            <option value="Portuguesa">Portuguesa</option>
-            <option value="Sucre">Sucre</option>
-            <option value="Táchira">Táchira</option>
-            <option value="Trujillo">Trujillo</option>
-            <option value="Vargas">Vargas</option>
-            <option value="Yaracuy">Yaracuy</option>
-            <option value="Zulia">Zulia</option>
-          </select>
-        </div>
-      </div>
-      <button id="btnCreate" class="btn-create">✅ Crear Usuario</button>
+        <button type="submit" id="btnCreate" class="btn-create">✅ Crear Usuario</button>
+      </form>
     </div>
 
-    <!-- Tabla -->
+    <!-- Tabla de usuarios -->
     <div class="table-container">
       <table>
         <thead>
@@ -310,15 +291,13 @@
     alertDiv.textContent = msg;
     alertDiv.className = `alert alert-${type}`;
     alertDiv.style.display = 'block';
-    setTimeout(() => alertDiv.style.display = 'none', 5000);
+    setTimeout(() => { alertDiv.style.display = 'none'; }, 5000);
   }
 
-  async function checkAdmin() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      window.location.href = 'index.html';
-      return false;
-    }
+  // ✅ Verificación inicial y carga
+  async function init() {
+    const { data: { session }, error: sessionErr } = await supabase.auth.getSession();
+    if (!session) return window.location.href = 'index.html';
 
     const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
@@ -326,12 +305,13 @@
       .eq('user_id', session.user.id)
       .single();
 
-    if (error || !perfil || perfil.rol_id !== 1) {
+    if (!perfil || perfil.rol_id !== 1) {
       showAlert('🔒 Acceso denegado: solo administradores.', 'error');
       setTimeout(() => window.location.href = 'index.html', 2000);
-      return false;
+      return;
     }
-    return true;
+
+    loadUsers();
   }
 
   async function loadUsers() {
@@ -343,18 +323,14 @@
 
       if (err1) throw err1;
 
+      // ✅ Como auth.users no es accesible desde cliente → mostramos user_id temporalmente
       usersBody.innerHTML = perfiles.map(p => {
-        const rolTexto = 
-          p.rol_id === 1 ? 'Administrador' :
-          p.rol_id === 2 ? 'Moderador' :
-          'Consultor';
-        const rolClass = 
-          p.rol_id === 1 ? 'rol-admin' :
-          p.rol_id === 2 ? 'rol-moderator' :
-          'rol-consultor';
+        const shortId = p.user_id.substring(0, 8) + '…';
+        const rolTexto = p.rol_id === 1 ? 'Administrador' : p.rol_id === 2 ? 'Moderador' : 'Consultor';
+        const rolClass = p.rol_id === 1 ? 'rol-admin' : p.rol_id === 2 ? 'rol-moderator' : 'rol-consultor';
         const estados = p.estados_asignados?.length ? p.estados_asignados.join(', ') : '—';
         const canDelete = p.rol_id !== 1;
-        const shortId = p.user_id.substring(0, 8) + '…';
+
         return `
           <tr>
             <td class="email">ID: ${shortId}</td>
@@ -366,8 +342,9 @@
           </tr>
         `;
       }).join('') || `<tr><td colspan="4" class="empty">📭 No hay usuarios creados aún.</td></tr>`;
+
     } catch (err) {
-      usersBody.innerHTML = `<tr><td colspan="4" class="empty">❌ Error: ${err.message || 'no se pudo cargar la lista.'}</td></tr>`;
+      usersBody.innerHTML = `<tr><td colspan="4" class="empty">❌ ${err.message || 'Error al cargar usuarios.'}</td></tr>`;
       console.error('loadUsers error:', err);
     }
   }
@@ -381,33 +358,36 @@
 
     if (!email || !password) return showAlert('📧 Ingrese email y contraseña.');
     if (password.length < 6) return showAlert('🔐 La contraseña debe tener ≥6 caracteres.');
-    if (![1, 2, 3].includes(rol_id)) return showAlert('🧩 Rol inválido.');
+    if (![1,2,3].includes(rol_id)) return showAlert('🧩 Rol inválido.');
 
     btnCreate.disabled = true;
     btnCreate.textContent = '⏳ Creando...';
 
     try {
+      // ✅ credentials: 'include' + sin Authorization header
       const res = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', 
         body: JSON.stringify({ email, password, rol_id, estados_asignados })
       });
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || 'Error desconocido en función');
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
 
       showAlert('✅ Usuario creado correctamente.', 'success');
-      
+
+      // Limpiar formulario
       document.getElementById('newEmail').value = '';
       document.getElementById('newPassword').value = '';
-      estadosSelect.querySelectorAll('option').forEach(opt => opt.selected = false);
+      document.getElementById('newEstados').selectedIndex = -1;
 
       loadUsers();
+
     } catch (err) {
       console.error('createUser error:', err);
-      showAlert(`❌ ${err.message || 'No se pudo crear el usuario.'}`, 'error');
+      showAlert(`❌ ${err.message || 'Error al crear usuario.'}`, 'error');
     } finally {
       btnCreate.disabled = false;
       btnCreate.textContent = '✅ Crear Usuario';
@@ -428,16 +408,12 @@
       showAlert('✅ Usuario eliminado correctamente.', 'success');
       loadUsers();
     } catch (err) {
-      showAlert(`❌ Error al eliminar: ${err.message || 'interno'}`, 'error');
+      showAlert(`❌ ${err.message || 'Error al eliminar usuario.'}`, 'error');
     }
   }
-  document.addEventListener('DOMContentLoaded', async () => {
-    const isAdmin = await checkAdmin();
-    if (isAdmin) {
-      loadUsers();
-      btnCreate.addEventListener('click', createUser); // ✅ ¡esto faltaba!
-    }
-  });
+
+  // ✅ Iniciar al cargar
+  document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
