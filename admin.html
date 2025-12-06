@@ -214,12 +214,12 @@
   </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     // 🔑 Tus credenciales reales de Supabase
     const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
     
-    // ✅ CORRECCIÓN DEFINITIVA: usa `client` para evitar conflictos de nombres
+    // ✅ CORRECCIÓN DEFINITIVA: usa `client`
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const MANAGE_USER_URL = `${SUPABASE_URL}/functions/v1/manage-user`;
 
@@ -245,6 +245,17 @@
 
     let currentPage = 1;
     const perPage = 10;
+
+    // ✅ Función para obtener usuario actual (asíncrona)
+    async function getCurrentUser() {
+      try {
+        const { data: { session }, error: sessionError } = await client.auth.getSession();
+        return session?.user;
+      } catch (err) {
+        console.error('Error getting current user:', err);
+        return null;
+      }
+    }
 
     function renderModulesGrid() {
       const container = document.getElementById('modulesGrid');
@@ -290,7 +301,7 @@
         if (error) throw error;
 
         totalUsersSpan.textContent = count || 0;
-        renderUsersTable(data || []);
+        await renderUsersTable(data || []); // ✅ Ahora es asíncrona
         renderPagination(page, count ? Math.ceil(count / perPage) : 1);
       } catch (err) {
         console.error('Error al cargar usuarios:', err);
@@ -298,15 +309,16 @@
       }
     }
 
-    function renderUsersTable(users) {
+    // ✅ Convertida a función asíncrona
+    async function renderUsersTable(users) {
       if (users.length === 0) {
         usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay usuarios registrados.</td></tr>';
         return;
       }
 
-      // Obtener ID del usuario actual (para evitar autoeliminación)
-      const { data: { session } } = client.auth.session();
-      const currentUserId = session?.user?.id;
+      // ✅ Corrección: usar getSession() en lugar de session()
+      const currentUser = await getCurrentUser();
+      const currentUserId = currentUser?.id;
 
       usersTableBody.innerHTML = users.map(u => {
         const modulosTxt = (u.modulos_asignados || [])
@@ -361,11 +373,12 @@
       addBtn('»', current + 1, false, current === total);
     }
 
-    // ✅ FUNCIÓN CORREGIDA PARA ELIMINAR USUARIOS
+    // ✅ Función global para eliminar (usada en onclick)
     window.deleteUser = async function(userId, email) {
       if (!confirm(`⚠️ ¿Eliminar usuario ${email}?\nEsta acción es irreversible.`)) return;
 
       try {
+        // ✅ Corrección: usar getSession() en lugar de session()
         const { data: { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError) throw sessionError;
         if (!session) throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
@@ -392,8 +405,7 @@
       }
     };
 
-    // ✅ FUNCIÓN CORREGIDA PARA CREAR USUARIOS (FALTABA EN TU CÓDIGO)
-    window.createUserReal = async function() {
+    async function createUserReal() {
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const rol = document.getElementById('rol_id').value;
@@ -412,6 +424,7 @@
       submitBtn.textContent = 'Creando…';
 
       try {
+        // ✅ Corrección: usar getSession() en lugar de session()
         const { data: { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError) throw sessionError;
         if (!session) throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
@@ -449,17 +462,17 @@
         submitBtn.disabled = false;
         submitBtn.textContent = '✅ Crear Usuario';
       }
-    };
+    }
 
-    // ✅ Asignar el evento submit con la función CORRECTA
     document.getElementById('createUserForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      createUserReal(); // ✅ Ahora sí está definida
+      createUserReal();
     });
 
     // ✅ Verificar sesión antes de cargar usuarios
     (async () => {
       try {
+        // ✅ Corrección: usar getSession() en lugar de session()
         const { data: { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError) throw sessionError;
         
