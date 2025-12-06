@@ -181,32 +181,6 @@
       color: #c62828;
       border: 1px solid #ffcdd2;
     }
-
-    /* ✅ Estilo para botón Admin deshabilitado */
-    .panel-btn.admin-disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      position: relative;
-    }
-    .panel-btn.admin-disabled::after {
-      content: " ⛔";
-      font-size: 16px;
-      color: #c00;
-      position: absolute;
-      top: 4px;
-      right: 8px;
-    }
-    .panel-btn.admin-disabled:hover::after {
-      content: " ⛔ Acceso restringido";
-      font-size: 12px;
-      color: #fff;
-      background: #333;
-      padding: 2px 6px;
-      border-radius: 4px;
-      top: -20px;
-      right: 8px;
-      white-space: nowrap;
-    }
   </style>
 </head>
 <body>
@@ -312,25 +286,18 @@
     setTimeout(() => alertDiv.style.display = 'none', 5000);
   }
 
-async function checkAdminSession() {
-
-  const { data, error: authError } = await supabase.auth.getUser(authHeader);
-if (authError || !data?.user) {
-  return new Response(JSON.stringify({ error: 'Sesión inválida' }), { status: 401 });
-}
-const user = data.user;
-  if (!session) {
-    window.location.href = 'index.html';
-    return;
-  }
-
-
+  // ✅ checkAdmin: async y con data correcta
+  async function checkAdmin() {
+    const {  { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'index.html';
+      return false;
+    }
     const {  perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id')
       .eq('user_id', session.user.id)
       .single();
-
     if (!perfil || perfil.rol_id !== 1) {
       showAlert('Acceso denegado: solo administradores.', 'error');
       setTimeout(() => window.location.href = 'index.html', 2000);
@@ -339,12 +306,12 @@ const user = data.user;
     return true;
   }
 
+  // ✅ loadUsers: con data: perfiles (no perfiles directo)
   async function loadUsers() {
     const {  perfiles, error: err1 } = await supabase
       .from('usuarios_perfil')
       .select('user_id, rol_id, estados_asignados')
       .order('created_at', { ascending: true });
-
     if (err1) {
       usersBody.innerHTML = `<tr><td colspan="4" class="empty">❌ Error al cargar perfiles.</td></tr>`;
       return;
@@ -355,7 +322,6 @@ const user = data.user;
       .from('users')
       .select('id, email')
       .in('id', userIds);
-
     if (err2) {
       usersBody.innerHTML = `<tr><td colspan="4" class="empty">❌ Error al cargar correos.</td></tr>`;
       return;
@@ -390,6 +356,7 @@ const user = data.user;
     }).join('');
   }
 
+  // ✅ createUser: SIN Authorization header (usa cookies)
   async function createUser() {
     const email = document.getElementById('newEmail').value.trim();
     const password = document.getElementById('newPassword').value;
@@ -405,11 +372,11 @@ const user = data.user;
     btnCreate.textContent = 'Creando...';
 
     try {
-      // ✅ SIN Authorization header — deja que las cookies lo gestionen
+      // ✅ CORRECTO: sin Authorization header
       const res = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // ✅ incluye cookies
+        credentials: 'include',
         body: JSON.stringify({ email, password, rol_id, estados_asignados })
       });
 
@@ -441,26 +408,13 @@ const user = data.user;
     loadUsers();
   }
 
-async function checkAdmin() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
-    window.location.href = 'index.html';
-    return false;
-  }
-
-  const { data: perfil, error } = await supabase
-    .from('usuarios_perfil')
-    .select('rol_id')
-    .eq('user_id', session.user.id)
-    .single();
-
-  if (!perfil || perfil.rol_id !== 1) {
-    alert('🔒 Acceso denegado: solo administradores.');
-    window.location.href = 'index.html';
-    return false;
-  }
-  return true;
-}
+  // ✅ Iniciar — IIFE async (solución a "await not in async")
+  (async () => {
+    if (await checkAdmin()) {
+      loadUsers();
+      btnCreate.addEventListener('click', createUser);
+    }
+  })();
 </script>
 </body>
 </html>
