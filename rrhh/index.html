@@ -573,7 +573,7 @@
       const supabase = supabase.createClient(SUPABASE_URL, ANON_KEY);
       
       // ✅ Verificar sesión
-      const {  { session }, error: sessionError } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await client.auth.getSession();
       
       if (sessionError || !session) {
         // ✅ Si no hay sesión válida, redirigir automáticamente al login
