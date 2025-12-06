@@ -255,7 +255,7 @@
     }
     currentUser = session.user;
 
-    // 🔍 Cargar perfil (incluyendo rol_id)
+    // 🔍 Cargar perfil
     const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id, estados_asignados')
@@ -268,6 +268,7 @@
       showLogin();
       return;
     }
+
     if (!perfil) {
       showError('Acceso denegado: usuario no autorizado.');
       await supabase.auth.signOut();
@@ -301,7 +302,7 @@
       'Consultor';
 
     // ✅ Ocultar SOLO la línea de "Estado(s): ..." para Administrador
-    const estadoLine = userEstadoSpan.parentNode; // el <strong>Estado(s):</strong> + <span>
+    const estadoLine = userEstadoSpan.parentNode; // el <strong>Estado(s):</strong> + span
     if (rol_id === 1) {
       estadoLine.style.display = 'none';
     } else {
