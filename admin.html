@@ -441,13 +441,26 @@ const user = data.user;
     loadUsers();
   }
 
-  // ✅ Iniciar — envuelto en IIFE async (solución al error de await)
-  (async () => {
-    if (await checkAdmin()) {
-      loadUsers();
-      btnCreate.addEventListener('click', createUser);
-    }
-  })();
+async function checkAdmin() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    window.location.href = 'index.html';
+    return false;
+  }
+
+  const { data: perfil, error } = await supabase
+    .from('usuarios_perfil')
+    .select('rol_id')
+    .eq('user_id', session.user.id)
+    .single();
+
+  if (!perfil || perfil.rol_id !== 1) {
+    alert('🔒 Acceso denegado: solo administradores.');
+    window.location.href = 'index.html';
+    return false;
+  }
+  return true;
+}
 </script>
 </body>
 </html>
