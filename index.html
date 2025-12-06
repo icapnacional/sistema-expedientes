@@ -165,39 +165,30 @@
     }
 
     /* ✅ Estilo para botón Admin deshabilitado */
-    .btn-admin-disabled {
-      opacity: 0.5;
-      cursor: not-allowed !important;
-      pointer-events: none;
+    .panel-btn.btn-admin-disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      color: #722F37;
+      position: relative;
     }
-    .btn-admin-disabled::after {
+    .panel-btn.btn-admin-disabled::after {
       content: " ⛔";
       font-size: 16px;
-    }
-    .btn-admin-wrapper {
-      position: relative;
-      display: inline-block;
-    }
-    .btn-admin-tooltip {
-      visibility: hidden;
-      width: 140px;
-      background-color: #333;
-      color: #fff;
-      text-align: center;
-      border-radius: 6px;
-      padding: 6px;
+      color: #c00;
       position: absolute;
-      z-index: 1;
-      bottom: 125%;
-      left: 50%;
-      margin-left: -70px;
-      opacity: 0;
-      transition: opacity 0.3s;
-      font-size: 12px;
+      top: 4px;
+      right: 8px;
     }
-    .btn-admin-wrapper:hover .btn-admin-tooltip {
-      visibility: visible;
-      opacity: 1;
+    .panel-btn.btn-admin-disabled:hover::after {
+      content: " ⛔ Acceso restringido";
+      font-size: 12px;
+      color: #fff;
+      background: #333;
+      padding: 2px 6px;
+      border-radius: 4px;
+      top: -20px;
+      right: 8px;
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -263,12 +254,7 @@
       <button class="panel-btn" onclick="window.location.href='asesoria.html'">⚖️ Asesoría Legal</button>
       <button class="panel-btn" onclick="window.location.href='disciplinarios.html'">📇 D.E. Disciplinarios</button>
       <button class="panel-btn" onclick="window.location.href='secretaria.html'">✒️ Secretaría</button>
-      
-      <!-- ✅ Contenedor para tooltip y estilo condicional -->
-      <div class="btn-admin-wrapper">
-        <button class="panel-btn" id="adminBtn">👑 Admin</button>
-        <span class="btn-admin-tooltip">Acceso restringido</span>
-      </div>
+      <button class="panel-btn" id="adminBtn">👑 Admin</button>
     </div>
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
   </div>
@@ -296,6 +282,7 @@
     }
     currentUser = session.user;
 
+    // 🔍 Cargar perfil
     const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id, estados_asignados')
@@ -351,18 +338,15 @@
     }
 
     // ✅ Estilo y comportamiento del botón Admin
-    const adminBtnWrapper = adminBtn.parentElement;
-    adminBtn.onclick = null; // limpiar previo
+    adminBtn.classList.remove('btn-admin-disabled');
+    adminBtn.onclick = null;
 
     if (rol_id === 1) {
       // ✔️ Admin: normal
-      adminBtn.classList.remove('btn-admin-disabled');
-      adminBtnWrapper.style.pointerEvents = 'auto';
       adminBtn.onclick = () => window.location.href = 'admin.html';
     } else {
-      // ❌ No admin: deshabilitado + tooltip
+      // ❌ No admin: deshabilitado + ícono rojo
       adminBtn.classList.add('btn-admin-disabled');
-      adminBtnWrapper.style.pointerEvents = 'auto'; // permite hover tooltip
       adminBtn.onclick = () => {}; // no hacer nada
     }
 
