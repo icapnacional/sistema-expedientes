@@ -457,6 +457,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
+      // ✅ Configuración de Supabase (igual que en index.html y admin.html)
       const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
       const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
       const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
@@ -471,15 +472,17 @@
       if (savedTab) switchTab(savedTab);
 
       try {
-        const {  { session }, error: sessionError } = await client.auth.getSession();
+        // ✅ Corrección clave: { { session } → { session }, sin espacios extra ni llaves anidadas redundantes
+        const { data: { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError || !session) {
           window.location.href = '../index.html';
           return;
         }
 
-        const {  perfil, error: perfilError } = await client
+        // ✅ Corrección: incluir modulos_asignados en la consulta
+        const { data: perfil, error: perfilError } = await client
           .from('perfiles')
-          .select('rol, estados_asignados, email')
+          .select('rol, estados_asignados, email, modulos_asignados')
           .eq('id', session.user.id)
           .single();
 
@@ -488,7 +491,7 @@
           return;
         }
 
-        // ✅ Permitir acceso a admin siempre, independiente de modulos_asignados
+        // ✅ Permitir acceso a admin siempre
         const userRol = perfil.rol || 'consultor';
         if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
           alert('🔒 Acceso denegado: no tienes permiso para Recursos Humanos.');
@@ -512,12 +515,15 @@
           userRolSpan.title = 'Administrador';
         }
 
+        // ✅ Eventos para pestañas
         document.querySelectorAll('.tab-btn').forEach(btn => {
           btn.addEventListener('click', () => {
             const tabId = btn.getAttribute('data-tab');
             switchTab(tabId);
           });
+        });
 
+        // ✅ Cierre de sesión
         logoutBtn.addEventListener('click', async () => {
           await client.auth.signOut();
           window.location.href = '../index.html';
