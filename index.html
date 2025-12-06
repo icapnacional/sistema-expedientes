@@ -219,7 +219,7 @@
       <span id="userRol"></span>
     </div>
     <div class="panel-buttons">
-      <button class="panel-btn">👥 Recursos Humanos</button>
+      <button class="panel-btn" id="rrhhBtn">👥 Recursos Humanos</button>
       <button class="panel-btn">🔍 Análisis</button>
       <button class="panel-btn">📦 Logística</button>
       <button class="panel-btn">⚖️ DPPC</button>
@@ -417,6 +417,35 @@
       }
     })();
   });
+  // Configurar botón de Recursos Humanos
+document.getElementById('rrhhBtn')?.addEventListener('click', async () => {
+  try {
+    const {  { session }, error: sessionError } = await client.auth.getSession();
+    if (sessionError || !session) {
+      throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
+    }
+    
+    // Validar que el usuario tenga permisos para RRHH
+    const {  perfil, error: perfilError } = await client
+      .from('perfiles')
+      .select('modulos_asignados')
+      .eq('id', session.user.id)
+      .single();
+      
+    if (perfilError) throw perfilError;
+    
+    if (!perfil.modulos_asignados?.includes('rh')) {
+      showAlert('🔒 No tienes permisos para acceder a Recursos Humanos.', 'error');
+      return;
+    }
+    
+    // Redirigir a la sección de RRHH
+    window.location.href = 'rrhh/index.html';
+  } catch (err) {
+    console.error('Error al acceder a RRHH:', err);
+    showAlert(`❌ ${err.message || 'Error al acceder a Recursos Humanos'}`, 'error');
+  }
+});
 </script>
 </body>
 </html>
