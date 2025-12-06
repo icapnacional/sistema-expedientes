@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin | ICAP Nacional - PNB</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- ✅ Supabase CDN (versión estable) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -130,7 +131,7 @@
       <form id="createUserForm">
         <div class="form-group">
           <label for="email">Correo electrónico</label>
-          <input type="email" id="email" required placeholder="ejemplo@pn.gob.ve">
+          <input type="email" id="email" required placeholder="ejemplo@dominio.com">
         </div>
         <div class="form-group">
           <label for="password">Contraseña (mín. 8 caracteres)</label>
@@ -213,239 +214,252 @@
   </div>
 
   <script>
-    // 🔑 Supabase — ¡REEMPLAZA!
-    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
-    const supabase = createClient(SUPABASE_URL, ANON_KEY);
+    // ✅ Inicialización segura tras carga del DOM
+    document.addEventListener('DOMContentLoaded', () => {
+      // 🔑 Tus credenciales reales
+      const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+      const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+      const supabase = supabase.createClient(SUPABASE_URL, ANON_KEY);
+      
+      // URL de tu Edge Function (ajusta si usas otro nombre)
+      const MANAGE_USER_URL = `${SUPABASE_URL}/functions/v1/manage-user`;
 
-    const MANAGE_USER_URL = `${SUPABASE_URL}/functions/v1/manage-user`;
-
-    const MODULOS = {
-      rh: { label: "Recursos Humanos", icon: "👥", desc: "Gestión de personal" },
-      analisis: { label: "Análisis", icon: "🔍", desc: "Reportes e insights" },
-      logistica: { label: "Logística", icon: "📦", desc: "Gestión de recursos" },
-      dppc: { label: "DPPC", icon: "⚖️", desc: "Procedimientos" },
-      asesoria: { label: "Asesoría Legal", icon: "⚖️", desc: "Orientación jurídica" },
-      disciplinarios: { label: "Disciplinarios", icon: "📇", desc: "Expedientes" },
-      secretaria: { label: "Secretaría", icon: "✒️", desc: "Documentos oficiales" },
-      admin: { label: "Admin", icon: "👑", desc: "Panel de gestión" }
-    };
-
-    const ROL_LABELS = { admin: "Administrador", moderador: "Moderador", consultor: "Consultor" };
-    const ROL_COLORS = { admin: "rol-admin", moderador: "rol-moderador", consultor: "rol-consultor" };
-
-    const alertDiv = document.getElementById('alertMessage');
-    const usersTableBody = document.getElementById('usersTableBody');
-    const totalUsersSpan = document.getElementById('totalUsers');
-    const paginationDiv = document.getElementById('pagination');
-    const submitBtn = document.getElementById('submitBtn');
-
-    let currentPage = 1;
-    const perPage = 10;
-
-    // ✅ Render tarjetas módulos
-    function renderModulesGrid() {
-      const container = document.getElementById('modulesGrid');
-      container.innerHTML = '';
-      Object.entries(MODULOS).forEach(([id, info]) => {
-        const card = document.createElement('div');
-        card.className = 'module-card';
-        card.dataset.module = id;
-        card.innerHTML = `
-          <div class="module-icon"></div>
-          <div>
-            <div class="module-label">${info.icon} ${info.label}</div>
-            <div class="module-info">${info.desc}</div>
-          </div>
-        `;
-        card.addEventListener('click', () => card.classList.toggle('selected'));
-        container.appendChild(card);
-      });
-    }
-
-    function getSelectedModules() {
-      return Array.from(document.querySelectorAll('.module-card.selected'))
-        .map(card => card.dataset.module);
-    }
-
-    function showAlert(msg, type) {
-      alertDiv.textContent = msg;
-      alertDiv.className = `alert alert-${type}`;
-      alertDiv.style.display = 'block';
-      if (type === 'success') setTimeout(() => alertDiv.style.display = 'none', 5000);
-    }
-
-    async function loadUsers(page = 1) {
-      try {
-        const from = (page - 1) * perPage;
-        const to = from + perPage - 1;
-
-        const {  data, error, count } = await supabase
-          .from('perfiles')
-          .select('id, email, rol, estados_asignados, modulos_asignados', { count: 'exact' })
-          .range(from, to);
-
-        if (error) throw error;
-
-        totalUsersSpan.textContent = count || 0;
-        renderUsersTable(data || []);
-        renderPagination(page, count ? Math.ceil(count / perPage) : 1);
-      } catch (err) {
-        console.error(err);
-        usersTableBody.innerHTML = `<tr><td colspan="5" style="color:#c00;text-align:center">❌ Error al cargar usuarios.</td></tr>`;
-      }
-    }
-
-    function renderUsersTable(users) {
-      usersTableBody.innerHTML = users.length === 0
-        ? '<tr><td colspan="5" style="text-align:center">No hay usuarios registrados.</td></tr>'
-        : users.map(u => {
-            const modulosTxt = u.modulos_asignados?.map(m => MODULOS[m]?.label || m).join(', ') || '—';
-            const estadosTxt = u.estados_asignados?.join(', ') || '—';
-            const rolTag = `<span class="rol-tag ${ROL_COLORS[u.rol]}">${ROL_LABELS[u.rol]}</span>`;
-            // Evitar autoeliminación
-            const {  session } = supabase.auth.session();
-            const canDelete = session?.user?.id !== u.id;
-
-            return `
-              <tr>
-                <td>${u.email}</td>
-                <td>${rolTag}</td>
-                <td title="${estadosTxt}">${estadosTxt.length > 25 ? estadosTxt.substring(0,22)+'...' : estadosTxt}</td>
-                <td title="${modulosTxt}">${modulosTxt.length > 30 ? modulosTxt.substring(0,27)+'...' : modulosTxt}</td>
-                <td>
-                  ${canDelete 
-                    ? `<button class="btn btn-sm btn-delete" onclick="confirmDelete('${u.id}', '${u.email}')">🗑️ Eliminar</button>`
-                    : `<span style="color:#999">—</span>`}
-                </td>
-              </tr>
-            `;
-          }).join('');
-    }
-
-    function renderPagination(current, total) {
-      paginationDiv.innerHTML = '';
-      if (total <= 1) return;
-
-      const addBtn = (text, page, active = false, disabled = false) => {
-        const btn = document.createElement('button');
-        btn.className = 'page-btn' + (active ? ' active' : '') + (disabled ? ' page-dots' : '');
-        btn.textContent = text;
-        if (!disabled && page !== undefined) {
-          btn.onclick = () => loadUsers(page);
-        }
-        paginationDiv.appendChild(btn);
+      const MODULOS = {
+        rh: { label: "Recursos Humanos", icon: "👥", desc: "Gestión de personal" },
+        analisis: { label: "Análisis", icon: "🔍", desc: "Reportes e insights" },
+        logistica: { label: "Logística", icon: "📦", desc: "Gestión de recursos" },
+        dppc: { label: "DPPC", icon: "⚖️", desc: "Procedimientos" },
+        asesoria: { label: "Asesoría Legal", icon: "⚖️", desc: "Orientación jurídica" },
+        disciplinarios: { label: "Disciplinarios", icon: "📇", desc: "Expedientes" },
+        secretaria: { label: "Secretaría", icon: "✒️", desc: "Documentos oficiales" },
+        admin: { label: "Admin", icon: "👑", desc: "Panel de gestión" }
       };
 
-      addBtn('«', current - 1, false, current === 1);
-      if (total <= 7) {
-        for (let i = 1; i <= total; i++) addBtn(i, i, i === current);
-      } else {
-        addBtn(1, 1, current === 1);
-        if (current > 4) addBtn('…', null, false, true);
-        const start = Math.max(2, current - 2);
-        const end = Math.min(total - 1, current + 2);
-        for (let i = start; i <= end; i++) addBtn(i, i, i === current);
-        if (current < total - 3) addBtn('…', null, false, true);
-        addBtn(total, total, current === total);
-      }
-      addBtn('»', current + 1, false, current === total);
-    }
+      const ROL_LABELS = { admin: "Administrador", moderador: "Moderador", consultor: "Consultor" };
+      const ROL_COLORS = { admin: "rol-admin", moderador: "rol-moderador", consultor: "rol-consultor" };
 
-    async function confirmDelete(userId, email) {
-      if (!confirm(`⚠️ ¿Eliminar usuario ${email}?\nEsta acción es irreversible.`)) return;
+      const alertDiv = document.getElementById('alertMessage');
+      const usersTableBody = document.getElementById('usersTableBody');
+      const totalUsersSpan = document.getElementById('totalUsers');
+      const paginationDiv = document.getElementById('pagination');
+      const submitBtn = document.getElementById('submitBtn');
 
-      const {  session } = await supabase.auth.getSession();
-      if (!session?.session) return showAlert("Sesión expirada. Inicie sesión nuevamente.", "error");
+      let currentPage = 1;
+      const perPage = 10;
 
-      try {
-        const res = await fetch(MANAGE_USER_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.session.access_token}`
-          },
-          body: JSON.stringify({ action: 'delete', user_id_to_delete: userId })
+      // ✅ Render tarjetas de módulos
+      function renderModulesGrid() {
+        const container = document.getElementById('modulesGrid');
+        container.innerHTML = '';
+        Object.entries(MODULOS).forEach(([id, info]) => {
+          const card = document.createElement('div');
+          card.className = 'module-card';
+          card.dataset.module = id;
+          card.innerHTML = `
+            <div class="module-icon"></div>
+            <div>
+              <div class="module-label">${info.icon} ${info.label}</div>
+              <div class="module-info">${info.desc}</div>
+            </div>
+          `;
+          card.addEventListener('click', () => {
+            card.classList.toggle('selected');
+          });
+          container.appendChild(card);
         });
+      }
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.message || `HTTP ${res.status}`);
+      function getSelectedModules() {
+        return Array.from(document.querySelectorAll('.module-card.selected'))
+          .map(card => card.dataset.module);
+      }
+
+      function showAlert(msg, type) {
+        alertDiv.textContent = msg;
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.style.display = 'block';
+        if (type === 'success') setTimeout(() => alertDiv.style.display = 'none', 5000);
+      }
+
+      // ✅ Cargar usuarios reales desde Supabase
+      async function loadUsers(page = 1) {
+        try {
+          const from = (page - 1) * perPage;
+          const to = from + perPage - 1;
+
+          const {  data, error, count } = await supabase
+            .from('perfiles')
+            .select('id, email, rol, estados_asignados, modulos_asignados', { count: 'exact' })
+            .range(from, to);
+
+          if (error) throw error;
+
+          totalUsersSpan.textContent = count || 0;
+          renderUsersTable(data || []);
+          renderPagination(page, count ? Math.ceil(count / perPage) : 1);
+        } catch (err) {
+          console.error('Error loadUsers:', err);
+          usersTableBody.innerHTML = `<tr><td colspan="5" style="color:#c00;text-align:center">❌ Error al cargar usuarios.</td></tr>`;
+        }
+      }
+
+      function renderUsersTable(users) {
+        if (users.length === 0) {
+          usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay usuarios registrados.</td></tr>';
+          return;
         }
 
-        showAlert(`✅ Usuario ${email} eliminado correctamente.`, 'success');
-        loadUsers(currentPage);
-      } catch (err) {
-        console.error(err);
-        showAlert(`❌ Error al eliminar: ${err.message}`, 'error');
+        // Obtener ID del usuario actual (para evitar autoeliminación)
+        let currentUserId = null;
+        const {  session } = supabase.auth.session();
+        if (session?.user?.id) currentUserId = session.user.id;
+
+        usersTableBody.innerHTML = users.map(u => {
+          const modulosTxt = (u.modulos_asignados || [])
+            .map(m => MODULOS[m]?.label || m)
+            .join(', ') || '—';
+          const estadosTxt = (u.estados_asignados || []).join(', ') || '—';
+          const rolTag = `<span class="rol-tag ${ROL_COLORS[u.rol]}">${ROL_LABELS[u.rol]}</span>`;
+          const canDelete = u.id !== currentUserId;
+
+          return `
+            <tr>
+              <td>${u.email}</td>
+              <td>${rolTag}</td>
+              <td title="${estadosTxt}">${estadosTxt.length > 25 ? estadosTxt.substring(0,22)+'...' : estadosTxt}</td>
+              <td title="${modulosTxt}">${modulosTxt.length > 30 ? modulosTxt.substring(0,27)+'...' : modulosTxt}</td>
+              <td>
+                ${canDelete 
+                  ? `<button class="btn btn-sm btn-delete" onclick="deleteUser('${u.id}', '${u.email}')">🗑️ Eliminar</button>`
+                  : `<span title="No puedes eliminarte a ti mismo" style="color:#999">—</span>`}
+              </td>
+            </tr>
+          `;
+        }).join('');
       }
-    }
 
-    async function createUserReal() {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const rol = document.getElementById('rol_id').value;
-      const estados = Array.from(document.getElementById('estados').selectedOptions).map(o => o.value);
-      const modulos = getSelectedModules();
+      function renderPagination(current, total) {
+        paginationDiv.innerHTML = '';
+        if (total <= 1) return;
 
-      if (!email || !password || !rol || estados.length === 0 || modulos.length === 0) {
-        return showAlert('Todos los campos son obligatorios.', 'error');
+        const addBtn = (text, page, active = false, disabled = false) => {
+          const btn = document.createElement('button');
+          btn.className = 'page-btn' + (active ? ' active' : '') + (disabled ? ' page-dots' : '');
+          btn.textContent = text;
+          if (!disabled && page !== undefined) {
+            btn.onclick = () => loadUsers(page);
+          }
+          paginationDiv.appendChild(btn);
+        };
+
+        addBtn('«', current - 1, false, current === 1);
+        if (total <= 7) {
+          for (let i = 1; i <= total; i++) addBtn(i, i, i === current);
+        } else {
+          addBtn(1, 1, current === 1);
+          if (current > 4) addBtn('…', null, false, true);
+          const start = Math.max(2, current - 2);
+          const end = Math.min(total - 1, current + 2);
+          for (let i = start; i <= end; i++) addBtn(i, i, i === current);
+          if (current < total - 3) addBtn('…', null, false, true);
+          addBtn(total, total, current === total);
+        }
+        addBtn('»', current + 1, false, current === total);
       }
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Creando…';
+      // ✅ Eliminar usuario (seguro, con Edge Function)
+      window.deleteUser = async function(userId, email) {
+        if (!confirm(`⚠️ ¿Eliminar usuario ${email}?\nEsta acción es irreversible.`)) return;
 
-      try {
-        const {  session } = await supabase.auth.getSession();
-        if (!session?.session) throw new Error("Debe estar autenticado como admin.");
+        try {
+          const {  session } = await supabase.auth.getSession();
+          if (!session?.session) throw new Error("Sesión expirada.");
 
-        const res = await fetch(MANAGE_USER_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.session.access_token}`
-          },
-          body: JSON.stringify({
-            action: 'create',
-            email,
-            password,
-            rol,
-            estados_asignados: estados,
-            modulos_asignados: modulos
-          })
-        });
+          const res = await fetch(MANAGE_USER_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.session.access_token}`
+            },
+            body: JSON.stringify({ action: 'delete', user_id_to_delete: userId })
+          });
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.message || `HTTP ${res.status}`);
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.message || `HTTP ${res.status}`);
+          }
+
+          showAlert(`✅ Usuario ${email} eliminado correctamente.`, 'success');
+          loadUsers(currentPage);
+        } catch (err) {
+          console.error('Error deleteUser:', err);
+          showAlert(`❌ Error: ${err.message}`, 'error');
+        }
+      };
+
+      // ✅ Crear usuario (seguro, con Edge Function)
+      async function createUserReal() {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const rol = document.getElementById('rol_id').value;
+        const estados = Array.from(document.getElementById('estados').selectedOptions).map(o => o.value);
+        const modulos = getSelectedModules();
+
+        if (!email || !password || !rol || estados.length === 0 || modulos.length === 0) {
+          return showAlert('Todos los campos son obligatorios.', 'error');
         }
 
-        showAlert(`✅ Usuario creado: ${email}`, 'success');
-        document.getElementById('createUserForm').reset();
-        document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
-        document.getElementById('estados').selectedIndex = -1;
-        loadUsers(1);
-      } catch (err) {
-        showAlert(`❌ ${err.message}`, 'error');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = '✅ Crear Usuario';
-      }
-    }
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creando…';
 
-    // Inicialización
-    document.getElementById('createUserForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      createUserReal();
+        try {
+          const {  session } = await supabase.auth.getSession();
+          if (!session?.session) throw new Error("Debe estar autenticado.");
+
+          const res = await fetch(MANAGE_USER_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.session.access_token}`
+            },
+            body: JSON.stringify({
+              action: 'create',
+              email,
+              password,
+              rol,
+              estados_asignados: estados,
+              modulos_asignados: modulos
+            })
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.message || `HTTP ${res.status}`);
+          }
+
+          showAlert(`✅ Usuario creado: ${email}`, 'success');
+          document.getElementById('createUserForm').reset();
+          document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
+          document.getElementById('estados').selectedIndex = -1;
+          loadUsers(1);
+        } catch (err) {
+          console.error('Error createUserReal:', err);
+          showAlert(`❌ ${err.message}`, 'error');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '✅ Crear Usuario';
+        }
+      }
+
+      // ✅ Inicializar
+      document.getElementById('createUserForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        createUserReal();
+      });
+
+      renderModulesGrid();
+      loadUsers();
     });
-
-    renderModulesGrid();
-    loadUsers();
-  </script>
-
-  <!-- Función global para uso en botones -->
-  <script>
-    window.confirmDelete = confirmDelete;
   </script>
 </body>
 </html>
