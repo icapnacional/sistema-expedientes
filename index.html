@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ICAP Nacional - PNB</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- ✅ Supabase CDN v2 (correcta y estable) -->
+  <!-- ✅ Supabase CDN (global) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -98,7 +98,8 @@
       border-radius: 14px; padding: 16px 10px;
       font-size: 14px; font-weight: 600; color: #722F37;
       cursor: pointer; transition: all 0.3s ease;
-      display: flex; flex-direction: column;
+      display: flex;
+      flex-direction: column;
       align-items: center; justify-content: center;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
       min-height: 90px;
@@ -230,124 +231,125 @@
     <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
   </div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // 🔑 Tus credenciales reales
-    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+  <script>
+    // ✅ Seguro: DOM cargado + librería lista
+    document.addEventListener('DOMContentLoaded', () => {
+      // 🔑 Tus credenciales reales
+      const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+      const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
 
-    // ✅ CORRECCIÓN CLAVE: usa `client`, no `supabase`
-    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+      // ✅ CORRECCIÓN DEFINITIVA: `client`, no `supabase`
+      const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
 
-    const loginView = document.getElementById('loginView');
-    const panelView = document.getElementById('panelView');
-    const userEmailSpan = document.getElementById('userEmail');
-    const userEstadoSpan = document.getElementById('userEstado');
-    const userRolSpan = document.getElementById('userRol');
-    const alertDiv = document.getElementById('alertMessage');
-    const loginForm = document.getElementById('loginForm');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const adminBtn = document.getElementById('adminBtn');
+      const loginView = document.getElementById('loginView');
+      const panelView = document.getElementById('panelView');
+      const userEmailSpan = document.getElementById('userEmail');
+      const userEstadoSpan = document.getElementById('userEstado');
+      const userRolSpan = document.getElementById('userRol');
+      const alertDiv = document.getElementById('alertMessage');
+      const loginForm = document.getElementById('loginForm');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const adminBtn = document.getElementById('adminBtn');
 
-    function showError(msg) {
-      alertDiv.textContent = msg;
-      alertDiv.className = 'alert alert-error';
-      alertDiv.style.display = 'block';
-    }
-
-    function showLogin() {
-      loginView.classList.remove('hidden');
-      panelView.classList.add('hidden');
-      alertDiv.style.display = 'none';
-    }
-
-    function showPanel(email, estado, rol) {
-      userEmailSpan.textContent = email;
-      const rolText = 
-        rol === 'admin' ? 'Administrador' :
-        rol === 'moderador' ? 'Moderador' :
-        'Consultor';
-      userRolSpan.textContent = rolText;
-      userRolSpan.setAttribute('data-role', rol);
-
-      const estadoLine = userEstadoSpan.parentNode;
-      if (rol === 'admin') {
-        estadoLine.style.display = 'none';
-      } else {
-        estadoLine.style.display = 'block';
-        userEstadoSpan.textContent = estado;
+      function showError(msg) {
+        alertDiv.textContent = msg;
+        alertDiv.className = 'alert alert-error';
+        alertDiv.style.display = 'block';
       }
 
-      adminBtn.classList.remove('admin-disabled');
-      adminBtn.onclick = null;
-      if (rol === 'admin') {
-        adminBtn.onclick = () => {
-          window.location.href = 'admin.html';
-        };
-      } else {
-        adminBtn.classList.add('admin-disabled');
-        adminBtn.onclick = () => {};
+      function showLogin() {
+        loginView.classList.remove('hidden');
+        panelView.classList.add('hidden');
+        alertDiv.style.display = 'none';
       }
 
-      loginView.classList.add('hidden');
-      panelView.classList.remove('hidden');
-    }
+      function showPanel(email, estado, rol) {
+        userEmailSpan.textContent = email;
+        const rolText = 
+          rol === 'admin' ? 'Administrador' :
+          rol === 'moderador' ? 'Moderador' :
+          'Consultor';
+        userRolSpan.textContent = rolText;
+        userRolSpan.setAttribute('data-role', rol);
 
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-
-      if (password.length < 8) {
-        return showError('Contraseña debe tener al menos 8 caracteres.');
-      }
-
-      const { data, error } = await client.auth.signInWithPassword({ email, password });
-      if (error) {
-        return showError('Usuario no autorizado o credenciales incorrectas.');
-      }
-
-      // ✅ Una sola sesión activa
-      await client.auth.signOut({ scope: 'others' });
-
-      // ✅ Cargar perfil desde `perfiles`
-      const { data: perfil, error: perfilError } = await client
-        .from('perfiles')
-        .select('rol, estados_asignados')
-        .eq('id', data.user.id)
-        .single();
-
-      if (perfilError) {
-        console.error('Error perfil:', perfilError);
-        return showError('No se pudo cargar tu perfil. Contacta al administrador.');
-      }
-
-      const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
-      showPanel(email, estadosTxt, perfil.rol);
-    });
-
-    logoutBtn.addEventListener('click', async () => {
-      await client.auth.signOut();
-      showLogin();
-      document.getElementById('password').value = '';
-    });
-
-    // ✅ Verificar sesión al cargar
-    (async () => {
-      const { data: { session } } = await client.auth.getSession();
-      if (session?.user) {
-        const { data: perfil } = await client
-          .from('perfiles')
-          .select('rol, estados_asignados, email')
-          .eq('id', session.user.id)
-          .single();
-        if (perfil) {
-          const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
-          showPanel(perfil.email, estadosTxt, perfil.rol);
+        const estadoLine = userEstadoSpan.parentNode;
+        if (rol === 'admin') {
+          estadoLine.style.display = 'none';
+        } else {
+          estadoLine.style.display = 'block';
+          userEstadoSpan.textContent = estado;
         }
+
+        adminBtn.classList.remove('admin-disabled');
+        adminBtn.onclick = null;
+        if (rol === 'admin') {
+          adminBtn.onclick = () => {
+            window.location.href = 'admin.html';
+          };
+        } else {
+          adminBtn.classList.add('admin-disabled');
+          adminBtn.onclick = () => {};
+        }
+
+        loginView.classList.add('hidden');
+        panelView.classList.remove('hidden');
       }
-    })();
-  });
-</script>
+
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (password.length < 8) {
+          return showError('Contraseña debe tener al menos 8 caracteres.');
+        }
+
+        const { data, error } = await client.auth.signInWithPassword({ email, password });
+        if (error) {
+          return showError('Usuario no autorizado o credenciales incorrectas.');
+        }
+
+        // ✅ Una sola sesión activa
+        await client.auth.signOut({ scope: 'others' });
+
+        // ✅ Cargar perfil desde tabla `perfiles`
+        const {  perfil, error: perfilError } = await client
+          .from('perfiles')
+          .select('rol, estados_asignados')
+          .eq('id', data.user.id)
+          .single();
+
+        if (perfilError) {
+          console.error('Error perfil:', perfilError);
+          return showError('No se pudo cargar tu perfil.');
+        }
+
+        const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
+        showPanel(email, estadosTxt, perfil.rol);
+      });
+
+      logoutBtn.addEventListener('click', async () => {
+        await client.auth.signOut();
+        showLogin();
+        document.getElementById('password').value = '';
+      });
+
+      // ✅ Verificar sesión al cargar
+      (async () => {
+        const { data: { session } } = await client.auth.getSession();
+        if (session?.user) {
+          const {  perfil } = await client
+            .from('perfiles')
+            .select('rol, estados_asignados, email')
+            .eq('id', session.user.id)
+            .single();
+          if (perfil) {
+            const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
+            showPanel(perfil.email, estadosTxt, perfil.rol);
+          }
+        }
+      })();
+    });
+  </script>
 </body>
 </html>
