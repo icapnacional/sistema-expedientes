@@ -244,8 +244,8 @@
   const adminBtn = document.getElementById('adminBtn');
   let currentUser = null;
 
-  // 🔑 IDs de botones → nombres de archivos
-  const BOTONES = {
+  // IDs de botones → selectores CSS
+  const BOTON_SELECTORS = {
     rh: '.panel-btn:nth-child(1)',
     analisis: '.panel-btn:nth-child(2)',
     logistica: '.panel-btn:nth-child(3)',
@@ -263,6 +263,8 @@
       return;
     }
     currentUser = session.user;
+
+    // 🔍 Ahora también carga permisos_botones
     const { data: perfil, error } = await supabase
       .from('usuarios_perfil')
       .select('rol_id, estados_asignados, permisos_botones')
@@ -285,7 +287,13 @@
     const estadosTxt = perfil.estados_asignados?.length
       ? perfil.estados_asignados.join(', ')
       : '—';
-    showPanel(session.user.email, estadosTxt, perfil.rol_id, perfil.permisos_botones || []);
+
+    showPanel(
+      session.user.email,
+      estadosTxt,
+      perfil.rol_id,
+      perfil.permisos_botones || []
+    );
   }
 
   function showError(msg) {
@@ -300,24 +308,25 @@
   }
 
   function showPanel(email, estado, rol_id, permisos_botones) {
+    // ✅ Estos elementos SÍ existen (primera versión del HTML)
     userEmailSpan.textContent = email;
 
-    // ✅ Ocultar "Estado(s):" para administradores
-    const estadoLine = userEstadoSpan.closest('div'); // <strong>Estado(s):</strong> <span>...
+    // Ocultar/mostrar línea de estados según rol
+    const estadoLine = userEstadoSpan.parentElement; // el <strong>Estado(s):</strong> + span
     if (rol_id === 1) {
-      estadoLine.style.display = 'none';
+      estadoLine.style.display = 'none'; // Admin: ocultar
     } else {
       estadoLine.style.display = 'block';
       userEstadoSpan.textContent = estado;
     }
 
-    // ✅ Mostrar solo el rol (sin "Rol:")
+    // ✅ Mostrar rol como nueva línea (sin "Rol:")
     const rolTexto = 
       rol_id === 1 ? 'Administrador' :
       rol_id === 2 ? 'Moderador' :
       'Consultor';
 
-    // Insertar o reemplazar línea del rol
+    // Insertar después de Estado(s)
     let rolLine = document.getElementById('userRolLine');
     if (!rolLine) {
       rolLine = document.createElement('div');
@@ -328,22 +337,9 @@
     rolLine.style.color = '#722F37';
     rolLine.textContent = rolTexto;
 
-    // ✅ Deshabilitar TODOS los botones primero
-    Object.values(BOTONES).forEach(selector => {
-      const btn = document.querySelector(selector);
-      if (btn) {
-        btn.disabled = true;
-        btn.style.opacity = '0.5';
-        btn.style.cursor = 'not-allowed';
-        // Clonar para eliminar onclick original
-        const clone = btn.cloneNode(true);
-        btn.parentNode.replaceChild(clone, btn);
-      }
-    });
-
-    // ✅ Habilitar según rol y permisos
+    // ✅ Control de botones
     const habilitarBoton = (id) => {
-      const btn = document.querySelector(BOTONES[id]);
+      const btn = document.querySelector(BOTON_SELECTORS[id]);
       if (btn) {
         btn.disabled = false;
         btn.style.opacity = '1';
@@ -356,16 +352,26 @@
       }
     };
 
+    // Deshabilitar todos
+    Object.values(BOTON_SELECTORS).forEach(sel => {
+      const btn = document.querySelector(sel);
+      if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+        const clone = btn.cloneNode(true);
+        btn.parentNode.replaceChild(clone, btn);
+      }
+    });
+
+    // Habilitar según rol y permisos
     if (rol_id === 1) {
-      // ✅ Administrador: todos los botones
-      Object.keys(BOTONES).forEach(habilitarBoton);
+      Object.keys(BOTON_SELECTORS).forEach(habilitarBoton);
     } else if (rol_id === 2) {
-      // ✅ Moderador: todos menos admin + respetar permisos si existen
-      const defaults = ['rh', 'analisis', 'logistica', 'dppc', 'asesoria', 'disciplinarios', 'secretaria'];
-      const habilitados = permisos_botones.length > 0 ? permisos_botones : defaults;
+      const defaults = ['rh','analisis','logistica','dppc','asesoria','disciplinarios','secretaria'];
+      const habilitados = permisos_botones.length ? permisos_botones : defaults;
       habilitados.forEach(habilitarBoton);
     } else if (rol_id === 3) {
-      // ✅ Consultor: solo los explícitamente asignados
       permisos_botones.forEach(habilitarBoton);
     }
   }
