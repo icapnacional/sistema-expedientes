@@ -417,16 +417,17 @@
       }
     })();
   });
-  // Configurar botón de Recursos Humanos
+  // ✅ Configurar botón de Recursos Humanos (versión corregida)
 document.getElementById('rrhhBtn')?.addEventListener('click', async () => {
   try {
-    const { data: { session }, error: sessionError } = await client.auth.getSession();
+    // Verificar sesión actual
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     if (sessionError || !session) {
       throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
     }
     
-    // Validar que el usuario tenga permisos para RRHH
-    const {  perfil, error: perfilError } = await client
+    // Obtener perfil del usuario
+    const { data: perfil, error: perfilError } = await supabase
       .from('perfiles')
       .select('modulos_asignados')
       .eq('id', session.user.id)
@@ -434,7 +435,17 @@ document.getElementById('rrhhBtn')?.addEventListener('click', async () => {
       
     if (perfilError) throw perfilError;
     
+    // Verificar si tiene acceso al módulo de RRHH
     if (!perfil.modulos_asignados?.includes('rh')) {
+      // ✅ Función showAlert definida localmente
+      function showAlert(msg, type) {
+        const alertDiv = document.getElementById('alertMessage');
+        alertDiv.textContent = msg;
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.style.display = 'block';
+        if (type === 'success') setTimeout(() => alertDiv.style.display = 'none', 5000);
+      }
+      
       showAlert('🔒 No tienes permisos para acceder a Recursos Humanos.', 'error');
       return;
     }
@@ -443,6 +454,16 @@ document.getElementById('rrhhBtn')?.addEventListener('click', async () => {
     window.location.href = 'rrhh/index.html';
   } catch (err) {
     console.error('Error al acceder a RRHH:', err);
+    
+    // ✅ Función showAlert definida localmente para el error
+    function showAlert(msg, type) {
+      const alertDiv = document.getElementById('alertMessage');
+      alertDiv.textContent = msg;
+      alertDiv.className = `alert alert-${type}`;
+      alertDiv.style.display = 'block';
+      if (type === 'success') setTimeout(() => alertDiv.style.display = 'none', 5000);
+    }
+    
     showAlert(`❌ ${err.message || 'Error al acceder a Recursos Humanos'}`, 'error');
   }
 });
