@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ICAP Nacional - PNB</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- ✅ Supabase CDN (global) -->
+  <!-- ✅ Supabase CDN (versión estable) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -13,53 +13,70 @@
       background-color: #fafafa;
       font-family: 'Inter', sans-serif;
       color: #2d2d2d;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       min-height: 100vh;
       padding: 20px;
     }
-    .login-card, .panel-card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-      width: 100%;
-      max-width: 440px;
-      padding: 40px 32px;
-      text-align: center;
-      border: 1px solid #eee;
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
     }
-    .logo { width: 90px; margin-bottom: 24px; }
+    .logo { 
+      width: 90px; 
+      margin: 0 auto 20px;
+      display: block;
+    }
     h1 {
-      font-size: 22px; font-weight: 700;
+      font-size: 22px; 
+      font-weight: 700;
       color: #2d2d2d;
       margin-bottom: 12px;
       line-height: 1.3;
+      text-align: center;
     }
     .subtitle {
-      font-size: 15px; color: #555;
-      margin-bottom: 28px; line-height: 1.5;
+      font-size: 15px; 
+      color: #555;
+      margin-bottom: 28px;
+      line-height: 1.5;
+      text-align: center;
     }
-    .form-group { text-align: left; margin-bottom: 20px; }
+    .form-group { 
+      text-align: left; 
+      margin-bottom: 20px; 
+    }
     label {
-      display: block; margin-bottom: 8px;
-      font-size: 14px; font-weight: 600; color: #333;
+      display: block; 
+      margin-bottom: 8px;
+      font-size: 14px; 
+      font-weight: 600; 
+      color: #333;
     }
     input {
-      width: 100%; padding: 14px;
-      border: 1px solid #ddd; border-radius: 10px;
-      font-size: 15px; color: #222;
-      background-color: #fdfdfd; transition: all 0.25s;
+      width: 100%; 
+      padding: 14px;
+      border: 1px solid #ddd; 
+      border-radius: 10px;
+      font-size: 15px; 
+      color: #222;
+      background-color: #fdfdfd; 
+      transition: all 0.25s;
     }
     input:focus {
-      outline: none; border-color: #722F37;
+      outline: none; 
+      border-color: #722F37;
       box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
     }
     .btn-login, .btn-logout {
-      background-color: #722F37; color: white;
-      border: none; border-radius: 12px; padding: 16px;
-      font-size: 16px; font-weight: 600; width: 100%;
-      cursor: pointer; transition: all 0.3s ease;
+      background-color: #722F37; 
+      color: white;
+      border: none; 
+      border-radius: 12px; 
+      padding: 16px;
+      font-size: 16px; 
+      font-weight: 600; 
+      width: 100%;
+      cursor: pointer; 
+      transition: all 0.3s ease;
       margin-top: 10px;
       box-shadow: 0 3px 8px rgba(114, 47, 55, 0.2);
     }
@@ -69,50 +86,178 @@
       box-shadow: 0 5px 14px rgba(114, 47, 55, 0.25);
     }
     .institutional-note {
-      margin-top: 22px; font-size: 13px; color: #444;
-      line-height: 1.5; font-style: italic; padding: 0 10px;
+      margin-top: 22px; 
+      font-size: 13px; 
+      color: #444;
+      line-height: 1.5; 
+      font-style: italic; 
+      padding: 0 10px;
+      text-align: center;
     }
     .developer-note {
-      margin-top: 8px; font-size: 12px; color: #666;
+      margin-top: 8px; 
+      font-size: 12px; 
+      color: #666;
+      text-align: center;
     }
     .alert {
-      margin-top: 18px; padding: 12px;
-      border-radius: 8px; font-size: 14px; display: none;
+      margin-top: 18px; 
+      padding: 12px;
+      border-radius: 8px; 
+      font-size: 14px; 
+      display: none;
     }
     .alert-error {
-      background-color: #fff5f5; color: #c00;
+      background-color: #fff5f5; 
+      color: #c00;
       border: 1px solid #ffd0d0;
     }
     .user-info {
-      margin: 24px 0; padding: 14px;
-      background: #f9f9f9; border-radius: 10px;
-      font-size: 14px; color: #333;
+      margin: 24px 0; 
+      padding: 14px;
+      background: #f9f9f9; 
+      border-radius: 10px;
+      font-size: 14px; 
+      color: #333;
+      border: 1px solid #eee;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .tabs-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      padding: 24px;
+      margin-bottom: 24px;
       border: 1px solid #eee;
     }
-    .panel-buttons {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 16px; margin: 24px 0;
+    .tabs-header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 16px;
+    }
+    .tab-btn {
+      background: #f8f9fa;
+      border: none;
+      border-radius: 12px 12px 0 0;
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #555;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .tab-btn:hover {
+      background: #f0f0f0;
+      color: #722F37;
+    }
+    .tab-btn.active {
+      background: #722F37;
+      color: white;
+    }
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: white;
+    }
+    .tabs-content {
+      min-height: 400px;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 16px;
+    }
+    .module-card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border: 2px solid #eaeaea;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      height: 100%;
+    }
+    .module-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(114, 47, 55, 0.15);
+      border-color: #722F37;
+      background-color: #fdf7f7;
+    }
+    .module-icon {
+      font-size: 36px;
+      margin-bottom: 16px;
+      color: #722F37;
+    }
+    .module-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2d2d2d;
+      margin-bottom: 10px;
+    }
+    .module-desc {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.5;
+    }
+    .actions-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
     }
     .panel-btn {
-      background: white; border: 2px solid #eaeaea;
-      border-radius: 14px; padding: 16px 10px;
-      font-size: 14px; font-weight: 600; color: #722F37;
-      cursor: pointer; transition: all 0.3s ease;
+      background: white;
+      border: 2px solid #eaeaea;
+      border-radius: 14px;
+      padding: 16px 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #722F37;
+      cursor: pointer;
+      transition: all 0.3s ease;
       display: flex;
       flex-direction: column;
-      align-items: center; justify-content: center;
+      align-items: center;
+      justify-content: center;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
-      min-height: 90px;
       text-align: center;
-      line-height: 1.3;
+      line-height: 1.4;
+      height: 100%;
     }
     .panel-btn:hover {
       transform: translateY(-4px);
       box-shadow: 0 6px 14px rgba(114, 47, 55, 0.18);
-      border-color: #722F37; background-color: #fdf7f7;
+      border-color: #722F37;
+      background-color: #fdf7f7;
       color: #5e262d;
     }
-    .hidden { display: none !important; }
+    .hidden { 
+      display: none !important; 
+    }
     /* ✅ Tooltip rojo para Administrador */
     #userRol {
       font-weight: 600;
@@ -126,8 +271,9 @@
     }
     #userRol[data-role="admin"]:hover::after {
       content: " ⓘ Administrador";
-      background: #333; color: white;
-      padding: 2px 6px;
+      background: #333; 
+      color: white;
+      padding: 2px 6px; 
       border-radius: 4px;
       position: absolute;
       top: -22px;
@@ -136,313 +282,461 @@
       font-size: 12px;
       pointer-events: none;
     }
-    .panel-btn.admin-disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      position: relative;
+    .logout-btn {
+      background-color: #c00;
+      margin-left: auto;
     }
-    .panel-btn.admin-disabled::after {
-      content: " ⛔";
-      font-size: 16px;
-      color: #c00;
-      position: absolute;
-      top: 4px;
-      right: 8px;
+    .logout-btn:hover {
+      background-color: #a00;
     }
-    .panel-btn.admin-disabled:hover::after {
-      content: " ⛔ Acceso restringido";
-      font-size: 12px;
-      color: #fff;
-      background: #333;
-      padding: 2px 6px;
-      border-radius: 4px;
-      top: -20px;
-      right: 8px;
-      white-space: nowrap;
-      pointer-events: none;
+    @media (max-width: 768px) {
+      .tabs-header {
+        flex-direction: column;
+      }
+      .tab-btn {
+        width: 100%;
+        border-radius: 10px;
+        margin-bottom: 8px;
+      }
+      .module-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="loginView" class="login-card">
-    <img 
-      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
-      alt="ICAP Nacional - PNB" 
-      class="logo"
-    />
-    <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
-    <p class="subtitle">Acceso restringido a personal autorizado</p>
-    <form id="loginForm">
-      <div class="form-group">
-        <label for="email">Correo electrónico</label>
-        <input 
-          type="email" 
-          id="email" 
-          required 
-          autocomplete="username"
-          placeholder="tu@email.com"
-          value="icapnacional@gmail.com"
-        />
-      </div>
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input 
-          type="password" 
-          id="password" 
-          required 
-          autocomplete="current-password"
-          placeholder="••••••••"
-          value="12345678"
-        />
-      </div>
-      <button type="submit" class="btn-login">Iniciar Sesión</button>
-    </form>
-    <div id="alertMessage" class="alert"></div>
-    <p class="institutional-note">
-      Plataforma institucional de la ICAP Nacional del Cuerpo de Policía Nacional Bolivariana
-    </p>
-    <p class="developer-note">
-      © Desarrollado por OTIC ZULIA — Información: 0424-6962840 / 0412-2714179
-    </p>
-  </div>
-  <div id="panelView" class="panel-card hidden">
-    <img 
-      src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
-      alt="ICAP Nacional - PNB" 
-      class="logo"
-    />
-    <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
-    <div class="user-info">
-      <strong>Usuario:</strong> <span id="userEmail">—</span><br>
-      <strong>Estado(s):</strong> <span id="userEstado">—</span><br>
-      <span id="userRol"></span>
+  <div class="container">
+    <div id="loginView" class="tabs-container">
+      <img 
+        src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+        alt="ICAP Nacional - PNB" 
+        class="logo"
+      />
+      <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
+      <p class="subtitle">Acceso restringido a personal autorizado</p>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Correo electrónico</label>
+          <input 
+            type="email" 
+            id="email" 
+            required 
+            autocomplete="username"
+            placeholder="tu@email.com"
+            value="icapnacional@gmail.com"
+          />
+        </div>
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input 
+            type="password" 
+            id="password" 
+            required 
+            autocomplete="current-password"
+            placeholder="••••••••"
+            value="12345678"
+          />
+        </div>
+        <button type="submit" class="btn-login">Iniciar Sesión</button>
+      </form>
+      <div id="alertMessage" class="alert"></div>
+      <p class="institutional-note">
+        Plataforma institucional de la ICAP Nacional del Cuerpo de Policía Nacional Bolivariana
+      </p>
+      <p class="developer-note">
+        © Desarrollado por OTIC ZULIA — Información: 0424-6962840 / 0412-2714179
+      </p>
     </div>
-    <div class="panel-buttons">
-      <button class="panel-btn" id="rrhhBtn">👥 Recursos Humanos</button>
-      <button class="panel-btn">🔍 Análisis</button>
-      <button class="panel-btn">📦 Logística</button>
-      <button class="panel-btn">⚖️ DPPC</button>
-      <button class="panel-btn">⚖️ Asesoría Legal</button>
-      <button class="panel-btn">📇 D.E. Disciplinarios</button>
-      <button class="panel-btn">✒️ Secretaría</button>
-      <button class="panel-btn" id="adminBtn">👑 Admin</button>
-    </div>
-    <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
-  </div>
-<script>
-  // ✅ Inicialización segura tras carga del DOM
-  document.addEventListener('DOMContentLoaded', () => {
-    // 🔑 Tus credenciales reales de Supabase
-    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
-    // ✅ CORRECCIÓN DEFINITIVA: usa `client` para evitar conflictos de nombres
-    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
-    const loginView = document.getElementById('loginView');
-    const panelView = document.getElementById('panelView');
-    const userEmailSpan = document.getElementById('userEmail');
-    const userEstadoSpan = document.getElementById('userEstado');
-    const userRolSpan = document.getElementById('userRol');
-    const alertDiv = document.getElementById('alertMessage');
-    const loginForm = document.getElementById('loginForm');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const adminBtn = document.getElementById('adminBtn');
-    
-    // ✅ Función para mostrar alertas (reutilizable)
-    function showAlert(msg, type) {
-      alertDiv.textContent = msg;
-      alertDiv.className = `alert alert-${type}`;
-      alertDiv.style.display = 'block';
-      if (type === 'success') setTimeout(() => alertDiv.style.display = 'none', 5000);
-    }
 
-    function showError(msg) {
-      showAlert(msg, 'error');
-    }
-
-    function hideAlert() {
-      alertDiv.style.display = 'none';
-    }
-
-    function showLogin() {
-      loginView.classList.remove('hidden');
-      panelView.classList.add('hidden');
-      hideAlert();
-    }
-
-    function showPanel(email, estado, rol) {
-      userEmailSpan.textContent = email;
+    <div id="panelView" class="tabs-container hidden">
+      <img 
+        src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" 
+        alt="ICAP Nacional - PNB" 
+        class="logo"
+      />
+      <h1>Inspectoria para el Control<br>de la Actuación Policial</h1>
       
-      // ✅ Mostrar solo texto del rol sin prefijo
-      const rolText = 
-        rol === 'admin' ? 'Administrador' :
-        rol === 'moderador' ? 'Moderador' :
-        'Consultor';
-      userRolSpan.textContent = rolText;
-      userRolSpan.setAttribute('data-role', rol);
+      <div class="user-info">
+        <strong>Usuario:</strong> <span id="userEmail">—</span><br>
+        <strong>Estado(s):</strong> <span id="userEstado">—</span><br>
+        <span id="userRol"></span>
+      </div>
+      
+      <div class="tabs-header">
+        <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+        <button class="tab-btn" data-tab="rrhh">👥 Recursos Humanos</button>
+        <button class="tab-btn" data-tab="analisis">🔍 Análisis</button>
+        <button class="tab-btn" data-tab="logistica">📦 Logística</button>
+        <button class="tab-btn" data-tab="dppc">⚖️ DPPC</button>
+        <button class="tab-btn" data-tab="asesoria">⚖️ Asesoría Legal</button>
+        <button class="tab-btn" data-tab="disciplinarios">📇 D.E. Disciplinarios</button>
+        <button class="tab-btn" data-tab="secretaria">✒️ Secretaría</button>
+        <button class="tab-btn" id="adminTabBtn" data-tab="admin">👑 Admin</button>
+      </div>
+      
+      <div class="tabs-content">
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">📊 Dashboard Principal</h2>
+          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
+            Bienvenido al panel de control de la Inspectoria para el Control de la Actuación Policial.
+            Selecciona una pestaña para acceder a las diferentes áreas de trabajo.
+          </p>
+          
+          <div class="module-grid">
+            <div class="module-card" onclick="switchTab('rrhh')">
+              <div class="module-icon">👥</div>
+              <div class="module-title">Recursos Humanos</div>
+              <div class="module-desc">Gestión de personal, permisos y asignaciones</div>
+            </div>
+            <div class="module-card" onclick="switchTab('analisis')">
+              <div class="module-icon">🔍</div>
+              <div class="module-title">Análisis</div>
+              <div class="module-desc">Reportes e insights de operaciones</div>
+            </div>
+            <div class="module-card" onclick="switchTab('logistica')">
+              <div class="module-icon">📦</div>
+              <div class="module-title">Logística</div>
+              <div class="module-desc">Gestión de recursos y equipos</div>
+            </div>
+            <div class="module-card" onclick="switchTab('dppc')">
+              <div class="module-icon">⚖️</div>
+              <div class="module-title">DPPC</div>
+              <div class="module-desc">Procedimientos y control</div>
+            </div>
+            <div class="module-card" onclick="switchTab('asesoria')">
+              <div class="module-icon">⚖️</div>
+              <div class="module-title">Asesoría Legal</div>
+              <div class="module-desc">Orientación jurídica institucional</div>
+            </div>
+            <div class="module-card" onclick="switchTab('disciplinarios')">
+              <div class="module-icon">📇</div>
+              <div class="module-title">D.E. Disciplinarios</div>
+              <div class="module-desc">Expedientes disciplinarios</div>
+            </div>
+            <div class="module-card" onclick="switchTab('secretaria')">
+              <div class="module-icon">✒️</div>
+              <div class="module-title">Secretaría</div>
+              <div class="module-desc">Documentos oficiales</div>
+            </div>
+            <div class="module-card" id="adminModuleCard" onclick="switchTab('admin')">
+              <div class="module-icon">👑</div>
+              <div class="module-title">Administración</div>
+              <div class="module-desc">Gestión de usuarios y sistema</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Recursos Humanos Tab -->
+        <div id="rrhh" class="tab-content">
+          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">👥 Recursos Humanos</h2>
+          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
+            Módulo de gestión de recursos humanos. Accede a las diferentes secciones relacionadas con personal.
+          </p>
+          
+          <div class="module-grid">
+            <div class="module-card" onclick="location.href='rrhh/index.html'">
+              <div class="module-icon">📋</div>
+              <div class="module-title">Auditoría Nacional</div>
+              <div class="module-desc">Seguimiento y control de personal a nivel nacional</div>
+            </div>
+            <div class="module-card" onclick="location.href='rrhh/index.html'">
+              <div class="module-icon">👥</div>
+              <div class="module-title">RRHH ICAP</div>
+              <div class="module-desc">Gestión de recursos humanos específicos para la ICAP</div>
+            </div>
+            <div class="module-card" onclick="location.href='rrhh/index.html'">
+              <div class="module-icon">👨‍✈️</div>
+              <div class="module-title">Pie de Fuerza</div>
+              <div class="module-desc">Control y gestión del personal activo</div>
+            </div>
+            <div class="module-card" onclick="location.href='rrhh/index.html'">
+              <div class="module-icon">📄</div>
+              <div class="module-title">Orden de Servicio</div>
+              <div class="module-desc">Generación y gestión de órdenes de servicio</div>
+            </div>
+            <div class="module-card" onclick="location.href='rrhh/index.html'">
+              <div class="module-icon">🛏️</div>
+              <div class="module-title">Reposo</div>
+              <div class="module-desc">Gestión de licencias por reposo médico</div>
+            </div>
+            <div class="module-card" onclick="location.href='rrhh/index.html'">
+              <div class="module-icon">🌴</div>
+              <div class="module-title">Vacaciones</div>
+              <div class="module-desc">Sistema de gestión de vacaciones</div>
+            </div>
+            <div class="module-card" onclick="location.href='rrhh/index.html'">
+              <div class="module-icon">🔄</div>
+              <div class="module-title">Cambio de Servicios</div>
+              <div class="module-desc">Gestión de solicitudes de cambio de servicio</div>
+            </div>
+            <div class="module-card" onclick="location.href='rrhh/index.html'">
+              <div class="module-icon">📁</div>
+              <div class="module-title">Documentos</div>
+              <div class="module-desc">Repositorio de documentos institucionales</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Otras pestañas - Contenido simple por ahora -->
+        <div id="analisis" class="tab-content">
+          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">🔍 Análisis</h2>
+          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
+            Módulo de análisis de datos y reportes. En construcción.
+          </p>
+        </div>
+        
+        <div id="logistica" class="tab-content">
+          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">📦 Logística</h2>
+          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
+            Módulo de gestión logística. En construcción.
+          </p>
+        </div>
+        
+        <div id="dppc" class="tab-content">
+          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">⚖️ DPPC</h2>
+          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
+            Módulo de procedimientos y control. En construcción.
+          </p>
+        </div>
+        
+        <div id="asesoria" class="tab-content">
+          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">⚖️ Asesoría Legal</h2>
+          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
+            Módulo de asesoría legal. En construcción.
+          </p>
+        </div>
+        
+        <div id="disciplinarios" class="tab-content">
+          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">📇 D.E. Disciplinarios</h2>
+          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
+            Módulo de expedientes disciplinarios. En construcción.
+          </p>
+        </div>
+        
+        <div id="secretaria" class="tab-content">
+          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">✒️ Secretaría</h2>
+          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
+            Módulo de documentos oficiales. En construcción.
+          </p>
+        </div>
+        
+        <div id="admin" class="tab-content">
+          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">👑 Administración</h2>
+          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
+            Panel de administración del sistema. Gestión de usuarios y configuraciones.
+          </p>
+          <button class="btn-login" onclick="window.location.href='admin.html'">
+            Ir al Panel de Administración
+          </button>
+        </div>
+      </div>
+      
+      <div class="actions-bar">
+        <span style="color: #722F37; font-weight: 600;">ICAP Nacional - PNB</span>
+        <button id="logoutBtn" class="btn-logout logout-btn">Cerrar Sesión</button>
+      </div>
+    </div>
+  </div>
 
-      // ✅ Ocultar línea de estados solo para Administrador
-      const estadoLine = userEstadoSpan.parentNode;
-      if (rol === 'admin') {
-        estadoLine.style.display = 'none';
-      } else {
-        estadoLine.style.display = 'block';
-        userEstadoSpan.textContent = estado || '—';
+  <script>
+    // ✅ Inicialización segura tras carga del DOM
+    document.addEventListener('DOMContentLoaded', () => {
+      // 🔑 Tus credenciales reales de Supabase
+      const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+      const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+      
+      // ✅ CORRECCIÓN DEFINITIVA: usa `client` para evitar conflictos de nombres
+      const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+
+      const loginView = document.getElementById('loginView');
+      const panelView = document.getElementById('panelView');
+      const userEmailSpan = document.getElementById('userEmail');
+      const userEstadoSpan = document.getElementById('userEstado');
+      const userRolSpan = document.getElementById('userRol');
+      const alertDiv = document.getElementById('alertMessage');
+      const loginForm = document.getElementById('loginForm');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const adminTabBtn = document.getElementById('adminTabBtn');
+      const adminModuleCard = document.getElementById('adminModuleCard');
+
+      function showError(msg) {
+        alertDiv.textContent = msg;
+        alertDiv.className = 'alert alert-error';
+        alertDiv.style.display = 'block';
       }
 
-      // ✅ Botón Admin: funcional solo si es admin
-      adminBtn.classList.remove('admin-disabled');
-      adminBtn.onclick = null;
-      if (rol === 'admin') {
-        adminBtn.onclick = () => {
-          window.location.href = 'admin.html';
-        };
-      } else {
-        adminBtn.classList.add('admin-disabled');
-        adminBtn.onclick = () => {};
+      function hideAlert() {
+        alertDiv.style.display = 'none';
       }
 
-      loginView.classList.add('hidden');
-      panelView.classList.remove('hidden');
-    }
-
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      hideAlert();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-
-      if (!email || !password) {
-        return showError('Por favor complete todos los campos.');
+      function showLogin() {
+        loginView.classList.remove('hidden');
+        panelView.classList.add('hidden');
+        hideAlert();
       }
 
-      if (password.length < 8) {
-        return showError('La contraseña debe tener al menos 8 caracteres.');
+      function showPanel(email, estado, rol) {
+        userEmailSpan.textContent = email;
+        
+        // ✅ Mostrar solo texto del rol sin prefijo
+        const rolText = 
+          rol === 'admin' ? 'Administrador' :
+          rol === 'moderador' ? 'Moderador' :
+          'Consultor';
+        userRolSpan.textContent = rolText;
+        userRolSpan.setAttribute('data-role', rol);
+
+        // ✅ Ocultar línea de estados solo para Administrador
+        const estadoLine = userEstadoSpan.parentNode;
+        if (rol === 'admin') {
+          estadoLine.style.display = 'none';
+        } else {
+          estadoLine.style.display = 'block';
+          userEstadoSpan.textContent = estado || '—';
+        }
+
+        // ✅ Configurar visibilidad del panel de administración
+        adminTabBtn.style.display = rol === 'admin' ? 'block' : 'none';
+        adminModuleCard.style.display = rol === 'admin' ? 'block' : 'none';
+
+        loginView.classList.add('hidden');
+        panelView.classList.remove('hidden');
       }
 
-      try {
-        // ✅ Login con Supabase Auth
-        const { data, error } = await client.auth.signInWithPassword({ 
-          email, 
-          password 
+      // ✅ Sistema de pestañas
+      function switchTab(tabId) {
+        // Desactivar todas las pestañas
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.classList.remove('active');
         });
         
-        if (error) {
-          console.error('Error login:', error);
-          // Mensajes amigables para el usuario
-          if (error.message.includes('Invalid login credentials')) {
-            return showError('Credenciales incorrectas. Verifique su correo y contraseña.');
-          }
-          if (error.message.includes('User not found')) {
-            return showError('Usuario no encontrado en el sistema.');
-          }
-          return showError('Error al iniciar sesión: ' + (error.message || 'Error desconocido'));
-        }
-
-        // ✅ Cerrar otras sesiones del mismo usuario (acceso único)
-        await client.auth.signOut({ scope: 'others' });
-
-        // ✅ Cargar perfil desde tabla `perfiles` con validación robusta
-        const { data: perfil, error: perfilError } = await client
-          .from('perfiles')
-          .select('rol, estados_asignados, email, modulos_asignados') // Seleccionar email también para seguridad
-          .eq('id', data.user.id)
-          .single();
-
-        // ✅ VALIDACIÓN SEGURA: verificar si el perfil existe y no hay errores
-        if (perfilError || !perfil) {
-          console.error('Error o perfil no encontrado:', perfilError || 'Perfil no existe para este usuario');
-          // ✅ Forzar cierre de sesión si no hay perfil
-          await client.auth.signOut();
-          return showError('Tu cuenta no tiene perfil asignado. Contacta al administrador del sistema.');
-        }
-
-        // ✅ Asignar rol por defecto si no existe (seguridad adicional)
-        const userRol = perfil.rol || 'consultor';
-        const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
-        const userEmail = perfil.email || email;
+        // Activar la pestaña seleccionada
+        document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
         
-        showPanel(userEmail, estadosTxt, userRol);
+        // Ocultar todos los contenidos
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.remove('active');
+        });
         
-      } catch (err) {
-        console.error('Error inesperado:', err);
-        showError('Error inesperado: ' + (err.message || 'Ocurrió un problema al procesar tu solicitud'));
+        // Mostrar el contenido seleccionado
+        document.getElementById(tabId).classList.add('active');
       }
-    });
 
-    logoutBtn.addEventListener('click', async () => {
-      try {
-        await client.auth.signOut();
-        showLogin();
-        document.getElementById('password').value = '';
-      } catch (err) {
-        console.error('Error logout:', err);
-        showError('Error al cerrar sesión. Por favor, recarga la página.');
-      }
-    });
+      // ✅ Configurar eventos para las pestañas
+      document.querySelectorAll('.tab-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          const tabId = button.getAttribute('data-tab');
+          switchTab(tabId);
+        });
+      });
 
-    // ✅ Configurar botón de Recursos Humanos
-    document.getElementById('rrhhBtn')?.addEventListener('click', async () => {
-      try {
-        // Verificar sesión actual
-        const { data: { session }, error: sessionError } = await client.auth.getSession();
-        if (sessionError || !session) {
-          throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideAlert();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!email || !password) {
+          return showError('Por favor complete todos los campos.');
         }
-        
-        // Obtener perfil del usuario
-        const { data: perfil, error: perfilError } = await client
-          .from('perfiles')
-          .select('modulos_asignados')
-          .eq('id', session.user.id)
-          .single();
+
+        if (password.length < 8) {
+          return showError('La contraseña debe tener al menos 8 caracteres.');
+        }
+
+        try {
+          // ✅ Login con Supabase Auth
+          const { data, error } = await client.auth.signInWithPassword({ 
+            email, 
+            password 
+          });
           
-        if (perfilError) throw perfilError;
-        
-        // Verificar si tiene acceso al módulo de RRHH
-        if (!perfil.modulos_asignados?.includes('rh')) {
-          showAlert('🔒 No tienes permisos para acceder a Recursos Humanos.', 'error');
-          return;
-        }
-        
-        // Redirigir a la sección de RRHH
-        window.location.href = 'rrhh/index.html';
-      } catch (err) {
-        console.error('Error al acceder a RRHH:', err);
-        showAlert(`❌ ${err.message || 'Error al acceder a Recursos Humanos'}`, 'error');
-      }
-    });
+          if (error) {
+            console.error('Error login:', error);
+            // Mensajes amigables para el usuario
+            if (error.message.includes('Invalid login credentials')) {
+              return showError('Credenciales incorrectas. Verifique su correo y contraseña.');
+            }
+            if (error.message.includes('User not found')) {
+              return showError('Usuario no encontrado en el sistema.');
+            }
+            return showError('Error al iniciar sesión: ' + (error.message || 'Error desconocido'));
+          }
 
-    // ✅ Verificar sesión al cargar la página
-    (async () => {
-      try {
-        const { data: { session }, error: sessionError } = await client.auth.getSession();
-        if (sessionError) {
-          console.error('Error getSession:', sessionError);
-          return;
-        }
-        if (session?.user) {
-          // ✅ Cargar perfil con la misma validación robusta
+          // ✅ Cerrar otras sesiones del mismo usuario (acceso único)
+          await client.auth.signOut({ scope: 'others' });
+
+          // ✅ Cargar perfil desde tabla `perfiles` con validación robusta
           const { data: perfil, error: perfilError } = await client
             .from('perfiles')
-            .select('rol, estados_asignados, email')
-            .eq('id', session.user.id)
+            .select('rol, estados_asignados, email') // Seleccionar email también para seguridad
+            .eq('id', data.user.id)
             .single();
+
+          // ✅ VALIDACIÓN SEGURA: verificar si el perfil existe y no hay errores
           if (perfilError || !perfil) {
-            console.warn('Perfil no encontrado para usuario logueado');
-            // Opcional: cerrar sesión automáticamente si no hay perfil
-            // await client.auth.signOut();
+            console.error('Error o perfil no encontrado:', perfilError || 'Perfil no existe para este usuario');
+            // ✅ Forzar cierre de sesión si no hay perfil
+            await client.auth.signOut();
+            return showError('Tu cuenta no tiene perfil asignado. Contacta al administrador del sistema.');
+          }
+
+          // ✅ Asignar rol por defecto si no existe (seguridad adicional)
+          const userRol = perfil.rol || 'consultor';
+          const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
+          const userEmail = perfil.email || email;
+          
+          showPanel(userEmail, estadosTxt, userRol);
+          
+        } catch (err) {
+          console.error('Error inesperado:', err);
+          showError('Error inesperado: ' + (err.message || 'Ocurrió un problema al procesar tu solicitud'));
+        }
+      });
+
+      logoutBtn.addEventListener('click', async () => {
+        try {
+          await client.auth.signOut();
+          showLogin();
+          document.getElementById('password').value = '';
+        } catch (err) {
+          console.error('Error logout:', err);
+          showError('Error al cerrar sesión. Por favor, recarga la página.');
+        }
+      });
+
+      // ✅ Verificar sesión al cargar la página
+      (async () => {
+        try {
+          const { data: { session }, error: sessionError } = await client.auth.getSession();
+          if (sessionError) {
+            console.error('Error getSession:', sessionError);
             return;
           }
-          const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
-          const userEmail = perfil.email || session.user.email;
-          const userRol = perfil.rol || 'consultor';
-          showPanel(userEmail, estadosTxt, userRol);
+          if (session?.user) {
+            // ✅ Cargar perfil con la misma validación robusta
+            const { data: perfil, error: perfilError } = await client
+              .from('perfiles')
+              .select('rol, estados_asignados, email')
+              .eq('id', session.user.id)
+              .single();
+            if (perfilError || !perfil) {
+              console.warn('Perfil no encontrado para usuario logueado');
+              // Opcional: cerrar sesión automáticamente si no hay perfil
+              // await client.auth.signOut();
+              return;
+            }
+            const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
+            const userEmail = perfil.email || session.user.email;
+            const userRol = perfil.rol || 'consultor';
+            showPanel(userEmail, estadosTxt, userRol);
+          }
+        } catch (err) {
+          console.error('Error al verificar sesión inicial:', err);
         }
-      } catch (err) {
-        console.error('Error al verificar sesión inicial:', err);
-      }
-    })();
-  });
-</script>
+      })();
+    });
+  </script>
 </body>
 </html>
