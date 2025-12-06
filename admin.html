@@ -249,7 +249,7 @@
     // ✅ Función para obtener usuario actual (asíncrona)
     async function getCurrentUser() {
       try {
-        const {  { session } } = await client.auth.getSession();
+        const { data: { session }, error: sessionError } = await client.auth.getSession();
         return session?.user;
       } catch (err) {
         console.error('Error getting current user:', err);
@@ -473,7 +473,7 @@
     (async () => {
       try {
         // ✅ Corrección: usar getSession() en lugar de session()
-        const {  { session }, error: sessionError } = await client.auth.getSession();
+        const { data: { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError) throw sessionError;
         
         if (!session) {
