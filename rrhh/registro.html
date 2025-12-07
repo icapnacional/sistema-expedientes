@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro de Personal | RRHH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header img {
+      width: 90px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+    }
+    .user-info {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      border: 1px solid #eee;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+      border: 1px solid #eee;
+    }
+    .card h2 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #722F37;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      background: #fdfdfd;
+    }
+    textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+    .btn {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn:hover {
+      background-color: #5e262d;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #722F37;
+      color: #722F37;
+    }
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      margin: 16px 0;
+      display: none;
+    }
+    .alert-success { background: #e8f5e9; color: #2e7d32; }
+    .alert-error { background: #ffebee; color: #c62828; }
+    .breadcrumb {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 12px 20px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: #555;
+    }
+    .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+    .breadcrumb span { margin: 0 8px; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="../index.html">Inicio</a> <span>›</span>
+      <a href="index.html">RRHH</a> <span>›</span>
+      <a href="auditoria-nacional.html">Auditoría</a> <span>›</span>
+      <strong>Registro</strong>
+    </div>
+    <div class="header">
+      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+      <h1>Inspectable para el Control de la Actuación Policial</h1>
+    </div>
+    <div class="user-info">
+      <strong>Usuario:</strong> <span id="userEmail">—</span> |
+      <strong>Rol:</strong> <span id="userRol">—</span>
+    </div>
+
+    <div class="card">
+      <h2>📝 Registro de Personal Auditado</h2>
+      <div id="alertMessage" class="alert"></div>
+      <form id="registroForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="cedula">Cédula *</label>
+            <input type="text" id="cedula" required>
+          </div>
+          <div class="form-group">
+            <label for="rango">Rango</label>
+            <input type="text" id="rango">
+          </div>
+          <div class="form-group">
+            <label for="apellidos_nombres">Apellidos y Nombres *</label>
+            <input type="text" id="apellidos_nombres" required>
+          </div>
+          <div class="form-group">
+            <label for="sexo">Sexo</label>
+            <select id="sexo">
+              <option value="">—</option>
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dependencia">Dependencia</label>
+            <input type="text" id="dependencia">
+          </div>
+          <div class="form-group">
+            <label for="region">Región</label>
+            <input type="text" id="region">
+          </div>
+          <div class="form-group">
+            <label for="estado">Estado</label>
+            <input type="text" id="estado">
+          </div>
+          <div class="form-group">
+            <label for="servicio">Servicio</label>
+            <input type="text" id="servicio">
+          </div>
+          <div class="form-group">
+            <label for="cohorte_promocion">Cohorte / Promoción</label>
+            <input type="text" id="cohorte_promocion">
+          </div>
+          <div class="form-group">
+            <label for="institucion_origen">Institución de Origen</label>
+            <input type="text" id="institucion_origen">
+          </div>
+          <div class="form-group">
+            <label for="fecha_ingreso">Fecha de Ingreso (AAAA-MM-DD)</label>
+            <input type="date" id="fecha_ingreso">
+          </div>
+          <div class="form-group">
+            <label for="telefono">Teléfono</label>
+            <input type="text" id="telefono">
+          </div>
+          <div class="form-group">
+            <label for="status">Status</label>
+            <select id="status">
+              <option value="A">Activo</option>
+              <option value="S">Suspendido</option>
+              <option value="E">Egresado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="fecha_nacimiento">Fecha de Nacimiento</label>
+            <input type="date" id="fecha_nacimiento">
+          </div>
+          <div class="form-group">
+            <label for="edad_funcionario">Edad / Observación</label>
+            <input type="text" id="edad_funcionario">
+          </div>
+          <div class="form-group">
+            <label for="fecha_oficio">Fecha de Oficio</label>
+            <input type="text" id="fecha_oficio" placeholder="Ej: 2024-03-25">
+          </div>
+          <div class="form-group">
+            <label for="fecha_transferencia_normalizacion">Fecha Transferencia/Normalización</label>
+            <input type="text" id="fecha_transferencia_normalizacion" placeholder="Ej: 2024-03-25">
+          </div>
+          <div class="form-group">
+            <label for="tipo_movimiento">Tipo de Movimiento</label>
+            <input type="text" id="tipo_movimiento">
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label for="observaciones">Observaciones</label>
+            <textarea id="observaciones"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="fechas_egreso">Fechas de Egreso</label>
+            <input type="text" id="fechas_egreso">
+          </div>
+          <div class="form-group">
+            <label for="direccion">Dirección</label>
+            <input type="text" id="direccion">
+          </div>
+          <div class="form-group">
+            <label for="correo_electronico">Correo Electrónico</label>
+            <input type="email" id="correo_electronico">
+          </div>
+        </div>
+        <div style="text-align:right; margin-top:20px;">
+          <button type="button" class="btn btn-outline" onclick="history.back()">← Cancelar</button>
+          <button type="submit" class="btn">✅ Registrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+    const alertDiv = document.getElementById('alertMessage');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const {  { session }, error } = await client.auth.getSession();
+        if (error || !session) return window.location.href = '../index.html';
+
+        const { data: perfil } = await client
+          .from('perfiles')
+          .select('email, rol')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!perfil) return window.location.href = '../index.html';
+
+        // ✅ Solo admin/moderador
+        if (perfil.rol !== 'admin' && perfil.rol !== 'moderador') {
+          alert('🔒 Acceso denegado: solo Administradores y Moderadores pueden registrar.');
+          window.location.href = 'auditoria-nacional.html';
+          return;
+        }
+
+        document.getElementById('userEmail').textContent = perfil.email;
+        document.getElementById('userRol').textContent = 
+          perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
+      } catch (err) {
+        console.error('Error:', err);
+        window.location.href = '../index.html';
+      }
+    });
+
+    document.getElementById('registroForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showAlert('', ''); // limpiar
+
+      const data = {
+        cedula: document.getElementById('cedula').value.trim(),
+        rango: document.getElementById('rango').value,
+        apellidos_nombres: document.getElementById('apellidos_nombres').value,
+        sexo: document.getElementById('sexo').value,
+        dependencia: document.getElementById('dependencia').value,
+        region: document.getElementById('region').value,
+        estado: document.getElementById('estado').value,
+        servicio: document.getElementById('servicio').value,
+        cohorte_promocion: document.getElementById('cohorte_promocion').value,
+        institucion_origen: document.getElementById('institucion_origen').value,
+        fecha_ingreso: document.getElementById('fecha_ingreso').value || null,
+        telefono: document.getElementById('telefono').value,
+        status: document.getElementById('status').value,
+        fecha_nacimiento: document.getElementById('fecha_nacimiento').value || null,
+        edad_funcionario: document.getElementById('edad_funcionario').value,
+        fecha_oficio: document.getElementById('fecha_oficio').value,
+        fecha_transferencia_normalizacion: document.getElementById('fecha_transferencia_normalizacion').value,
+        tipo_movimiento: document.getElementById('tipo_movimiento').value,
+        observaciones: document.getElementById('observaciones').value,
+        fechas_egreso: document.getElementById('fechas_egreso').value,
+        direccion: document.getElementById('direccion').value,
+        correo_electronico: document.getElementById('correo_electronico').value
+      };
+
+      if (!data.cedula || !data.apellidos_nombres) {
+        return showAlert('⚠️ Cédula y Apellidos/Nombres son obligatorios.', 'error');
+      }
+
+      try {
+        const { error } = await client
+          .from('auditoria_personal')
+          .insert(data);
+
+        if (error) throw error;
+
+        showAlert('✅ Registro exitoso. El personal ha sido agregado.', 'success');
+        document.getElementById('registroForm').reset();
+        setTimeout(() => window.location.href = 'auditoria-nacional.html', 2000);
+      } catch (err) {
+        console.error('Error:', err);
+        showAlert(`❌ Error al registrar: ${err.message || 'Verifique que la cédula no exista'}`, 'error');
+      }
+    });
+
+    function showAlert(msg, type) {
+      alertDiv.textContent = msg;
+      alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : type === 'error' ? 'alert-error' : '');
+      alertDiv.style.display = msg ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>
