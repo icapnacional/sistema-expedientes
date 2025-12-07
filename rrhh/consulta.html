@@ -417,9 +417,8 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-                 // ✅ Verificar sesión y perfil
-const { data: { session }, error: sessionError } = await client.auth.getSession();
-};
+        const {  { session }, error } = await client.auth.getSession();
+        if (error || !session) return window.location.href = '../index.html';
         
         const {  perfil } = await client
           .from('perfiles')
