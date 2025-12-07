@@ -268,11 +268,11 @@
                 <div class="module-title">Registro</div>
                <div class="module-desc">Registrar nuevo personal auditado (solo RRHH autorizado).</div>
             </div>
-            <div class="module-card" onclick="location.href='auditoria-nacional.html#historial'">
-              <div class="module-icon">📚</div>
-              <div class="module-title">Historial</div>
-              <div class="module-desc">Consulta el historial de auditorías de los últimos 5 años.</div>
-            </div>
+            <div class="module-card" id="btnHistorialLogs">
+  <div class="module-icon">📜</div>
+  <div class="module-title">Historial</div>
+  <div class="module-desc">Registro de actividades en RRHH (solo Administrador).</div>
+</div>
           </div>
         </div>
         <!-- RRHH ICAP Tab -->
@@ -562,6 +562,27 @@ document.addEventListener('DOMContentLoaded', () => {
       card.onclick = accederRegistro;
     }
   });
+});
+    // ✅ Mostrar/Ocultar Historial según rol
+document.addEventListener('DOMContentLoaded', () => {
+  const historialBtn = document.getElementById('btnHistorialLogs');
+  const userRolSpan = document.getElementById('userRol');
+  const rol = userRolSpan?.getAttribute('data-role') || 'consultor';
+
+  if (historialBtn) {
+    if (rol === 'admin') {
+      historialBtn.onclick = () => {
+        window.location.href = 'historial-logs.html';
+      };
+    } else {
+      historialBtn.style.opacity = '0.5';
+      historialBtn.style.cursor = 'not-allowed';
+      historialBtn.title = '🔒 Solo el Administrador puede acceder';
+      historialBtn.onclick = () => {
+        alert('🔒 Acceso restringido: solo el Administrador puede ver el historial.');
+      };
+    }
+  }
 });
   </script>
 </body>
