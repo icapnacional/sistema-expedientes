@@ -522,16 +522,7 @@
             switchTab(tabId);
           });
         });  
-        function accederRegistro() {
-  // Verificar rol desde localStorage o perfil (como en index.html)
-  const rol = document.getElementById('userRol')?.getAttribute('data-role') || 'consultor';
-  if (rol !== 'admin' && rol !== 'moderador') {
-    alert('🔒 Acceso restringido: solo Administradores y Moderadores pueden registrar personal.');
-    return;
-  }
-  window.location.href = 'registro.html';
-}
-        // ✅ Cierre de sesión
+     // ✅ Cierre de sesión
         logoutBtn.addEventListener('click', async () => {
           await client.auth.signOut();
           window.location.href = '../index.html';
@@ -550,6 +541,20 @@
       document.getElementById(tabId).classList.add('active');
       localStorage.setItem('activeRrhhTab', tabId);
     }
+    // ✅ Función para acceso seguro al Registro (solo admin/moderador)
+function accederRegistro() {
+  // Obtiene el rol desde el atributo data-role del span #userRol
+  const userRolSpan = document.getElementById('userRol');
+  const rol = userRolSpan ? userRolSpan.getAttribute('data-role') : 'consultor';
+
+  if (rol !== 'admin' && rol !== 'moderador') {
+    alert('🔒 Acceso restringido: solo Administradores y Moderadores pueden registrar personal.');
+    return;
+  }
+
+  // Redirige a registro.html
+  window.location.href = 'registro.html';
+}
   </script>
 </body>
 </html>
