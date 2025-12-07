@@ -6,7 +6,7 @@
   <title>Auditoría Nacional | RRHH</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- ✅ html2pdf.js — versión más estable -->
+  <!-- ✅ html2pdf para exportar PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -139,28 +139,20 @@
       font-size: 13px;
       color: #666;
     }
-    /* ✅ Paginación fija */
     .pagination {
       display: flex;
       justify-content: center;
-      gap: 6px;
+      gap: 8px;
       margin-top: 16px;
-      flex-wrap: wrap;
     }
-    .pagination button,
-    .pagination span {
-      min-width: 32px;
-      height: 32px;
-      padding: 0 4px;
+    .pagination button {
+      width: 36px;
+      height: 36px;
       border-radius: 6px;
       background: #f5f5f5;
       border: 1px solid #ddd;
       font-weight: 600;
-      font-size: 14px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
     .pagination button.active {
       background: #722F37;
@@ -169,12 +161,6 @@
     }
     .pagination button:hover:not(.active) {
       background: #eaeaea;
-    }
-    .pagination span {
-      cursor: default;
-      background: transparent;
-      border: none;
-      color: #888;
     }
     /* ✅ Ficha resultado */
     .result-card {
@@ -192,7 +178,7 @@
     .photo-placeholder {
       width: 200px;
       height: 200px;
-      border-radius: 8px; /* ✅ cuadrada */
+      border-radius: 8px;
       background: #f0f0f0;
       margin: 0 auto 16px;
       display: flex;
@@ -289,7 +275,7 @@
         <button id="btnCerrarFicha" style="float:right; background:#eee; border:none; width:24px; height:24px; border-radius:50%; font-weight:bold;">✕</button>
       </h3>
       
-      <!-- ✅ Contenedor limpio para PDF -->
+      <!-- ✅ Contenedor para PDF -->
       <div id="fichaPDF">
         <div class="fields-grid">
           <div class="field">
@@ -394,129 +380,81 @@
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     let currentPage = 1;
     const RESULTS_PER_PAGE = 15;
-    let currentUserEmail = '';
-    let currentUserRol = '';
-
-    // ✅ Registrar actividad en logs (para historial)
-    async function logActividad(accion, detalle = '') {
-      if (!currentUserEmail) return;
-      try {
-        await client
-          .from('auditoria_logs')
-          .insert({
-            usuario: currentUserEmail,
-            rol: currentUserRol,
-            accion,
-            detalle,
-            fecha: new Date().toISOString()
-          });
-      } catch (err) {
-        console.warn('⚠️ No se pudo registrar log:', err.message);
-      }
-    }
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const {  { session }, error } = await client.auth.getSession();
+        const { data: { session }, error } = await client.auth.getSession();
         if (error || !session) return window.location.href = '../index.html';
         
-        const {  perfil } = await client
+        const { data: perfil } = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
           .single();
         if (!perfil) return window.location.href = '../index.html';
 
-        currentUserEmail = perfil.email;
-        currentUserRol = perfil.rol;
-        document.getElementById('userEmail').textContent = currentUserEmail;
+        document.getElementById('userEmail').textContent = perfil.email;
         document.getElementById('userRol').textContent = 
           perfil.rol === 'admin' ? 'Administrador' : 
           perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
 
         // Eventos
-        document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
+        document.getElementById('btnBuscar').addEventListener('click', () => {
+          currentPage = 1;
+          buscar();
+        });
         document.getElementById('searchQuery').addEventListener('keypress', e => {
-          if (e.key === 'Enter') iniciarBusqueda();
+          if (e.key === 'Enter') {
+            currentPage = 1;
+            buscar();
+          }
         });
         document.getElementById('btnCerrarFicha').addEventListener('click', cerrarFicha);
         document.getElementById('btnExportPDF').addEventListener('click', exportarPDF);
-
       } catch (err) {
         console.error('Error al cargar sesión:', err);
         window.location.href = '../index.html';
       }
     });
 
-    async function iniciarBusqueda() {
+    async function buscar() {
       const query = document.getElementById('searchQuery').value.trim();
       const msg = document.getElementById('searchMessage');
+      const resultsList = document.getElementById('resultsList');
+      const resultCard = document.getElementById('resultCard');
+
       if (!query) {
         msg.textContent = '⚠️ Ingresa un término de búsqueda.';
         return;
       }
 
-      // 🪪 Si es cédula (≥6 dígitos) → ficha directa
-      if (/^\d{6,}$/.test(query)) {
-        msg.textContent = '🔍 Buscando por cédula...';
-        msg.style.color = '#1976d2';
-        try {
-          const { data, error } = await client
-            .from('auditoria_personal')
-            .select('*')
-            .eq('cedula', query)
-            .single();
-          
-          if (error || !data) {
-            msg.textContent = `❌ Cédula ${query} no encontrada.`;
-            msg.style.color = '#c62828';
-            return;
-          }
-
-          mostrarFichaCompleta(data);
-          document.getElementById('resultsList').style.display = 'none';
-          document.getElementById('resultCard').style.display = 'block';
-          msg.textContent = '';
-          logActividad('Consulta directa por cédula', `C.I. ${query}`);
-        } catch (err) {
-          msg.textContent = '❌ Error al buscar cédula.';
-          msg.style.color = '#c62828';
-        }
-        return;
-      }
-
-      // 👥 Por nombre → lista paginada
-      currentPage = 1;
-      buscarPorNombre(query);
-    }
-
-    async function buscarPorNombre(query) {
-      const msg = document.getElementById('searchMessage');
-      msg.textContent = '🔍 Buscando coincidencias...';
+      msg.textContent = '🔍 Buscando...';
       msg.style.color = '#1976d2';
-      document.getElementById('resultsList').style.display = 'none';
-      document.getElementById('resultCard').style.display = 'none';
+      resultsList.style.display = 'none';
+      resultCard.style.display = 'none';
 
       try {
+        // Buscar coincidencias parciales (nombre o apellido)
         const searchTerm = query.toLowerCase();
         const { data, error, count } = await client
           .from('auditoria_personal')
           .select('*', { count: 'exact' })
-          .or(`apellidos_nombres.ilike.%${searchTerm}%`)
+          .or(`cedula.ilike.%${searchTerm}%,apellidos_nombres.ilike.%${searchTerm}%`)
           .range((currentPage - 1) * RESULTS_PER_PAGE, currentPage * RESULTS_PER_PAGE - 1)
           .order('apellidos_nombres', { ascending: true });
 
         if (error) throw error;
+
         if (!data || data.length === 0) {
-          msg.textContent = `❌ No se encontraron coincidencias para "${query}"`;
+          msg.textContent = `❌ No se encontraron resultados para "${query}"`;
           msg.style.color = '#c62828';
           return;
         }
 
-        renderResults(data, count, query);
-        document.getElementById('resultsList').style.display = 'block';
+        // Mostrar lista
+        renderResults(data, count);
+        resultsList.style.display = 'block';
         msg.textContent = '';
-        logActividad('Búsqueda por nombre/apellido', query);
       } catch (err) {
         console.error('Error en búsqueda:', err);
         msg.textContent = '❌ Error al consultar la base de datos.';
@@ -524,21 +462,23 @@
       }
     }
 
-    function renderResults(data, total, query) {
+    function renderResults(data, total) {
       const container = document.getElementById('resultsContainer');
       const title = document.getElementById('resultsTitle');
       const countEl = document.getElementById('resultsCount');
+      const paginationEl = document.getElementById('pagination');
 
-      title.textContent = `Resultados para: "${query}"`;
+      title.textContent = `Resultados para: "${document.getElementById('searchQuery').value}"`;
       countEl.textContent = `(${data.length} de ${total})`;
 
       container.innerHTML = data.map(f => `
-        <div class="result-item" onclick="mostrarFichaPorCedula('${f.cedula}')">
+        <div class="result-item" onclick="mostrarFichaCompleta('${f.cedula}')">
           <div class="result-name">${f.apellidos_nombres || '—'}</div>
           <div class="result-id">C.I. ${f.cedula || '—'}</div>
         </div>
       `).join('');
 
+      // Paginación
       const totalPages = Math.ceil(total / RESULTS_PER_PAGE);
       renderPagination(totalPages);
     }
@@ -546,67 +486,59 @@
     function renderPagination(totalPages) {
       const el = document.getElementById('pagination');
       if (totalPages <= 1) {
-        el.innerHTML = '';
+        el.style.display = 'none';
         return;
       }
-
-      let pages = [];
-      const maxVisible = 5;
-      let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-      let end = Math.min(totalPages, start + maxVisible - 1);
-      if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
-
-      if (start > 1) pages.push(1);
-      if (start > 2) pages.push('...');
-      for (let i = start; i <= end; i++) pages.push(i);
-      if (end < totalPages - 1) pages.push('...');
-      if (end < totalPages) pages.push(totalPages);
-
-      el.innerHTML = '';
-
+      el.style.display = 'flex';
+      let html = '';
+      
+      // Botón anterior
       if (currentPage > 1) {
-        const btn = document.createElement('button');
-        btn.textContent = '◀';
-        btn.onclick = () => { currentPage--; buscarPorNombre(document.getElementById('searchQuery').value); };
-        el.appendChild(btn);
+        html += `<button onclick="cambiarPagina(${currentPage - 1})">◀</button>`;
       }
 
-      pages.forEach(p => {
-        const elItem = document.createElement(p === '...' ? 'span' : 'button');
-        elItem.textContent = p;
-        if (p !== '...') {
-          elItem.className = p === currentPage ? 'active' : '';
-          elItem.onclick = () => { currentPage = p; buscarPorNombre(document.getElementById('searchQuery').value); };
+      // Páginas
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+          html += `<button class="${i === currentPage ? 'active' : ''}" onclick="cambiarPagina(${i})">${i}</button>`;
+        } else if (i === currentPage - 3 || i === currentPage + 3) {
+          html += `<span>…</span>`;
         }
-        el.appendChild(elItem);
-      });
-
-      if (currentPage < totalPages) {
-        const btn = document.createElement('button');
-        btn.textContent = '▶';
-        btn.onclick = () => { currentPage++; buscarPorNombre(document.getElementById('searchQuery').value); };
-        el.appendChild(btn);
       }
+
+      // Botón siguiente
+      if (currentPage < totalPages) {
+        html += `<button onclick="cambiarPagina(${currentPage + 1})">▶</button>`;
+      }
+
+      el.innerHTML = html;
     }
 
-    async function mostrarFichaPorCedula(cedula) {
+    function cambiarPagina(page) {
+      currentPage = page;
+      buscar();
+    }
+
+    async function mostrarFichaCompleta(cedula) {
       try {
         const { data, error } = await client
           .from('auditoria_personal')
           .select('*')
           .eq('cedula', cedula)
           .single();
+
         if (error || !data) throw new Error('No encontrado');
-        mostrarFichaCompleta(data);
-        document.getElementById('resultsList').style.display = 'none';
+
+        llenarFicha(data);
+        cargarFoto(cedula);
         document.getElementById('resultCard').style.display = 'block';
-        logActividad('Visualización de ficha', `C.I. ${cedula}`);
+        document.getElementById('resultsList').style.display = 'none';
       } catch (err) {
         alert(`❌ No se pudo cargar la ficha: ${err.message}`);
       }
     }
 
-    function mostrarFichaCompleta(f) {
+    function llenarFicha(f) {
       const formatDate = s => s ? new Date(s).toLocaleDateString('es-VE') : '—';
       const statusEl = document.getElementById('status');
       
@@ -632,21 +564,13 @@
       document.getElementById('direccion').textContent = f.direccion || '—';
       document.getElementById('correo_electronico').textContent = f.correo_electronico || '—';
 
-      if (f.status === 'A') {
-        statusEl.textContent = 'Activo';
-        statusEl.className = 'status-active';
-      } else if (f.status === 'S') {
-        statusEl.textContent = 'Suspendido';
-        statusEl.className = 'status-suspended';
-      } else if (f.status === 'E') {
-        statusEl.textContent = 'Egresado';
-        statusEl.className = '';
-      } else {
-        statusEl.textContent = f.status || '—';
-        statusEl.className = '';
-      }
-
-      cargarFoto(f.cedula);
+      statusEl.textContent = 
+        f.status === 'A' ? 'Activo' : 
+        f.status === 'S' ? 'Suspendido' : 
+        f.status === 'E' ? 'Egresado' : '—';
+      statusEl.className = 
+        f.status === 'A' ? 'status-active' : 
+        f.status === 'S' ? 'status-suspended' : '';
     }
 
     async function cargarFoto(cedula) {
@@ -654,21 +578,21 @@
       container.innerHTML = '🪪';
       
       try {
+        // Buscar en múltiples formatos posibles
         const extensions = ['jpg', 'jpeg', 'png', 'webp'];
         for (let ext of extensions) {
           const path = `uniformados/foto_${cedula}.${ext}`;
-          const { publicUrl } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
+          const { data: { publicUrl } } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
           
           const img = new Image();
-          img.crossOrigin = 'Anonymous';
           img.src = publicUrl;
-          await new Promise(resolve => {
+          await new Promise((resolve) => {
             img.onload = () => {
               container.innerHTML = '';
               container.appendChild(img);
               resolve();
             };
-            img.onerror = resolve;
+            img.onerror = () => resolve(); // sigue con siguiente ext
           });
           if (container.querySelector('img')) break;
         }
@@ -682,57 +606,19 @@
       document.getElementById('resultsList').style.display = 'block';
     }
 
-    // ✅ PDF funcional — probado en Chrome, Firefox, Edge
     function exportarPDF() {
-      const ficha = document.getElementById('resultCard');
-      if (!ficha || ficha.style.display === 'none') {
-        alert('⚠️ Primero selecciona un funcionario.');
-        return;
-      }
+      const element = document.getElementById('fichaPDF');
+      const name = document.getElementById('apellidos_nombres').textContent.replace(/\s+/g, '_');
 
-      const nombre = document.getElementById('apellidos_nombres')?.textContent?.trim() || 'funcionario';
-      const cedula = document.getElementById('cedula')?.textContent?.trim() || 'desconocida';
-      const filename = `ficha_${nombre.replace(/\s+/g, '_')}_${cedula}.pdf`;
-
-      // ✅ Clon seguro
-      const clone = ficha.cloneNode(true);
-      clone.id = 'pdf-clone';
-      clone.style.position = 'fixed';
-      clone.style.top = '0';
-      clone.style.left = '0';
-      clone.style.width = '794px';
-      clone.style.padding = '20px 30px';
-      clone.style.background = 'white';
-      clone.style.display = 'block';
-
-      // Limpiar elementos interactivos
-      const closeBtn = clone.querySelector('#btnCerrarFicha');
-      const exportBtn = clone.querySelector('#btnExportPDF');
-      if (closeBtn) closeBtn.remove();
-      if (exportBtn) exportBtn.remove();
-
-      // ✅ Añadir al DOM (necesario para html2pdf)
-      document.body.appendChild(clone);
-
-      // ✅ Configuración robusta
       const opt = {
-        margin: 15,
-        filename: filename,
+        margin: 10,
+        filename: `ficha_${name}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          logging: false
-        },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      // ✅ Ejecutar descarga real
-      html2pdf().set(opt).from(clone).save().finally(() => {
-        if (clone.parentNode) clone.parentNode.removeChild(clone);
-        logActividad('Exportación de ficha a PDF', filename);
-      });
+      html2pdf().set(opt).from(element).save();
     }
   </script>
 </body>
