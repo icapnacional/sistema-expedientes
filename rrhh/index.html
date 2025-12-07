@@ -542,20 +542,28 @@
       document.getElementById(tabId).classList.add('active');
       localStorage.setItem('activeRrhhTab', tabId);
     }
-    // ✅ Función para acceso seguro al Registro (solo admin/moderador)
+// ✅ Función para acceso seguro al Registro (solo admin/moderador)
 function accederRegistro() {
-  // Obtiene el rol desde el atributo data-role del span #userRol
   const userRolSpan = document.getElementById('userRol');
   const rol = userRolSpan ? userRolSpan.getAttribute('data-role') : 'consultor';
-
+  
   if (rol !== 'admin' && rol !== 'moderador') {
     alert('🔒 Acceso restringido: solo Administradores y Moderadores pueden registrar personal.');
     return;
   }
-
-  // Redirige a registro.html
+  
   window.location.href = 'registro.html';
 }
+
+// ✅ Asignar evento al botón de Registro (por texto, compatible con todos los navegadores)
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.module-card').forEach(card => {
+    const title = card.querySelector('.module-title')?.textContent || '';
+    if (title.includes('Registro') || title.includes('Incidencias')) {
+      card.onclick = accederRegistro;
+    }
+  });
+});
   </script>
 </body>
 </html>
