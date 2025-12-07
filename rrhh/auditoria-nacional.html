@@ -473,6 +473,25 @@
         msg.style.color = '#c62828';
       }
     }
+    // ✅ Registrar log de consulta
+async function registrarLogConsulta(cedula, nombre) {
+  try {
+    const {  { session } } = await client.auth.getSession();
+    if (!session) return;
+
+    await client.from('rrhh_logs').insert({
+      user_id: session.user.id,
+      email: session.user.email,
+      rol: document.getElementById('userRol')?.getAttribute('data-role') || 'consultor',
+      accion: 'consulta',
+      cedula_afectada: cedula,
+      nombre_afectado: nombre,
+      detalles: { busqueda: cedula || nombre }
+    });
+  } catch (err) {
+    console.warn('No se pudo registrar log de consulta:', err.message);
+  }
+}
   </script>
 </body>
 </html>
