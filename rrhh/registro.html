@@ -340,6 +340,25 @@
       alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : type === 'error' ? 'alert-error' : '');
       alertDiv.style.display = msg ? 'block' : 'none';
     }
+    // ✅ Registrar log de registro
+async function registrarLogRegistro(cedula, nombre) {
+  try {
+    const {  { session } } = await client.auth.getSession();
+    if (!session) return;
+
+    await client.from('rrhh_logs').insert({
+      user_id: session.user.id,
+      email: session.getElementById('userEmail').textContent,
+      rol: document.getElementById('userRol')?.getAttribute('data-role') || 'moderador',
+      accion: 'registro',
+      cedula_afectada: cedula,
+      nombre_afectado: nombre,
+      detalles: { modulo: 'auditoria_rrhh' }
+    });
+  } catch (err) {
+    console.warn('No se pudo registrar log de registro:', err.message);
+  }
+}
   </script>
 </body>
 </html>
