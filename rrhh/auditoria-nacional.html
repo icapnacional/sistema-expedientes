@@ -316,19 +316,22 @@
     // ✅ Cargar sesión al iniciar
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const {  { session }, error } = await client.auth.getSession();
+        // ✅ CORRECCIÓN CLAVE: sintaxis válida para Supabase v2
+        const { data: { session }, error } = await client.auth.getSession();
         if (error || !session) return window.location.href = '../index.html';
 
-        const {  perfil } = await client
+        const { data: perfil, error: perfilError } = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
           .single();
 
-        if (!perfil) return window.location.href = '../index.html';
+        if (perfilError || !perfil) return window.location.href = '../index.html';
 
         document.getElementById('userEmail').textContent = perfil.email;
-        document.getElementById('userRol').textContent = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
+        document.getElementById('userRol').textContent = 
+          perfil.rol === 'admin' ? 'Administrador' : 
+          perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
 
         // ✅ Eventos
         document.getElementById('btnBuscar').addEventListener('click', buscarFicha);
@@ -359,7 +362,7 @@
       msg.style.color = '#1976d2';
 
       try {
-        let {  { data, error } } = await client
+        let { data, error } = await client
           .from('auditoria_personal')
           .select('*')
           .or(`cedula.eq.${query},apellidos_nombres.ilike.%${query}%,estado.ilike.%${query}%`)
@@ -421,7 +424,7 @@
 
     // ✅ Cargar foto desde Storage
     async function cargarFoto(cedula) {
-      const {  { publicUrl } } = client.storage.from('fotos_funcionarios').getPublicUrl(`${cedula}.jpg`);
+      const { data: { publicUrl } } = client.storage.from('fotos_funcionarios').getPublicUrl(`${cedula}.jpg`);
       const img = document.createElement('img');
       img.src = publicUrl;
       img.onerror = () => {
@@ -454,7 +457,7 @@
 
       try {
         const fileName = `${currentCedula}.jpg`;
-        const {  { error } } = await client.storage
+        const { error } = await client.storage
           .from('fotos_funcionarios')
           .upload(fileName, file, { upsert: true });
 
