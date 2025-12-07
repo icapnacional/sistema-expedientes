@@ -77,7 +77,7 @@
     }
     input[type="file"] {
       padding: 6px;
-      background: #fff;
+      background: white;
     }
     textarea {
       min-height: 60px;
@@ -123,17 +123,44 @@
     .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
     .breadcrumb span { margin: 0 8px; color: #888; }
 
-    /* Vista previa de foto */
-    #previewFoto {
-      margin-top: 8px;
-      display: none;
+    /* 📷 Cuadro de foto grande centrado */
+    #fotoContenedor {
+      text-align: center;
+      margin: 0 0 30px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      border: 2px dashed #ccc;
+    }
+    #fotoContenedor h3 {
+      margin-bottom: 16px;
+      color: #722F37;
+      font-weight: 600;
     }
     #fotoPreview {
-      max-width: 150px;
-      max-height: 150px;
-      border-radius: 6px;
-      border: 1px solid #eee;
+      width: 220px;
+      height: 220px;
       object-fit: cover;
+      border-radius: 8px;
+      border: 3px solid #722F37;
+      background: #eee;
+      display: none;
+    }
+    #subirFotoBtn {
+      margin-top: 12px;
+      cursor: pointer;
+      background: #722F37;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 600;
+    }
+    #subirFotoBtn:hover {
+      background: #5e262d;
+    }
+    #fotoInput {
+      display: none;
     }
   </style>
 </head>
@@ -155,6 +182,19 @@
     </div>
     <div class="card">
       <h2>📝 Registro de Personal Auditado</h2>
+
+      <!-- 🖼️ CUADRO GRANDE PARA LA FOTO (justo aquí, como pediste) -->
+      <div id="fotoContenedor">
+        <h3>📸 Foto del Funcionario Uniformado</h3>
+        <img id="fotoPreview" src="" alt="Foto del funcionario" />
+        <br>
+        <button type="button" id="subirFotoBtn">📁 Seleccionar foto</button>
+        <input type="file" id="fotoInput" accept="image/jpeg,image/png,image/webp">
+        <p style="margin-top:8px; font-size:13px; color:#666;">
+          Formatos: JPG, PNG, WEBP | Máx. 5 MB
+        </p>
+      </div>
+
       <div id="alertMessage" class="alert"></div>
       <form id="registroForm">
         <div class="form-grid">
@@ -238,14 +278,6 @@
             <label for="tipo_movimiento">Tipo de Movimiento</label>
             <input type="text" id="tipo_movimiento">
           </div>
-          <div class="form-group">
-            <label for="foto_uniformado">Foto del Funcionario Uniformado (opcional)</label>
-            <input type="file" id="foto_uniformado" accept="image/jpeg,image/png,image/webp">
-            <small style="color:#666; display:block; margin-top:4px;">Formatos: JPG, PNG, WEBP (máx. 5 MB)</small>
-            <div id="previewFoto">
-              <img id="fotoPreview" src="" alt="Vista previa">
-            </div>
-          </div>
           <div class="form-group" style="grid-column:1/-1;">
             <label for="observaciones">Observaciones</label>
             <textarea id="observaciones"></textarea>
@@ -276,15 +308,19 @@
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const alertDiv = document.getElementById('alertMessage');
 
-    // Vista previa de foto
-    document.getElementById('foto_uniformado').addEventListener('change', function(e) {
-      const preview = document.getElementById('previewFoto');
-      const img = document.getElementById('fotoPreview');
+    // 📤 Trigger input al hacer clic en el botón
+    document.getElementById('subirFotoBtn').addEventListener('click', () => {
+      document.getElementById('fotoInput').click();
+    });
+
+    // 🖼️ Preview de la foto seleccionada
+    document.getElementById('fotoInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
+      const preview = document.getElementById('fotoPreview');
       if (file) {
         const reader = new FileReader();
         reader.onload = () => {
-          img.src = reader.result;
+          preview.src = reader.result;
           preview.style.display = 'block';
         };
         reader.readAsDataURL(file);
@@ -326,7 +362,7 @@
 
       const cedula = document.getElementById('cedula').value.trim();
       const apellidosNombres = document.getElementById('apellidos_nombres').value.trim();
-      const fileInput = document.getElementById('foto_uniformado');
+      const fileInput = document.getElementById('fotoInput');
       const file = fileInput.files[0];
 
       if (!cedula || !apellidosNombres) {
@@ -336,18 +372,18 @@
       let fotoUrl = null;
 
       try {
-        // 🔍 ✅ Verificar cédula única ANTES de insertar
-        const { data: existing, error: checkError } = await client
+        // 🔍 Verificar cédula única
+        const { data: existing } = await client
           .from('auditoria_personal')
           .select('cedula')
           .eq('cedula', cedula)
-          .single(); // falla si no hay 1 registro → útil para detección
+          .single();
 
-        if (!checkError && existing) {
+        if (existing) {
           return showAlert(`❌ La cédula ${cedula} ya está registrada.`, 'error');
         }
 
-        // ✅ Subir foto (si hay)
+        // ✅ Subir foto si existe
         if (file) {
           if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
             return showAlert('⚠️ Solo se permiten imágenes JPG, PNG o WEBP.', 'error');
@@ -373,7 +409,7 @@
           fotoUrl = publicUrl;
         }
 
-        // ✅ Insertar registro
+        // ✅ Insertar datos
         const data = {
           cedula,
           rango: document.getElementById('rango').value,
@@ -397,7 +433,7 @@
           fechas_egreso: document.getElementById('fechas_egreso').value,
           direccion: document.getElementById('direccion').value,
           correo_electronico: document.getElementById('correo_electronico').value,
-          foto_uniformado_url: fotoUrl // 👈 nueva columna
+          foto_uniformado_url: fotoUrl // 👈 guardamos la URL
         };
 
         const { error: insertError } = await client
@@ -406,14 +442,14 @@
 
         if (insertError) {
           if (insertError.code === '23505') {
-            return showAlert(`❌ La cédula ${cedula} ya existe (violación de restricción única).`, 'error');
+            return showAlert(`❌ La cédula ${cedula} ya existe (restricción única violada).`, 'error');
           }
           throw insertError;
         }
 
         showAlert('✅ Registro exitoso. El personal ha sido agregado.', 'success');
         document.getElementById('registroForm').reset();
-        document.getElementById('previewFoto').style.display = 'none';
+        document.getElementById('fotoPreview').style.display = 'none';
         setTimeout(() => window.location.href = 'auditoria-nacional.html', 2000);
 
       } catch (err) {
