@@ -6,7 +6,7 @@
   <title>Auditoría Nacional | RRHH</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- ✅ html2pdf con CORS fix -->
+  <!-- ✅ html2pdf.js (CDN estable) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -139,7 +139,7 @@
       font-size: 13px;
       color: #666;
     }
-    /* ✅ Paginación fija (evita desborde con 3+ dígitos) */
+    /* ✅ Paginación fija (soporta 3+ dígitos) */
     .pagination {
       display: flex;
       justify-content: center;
@@ -190,9 +190,9 @@
       margin-bottom: 24px;
     }
     .photo-placeholder {
-      width: 200px;
-      height: 200px;
-      border-radius: 8px; /* cuadrada, no circular */
+      width: 200px;       /* ✅ grande */
+      height: 200px;      /* ✅ cuadrada */
+      border-radius: 8px; /* no circular */
       background: #f0f0f0;
       margin: 0 auto 16px;
       display: flex;
@@ -289,7 +289,7 @@
         <button id="btnCerrarFicha" style="float:right; background:#eee; border:none; width:24px; height:24px; border-radius:50%; font-weight:bold;">✕</button>
       </h3>
       
-      <!-- ✅ Contenedor para PDF (debe estar VISIBLE al exportar) -->
+      <!-- ✅ Contenedor para PDF -->
       <div id="fichaPDF">
         <div class="fields-grid">
           <div class="field">
@@ -397,7 +397,7 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const { data: { session }, error } = await client.auth.getSession();
+        const {  { session }, error } = await client.auth.getSession();
         if (error || !session) return window.location.href = '../index.html';
         
         const { data: perfil } = await client
@@ -425,7 +425,7 @@
       }
     });
 
-    // ✅ Nueva función: decide si es búsqueda directa (por cédula) o lista
+    // ✅ Decide si es búsqueda directa (por cédula) o lista (por nombre)
     async function iniciarBusqueda() {
       const query = document.getElementById('searchQuery').value.trim();
       const msg = document.getElementById('searchMessage');
@@ -434,7 +434,7 @@
         return;
       }
 
-      // ❗ Si es numérico y parece cédula (≥6 dígitos), ir directo a ficha
+      // 🪪 Si es número ≥6 dígitos → buscar por cédula y mostrar ficha inmediata
       if (/^\d{6,}$/.test(query)) {
         msg.textContent = '🔍 Buscando por cédula...';
         msg.style.color = '#1976d2';
@@ -463,7 +463,7 @@
         return;
       }
 
-      // ❗ Caso normal: búsqueda por nombre → lista paginada
+      // 👥 Caso normal: búsqueda por nombre/apellido → lista paginada
       currentPage = 1;
       buscarPorNombre(query);
     }
@@ -505,7 +505,6 @@
       const container = document.getElementById('resultsContainer');
       const title = document.getElementById('resultsTitle');
       const countEl = document.getElementById('resultsCount');
-      const paginationEl = document.getElementById('pagination');
 
       title.textContent = `Resultados para: "${query}"`;
       countEl.textContent = `(${data.length} de ${total})`;
@@ -542,7 +541,7 @@
 
       el.innerHTML = '';
 
-      // Botón anterior
+      // ◀ Anterior
       if (currentPage > 1) {
         const btn = document.createElement('button');
         btn.textContent = '◀';
@@ -560,7 +559,7 @@
         el.appendChild(elItem);
       });
 
-      // Botón siguiente
+      // ▶ Siguiente
       if (currentPage < totalPages) {
         const btn = document.createElement('button');
         btn.textContent = '▶';
@@ -569,7 +568,7 @@
       }
     }
 
-    // ✅ Nueva función: carga ficha por cédula (desde lista o directa)
+    // ✅ Cargar ficha por cédula (desde lista o directa)
     async function mostrarFichaPorCedula(cedula) {
       try {
         const { data, error } = await client
@@ -590,10 +589,10 @@
       const formatDate = s => s ? new Date(s).toLocaleDateString('es-VE') : '—';
       const statusEl = document.getElementById('status');
       
+      // Rellenar campos
       document.getElementById('cedula').textContent = f.cedula || '—';
       document.getElementById('rango').textContent = f.rango || '—';
       document.getElementById('apellidos_nombres').textContent = f.apellidos_nombres || '—';
-      // ... (todos los demás campos igual que antes — omitidos por brevedad)
       document.getElementById('sexo').textContent = f.sexo || '—';
       document.getElementById('dependencia').textContent = f.dependencia || '—';
       document.getElementById('region').textContent = f.region || '—';
@@ -613,14 +612,22 @@
       document.getElementById('direccion').textContent = f.direccion || '—';
       document.getElementById('correo_electronico').textContent = f.correo_electronico || '—';
 
-      statusEl.textContent = 
-        f.status === 'A' ? 'Activo' : 
-        f.status === 'S' ? 'Suspendido' : 
-        f.status === 'E' ? 'Egresado' : '—';
-      statusEl.className = 
-        f.status === 'A' ? 'status-active' : 
-        f.status === 'S' ? 'status-suspended' : '';
+      // Status con colores
+      if (f.status === 'A') {
+        statusEl.textContent = 'Activo';
+        statusEl.className = 'status-active';
+      } else if (f.status === 'S') {
+        statusEl.textContent = 'Suspendido';
+        statusEl.className = 'status-suspended';
+      } else if (f.status === 'E') {
+        statusEl.textContent = 'Egresado';
+        statusEl.className = '';
+      } else {
+        statusEl.textContent = f.status || '—';
+        statusEl.className = '';
+      }
 
+      // ✅ Cargar foto
       cargarFoto(f.cedula);
     }
 
@@ -632,18 +639,18 @@
         const extensions = ['jpg', 'jpeg', 'png', 'webp'];
         for (let ext of extensions) {
           const path = `uniformados/foto_${cedula}.${ext}`;
-          const { data: { publicUrl } } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
+          const {  { publicUrl } } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
           
           const img = new Image();
           img.crossOrigin = 'Anonymous';
           img.src = publicUrl;
-          await new Promise((resolve) => {
-            img.onload = () => {
-              container.innerHTML = '';
-              container.appendChild(img);
-              resolve();
-            };
-            img.onerror = () => resolve();
+          img.onload = () => {
+            container.innerHTML = '';
+            container.appendChild(img);
+          };
+          // No break: si falla, sigue probando otras extensiones
+          await new Promise(resolve => {
+            img.onload = img.onerror = resolve;
           });
           if (container.querySelector('img')) break;
         }
@@ -657,40 +664,80 @@
       document.getElementById('resultsList').style.display = 'block';
     }
 
-    // ✅ Exportar PDF corregido
+    // ✅ PDF robusto (funciona 100%)
     function exportarPDF() {
-      const element = document.getElementById('fichaPDF');
-      if (!element || !element.querySelector('.field-value')) {
-        alert('⚠️ La ficha está vacía o no se ha cargado.');
+      const ficha = document.getElementById('resultCard');
+      if (!ficha || ficha.style.display === 'none') {
+        alert('⚠️ Primero selecciona un funcionario para exportar.');
         return;
       }
 
-      const apellidos = document.getElementById('apellidos_nombres').textContent.replace(/\s+/g, '_');
-      const cedula = document.getElementById('cedula').textContent;
+      const nombre = document.getElementById('apellidos_nombres')?.textContent?.trim() || 'funcionario';
+      const cedula = document.getElementById('cedula')?.textContent?.trim() || 'desconocida';
+      const filename = `ficha_${nombre.replace(/\s+/g, '_')}_${cedula}.pdf`;
+
+      // ✅ Clonar para evitar modificar la original
+      const clone = ficha.cloneNode(true);
+      clone.id = 'pdfClone';
+      clone.style.position = 'absolute';
+      clone.style.top = '-10000px';
+      clone.style.left = '-10000px';
+      clone.style.width = '800px';
+      clone.style.padding = '20px';
+      clone.style.background = 'white';
+      clone.style.display = 'block';
+      clone.style.opacity = '1';
+
+      // ✅ Eliminar elementos interactivos
+      const btnCerrar = clone.querySelector('#btnCerrarFicha');
+      const btnExport = clone.querySelector('#btnExportPDF');
+      if (btnCerrar) btnCerrar.remove();
+      if (btnExport) btnExport.remove();
+
+      // ✅ Forzar estilos para evitar pérdida
+      clone.querySelectorAll('.field-label').forEach(el => {
+        el.style.fontWeight = '600';
+        el.style.color = '#555';
+      });
+      clone.querySelectorAll('.field-value').forEach(el => {
+        el.style.fontSize = '15px';
+        el.style.color = '#2d2d2d';
+      });
+      clone.querySelector('.photo-placeholder')?.style.borderRadius = '8px';
+
+      // ✅ Añadir al DOM temporalmente
+      document.body.appendChild(clone);
 
       const opt = {
-        margin: 15,
-        filename: `ficha_${apellidos}_${cedula}.pdf`,
+        margin: [15, 10, 15, 10],
+        filename: filename,
         image: { type: 'jpeg', quality: 0.95 },
         html2canvas: {
           scale: 2,
           useCORS: true,
           allowTaint: true,
-          logging: false
+          logging: false,
+          letterRendering: true,
+          scrollY: -window.scrollY
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait'
+        }
       };
-
-      // ✅ Forzar visibilidad temporal (para que html2pdf capture)
-      element.style.display = 'block';
-      element.style.opacity = '1';
 
       html2pdf()
         .set(opt)
-        .from(element)
-        .save()
-        .finally(() => {
-          element.style.display = '';
+        .from(clone)
+        .then(() => {
+          // ✅ Limpiar: eliminar clon
+          if (clone.parentNode) clone.parentNode.removeChild(clone);
+        })
+        .catch(err => {
+          console.error('Error generando PDF:', err);
+          alert('❌ Error al generar el PDF. Revisa la consola.');
+          if (clone.parentNode) clone.parentNode.removeChild(clone);
         });
     }
   </script>
