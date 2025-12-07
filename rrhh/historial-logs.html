@@ -83,9 +83,12 @@
     const perPage = 20;
 
     document.addEventListener('DOMContentLoaded', async () => {
-      // Verificar que sea admin
-      const {  { session } } = await client.auth.getSession();
-      if (!session) return window.location.href = '../index.html';
+          // ✅ Verificar sesión y perfil
+const { data: { session }, error: sessionError } = await client.auth.getSession();
+if (sessionError || !session) {
+  window.location.href = '../index.html';
+  return;
+};
 
       const { data: perfil } = await client.from('perfiles').select('rol').eq('id', session.user.id).single();
 const userRol = perfil?.rol;
