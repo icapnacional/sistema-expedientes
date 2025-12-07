@@ -89,7 +89,7 @@
 
       const { data: perfil } = await client.from('perfiles').select('rol').eq('id', session.user.id).single();
 const userRol = perfil?.rol;
-if (userRol !== 'admin' && userRol !== 1 && userRol !== '1') {
+if (userRol !== 'admin') {
   alert('🔒 Acceso denegado: solo el Administrador puede ver el historial.');
   window.location.href = 'index.html';
   return;
