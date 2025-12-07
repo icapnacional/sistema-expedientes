@@ -691,22 +691,26 @@
       clone.style.display = 'block';
       clone.style.opacity = '1';
 
-      // ✅ Eliminar elementos interactivos
-      const btnCerrar = clone.querySelector('#btnCerrarFicha');
-      const btnExport = clone.querySelector('#btnExportPDF');
-      if (btnCerrar) btnCerrar.remove();
-      if (btnExport) btnExport.remove();
+  // ✅ Eliminar elementos interactivos
+const btnCerrar = clone.querySelector('#btnCerrarFicha');
+const btnExport = clone.querySelector('#btnExportPDF');
+if (btnCerrar) btnCerrar.remove();
+if (btnExport) btnExport.remove();
 
-      // ✅ Forzar estilos para evitar pérdida
-      clone.querySelectorAll('.field-label').forEach(el => {
-        el.style.fontWeight = '600';
-        el.style.color = '#555';
-      });
-      clone.querySelectorAll('.field-value').forEach(el => {
-        el.style.fontSize = '15px';
-        el.style.color = '#2d2d2d';
-      });
-      clone.querySelector('.photo-placeholder')?.style.borderRadius = '8px';
+// ✅ Forzar estilos para evitar pérdida
+clone.querySelectorAll('.field-label').forEach(el => {
+  if (el) el.style.fontWeight = '600';
+  if (el) el.style.color = '#555';
+});
+clone.querySelectorAll('.field-value').forEach(el => {
+  if (el) el.style.fontSize = '15px';
+  if (el) el.style.color = '#2d2d2d';
+});
+
+const photoPlaceholder = clone.querySelector('.photo-placeholder');
+if (photoPlaceholder) {
+  photoPlaceholder.style.borderRadius = '8px'; // ✅ Correcto
+}
 
       // ✅ Añadir al DOM temporalmente
       document.body.appendChild(clone);
