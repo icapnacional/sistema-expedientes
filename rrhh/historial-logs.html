@@ -88,13 +88,12 @@
       if (!session) return window.location.href = '../index.html';
 
       const { data: perfil } = await client.from('perfiles').select('rol').eq('id', session.user.id).single();
-     const userRol = perfil?.rol;
-if (userRol !== 'admin' && userRol !== 1 && userRol !== '1') {
+const userRol = perfil?.rol;
+if (userRol !== 'admin' && userRol !== 1 && String(userRol) !== '1') {
   alert('🔒 Acceso denegado: solo el Administrador puede ver el historial.');
   window.location.href = 'index.html';
   return;
 }
-
       loadLogs();
       document.getElementById('btnFiltrar').addEventListener('click', loadLogs);
       document.getElementById('searchLogs').addEventListener('keypress', e => {
