@@ -75,6 +75,10 @@
       font-size: 15px;
       background: #fdfdfd;
     }
+    input[type="file"] {
+      padding: 6px;
+      background: #fff;
+    }
     textarea {
       min-height: 60px;
       resize: vertical;
@@ -118,6 +122,19 @@
     }
     .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
     .breadcrumb span { margin: 0 8px; color: #888; }
+
+    /* Preview de foto */
+    #previewFoto {
+      margin-top: 10px;
+      display: none;
+    }
+    #fotoPreview {
+      max-width: 150px;
+      max-height: 150px;
+      border-radius: 6px;
+      border: 1px solid #eee;
+      object-fit: cover;
+    }
   </style>
 </head>
 <body>
@@ -136,7 +153,6 @@
       <strong>Usuario:</strong> <span id="userEmail">—</span> |
       <strong>Rol:</strong> <span id="userRol">—</span>
     </div>
-
     <div class="card">
       <h2>📝 Registro de Personal Auditado</h2>
       <div id="alertMessage" class="alert"></div>
@@ -222,6 +238,14 @@
             <label for="tipo_movimiento">Tipo de Movimiento</label>
             <input type="text" id="tipo_movimiento">
           </div>
+          <div class="form-group">
+            <label for="foto_uniformado">Foto del Funcionario Uniformado (opcional)</label>
+            <input type="file" id="foto_uniformado" accept="image/jpeg,image/png,image/webp">
+            <small style="color:#666; display:block; margin-top:4px;">Formatos: JPG, PNG, WEBP (máx. 5 MB)</small>
+            <div id="previewFoto">
+              <img id="fotoPreview" src="" alt="Vista previa">
+            </div>
+          </div>
           <div class="form-group" style="grid-column:1/-1;">
             <label for="observaciones">Observaciones</label>
             <textarea id="observaciones"></textarea>
@@ -246,42 +270,48 @@
       </form>
     </div>
   </div>
-
   <script>
     const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const alertDiv = document.getElementById('alertMessage');
 
+    // Vista previa de la foto
+    document.getElementById('foto_uniformado').addEventListener('change', function(e) {
+      const preview = document.getElementById('previewFoto');
+      const img = document.getElementById('fotoPreview');
+      const file = e.target.files[0];
+      
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          img.src = reader.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.style.display = 'none';
+      }
+    });
+
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-          // ✅ Verificar sesión y perfil
-const { data: { session }, error: sessionError } = await client.auth.getSession();
-if (sessionError || !session) {
-  window.location.href = '../index.html';
-  return;
-}
-
-const { data: perfil, error: perfilError } = await client
-  .from('perfiles')
-  .select('rol')
-  .eq('id', session.user.id)
-  .single();
-
-if (perfilError || !perfil) {
-  alert('🔒 Error al cargar tu perfil. Contacta al administrador del sistema.');
-  window.location.href = '../index.html';
-  return;
-}
-
-// ✅ Solo admin puede ver el historial
-const userRol = perfil.rol || 'consultor';
-if (userRol !== 'admin') {
-  alert('🔒 Acceso restringido: solo el Administrador puede ver el historial.');
-  window.location.href = 'index.html';
-  return;
-}
-
+        const { data: { session }, error: sessionError } = await client.auth.getSession();
+        if (sessionError || !session) {
+          window.location.href = '../index.html';
+          return;
+        }
+        const { data: perfil } = await client
+          .from('perfiles')
+          .select('email, rol')
+          .eq('id', session.user.id)
+          .single();
+        if (!perfil) return window.location.href = '../index.html';
+        if (perfil.rol !== 'admin' && perfil.rol !== 'moderador') {
+          alert('🔒 Acceso denegado: solo Administradores y Moderadores pueden registrar.');
+          window.location.href = 'auditoria-nacional.html';
+          return;
+        }
         document.getElementById('userEmail').textContent = perfil.email;
         document.getElementById('userRol').textContent = 
           perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
@@ -293,51 +323,87 @@ if (userRol !== 'admin') {
 
     document.getElementById('registroForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      showAlert('', ''); // limpiar
+      showAlert('', '');
 
-      const data = {
-        cedula: document.getElementById('cedula').value.trim(),
-        rango: document.getElementById('rango').value,
-        apellidos_nombres: document.getElementById('apellidos_nombres').value,
-        sexo: document.getElementById('sexo').value,
-        dependencia: document.getElementById('dependencia').value,
-        region: document.getElementById('region').value,
-        estado: document.getElementById('estado').value,
-        servicio: document.getElementById('servicio').value,
-        cohorte_promocion: document.getElementById('cohorte_promocion').value,
-        institucion_origen: document.getElementById('institucion_origen').value,
-        fecha_ingreso: document.getElementById('fecha_ingreso').value || null,
-        telefono: document.getElementById('telefono').value,
-        status: document.getElementById('status').value,
-        fecha_nacimiento: document.getElementById('fecha_nacimiento').value || null,
-        edad_funcionario: document.getElementById('edad_funcionario').value,
-        fecha_oficio: document.getElementById('fecha_oficio').value,
-        fecha_transferencia_normalizacion: document.getElementById('fecha_transferencia_normalizacion').value,
-        tipo_movimiento: document.getElementById('tipo_movimiento').value,
-        observaciones: document.getElementById('observaciones').value,
-        fechas_egreso: document.getElementById('fechas_egreso').value,
-        direccion: document.getElementById('direccion').value,
-        correo_electronico: document.getElementById('correo_electronico').value
-      };
+      const cedula = document.getElementById('cedula').value.trim();
+      const apellidosNombres = document.getElementById('apellidos_nombres').value.trim();
+      const fileInput = document.getElementById('foto_uniformado');
+      const file = fileInput.files[0];
 
-      if (!data.cedula || !data.apellidos_nombres) {
+      if (!cedula || !apellidosNombres) {
         return showAlert('⚠️ Cédula y Apellidos/Nombres son obligatorios.', 'error');
       }
 
+      let fotoUrl = null;
+
       try {
-        const { error } = await client
+        // ✅ Subir foto si existe
+        if (file) {
+          if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+            return showAlert('⚠️ Solo se permiten imágenes JPG, PNG o WEBP.', 'error');
+          }
+          if (file.size > 5 * 1024 * 1024) {
+            return showAlert('⚠️ La imagen no debe superar los 5 MB.', 'error');
+          }
+
+          const fileName = `foto_${cedula}_${Date.now()}.${file.name.split('.').pop()}`;
+          const { data: uploadData, error: uploadError } = await client.storage
+            .from('fotos_funcionarios')
+            .upload(`uniformados/${fileName}`, file, {
+              upsert: false,
+              contentType: file.type
+            });
+
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = client.storage
+            .from('fotos_funcionarios')
+            .getPublicUrl(`uniformados/${fileName}`);
+
+          fotoUrl = publicUrl;
+        }
+
+        // ✅ Datos del formulario + foto
+        const data = {
+          cedula,
+          rango: document.getElementById('rango').value,
+          apellidos_nombres: apellidosNombres,
+          sexo: document.getElementById('sexo').value,
+          dependencia: document.getElementById('dependencia').value,
+          region: document.getElementById('region').value,
+          estado: document.getElementById('estado').value,
+          servicio: document.getElementById('servicio').value,
+          cohorte_promocion: document.getElementById('cohorte_promocion').value,
+          institucion_origen: document.getElementById('institucion_origen').value,
+          fecha_ingreso: document.getElementById('fecha_ingreso').value || null,
+          telefono: document.getElementById('telefono').value,
+          status: document.getElementById('status').value,
+          fecha_nacimiento: document.getElementById('fecha_nacimiento').value || null,
+          edad_funcionario: document.getElementById('edad_funcionario').value,
+          fecha_oficio: document.getElementById('fecha_oficio').value,
+          fecha_transferencia_normalizacion: document.getElementById('fecha_transferencia_normalizacion').value,
+          tipo_movimiento: document.getElementById('tipo_movimiento').value,
+          observaciones: document.getElementById('observaciones').value,
+          fechas_egreso: document.getElementById('fechas_egreso').value,
+          direccion: document.getElementById('direccion').value,
+          correo_electronico: document.getElementById('correo_electronico').value,
+          foto_uniformado_url: fotoUrl // 👈 nueva columna
+        };
+
+        const { error: dbError } = await client
           .from('auditoria_personal')
           .insert(data);
 
-        if (error) throw error;
+        if (dbError) throw dbError;
 
         showAlert('✅ Registro exitoso. El personal ha sido agregado.', 'success');
-        registrarLogRegistro(data.cedula, data.apellidos_nombres);
         document.getElementById('registroForm').reset();
+        document.getElementById('previewFoto').style.display = 'none';
         setTimeout(() => window.location.href = 'auditoria-nacional.html', 2000);
+
       } catch (err) {
         console.error('Error:', err);
-        showAlert(`❌ Error al registrar: ${err.message || 'Verifique que la cédula no exista'}`, 'error');
+        showAlert(`❌ Error: ${err.message || 'No se pudo guardar el registro'}`, 'error');
       }
     });
 
@@ -346,25 +412,6 @@ if (userRol !== 'admin') {
       alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : type === 'error' ? 'alert-error' : '');
       alertDiv.style.display = msg ? 'block' : 'none';
     }
-    // ✅ Registrar log de registro
-async function registrarLogRegistro(cedula, nombre) {
-  try {
-      const { data: { session }, error: sessionError } = await client.auth.getSession();
-    if (!session) return;
-
-    await client.from('rrhh_logs').insert({
-      user_id: session.user.id,
-      email: session.getElementById('userEmail').textContent,
-      rol: document.getElementById('userRol')?.getAttribute('data-role') || 'moderador',
-      accion: 'registro',
-      cedula_afectada: cedula,
-      nombre_afectado: nombre,
-      detalles: { modulo: 'auditoria_rrhh' }
-    });
-  } catch (err) {
-    console.warn('No se pudo registrar log de registro:', err.message);
-  }
-}
   </script>
 </body>
 </html>
