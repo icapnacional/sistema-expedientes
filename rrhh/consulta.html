@@ -395,40 +395,39 @@
     let currentPage = 1;
     const RESULTS_PER_PAGE = 15;
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-                // ✅ Verificar sesión y perfil
-const { data: { session }, error: sessionError } = await client.auth.getSession();
-if (sessionError || !session) {
-  window.location.href = '../index.html';
-  return;
-};
-        
-        const { data: perfil } = await client
-          .from('perfiles')
-          .select('email, rol')
-          .eq('id', session.user.id)
-          .single();
-        if (!perfil) return window.location.href = '../index.html';
+   document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const { data: { session }, error } = await client.auth.getSession();
+    if (error || !session) {
+      return window.location.href = '../index.html';
+    }
+    const { data: perfil, error: perfilError } = await client
+      .from('perfiles')
+      .select('email, rol')
+      .eq('id', session.user.id)
+      .single();
+    if (perfilError || !perfil) {
+      return window.location.href = '../index.html';
+    }
 
-        document.getElementById('userEmail').textContent = perfil.email;
-        document.getElementById('userRol').textContent = 
-          perfil.rol === 'admin' ? 'Administrador' : 
-          perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
+    document.getElementById('userEmail').textContent = perfil.email;
+    document.getElementById('userRol').textContent = 
+      perfil.rol === 'admin' ? 'Administrador' : 
+      perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
 
-        // Eventos
-        document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
-        document.getElementById('searchQuery').addEventListener('keypress', e => {
-          if (e.key === 'Enter') iniciarBusqueda();
-        });
-        document.getElementById('btnCerrarFicha').addEventListener('click', cerrarFicha);
-        document.getElementById('btnExportPDF').addEventListener('click', exportarPDF);
-      } catch (err) {
-        console.error('Error al cargar sesión:', err);
-        window.location.href = '../index.html';
-      }
+    // Eventos
+    document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
+    document.getElementById('searchQuery').addEventListener('keypress', e => {
+      if (e.key === 'Enter') iniciarBusqueda();
     });
+    document.getElementById('btnCerrarFicha').addEventListener('click', cerrarFicha);
+    document.getElementById('btnExportPDF').addEventListener('click', exportarPDF);
 
+  } catch (err) {
+    console.error('Error al cargar sesión:', err);
+    window.location.href = '../index.html';
+  }
+});
     // ✅ Decide si es búsqueda directa (por cédula) o lista (por nombre)
     async function iniciarBusqueda() {
       const query = document.getElementById('searchQuery').value.trim();
