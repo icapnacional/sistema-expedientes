@@ -263,11 +263,11 @@
               <div class="module-title">Consulta</div>
               <div class="module-desc">Consulta, Bsuca y visualiza la nomina nacional del CPNB.</div>
             </div>
-            <div class="module-card" onclick="location.href='auditoria-nacional.html#incidencias'">
-              <div class="module-icon">⚠️</div>
-              <div class="module-title">Incidencias</div>
-              <div class="module-desc">Gestión de incidencias detectadas durante las auditorías.</div>
-            </div>
+           <div class="module-card" id="btnRegistro" onclick="accederRegistro()">
+  <div class="module-icon">📝</div>
+  <div class="module-title">Registro</div>
+  <div class="module-desc">Registrar nuevo personal auditado (solo RRHH autorizado).</div>
+           </div>
             <div class="module-card" onclick="location.href='auditoria-nacional.html#historial'">
               <div class="module-icon">📚</div>
               <div class="module-title">Historial</div>
@@ -522,7 +522,16 @@
             switchTab(tabId);
           });
         });
-
+        
+        function accederRegistro() {
+  // Verificar rol desde localStorage o perfil (como en index.html)
+  const rol = document.getElementById('userRol')?.getAttribute('data-role') || 'consultor';
+  if (rol !== 'admin' && rol !== 'moderador') {
+    alert('🔒 Acceso restringido: solo Administradores y Moderadores pueden registrar personal.');
+    return;
+  }
+  window.location.href = 'registro.html';
+}
         // ✅ Cierre de sesión
         logoutBtn.addEventListener('click', async () => {
           await client.auth.signOut();
