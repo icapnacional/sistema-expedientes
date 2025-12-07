@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Auditoría Nacional | RRHH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 20px 0;
+    }
+    .header img {
+      width: 90px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+      margin-bottom: 8px;
+    }
+    .header .subtitle {
+      font-size: 16px;
+      color: #722F37;
+      font-weight: 600;
+    }
+    .user-info {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      border: 1px solid #eee;
+    }
+    .search-section {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+      border: 1px solid #eee;
+    }
+    .search-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+    input, button {
+      padding: 12px 16px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+    input {
+      width: 100%;
+      background: #fdfdfd;
+    }
+    .btn {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .btn:hover {
+      background-color: #5e262d;
+      transform: translateY(-1px);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #722F37;
+      color: #722F37;
+    }
+    .btn-outline:hover {
+      background: #fdf7f7;
+    }
+    .result-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      border: 1px solid #eee;
+      display: none;
+    }
+    .photo-section {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .photo-placeholder {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: #f0f0f0;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: #888;
+      overflow: hidden;
+    }
+    .photo-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .file-input {
+      display: none;
+    }
+    .upload-btn {
+      background: #722F37;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    .fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .field {
+      margin-bottom: 12px;
+    }
+    .field-label {
+      font-weight: 600;
+      color: #555;
+      font-size: 14px;
+    }
+    .field-value {
+      font-size: 15px;
+      color: #2d2d2d;
+    }
+    .status-active { color: #2e7d32; font-weight: 600; }
+    .status-suspended { color: #c62828; font-weight: 600; }
+    .breadcrumb {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 12px 20px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: #555;
+    }
+    .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 8px; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="../index.html">Inicio</a> <span>›</span>
+      <a href="index.html">RRHH</a> <span>›</span>
+      <strong>Auditoría Nacional</strong>
+    </div>
+    <div class="header">
+      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+      <h1>Inspectable para el Control de la Actuación Policial</h1>
+      <div class="subtitle">• Consulta de Personal Auditado •</div>
+    </div>
+    <div class="user-info">
+      <strong>Usuario:</strong> <span id="userEmail">—</span> |
+      <strong>Rol:</strong> <span id="userRol">—</span>
+    </div>
+
+    <!-- 🔍 Búsqueda -->
+    <div class="search-section">
+      <h2 style="font-size: 20px; margin-bottom: 16px; color: #2d2d2d;">🔍 Consulta de Personal</h2>
+      <div class="search-group">
+        <label for="searchQuery">Cédula, nombre o estado:</label>
+        <input type="text" id="searchQuery" placeholder="Ej: 25653412, SOTO, PORTUGUESA" />
+      </div>
+      <button id="btnBuscar" class="btn" style="width:100%;">Buscar</button>
+      <div id="searchMessage" style="margin-top:12px; font-size:14px; min-height:20px;"></div>
+    </div>
+
+    <!-- 📄 Ficha resultado -->
+    <div id="resultCard" class="result-card">
+      <div class="photo-section">
+        <div class="photo-placeholder" id="photoContainer">
+          🪪
+        </div>
+        <button id="btnUploadPhoto" class="upload-btn">📷 Subir foto</button>
+        <input type="file" id="fileInput" class="file-input" accept="image/*" />
+      </div>
+
+      <h3 style="font-size:18px; margin-bottom:16px; color:#722F37;">
+        🪪 Ficha del Funcionario
+        <button id="btnCerrarFicha" style="float:right; background:#eee; border:none; width:24px; height:24px; border-radius:50%; font-weight:bold;">✕</button>
+      </h3>
+
+      <div class="fields-grid">
+        <div class="field">
+          <div class="field-label">Cédula</div>
+          <div class="field-value" id="cedula"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Rango</div>
+          <div class="field-value" id="rango"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Apellidos y Nombres</div>
+          <div class="field-value" id="apellidos_nombres"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Sexo</div>
+          <div class="field-value" id="sexo"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Dependencia</div>
+          <div class="field-value" id="dependencia"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Región</div>
+          <div class="field-value" id="region"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Estado</div>
+          <div class="field-value" id="estado"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Servicio</div>
+          <div class="field-value" id="servicio"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Cohorte / Promoción</div>
+          <div class="field-value" id="cohorte_promocion"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Institución de Origen</div>
+          <div class="field-value" id="institucion_origen"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Fecha de Ingreso</div>
+          <div class="field-value" id="fecha_ingreso"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Teléfono</div>
+          <div class="field-value" id="telefono"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Status</div>
+          <div class="field-value">
+            <span id="status" class="status-active"></span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Fecha de Nacimiento</div>
+          <div class="field-value" id="fecha_nacimiento"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Edad</div>
+          <div class="field-value" id="edad_funcionario"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Fecha de Oficio</div>
+          <div class="field-value" id="fecha_oficio"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Fecha Transferencia/Normalización</div>
+          <div class="field-value" id="fecha_transferencia_normalizacion"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Tipo de Movimiento</div>
+          <div class="field-value" id="tipo_movimiento"></div>
+        </div>
+        <div class="field" style="grid-column:1/-1;">
+          <div class="field-label">Observaciones</div>
+          <div class="field-value" id="observaciones" style="background:#f9f9f9; padding:10px; border-radius:6px;"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Fechas de Egreso</div>
+          <div class="field-value" id="fechas_egreso"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Dirección</div>
+          <div class="field-value" id="direccion"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Correo Electrónico</div>
+          <div class="field-value" id="correo_electronico"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ✅ Configuración de Supabase
+    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+
+    // ✅ Cargar sesión al iniciar
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // ✅ CORRECCIÓN CLAVE: sintaxis válida para Supabase v2
+        const { data: { session }, error } = await client.auth.getSession();
+        if (error || !session) return window.location.href = '../index.html';
+
+        const { data: perfil, error: perfilError } = await client
+          .from('perfiles')
+          .select('email, rol')
+          .eq('id', session.user.id)
+          .single();
+
+        if (perfilError || !perfil) return window.location.href = '../index.html';
+
+        document.getElementById('userEmail').textContent = perfil.email;
+        document.getElementById('userRol').textContent = 
+          perfil.rol === 'admin' ? 'Administrador' : 
+          perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
+
+        // ✅ Eventos
+        document.getElementById('btnBuscar').addEventListener('click', buscarFicha);
+        document.getElementById('searchQuery').addEventListener('keypress', e => {
+          if (e.key === 'Enter') buscarFicha();
+        });
+        document.getElementById('btnCerrarFicha').addEventListener('click', () => {
+          document.getElementById('resultCard').style.display = 'none';
+        });
+        document.getElementById('btnUploadPhoto').addEventListener('click', () => {
+          document.getElementById('fileInput').click();
+        });
+        document.getElementById('fileInput').addEventListener('change', subirFoto);
+      } catch (err) {
+        console.error('Error al cargar sesión:', err);
+        window.location.href = '../index.html';
+      }
+    });
+
+    let currentCedula = '';
+
+    async function buscarFicha() {
+      const query = document.getElementById('searchQuery').value.trim();
+      const msg = document.getElementById('searchMessage');
+      if (!query) return msg.textContent = '⚠️ Ingresa un término de búsqueda.';
+
+      msg.textContent = '🔍 Buscando...';
+      msg.style.color = '#1976d2';
+
+      try {
+        let { data, error } = await client
+          .from('auditoria_personal')
+          .select('*')
+          .or(`cedula.eq.${query},apellidos_nombres.ilike.%${query}%,estado.ilike.%${query}%`)
+          .limit(1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          msg.textContent = `❌ No encontrado: "${query}"`;
+          msg.style.color = '#c62828';
+          return;
+        }
+
+        const f = data[0];
+        currentCedula = f.cedula;
+        mostrarFicha(f);
+        document.getElementById('resultCard').style.display = 'block';
+        msg.textContent = '✅ Resultado encontrado.';
+        msg.style.color = '#2e7d32';
+
+        // ✅ Cargar foto si existe
+        cargarFoto(f.cedula);
+      } catch (err) {
+        console.error('Error en búsqueda:', err);
+        msg.textContent = '❌ Error al buscar.';
+        msg.style.color = '#c62828';
+      }
+    }
+
+    function mostrarFicha(f) {
+      const formatDate = s => s ? new Date(s).toLocaleDateString('es-VE') : '—';
+      const statusEl = document.getElementById('status');
+
+      document.getElementById('cedula').textContent = f.cedula || '—';
+      document.getElementById('rango').textContent = f.rango || '—';
+      document.getElementById('apellidos_nombres').textContent = f.apellidos_nombres || '—';
+      document.getElementById('sexo').textContent = f.sexo || '—';
+      document.getElementById('dependencia').textContent = f.dependencia || '—';
+      document.getElementById('region').textContent = f.region || '—';
+      document.getElementById('estado').textContent = f.estado || '—';
+      document.getElementById('servicio').textContent = f.servicio || '—';
+      document.getElementById('cohorte_promocion').textContent = f.cohorte_promocion || '—';
+      document.getElementById('institucion_origen').textContent = f.institucion_origen || '—';
+      document.getElementById('fecha_ingreso').textContent = formatDate(f.fecha_ingreso);
+      document.getElementById('telefono').textContent = f.telefono || '—';
+      document.getElementById('fecha_nacimiento').textContent = formatDate(f.fecha_nacimiento);
+      document.getElementById('edad_funcionario').textContent = f.edad_funcionario || '—';
+      document.getElementById('fecha_oficio').textContent = f.fecha_oficio || '—';
+      document.getElementById('fecha_transferencia_normalizacion').textContent = f.fecha_transferencia_normalizacion || '—';
+      document.getElementById('tipo_movimiento').textContent = f.tipo_movimiento || '—';
+      document.getElementById('observaciones').textContent = f.observaciones || '—';
+      document.getElementById('fechas_egreso').textContent = f.fechas_egreso || '—';
+      document.getElementById('direccion').textContent = f.direccion || '—';
+      document.getElementById('correo_electronico').textContent = f.correo_electronico || '—';
+
+      // ✅ Status con colores
+      statusEl.textContent = f.status === 'A' ? 'Activo' : f.status === 'S' ? 'Suspendido' : f.status || '—';
+      statusEl.className = f.status === 'A' ? 'status-active' : f.status === 'S' ? 'status-suspended' : '';
+    }
+
+    // ✅ Cargar foto desde Storage
+    async function cargarFoto(cedula) {
+      const { data: { publicUrl } } = client.storage.from('fotos_funcionarios').getPublicUrl(`${cedula}.jpg`);
+      const img = document.createElement('img');
+      img.src = publicUrl;
+      img.onerror = () => {
+        document.getElementById('photoContainer').innerHTML = '🪪';
+      };
+      img.onload = () => {
+        document.getElementById('photoContainer').innerHTML = '';
+        document.getElementById('photoContainer').appendChild(img);
+      };
+    }
+
+    // ✅ Subir foto
+    async function subirFoto(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (!currentCedula) {
+        alert('⚠️ Primero busca un funcionario.');
+        return;
+      }
+
+      if (!file.type.match('image.*')) {
+        alert('❌ Solo se permiten imágenes (JPG, PNG).');
+        return;
+      }
+
+      const msg = document.getElementById('searchMessage');
+      msg.textContent = '⬆️ Subiendo foto...';
+      msg.style.color = '#1976d2';
+
+      try {
+        const fileName = `${currentCedula}.jpg`;
+        const { error } = await client.storage
+          .from('fotos_funcionarios')
+          .upload(fileName, file, { upsert: true });
+
+        if (error) throw error;
+
+        // ✅ Recargar foto
+        cargarFoto(currentCedula);
+        msg.textContent = '✅ Foto subida correctamente.';
+        msg.style.color = '#2e7d32';
+      } catch (err) {
+        console.error('Error subiendo foto:', err);
+        msg.textContent = '❌ Error al subir la foto.';
+        msg.style.color = '#c62828';
+      }
+    }
+  </script>
+</body>
+</html>
