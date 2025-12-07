@@ -417,7 +417,7 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const {  { session }, error } = await client.auth.getSession();
+        const { data: { session }, error: sessionError } = await client.auth.getSession();
         if (error || !session) return window.location.href = '../index.html';
         
         const {  perfil } = await client
