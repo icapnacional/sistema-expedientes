@@ -477,7 +477,7 @@
     // ✅ Registrar log de consulta
 async function registrarLogConsulta(cedula, nombre) {
   try {
-    const {  { session } } = await client.auth.getSession();
+      const { data: { session }, error: sessionError } = await client.auth.getSession();
     if (!session) return;
 
     await client.from('rrhh_logs').insert({
