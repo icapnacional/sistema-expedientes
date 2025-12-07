@@ -123,9 +123,9 @@
     .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
     .breadcrumb span { margin: 0 8px; color: #888; }
 
-    /* Preview de foto */
+    /* Vista previa de foto */
     #previewFoto {
-      margin-top: 10px;
+      margin-top: 8px;
       display: none;
     }
     #fotoPreview {
@@ -203,7 +203,7 @@
             <input type="text" id="institucion_origen">
           </div>
           <div class="form-group">
-            <label for="fecha_ingreso">Fecha de Ingreso (AAAA-MM-DD)</label>
+            <label for="fecha_ingreso">Fecha de Ingreso</label>
             <input type="date" id="fecha_ingreso">
           </div>
           <div class="form-group">
@@ -276,12 +276,11 @@
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const alertDiv = document.getElementById('alertMessage');
 
-    // Vista previa de la foto
+    // Vista previa de foto
     document.getElementById('foto_uniformado').addEventListener('change', function(e) {
       const preview = document.getElementById('previewFoto');
       const img = document.getElementById('fotoPreview');
       const file = e.target.files[0];
-      
       if (file) {
         const reader = new FileReader();
         reader.onload = () => {
@@ -337,7 +336,18 @@
       let fotoUrl = null;
 
       try {
-        // ✅ Subir foto si existe
+        // 🔍 ✅ Verificar cédula única ANTES de insertar
+        const { data: existing, error: checkError } = await client
+          .from('auditoria_personal')
+          .select('cedula')
+          .eq('cedula', cedula)
+          .single(); // falla si no hay 1 registro → útil para detección
+
+        if (!checkError && existing) {
+          return showAlert(`❌ La cédula ${cedula} ya está registrada.`, 'error');
+        }
+
+        // ✅ Subir foto (si hay)
         if (file) {
           if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
             return showAlert('⚠️ Solo se permiten imágenes JPG, PNG o WEBP.', 'error');
@@ -347,7 +357,7 @@
           }
 
           const fileName = `foto_${cedula}_${Date.now()}.${file.name.split('.').pop()}`;
-          const { data: uploadData, error: uploadError } = await client.storage
+          const { error: uploadError } = await client.storage
             .from('fotos_funcionarios')
             .upload(`uniformados/${fileName}`, file, {
               upsert: false,
@@ -363,7 +373,7 @@
           fotoUrl = publicUrl;
         }
 
-        // ✅ Datos del formulario + foto
+        // ✅ Insertar registro
         const data = {
           cedula,
           rango: document.getElementById('rango').value,
@@ -390,11 +400,16 @@
           foto_uniformado_url: fotoUrl // 👈 nueva columna
         };
 
-        const { error: dbError } = await client
+        const { error: insertError } = await client
           .from('auditoria_personal')
           .insert(data);
 
-        if (dbError) throw dbError;
+        if (insertError) {
+          if (insertError.code === '23505') {
+            return showAlert(`❌ La cédula ${cedula} ya existe (violación de restricción única).`, 'error');
+          }
+          throw insertError;
+        }
 
         showAlert('✅ Registro exitoso. El personal ha sido agregado.', 'success');
         document.getElementById('registroForm').reset();
@@ -403,13 +418,13 @@
 
       } catch (err) {
         console.error('Error:', err);
-        showAlert(`❌ Error: ${err.message || 'No se pudo guardar el registro'}`, 'error');
+        showAlert(`❌ Error: ${err.message || 'No se pudo completar el registro'}`, 'error');
       }
     });
 
     function showAlert(msg, type) {
       alertDiv.textContent = msg;
-      alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : type === 'error' ? 'alert-error' : '');
+      alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
       alertDiv.style.display = msg ? 'block' : 'none';
     }
   </script>
