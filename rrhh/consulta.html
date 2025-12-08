@@ -407,7 +407,7 @@
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         // ✅ Autenticación corregida
-       const { data: { session }, error: sessionError } = await client.auth.getSession();
+       const { publicUrl } = client.storage.from('fotos_funcionarios').getPublicUrl(`${cedula}.jpg`);
         if (sessionError || !session) return window.location.href = '../index.html';
 
         const {  perfil } = await client
@@ -650,7 +650,7 @@
       for (let ext of extensions) {
         const path = `uniformados/foto_${cedula}.${ext}`;
         try {
-          const { publicUrl } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
+          const { publicUrl } = client.storage.from('fotos_funcionarios').getPublicUrl(`${cedula}.jpg`);
           const img = new Image();
           img.crossOrigin = 'anonymous';
           img.src = publicUrl;
