@@ -6,7 +6,6 @@
   <title>Auditoría Nacional | RRHH</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- ✅ Librerías para PDF funcional -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
@@ -104,7 +103,7 @@
     .btn-pdf:hover {
       background-color: #1565c0;
     }
-    /* Lista de resultados (solo para nombres) */
+    /* Lista de resultados (solo para nombres/apellidos) */
     .results-list {
       background: white;
       border-radius: 12px;
@@ -191,9 +190,9 @@
       margin-bottom: 24px;
     }
     .photo-placeholder {
-      width: 200px;
-      height: 200px;
-      border-radius: 8px; /* ✅ cuadrada */
+      width: 180px;       /* ✅ más pequeño para ajustar a hoja carta */
+      height: 180px;
+      border-radius: 8px; /* cuadrada */
       background: #f0f0f0;
       margin: 0 auto 16px;
       display: flex;
@@ -209,28 +208,21 @@
       height: 100%;
       object-fit: cover;
     }
-    .report-number {
-      text-align: center;
-      font-size: 14px;
-      color: #666;
-      margin: 12px 0;
-      font-weight: 600;
-    }
     .fields-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 16px; /* ✅ menos espacio */
     }
     .field {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     .field-label {
       font-weight: 600;
       color: #555;
-      font-size: 14px;
+      font-size: 13px;
     }
     .field-value {
-      font-size: 15px;
+      font-size: 14px;
       color: #2d2d2d;
     }
     .status-active { color: #2e7d32; font-weight: 600; }
@@ -275,7 +267,7 @@
       <div id="searchMessage" style="margin-top:12px; font-size:14px; min-height:20px;"></div>
     </div>
 
-    <!-- 📋 Lista de resultados (solo para nombres/apellidos) -->
+    <!-- 📋 Lista de resultados -->
     <div id="resultsList" class="results-list">
       <div class="results-header">
         <h3 id="resultsTitle">Resultados encontrados</h3>
@@ -296,7 +288,6 @@
         🪪 Ficha del Funcionario
         <button id="btnCerrarFicha" style="float:right; background:#eee; border:none; width:24px; height:24px; border-radius:50%; font-weight:bold;">✕</button>
       </h3>
-      <div class="report-number" id="reportNumber"></div>
       <div id="fichaContent">
         <div class="fields-grid">
           <div class="field">
@@ -375,7 +366,7 @@
           </div>
           <div class="field" style="grid-column:1/-1;">
             <div class="field-label">Observaciones</div>
-            <div class="field-value" id="observaciones" style="background:#f9f9f9; padding:10px; border-radius:6px;"></div>
+            <div class="field-value" id="observaciones" style="background:#f9f9f9; padding:8px; border-radius:6px; font-size:13px;"></div>
           </div>
           <div class="field">
             <div class="field-label">Fechas de Egreso</div>
@@ -404,7 +395,7 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const { data: { session }, error } = await client.auth.getSession();
+        const {  { session }, error } = await client.auth.getSession();
         if (error || !session) return window.location.href = '../index.html';
         const { data: perfil } = await client
           .from('perfiles')
@@ -434,11 +425,9 @@
       }
     });
 
-    // ✅ DECISIÓN INTELIGENTE: si es cédula → ficha directa; si no → lista
     async function iniciarBusqueda() {
       const query = document.getElementById('searchQuery').value.trim();
       const msg = document.getElementById('searchMessage');
-
       if (!query) {
         msg.textContent = '⚠️ Ingresa un término de búsqueda.';
         return;
@@ -448,20 +437,17 @@
       if (/^\d{6,}$/.test(query)) {
         msg.textContent = '🔍 Buscando por cédula...';
         msg.style.color = '#1976d2';
-
         try {
           const { data, error } = await client
             .from('auditoria_personal')
             .select('*')
             .eq('cedula', query)
             .single();
-
           if (error || !data) {
             msg.textContent = `❌ Cédula ${query} no encontrada.`;
             msg.style.color = '#c62828';
             return;
           }
-
           mostrarFichaCompleta(data);
           document.getElementById('resultsList').style.display = 'none';
           document.getElementById('resultCard').style.display = 'block';
@@ -470,11 +456,10 @@
           msg.textContent = '❌ Error al buscar cédula.';
           msg.style.color = '#c62828';
         }
-
         return;
       }
 
-      // 👥 Nombre o apellido → lista paginada
+      // 👥 Nombre/apellido → lista
       currentPage = 1;
       buscarPorNombre(query);
     }
@@ -597,6 +582,8 @@
       document.getElementById('cedula').textContent = f.cedula || '—';
       document.getElementById('rango').textContent = f.rango || '—';
       document.getElementById('apellidos_nombres').textContent = f.apellidos_nombres || '—';
+      // ... (resto de los campos, sin cambios)
+
       document.getElementById('sexo').textContent = f.sexo || '—';
       document.getElementById('dependencia').textContent = f.dependencia || '—';
       document.getElementById('region').textContent = f.region || '—';
@@ -627,30 +614,19 @@
         statusEl.className = '';
       }
 
-      // ✅ Generar número de reporte único: REP-20251208-143022-XXX
-      const now = new Date();
-      const fechaStr = now.toISOString().slice(0,10).replace(/-/g, '');
-      const hora = String(now.getHours()).padStart(2, '0');
-      const min = String(now.getMinutes()).padStart(2, '0');
-      const seg = String(now.getSeconds()).padStart(2, '0');
-      const sec = Math.floor(Math.random() * 900) + 100;
-      const reporte = `REP-${fechaStr}-${hora}${min}${seg}-${sec}`;
-      document.getElementById('reportNumber').textContent = `📄 Número de Reporte: ${reporte}`;
-
       cargarFoto(f.cedula);
     }
 
     async function cargarFoto(cedula) {
       const container = document.getElementById('photoContainer');
       container.innerHTML = '🪪';
-
       const extensions = ['jpg', 'jpeg', 'png', 'webp'];
       for (let ext of extensions) {
         const path = `uniformados/foto_${cedula}.${ext}`;
         try {
           const { publicUrl } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
           const img = new Image();
-          img.crossOrigin = 'anonymous'; // ✅ evita bloqueo CORS en PDF
+          img.crossOrigin = 'anonymous';
           img.src = publicUrl;
           await new Promise(resolve => {
             img.onload = () => {
@@ -672,7 +648,7 @@
       document.getElementById('resultsList').style.display = 'block';
     }
 
-    // ✅ ✅ ✅ EXPORTAR PDF FUNCIONAL (captura visual real) ✅ ✅ ✅
+    // ✅ ✅ ✅ EXPORTACIÓN OPTIMIZADA PARA HOJA CARTA ✅ ✅ ✅
     async function exportarPDF() {
       const ficha = document.getElementById('resultCard');
       if (!ficha || ficha.style.display === 'none') {
@@ -684,18 +660,39 @@
       const cedula = document.getElementById('cedula')?.textContent?.trim() || 'desconocida';
       const filename = `ficha_${nombre.replace(/\s+/g, '_')}_${cedula}.pdf`;
 
-      // ✅ Clonar ficha para captura
+      // ✅ Generar número de reporte único (solo para PDF)
+      const now = new Date();
+      const fechaStr = now.toISOString().slice(0,10).replace(/-/g, '');
+      const hora = String(now.getHours()).padStart(2, '0');
+      const min = String(now.getMinutes()).padStart(2, '0');
+      const seg = String(now.getSeconds()).padStart(2, '0');
+      const sec = Math.floor(Math.random() * 900) + 100;
+      const numeroReporte = `REP-${fechaStr}-${hora}${min}${seg}-${sec}`;
+
+      // ✅ Clonar ficha y ajustar tamaño para hoja carta
       const clone = ficha.cloneNode(true);
       clone.id = 'pdf-clone';
       clone.style.position = 'fixed';
       clone.style.top = '20px';
       clone.style.left = '50%';
       clone.style.transform = 'translateX(-50%)';
-      clone.style.width = '750px';
-      clone.style.padding = '30px';
+      clone.style.width = '680px'; // ✅ ajustado para hoja carta
+      clone.style.padding = '24px 30px';
       clone.style.background = 'white';
       clone.style.display = 'block';
+      clone.style.fontSize = '13px';
 
+      // ✅ Añadir número de reporte al PDF (al inicio, sin mostrar en pantalla)
+      const reportDiv = document.createElement('div');
+      reportDiv.style.textAlign = 'center';
+      reportDiv.style.marginBottom = '16px';
+      reportDiv.style.fontSize = '14px';
+      reportDiv.style.fontWeight = '600';
+      reportDiv.style.color = '#666';
+      reportDiv.textContent = `📄 Número de Reporte: ${numeroReporte}`;
+      clone.insertBefore(reportDiv, clone.firstChild);
+
+      // ✅ Limpiar botones
       const closeBtn = clone.querySelector('#btnCerrarFicha');
       const exportBtn = clone.querySelector('#btnExportPDF');
       if (closeBtn) closeBtn.remove();
@@ -712,28 +709,33 @@
         });
 
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgWidth = 210;
-        const pageHeight = 295;
+        const pdf = new jsPDF('p', 'mm', [215.9, 279.4]); // ✅ hoja carta
+        const imgWidth = 190; // margen 12.5mm a cada lado
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
+        const yPos = (279.4 - imgHeight) / 2; // centrar verticalmente si cabe
 
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-
-        while (heightLeft >= 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
+        if (imgHeight <= 254) { // margen vertical ~12.5mm
+          pdf.addImage(imgData, 'JPEG', 12.5, yPos, imgWidth, imgHeight);
+        } else {
+          // Si no cabe, escalar
+          const scale = 254 / imgHeight;
+          pdf.addImage(imgData, 'JPEG', 12.5, 12.5, imgWidth * scale, imgHeight * scale);
         }
 
         pdf.save(filename);
+        
+        // ✅ Opcional: guardar número de reporte en BD
+        /*
+        await client
+          .from('auditoria_personal')
+          .update({ ultimo_reporte: numeroReporte })
+          .eq('cedula', cedula);
+        */
+
         if (clone.parentNode) clone.parentNode.removeChild(clone);
       } catch (err) {
         console.error('Error generando PDF:', err);
-        alert('❌ Error al generar el PDF. Intenta nuevamente.');
+        alert('❌ Error al generar el PDF.');
         if (clone.parentNode) clone.parentNode.removeChild(clone);
       }
     }
