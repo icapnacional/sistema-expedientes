@@ -103,7 +103,6 @@
     .btn-pdf:hover {
       background-color: #1565c0;
     }
-    /* Lista de resultados (solo para nombres/apellidos) */
     .results-list {
       background: white;
       border-radius: 12px;
@@ -139,7 +138,6 @@
       font-size: 13px;
       color: #666;
     }
-    /* Paginación */
     .pagination {
       display: flex;
       justify-content: center;
@@ -176,7 +174,6 @@
       border: none;
       color: #888;
     }
-    /* Ficha resultado */
     .result-card {
       background: white;
       border-radius: 12px;
@@ -190,9 +187,9 @@
       margin-bottom: 24px;
     }
     .photo-placeholder {
-      width: 180px;       /* ✅ más pequeño para ajustar a hoja carta */
-      height: 180px;
-      border-radius: 8px; /* cuadrada */
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
       background: #f0f0f0;
       margin: 0 auto 16px;
       display: flex;
@@ -211,7 +208,7 @@
     .fields-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px; /* ✅ menos espacio */
+      gap: 16px;
     }
     .field {
       margin-bottom: 10px;
@@ -256,7 +253,6 @@
       <strong>Usuario:</strong> <span id="userEmail">—</span> |
       <strong>Rol:</strong> <span id="userRol">—</span>
     </div>
-    <!-- 🔍 Búsqueda -->
     <div class="search-section">
       <h2 style="font-size: 20px; margin-bottom: 16px; color: #2d2d2d;">🔍 Consulta de Personal</h2>
       <div class="search-group">
@@ -266,8 +262,6 @@
       <button id="btnBuscar" class="btn" style="width:100%;">Buscar</button>
       <div id="searchMessage" style="margin-top:12px; font-size:14px; min-height:20px;"></div>
     </div>
-
-    <!-- 📋 Lista de resultados -->
     <div id="resultsList" class="results-list">
       <div class="results-header">
         <h3 id="resultsTitle">Resultados encontrados</h3>
@@ -276,8 +270,6 @@
       <div id="resultsContainer"></div>
       <div class="pagination" id="pagination"></div>
     </div>
-
-    <!-- 📄 Ficha resultado -->
     <div id="resultCard" class="result-card">
       <div class="photo-section">
         <div class="photo-placeholder" id="photoContainer">
@@ -395,32 +387,38 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-         const { publicUrl } = client.storage.from('fotos_funcionarios').getPublicUrl(`${cedula}.jpg`);
-        if (error || !session) return window.location.href = '../index.html';
+        // ✅ Corregido: sintaxis válida para Supabase v2
+        const { data: { session }, error: sessionError } = await client.auth.getSession();
+        if (sessionError || !session) return window.location.href = '../index.html';
+
         const { data: perfil } = await client
           .from('perfiles')
           .select('email, rol, modulos_asignados')
           .eq('id', session.user.id)
           .single();
+
         if (!perfil) return window.location.href = '../index.html';
+
         const userRol = perfil.rol || 'consultor';
+        // ✅ Permitir acceso si es admin o tiene módulo 'rh'
         if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
           alert('🔒 Acceso denegado: no tienes permiso para Recursos Humanos.');
           return window.location.href = '../index.html';
         }
+
         document.getElementById('userEmail').textContent = perfil.email;
         document.getElementById('userRol').textContent = 
           userRol === 'admin' ? 'Administrador' :
           userRol === 'moderador' ? 'Moderador' : 'Consultor';
 
+        // ✅ Asignar eventos
         document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
-        document.getElementById('searchQuery').addEventListener('keypress', e => {
-          if (e.key === 'Enter') iniciarBusqueda();
-        });
+        document.getElementById('searchQuery').addEventListener('keypress', e => e.key === 'Enter' && iniciarBusqueda());
         document.getElementById('btnCerrarFicha').addEventListener('click', cerrarFicha);
         document.getElementById('btnExportPDF').addEventListener('click', exportarPDF);
+
       } catch (err) {
-        console.error('Error al cargar sesión:', err);
+        console.error('Error en autenticación:', err);
         window.location.href = '../index.html';
       }
     });
@@ -433,7 +431,7 @@
         return;
       }
 
-      // 🪪 Cédula: solo números y ≥6 dígitos → ficha inmediata
+      // 🪪 Si es solo números y ≥6 dígitos → búsqueda por cédula (directa)
       if (/^\d{6,}$/.test(query)) {
         msg.textContent = '🔍 Buscando por cédula...';
         msg.style.color = '#1976d2';
@@ -443,15 +441,18 @@
             .select('*')
             .eq('cedula', query)
             .single();
+
           if (error || !data) {
             msg.textContent = `❌ Cédula ${query} no encontrada.`;
             msg.style.color = '#c62828';
             return;
           }
+
           mostrarFichaCompleta(data);
           document.getElementById('resultsList').style.display = 'none';
           document.getElementById('resultCard').style.display = 'block';
           msg.textContent = '';
+
         } catch (err) {
           msg.textContent = '❌ Error al buscar cédula.';
           msg.style.color = '#c62828';
@@ -459,7 +460,7 @@
         return;
       }
 
-      // 👥 Nombre/apellido → lista
+      // 👥 Si no, búsqueda por nombre/apellido → lista paginada
       currentPage = 1;
       buscarPorNombre(query);
     }
@@ -490,6 +491,7 @@
         renderResults(data, count, query);
         document.getElementById('resultsList').style.display = 'block';
         msg.textContent = '';
+
       } catch (err) {
         console.error('Error en búsqueda:', err);
         msg.textContent = '❌ Error al consultar la base de datos.';
@@ -578,12 +580,10 @@
     function mostrarFichaCompleta(f) {
       const formatDate = s => s ? new Date(s).toLocaleDateString('es-VE') : '—';
       const statusEl = document.getElementById('status');
-      
+
       document.getElementById('cedula').textContent = f.cedula || '—';
       document.getElementById('rango').textContent = f.rango || '—';
       document.getElementById('apellidos_nombres').textContent = f.apellidos_nombres || '—';
-      // ... (resto de los campos, sin cambios)
-
       document.getElementById('sexo').textContent = f.sexo || '—';
       document.getElementById('dependencia').textContent = f.dependencia || '—';
       document.getElementById('region').textContent = f.region || '—';
@@ -617,17 +617,22 @@
       cargarFoto(f.cedula);
     }
 
+    // ✅ Corregido: { publicUrl } en lugar de { { publicUrl } }
     async function cargarFoto(cedula) {
       const container = document.getElementById('photoContainer');
       container.innerHTML = '🪪';
+
       const extensions = ['jpg', 'jpeg', 'png', 'webp'];
       for (let ext of extensions) {
         const path = `uniformados/foto_${cedula}.${ext}`;
         try {
+          // ✅ Sintaxis válida para Supabase v2
           const { publicUrl } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
+
           const img = new Image();
           img.crossOrigin = 'anonymous';
           img.src = publicUrl;
+
           await new Promise(resolve => {
             img.onload = () => {
               container.innerHTML = '';
@@ -636,6 +641,7 @@
             };
             img.onerror = () => resolve(false);
           });
+
           if (container.querySelector('img')) break;
         } catch (err) {
           continue;
@@ -648,7 +654,7 @@
       document.getElementById('resultsList').style.display = 'block';
     }
 
-    // ✅ ✅ ✅ EXPORTACIÓN OPTIMIZADA PARA HOJA CARTA ✅ ✅ ✅
+    // ✅ PDF funcional con número de reporte (solo en PDF)
     async function exportarPDF() {
       const ficha = document.getElementById('resultCard');
       if (!ficha || ficha.style.display === 'none') {
@@ -660,29 +666,29 @@
       const cedula = document.getElementById('cedula')?.textContent?.trim() || 'desconocida';
       const filename = `ficha_${nombre.replace(/\s+/g, '_')}_${cedula}.pdf`;
 
-      // ✅ Generar número de reporte único (solo para PDF)
+      // ✅ Generar número de reporte único
       const now = new Date();
-      const fechaStr = now.toISOString().slice(0,10).replace(/-/g, '');
+      const fechaStr = now.toISOString().slice(0, 10).replace(/-/g, '');
       const hora = String(now.getHours()).padStart(2, '0');
       const min = String(now.getMinutes()).padStart(2, '0');
       const seg = String(now.getSeconds()).padStart(2, '0');
       const sec = Math.floor(Math.random() * 900) + 100;
       const numeroReporte = `REP-${fechaStr}-${hora}${min}${seg}-${sec}`;
 
-      // ✅ Clonar ficha y ajustar tamaño para hoja carta
+      // ✅ Clonar y ajustar para hoja carta
       const clone = ficha.cloneNode(true);
       clone.id = 'pdf-clone';
       clone.style.position = 'fixed';
       clone.style.top = '20px';
       clone.style.left = '50%';
       clone.style.transform = 'translateX(-50%)';
-      clone.style.width = '680px'; // ✅ ajustado para hoja carta
+      clone.style.width = '680px';
       clone.style.padding = '24px 30px';
       clone.style.background = 'white';
       clone.style.display = 'block';
       clone.style.fontSize = '13px';
 
-      // ✅ Añadir número de reporte al PDF (al inicio, sin mostrar en pantalla)
+      // ✅ Añadir número de reporte al PDF (solo en PDF)
       const reportDiv = document.createElement('div');
       reportDiv.style.textAlign = 'center';
       reportDiv.style.marginBottom = '16px';
@@ -709,30 +715,21 @@
         });
 
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const pdf = new jsPDF('p', 'mm', [215.9, 279.4]); // ✅ hoja carta
-        const imgWidth = 190; // margen 12.5mm a cada lado
+        const pdf = new jsPDF('p', 'mm', [215.9, 279.4]); // hoja carta
+        const imgWidth = 190;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        const yPos = (279.4 - imgHeight) / 2; // centrar verticalmente si cabe
+        const yPos = (279.4 - imgHeight) / 2;
 
-        if (imgHeight <= 254) { // margen vertical ~12.5mm
+        if (imgHeight <= 254) {
           pdf.addImage(imgData, 'JPEG', 12.5, yPos, imgWidth, imgHeight);
         } else {
-          // Si no cabe, escalar
           const scale = 254 / imgHeight;
           pdf.addImage(imgData, 'JPEG', 12.5, 12.5, imgWidth * scale, imgHeight * scale);
         }
 
         pdf.save(filename);
-        
-        // ✅ Opcional: guardar número de reporte en BD
-        /*
-        await client
-          .from('auditoria_personal')
-          .update({ ultimo_reporte: numeroReporte })
-          .eq('cedula', cedula);
-        */
-
         if (clone.parentNode) clone.parentNode.removeChild(clone);
+
       } catch (err) {
         console.error('Error generando PDF:', err);
         alert('❌ Error al generar el PDF.');
