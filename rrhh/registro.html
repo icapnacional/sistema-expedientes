@@ -75,13 +75,20 @@
       font-size: 15px;
       background: #fdfdfd;
     }
-    input[type="file"] {
-      padding: 6px;
-      background: white;
+    /* ✅ Campos expansibles */
+    textarea.autoresize {
+      resize: none;
+      overflow: hidden;
+      min-height: 40px;
+      line-height: 1.4;
     }
-    textarea {
-      min-height: 60px;
-      resize: vertical;
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
     .btn {
       background-color: #722F37;
@@ -123,55 +130,40 @@
     .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
     .breadcrumb span { margin: 0 8px; color: #888; }
 
-    /* 📷 Cuadro de foto grande */
-    #fotoContenedor {
-      text-align: center;
-      margin: 0 0 30px;
-      padding: 20px;
-      background: #f9f9f9;
-      border-radius: 12px;
-      border: 2px dashed #ccc;
+    /* Teléfono: operadora + número en línea */
+    .phone-group {
+      display: flex;
+      gap: 8px;
     }
-    #fotoContenedor h3 {
-      margin-bottom: 16px;
-      color: #722F37;
-      font-weight: 600;
-    }
-    #fotoPreview {
-      width: 220px;
-      height: 220px;
-      object-fit: cover;
-      border-radius: 8px;
-      border: 3px solid #722F37;
-      background: #eee;
-      display: none;
-    }
-    #subirFotoBtn {
-      margin-top: 12px;
-      cursor: pointer;
-      background: #722F37;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-weight: 600;
-    }
-    #subirFotoBtn:hover {
-      background: #5e262d;
-    }
-    #fotoInput {
-      display: none;
+    .phone-group select, .phone-group input {
+      flex: 1;
+      width: auto;
     }
 
-    /* Pantalla de acceso denegado */
-    .access-denied {
-      text-align: center;
-      padding: 50px 20px;
-      color: #c62828;
+    /* Correo: local + dominio */
+    .email-group {
+      display: flex;
+      gap: 4px;
     }
-    .access-denied h2 {
-      font-weight: 600;
-      margin: 16px 0 12px;
+    .email-group input {
+      flex: 1;
+      width: auto;
+    }
+    .email-group span {
+      align-self: center;
+      font-weight: bold;
+      color: #555;
+    }
+
+    /* Edad con "años" */
+    .age-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .age-group span {
+      font-weight: 500;
+      color: #555;
     }
   </style>
 </head>
@@ -191,36 +183,37 @@
       <strong>Usuario:</strong> <span id="userEmail">—</span> |
       <strong>Rol:</strong> <span id="userRol">—</span>
     </div>
-
-    <div class="card" id="formContainer">
+    <div class="card">
       <h2>📝 Registro de Personal Auditado</h2>
-
-      <!-- 🖼️ Foto centrada grande -->
-      <div id="fotoContenedor">
-        <h3>📸 Foto del Funcionario Uniformado</h3>
-        <img id="fotoPreview" src="" alt="Foto del funcionario" />
-        <br>
-        <button type="button" id="subirFotoBtn">📁 Seleccionar foto</button>
-        <input type="file" id="fotoInput" accept="image/jpeg,image/png,image/webp">
-        <p style="margin-top:8px; font-size:13px; color:#666;">
-          Formatos: JPG, PNG, WEBP | Máx. 5 MB
-        </p>
-      </div>
-
       <div id="alertMessage" class="alert"></div>
       <form id="registroForm">
         <div class="form-grid">
           <div class="form-group">
             <label for="cedula">Cédula *</label>
-            <input type="text" id="cedula" required>
+            <input type="text" id="cedula" inputmode="numeric" maxlength="8" pattern="\d{6,8}" required placeholder="Ej: 25653412">
           </div>
           <div class="form-group">
-            <label for="rango">Rango</label>
-            <input type="text" id="rango">
+            <label for="rango">Rango *</label>
+            <select id="rango" required>
+              <option value="">— Seleccione —</option>
+              <option value="Comisario Superior">Comisario Superior</option>
+              <option value="Comisario General">Comisario General</option>
+              <option value="Comisario Mayor">Comisario Mayor</option>
+              <option value="Comisario Jefe">Comisario Jefe</option>
+              <option value="Primer Comisario">Primer Comisario</option>
+              <option value="Comisario">Comisario</option>
+              <option value="Inspector Jefe">Inspector Jefe</option>
+              <option value="Primer Inspector">Primer Inspector</option>
+              <option value="Inspector">Inspector</option>
+              <option value="Oficial Jefe">Oficial Jefe</option>
+              <option value="Primer Oficial">Primer Oficial</option>
+              <option value="Oficial">Oficial</option>
+              <option value="Personal Contratado">Personal Contratado</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="apellidos_nombres">Apellidos y Nombres *</label>
-            <input type="text" id="apellidos_nombres" required>
+            <textarea id="apellidos_nombres" class="autoresize" rows="1" required></textarea>
           </div>
           <div class="form-group">
             <label for="sexo">Sexo</label>
@@ -232,27 +225,63 @@
           </div>
           <div class="form-group">
             <label for="dependencia">Dependencia</label>
-            <input type="text" id="dependencia">
+            <textarea id="dependencia" class="autoresize" rows="1"></textarea>
           </div>
           <div class="form-group">
-            <label for="region">Región</label>
-            <input type="text" id="region">
+            <label for="region">Región *</label>
+            <select id="region" required>
+              <option value="">— Seleccione —</option>
+              <option value="Capital">Capital</option>
+              <option value="Occidental">Occidental</option>
+              <option value="Los Llanos">Los Llanos</option>
+              <option value="Los Andes">Los Andes</option>
+              <option value="Guayana">Guayana</option>
+              <option value="Insular">Insular</option>
+              <option value="Central">Central</option>
+              <option value="Oriental">Oriental</option>
+            </select>
           </div>
           <div class="form-group">
-            <label for="estado">Estado</label>
-            <input type="text" id="estado">
+            <label for="estado">Estado *</label>
+            <select id="estado" required>
+              <option value="">— Seleccione —</option>
+              <option value="Amazonas">Amazonas</option>
+              <option value="Anzoátegui">Anzoátegui</option>
+              <option value="Apure">Apure</option>
+              <option value="Aragua">Aragua</option>
+              <option value="Barinas">Barinas</option>
+              <option value="Bolívar">Bolívar</option>
+              <option value="Carabobo">Carabobo</option>
+              <option value="Cojedes">Cojedes</option>
+              <option value="Delta Amacuro">Delta Amacuro</option>
+              <option value="Distrito Capital">Distrito Capital</option>
+              <option value="Falcón">Falcón</option>
+              <option value="Guárico">Guárico</option>
+              <option value="Lara">Lara</option>
+              <option value="Mérida">Mérida</option>
+              <option value="Miranda">Miranda</option>
+              <option value="Monagas">Monagas</option>
+              <option value="Nueva Esparta">Nueva Esparta</option>
+              <option value="Portuguesa">Portuguesa</option>
+              <option value="Sucre">Sucre</option>
+              <option value="Táchira">Táchira</option>
+              <option value="Trujillo">Trujillo</option>
+              <option value="Vargas">Vargas</option>
+              <option value="Yaracuy">Yaracuy</option>
+              <option value="Zulia">Zulia</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="servicio">Servicio</label>
-            <input type="text" id="servicio">
+            <textarea id="servicio" class="autoresize" rows="1"></textarea>
           </div>
           <div class="form-group">
             <label for="cohorte_promocion">Cohorte / Promoción</label>
-            <input type="text" id="cohorte_promocion">
+            <textarea id="cohorte_promocion" class="autoresize" rows="1"></textarea>
           </div>
           <div class="form-group">
             <label for="institucion_origen">Institución de Origen</label>
-            <input type="text" id="institucion_origen">
+            <textarea id="institucion_origen" class="autoresize" rows="1"></textarea>
           </div>
           <div class="form-group">
             <label for="fecha_ingreso">Fecha de Ingreso</label>
@@ -260,14 +289,28 @@
           </div>
           <div class="form-group">
             <label for="telefono">Teléfono</label>
-            <input type="text" id="telefono">
+            <div class="phone-group">
+              <select id="operadora">
+                <option value="">—</option>
+                <option value="0412">0412</option>
+                <option value="0414">0414</option>
+                <option value="0416">0416</option>
+                <option value="0424">0424</option>
+                <option value="0426">0426</option>
+                <option value="0422">0422</option>
+              </select>
+              <input type="text" id="telefono_numero" inputmode="numeric" maxlength="7" placeholder="1234567">
+            </div>
           </div>
           <div class="form-group">
-            <label for="status">Status</label>
-            <select id="status">
-              <option value="A">Activo</option>
-              <option value="S">Suspendido</option>
-              <option value="E">Egresado</option>
+            <label for="status">Status *</label>
+            <select id="status" required>
+              <option value="">— Seleccione —</option>
+              <option value="activo">Activo</option>
+              <option value="suspendido">Suspendido</option>
+              <option value="destituido">Destituido</option>
+              <option value="DA">DA</option>
+              <option value="P">P</option>
             </select>
           </div>
           <div class="form-group">
@@ -275,36 +318,49 @@
             <input type="date" id="fecha_nacimiento">
           </div>
           <div class="form-group">
-            <label for="edad_funcionario">Edad / Observación</label>
-            <input type="text" id="edad_funcionario">
+            <label for="edad_funcionario">Edad</label>
+            <div class="age-group">
+              <input type="number" id="edad_funcionario" min="18" max="99" placeholder="25">
+              <span>años</span>
+            </div>
           </div>
           <div class="form-group">
             <label for="fecha_oficio">Fecha de Oficio</label>
-            <input type="text" id="fecha_oficio" placeholder="Ej: 2024-03-25">
+            <input type="date" id="fecha_oficio">
           </div>
           <div class="form-group">
             <label for="fecha_transferencia_normalizacion">Fecha Transferencia/Normalización</label>
-            <input type="text" id="fecha_transferencia_normalizacion" placeholder="Ej: 2024-03-25">
+            <input type="date" id="fecha_transferencia_normalizacion">
           </div>
           <div class="form-group">
             <label for="tipo_movimiento">Tipo de Movimiento</label>
-            <input type="text" id="tipo_movimiento">
+            <textarea id="tipo_movimiento" class="autoresize" rows="1"></textarea>
           </div>
           <div class="form-group" style="grid-column:1/-1;">
             <label for="observaciones">Observaciones</label>
-            <textarea id="observaciones"></textarea>
+            <textarea id="observaciones" class="autoresize" rows="3"></textarea>
           </div>
           <div class="form-group">
             <label for="fechas_egreso">Fechas de Egreso</label>
-            <input type="text" id="fechas_egreso">
+            <input type="text" id="fechas_egreso" placeholder="Ej: 2025-01-10">
           </div>
           <div class="form-group">
             <label for="direccion">Dirección</label>
-            <input type="text" id="direccion">
+            <textarea id="direccion" class="autoresize" rows="2"></textarea>
           </div>
           <div class="form-group">
-            <label for="correo_electronico">Correo Electrónico</label>
-            <input type="email" id="correo_electronico">
+            <label for="correo_local">Correo Electrónico</label>
+            <div class="email-group">
+              <input type="text" id="correo_local" placeholder="nombre">
+              <span>@</span>
+              <select id="correo_dominio">
+                <option value="gmail.com">@gmail.com</option>
+                <option value="hotmail.com">@hotmail.com</option>
+                <option value="outlook.com">@outlook.com</option>
+                <option value="yahoo.com">@yahoo.com</option>
+                <option value="">— Otro —</option>
+              </select>
+            </div>
           </div>
         </div>
         <div style="text-align:right; margin-top:20px;">
@@ -315,74 +371,43 @@
     </div>
   </div>
   <script>
+    // ✅ Autoajuste de textarea
+    document.querySelectorAll('textarea.autoresize').forEach(el => {
+      el.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+      });
+      // Inicial
+      el.style.height = 'auto';
+      el.style.height = (el.scrollHeight) + 'px';
+    });
+
     const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const alertDiv = document.getElementById('alertMessage');
-    const formContainer = document.getElementById('formContainer');
-
-    // 📤 Trigger para el botón de subir foto
-    document.getElementById('subirFotoBtn').addEventListener('click', () => {
-      document.getElementById('fotoInput').click();
-    });
-
-    // 🖼️ Preview de foto
-    document.getElementById('fotoInput').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      const preview = document.getElementById('fotoPreview');
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          preview.src = reader.result;
-          preview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-      } else {
-        preview.style.display = 'none';
-      }
-    });
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         const { data: { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError || !session) {
-          return window.location.href = '../index.html';
+          window.location.href = '../index.html';
+          return;
         }
-
         const { data: perfil } = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
           .single();
-
         if (!perfil) return window.location.href = '../index.html';
-
-        // 🔒 Bloqueo total para consultores
-        if (perfil.rol === 'consultor') {
-          formContainer.innerHTML = `
-            <div class="access-denied">
-              <div style="font-size:48px;">🔒</div>
-              <h2>Acceso Restringido</h2>
-              <p style="font-size:16px; max-width:600px; margin:0 auto;">
-                Solo <strong>Administradores</strong> y <strong>Moderadores</strong> pueden registrar nuevo personal.
-              </p>
-              <br>
-              <button onclick="window.location.href='auditoria-nacional.html'"
-                      class="btn">
-                ← Volver a Auditoría Nacional
-              </button>
-            </div>
-          `;
-          document.getElementById('userEmail').textContent = perfil.email;
-          document.getElementById('userRol').textContent = 'Consultor';
+        if (perfil.rol !== 'admin' && perfil.rol !== 'moderador') {
+          alert('🔒 Acceso denegado: solo Administradores y Moderadores pueden registrar.');
+          window.location.href = 'auditoria-nacional.html';
           return;
         }
-
-        // ✅ Rol permitido
         document.getElementById('userEmail').textContent = perfil.email;
         document.getElementById('userRol').textContent = 
           perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
-
       } catch (err) {
         console.error('Error:', err);
         window.location.href = '../index.html';
@@ -393,108 +418,87 @@
       e.preventDefault();
       showAlert('', '');
 
-      const cedula = document.getElementById('cedula').value.trim();
-      const apellidosNombres = document.getElementById('apellidos_nombres').value.trim();
-      const fileInput = document.getElementById('fotoInput');
-      const file = fileInput.files[0];
-
-      if (!cedula || !apellidosNombres) {
-        return showAlert('⚠️ Cédula y Apellidos/Nombres son obligatorios.', 'error');
+      // ✅ Validar cédula (8 dígitos exactos)
+      const cedulaInput = document.getElementById('cedula').value.trim();
+      if (!/^\d{8}$/.test(cedulaInput)) {
+        return showAlert('⚠️ La cédula debe tener exactamente 8 dígitos.', 'error');
       }
 
-      let fotoUrl = null;
+      // ✅ Validar teléfono
+      const operadora = document.getElementById('operadora').value;
+      const num = document.getElementById('telefono_numero').value.trim();
+      let telefonoCompleto = '';
+      if (operadora && num) {
+        if (!/^\d{7}$/.test(num)) {
+          return showAlert('⚠️ El número telefónico debe tener 7 dígitos.', 'error');
+        }
+        telefonoCompleto = operadora + num;
+      } else if (operadora || num) {
+        return showAlert('⚠️ Seleccione operadora y complete los 7 dígitos.', 'error');
+      }
+
+      // ✅ Validar correo
+      const local = document.getElementById('correo_local').value.trim();
+      const dominio = document.getElementById('correo_dominio').value;
+      let correo = '';
+      if (local && dominio) {
+        correo = `${local}@${dominio}`;
+      } else if (local || dominio) {
+        return showAlert('⚠️ Complete ambas partes del correo.', 'error');
+      }
+
+      const data = {
+        cedula: cedulaInput,
+        rango: document.getElementById('rango').value,
+        apellidos_nombres: document.getElementById('apellidos_nombres').value.trim(),
+        sexo: document.getElementById('sexo').value,
+        dependencia: document.getElementById('dependencia').value.trim(),
+        region: document.getElementById('region').value,
+        estado: document.getElementById('estado').value,
+        servicio: document.getElementById('servicio').value.trim(),
+        cohorte_promocion: document.getElementById('cohorte_promocion').value.trim(),
+        institucion_origen: document.getElementById('institucion_origen').value.trim(),
+        fecha_ingreso: document.getElementById('fecha_ingreso').value || null,
+        telefono: telefonoCompleto,
+        status: document.getElementById('status').value,
+        fecha_nacimiento: document.getElementById('fecha_nacimiento').value || null,
+        edad_funcionario: document.getElementById('edad_funcionario').value || null,
+        fecha_oficio: document.getElementById('fecha_oficio').value || null,
+        fecha_transferencia_normalizacion: document.getElementById('fecha_transferencia_normalizacion').value || null,
+        tipo_movimiento: document.getElementById('tipo_movimiento').value.trim(),
+        observaciones: document.getElementById('observaciones').value.trim(),
+        fechas_egreso: document.getElementById('fechas_egreso').value.trim(),
+        direccion: document.getElementById('direccion').value.trim(),
+        correo_electronico: correo
+      };
+
+      // ✅ Validar campos obligatorios
+      if (!data.apellidos_nombres || !data.rango || !data.estado || !data.region || !data.status) {
+        return showAlert('⚠️ Los campos marcados con * son obligatorios.', 'error');
+      }
 
       try {
-        // 🔍 Verificar cédula única
-        const { data: existing } = await client
-          .from('auditoria_personal')
-          .select('cedula')
-          .eq('cedula', cedula)
-          .single()
-          .throwOnError(false); // no lanza error si no encuentra
-
-        if (existing) {
-          return showAlert(`❌ La cédula <strong>${cedula}</strong> ya está registrada.`, 'error');
-        }
-
-        // ✅ Subir foto (si hay)
-        if (file) {
-          if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-            return showAlert('⚠️ Solo se permiten imágenes JPG, PNG o WEBP.', 'error');
-          }
-          if (file.size > 5 * 1024 * 1024) {
-            return showAlert('⚠️ La imagen no debe superar los 5 MB.', 'error');
-          }
-
-          const fileName = `foto_${cedula}_${Date.now()}.${file.name.split('.').pop()}`;
-          const { error: uploadError } = await client.storage
-            .from('fotos_funcionarios')
-            .upload(`uniformados/${fileName}`, file, {
-              upsert: false,
-              contentType: file.type
-            });
-
-          if (uploadError) throw uploadError;
-
-          const { data: { publicUrl } } = client.storage
-            .from('fotos_funcionarios')
-            .getPublicUrl(`uniformados/${fileName}`);
-
-          fotoUrl = publicUrl;
-        }
-
-        // ✅ Insertar datos
-        const data = {
-          cedula,
-          rango: document.getElementById('rango').value,
-          apellidos_nombres: apellidosNombres,
-          sexo: document.getElementById('sexo').value,
-          dependencia: document.getElementById('dependencia').value,
-          region: document.getElementById('region').value,
-          estado: document.getElementById('estado').value,
-          servicio: document.getElementById('servicio').value,
-          cohorte_promocion: document.getElementById('cohorte_promocion').value,
-          institucion_origen: document.getElementById('institucion_origen').value,
-          fecha_ingreso: document.getElementById('fecha_ingreso').value || null,
-          telefono: document.getElementById('telefono').value,
-          status: document.getElementById('status').value,
-          fecha_nacimiento: document.getElementById('fecha_nacimiento').value || null,
-          edad_funcionario: document.getElementById('edad_funcionario').value,
-          fecha_oficio: document.getElementById('fecha_oficio').value,
-          fecha_transferencia_normalizacion: document.getElementById('fecha_transferencia_normalizacion').value,
-          tipo_movimiento: document.getElementById('tipo_movimiento').value,
-          observaciones: document.getElementById('observaciones').value,
-          fechas_egreso: document.getElementById('fechas_egreso').value,
-          direccion: document.getElementById('direccion').value,
-          correo_electronico: document.getElementById('correo_electronico').value,
-          foto_uniformado_url: fotoUrl // 👈 nueva columna
-        };
-
-        const { error: insertError } = await client
+        const { error } = await client
           .from('auditoria_personal')
           .insert(data);
-
-        if (insertError) {
-          if (insertError.code === '23505') {
-            return showAlert(`❌ Violación de restricción única: cédula ${cedula} duplicada.`, 'error');
-          }
-          throw insertError;
-        }
-
+        if (error) throw error;
         showAlert('✅ Registro exitoso. El personal ha sido agregado.', 'success');
         document.getElementById('registroForm').reset();
-        document.getElementById('fotoPreview').style.display = 'none';
+        // Reiniciar altura de textareas
+        document.querySelectorAll('textarea.autoresize').forEach(el => {
+          el.style.height = 'auto';
+          el.style.height = (el.scrollHeight) + 'px';
+        });
         setTimeout(() => window.location.href = 'auditoria-nacional.html', 2000);
-
       } catch (err) {
         console.error('Error:', err);
-        showAlert(`❌ Error: ${err.message || 'No se pudo completar el registro'}`, 'error');
+        showAlert(`❌ Error al registrar: ${err.message || 'Verifique que la cédula no exista'}`, 'error');
       }
     });
 
     function showAlert(msg, type) {
-      alertDiv.innerHTML = msg;
-      alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+      alertDiv.textContent = msg;
+      alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : type === 'error' ? 'alert-error' : '');
       alertDiv.style.display = msg ? 'block' : 'none';
     }
   </script>
