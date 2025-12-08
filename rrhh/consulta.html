@@ -357,10 +357,6 @@
             <div class="field-value" id="institucion_origen"></div>
           </div>
           <div class="field">
-            <div class="field-label">Fecha de Ingreso</div>
-            <div class="field-value" id="fecha_ingreso"></div>
-          </div>
-          <div class="field">
             <div class="field-label">Teléfono</div>
             <div class="field-value" id="telefono"></div>
           </div>
@@ -582,45 +578,72 @@
       }
     }
 
-    function mostrarFichaCompleta(f) {
-      const formatDate = s => s ? new Date(s).toLocaleDateString('es-VE') : '—';
-      const statusBadge = document.getElementById('statusBadge');
-      const statusValue = (f.status || '').toUpperCase();
-      const statusText = 
-        statusValue === 'A' ? 'Activo' :
-        statusValue === 'P' ? 'P' :
-        statusValue === 'D' ? 'D' :
-        statusValue === 'S' ? 'Suspendido' :
-        statusValue === 'DA' ? 'DA' :
-        statusValue === 'E' ? 'Destituido' :
-        '—';
-      statusBadge.textContent = statusText;
-      statusBadge.className = '';
-      statusBadge.classList.add(`status-${statusValue}`);
+   function mostrarFichaCompleta(f) {
+  const formatDate = s => s ? new Date(s).toLocaleDateString('es-VE') : '—';
+  
+  // ✅ Llenar campos (igual que antes)
+  document.getElementById('cedula').textContent = f.cedula || '—';
+  document.getElementById('rango').textContent = f.rango || '—';
+  document.getElementById('apellidos_nombres').textContent = f.apellidos_nombres || '—';
+  document.getElementById('sexo').textContent = f.sexo || '—';
+  document.getElementById('dependencia').textContent = f.dependencia || '—';
+  document.getElementById('region').textContent = f.region || '—';
+  document.getElementById('estado').textContent = f.estado || '—';
+  document.getElementById('servicio').textContent = f.servicio || '—';
+  document.getElementById('cohorte_promocion').textContent = f.cohorte_promocion || '—';
+  document.getElementById('institucion_origen').textContent = f.institucion_origen || '—';
+  document.getElementById('fecha_ingreso').textContent = formatDate(f.fecha_ingreso);
+  document.getElementById('telefono').textContent = f.telefono || '—';
+  document.getElementById('fecha_nacimiento').textContent = formatDate(f.fecha_nacimiento);
+  document.getElementById('edad_funcionario').textContent = f.edad_funcionario || '—';
+  document.getElementById('fecha_oficio').textContent = f.fecha_oficio || '—';
+  document.getElementById('fecha_transferencia_normalizacion').textContent = f.fecha_transferencia_normalizacion || '—';
+  document.getElementById('tipo_movimiento').textContent = f.tipo_movimiento || '—';
+  document.getElementById('observaciones').textContent = f.observaciones || '—';
+  document.getElementById('fechas_egreso').textContent = f.fechas_egreso || '—';
+  document.getElementById('direccion').textContent = f.direccion || '—';
+  document.getElementById('correo_electronico').textContent = f.correo_electronico || '—';
 
-      document.getElementById('cedula').textContent = f.cedula || '—';
-      document.getElementById('rango').textContent = f.rango || '—';
-      document.getElementById('apellidos_nombres').textContent = f.apellidos_nombres || '—';
-      document.getElementById('sexo').textContent = f.sexo || '—';
-      document.getElementById('dependencia').textContent = f.dependencia || '—';
-      document.getElementById('region').textContent = f.region || '—';
-      document.getElementById('estado').textContent = f.estado || '—';
-      document.getElementById('servicio').textContent = f.servicio || '—';
-      document.getElementById('cohorte_promocion').textContent = f.cohorte_promocion || '—';
-      document.getElementById('institucion_origen').textContent = f.institucion_origen || '—';
-      document.getElementById('fecha_ingreso').textContent = formatDate(f.fecha_ingreso);
-      document.getElementById('telefono').textContent = f.telefono || '—';
-      document.getElementById('fecha_nacimiento').textContent = formatDate(f.fecha_nacimiento);
-      document.getElementById('edad_funcionario').textContent = f.edad_funcionario || '—';
-      document.getElementById('fecha_oficio').textContent = f.fecha_oficio || '—';
-      document.getElementById('fecha_transferencia_normalizacion').textContent = f.fecha_transferencia_normalizacion || '—';
-      document.getElementById('tipo_movimiento').textContent = f.tipo_movimiento || '—';
-      document.getElementById('observaciones').textContent = f.observaciones || '—';
-      document.getElementById('fechas_egreso').textContent = f.fechas_egreso || '—';
-      document.getElementById('direccion').textContent = f.direccion || '—';
-      document.getElementById('correo_electronico').textContent = f.correo_electronico || '—';
-      cargarFoto(f.cedula);
-    }
+  // ✅ Manejo del status en el nuevo cuadro de color
+  const statusBox = document.getElementById('statusBox');
+  let statusValue = (f.status || '').trim().toLowerCase();
+  let displayText = statusValue;
+  let bgColor = '#ccc';
+  let textColor = 'white';
+
+  // 🔤 Normalizar según tus códigos (soporta tanto abreviaturas como nombres)
+  if (['activo', 'a', 'active'].includes(statusValue)) {
+    displayText = 'Activo';
+    bgColor = '#2e7d32';
+  } else if (['p', 'proceso', 'en proceso'].includes(statusValue)) {
+    displayText = 'P';
+    bgColor = '#1976d2';
+  } else if (['destituido', 'd', 'destituido/a'].includes(statusValue)) {
+    displayText = 'Destituido';
+    bgColor = '#c62828';
+  } else if (['suspendido', 's'].includes(statusValue)) {
+    displayText = 'Suspendido';
+    bgColor = '#ef6c00';
+  } else if (['da', 'd.a.', 'desvinculado administrativo'].includes(statusValue)) {
+    displayText = 'DA';
+    bgColor = '#7b1fa2';
+  } else if (['d', 'desvinculado'].includes(statusValue)) {
+    displayText = 'D';
+    bgColor = '#fbc02d';
+    textColor = 'black';
+  } else {
+    displayText = statusValue || '—';
+    bgColor = '#9e9e9e';
+  }
+
+  statusBox.textContent = displayText;
+  statusBox.style.backgroundColor = bgColor;
+  statusBox.style.color = textColor;
+  statusBox.style.display = 'block';
+
+  // ✅ Cargar foto
+  cargarFoto(f.cedula);
+}
 
     async function cargarFoto(cedula) {
       const container = document.getElementById('photoContainer');
