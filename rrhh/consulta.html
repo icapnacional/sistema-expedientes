@@ -189,9 +189,9 @@
       margin-bottom: 24px;
     }
     .photo-placeholder {
-      width: 200px;
+      width: 200px;       /* ✅ cuadrada y grande */
       height: 200px;
-      border-radius: 8px; /* ✅ cuadrada */
+      border-radius: 8px; /* no circular */
       background: #f0f0f0;
       margin: 0 auto 16px;
       display: flex;
@@ -255,7 +255,7 @@
       <strong>Usuario:</strong> <span id="userEmail">—</span> |
       <strong>Rol:</strong> <span id="userRol">—</span>
     </div>
-    <!-- Búsqueda -->
+    <!-- 🔍 Búsqueda -->
     <div class="search-section">
       <h2 style="font-size: 20px; margin-bottom: 16px; color: #2d2d2d;">🔍 Consulta de Personal</h2>
       <div class="search-group">
@@ -266,7 +266,7 @@
       <div id="searchMessage" style="margin-top:12px; font-size:14px; min-height:20px;"></div>
     </div>
 
-    <!-- Lista de resultados -->
+    <!-- 📋 Lista de resultados -->
     <div id="resultsList" class="results-list">
       <div class="results-header">
         <h3 id="resultsTitle">Resultados encontrados</h3>
@@ -276,7 +276,7 @@
       <div class="pagination" id="pagination"></div>
     </div>
 
-    <!-- Ficha resultado -->
+    <!-- 📄 Ficha resultado -->
     <div id="resultCard" class="result-card">
       <div class="photo-section">
         <div class="photo-placeholder" id="photoContainer">
@@ -395,7 +395,7 @@
     let currentUserEmail = '';
     let currentUserRol = '';
 
-    // ✅ Registrar logs en auditoria_logs
+    // ✅ Registro de logs (para historial)
     async function logActividad(accion, detalle = '') {
       if (!currentUserEmail) return;
       try {
@@ -415,7 +415,7 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        // ✅ Verificación de sesión + módulo 'rh'
+        // ✅ Verificación con módulo 'rh'
         const {  { session }, error } = await client.auth.getSession();
         if (error || !session) return window.location.href = '../index.html';
 
@@ -433,7 +433,7 @@
           return window.location.href = '../index.html';
         }
 
-        currentUserEmail = perfil.email || session.user.email;
+        currentUserEmail = perfil.email;
         currentUserRol = userRol;
         document.getElementById('userEmail').textContent = currentUserEmail;
         document.getElementById('userRol').textContent = 
@@ -460,7 +460,6 @@
         return;
       }
 
-      // 🪪 Cédula → ficha inmediata
       if (/^\d{6,}$/.test(query)) {
         msg.textContent = '🔍 Buscando por cédula...';
         msg.style.color = '#1976d2';
@@ -470,13 +469,11 @@
             .select('*')
             .eq('cedula', query)
             .single();
-          
           if (error || !data) {
             msg.textContent = `❌ Cédula ${query} no encontrada.`;
             msg.style.color = '#c62828';
             return;
           }
-
           mostrarFichaCompleta(data);
           document.getElementById('resultsList').style.display = 'none';
           document.getElementById('resultCard').style.display = 'block';
@@ -489,7 +486,6 @@
         return;
       }
 
-      // 👥 Nombre/apellido → lista paginada
       currentPage = 1;
       buscarPorNombre(query);
     }
@@ -650,31 +646,36 @@
       cargarFoto(f.cedula);
     }
 
+    // ✅ ✅ ✅ Versión corregida para Supabase antiguo ✅ ✅ ✅
     async function cargarFoto(cedula) {
       const container = document.getElementById('photoContainer');
       container.innerHTML = '🪪';
       
-      try {
-        const extensions = ['jpg', 'jpeg', 'png', 'webp'];
-        for (let ext of extensions) {
-          const path = `uniformados/foto_${cedula}.${ext}`;
+      // ✅ Buscar en múltiples extensiones
+      const extensions = ['jpg', 'jpeg', 'png', 'webp'];
+      for (let ext of extensions) {
+        const path = `uniformados/foto_${cedula}.${ext}`;
+        try {
+          // ✅ getPublicUrl() sin `` (correcto para Supabase v1/v2 antiguos)
           const { publicUrl } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
           
           const img = new Image();
-          img.crossOrigin = 'Anonymous';
+          img.crossOrigin = 'Anonymous'; // ✅ necesario para html2pdf
           img.src = publicUrl;
-          await new Promise(resolve => {
+          
+          await new Promise((resolve) => {
             img.onload = () => {
               container.innerHTML = '';
               container.appendChild(img);
-              resolve();
+              resolve(true);
             };
-            img.onerror = resolve;
+            img.onerror = () => resolve(false);
           });
+
           if (container.querySelector('img')) break;
+        } catch (err) {
+          continue; // sigue con siguiente extensión
         }
-      } catch (err) {
-        console.warn('Foto no encontrada para:', cedula);
       }
     }
 
@@ -683,7 +684,742 @@
       document.getElementById('resultsList').style.display = 'block';
     }
 
-    // ✅ PDF funcional (descarga real)
+    // ✅ PDF funcional
+    function exportarPDF() {
+      const ficha = document.getElementById('resultCard');
+      if (!ficha || ficha.style.display === 'none') {
+        alert('⚠️ Primero selecciona un funcionario.');
+        return;
+      }
+
+      const nombre = document.getElementById('apellidos_nombres')?.textContent?.trim() || 'funcionario';
+      const cedula = document.getElementById('cedula')?.textContent?.trim() || 'desconocida';
+      const filename = `ficha_${nombre.replace(/\s+/g, '_')}_${cedula}.pdf`;
+
+      const clone = ficha.cloneNode(true);
+      clone.id = 'pdf-clone';
+      clone.style.position = 'fixed';
+      clone.style.top = '0';
+      clone.style.left = '0';
+      clone.style.width = '794px';
+      clone.style.padding = '20px 30px';
+      clone.style.background = 'white';
+      clone.style.display = 'block';
+
+      const closeBtn = clone.querySelector('#btnCerrarFicha');
+      const exportBtn = clone.querySelector('#btnExportPDF');
+      if (closeBtn) closeBtn.remove();
+      if (exportBtn) exportBtn.remove();
+
+      document.body.appendChild(clone);
+
+      const opt = {
+        margin: 15,
+        filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(clone).save().finally(() => {
+        if (clone.parentNode) clone.parentNode.removeChild(clone);
+        logActividad('Exportación de ficha a PDF', filename);
+      });
+    }
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Auditoría Nacional | RRHH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 20px 0;
+    }
+    .header img {
+      width: 90px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+      margin-bottom: 8px;
+    }
+    .header .subtitle {
+      font-size: 16px;
+      color: #722F37;
+      font-weight: 600;
+    }
+    .user-info {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      border: 1px solid #eee;
+    }
+    .search-section {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+      border: 1px solid #eee;
+    }
+    .search-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+    input, button {
+      padding: 12px 16px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+    input {
+      width: 100%;
+      background: #fdfdfd;
+    }
+    .btn {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .btn:hover {
+      background-color: #5e262d;
+      transform: translateY(-1px);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #722F37;
+      color: #722F37;
+    }
+    .btn-outline:hover {
+      background: #fdf7f7;
+    }
+    .btn-pdf {
+      background-color: #1976d2;
+      margin-top: 16px;
+    }
+    .btn-pdf:hover {
+      background-color: #1565c0;
+    }
+    /* Lista de resultados */
+    .results-list {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      border: 1px solid #eee;
+      margin-bottom: 24px;
+      display: none;
+    }
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .result-item {
+      padding: 14px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .result-item:hover {
+      background: #f9f7f7;
+    }
+    .result-item:last-child {
+      border-bottom: none;
+    }
+    .result-name {
+      font-weight: 600;
+      color: #2d2d2d;
+    }
+    .result-id {
+      font-size: 13px;
+      color: #666;
+    }
+    /* Paginación */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .pagination button,
+    .pagination span {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 4px;
+      border-radius: 6px;
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pagination button.active {
+      background: #722F37;
+      color: white;
+      border-color: #722F37;
+    }
+    .pagination button:hover:not(.active) {
+      background: #eaeaea;
+    }
+    .pagination span {
+      cursor: default;
+      background: transparent;
+      border: none;
+      color: #888;
+    }
+    /* Ficha resultado */
+    .result-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      border: 1px solid #eee;
+      display: none;
+    }
+    .photo-section {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .photo-placeholder {
+      width: 200px;       /* ✅ cuadrada y grande */
+      height: 200px;
+      border-radius: 8px; /* no circular */
+      background: #f0f0f0;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+      color: #888;
+      overflow: hidden;
+      border: 2px solid #eee;
+    }
+    .photo-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .field {
+      margin-bottom: 12px;
+    }
+    .field-label {
+      font-weight: 600;
+      color: #555;
+      font-size: 14px;
+    }
+    .field-value {
+      font-size: 15px;
+      color: #2d2d2d;
+    }
+    .status-active { color: #2e7d32; font-weight: 600; }
+    .status-suspended { color: #c62828; font-weight: 600; }
+    .breadcrumb {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 12px 20px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: #555;
+    }
+    .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { margin: 0 8px; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="../index.html">Inicio</a> <span>›</span>
+      <a href="index.html">RRHH</a> <span>›</span>
+      <strong>Auditoría Nacional</strong>
+    </div>
+    <div class="header">
+      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+      <h1>Inspectable para el Control de la Actuación Policial</h1>
+      <div class="subtitle">• Consulta de Personal Auditado •</div>
+    </div>
+    <div class="user-info">
+      <strong>Usuario:</strong> <span id="userEmail">—</span> |
+      <strong>Rol:</strong> <span id="userRol">—</span>
+    </div>
+    <!-- 🔍 Búsqueda -->
+    <div class="search-section">
+      <h2 style="font-size: 20px; margin-bottom: 16px; color: #2d2d2d;">🔍 Consulta de Personal</h2>
+      <div class="search-group">
+        <label for="searchQuery">Buscar por cédula, nombre o apellido:</label>
+        <input type="text" id="searchQuery" placeholder="Ej: 25653412, SOTO, JOSE" />
+      </div>
+      <button id="btnBuscar" class="btn" style="width:100%;">Buscar</button>
+      <div id="searchMessage" style="margin-top:12px; font-size:14px; min-height:20px;"></div>
+    </div>
+
+    <!-- 📋 Lista de resultados -->
+    <div id="resultsList" class="results-list">
+      <div class="results-header">
+        <h3 id="resultsTitle">Resultados encontrados</h3>
+        <span id="resultsCount"></span>
+      </div>
+      <div id="resultsContainer"></div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+    <!-- 📄 Ficha resultado -->
+    <div id="resultCard" class="result-card">
+      <div class="photo-section">
+        <div class="photo-placeholder" id="photoContainer">
+          🪪
+        </div>
+      </div>
+      <h3 style="font-size:18px; margin-bottom:16px; color:#722F37;">
+        🪪 Ficha del Funcionario
+        <button id="btnCerrarFicha" style="float:right; background:#eee; border:none; width:24px; height:24px; border-radius:50%; font-weight:bold;">✕</button>
+      </h3>
+      
+      <div id="fichaPDF">
+        <div class="fields-grid">
+          <div class="field">
+            <div class="field-label">Cédula</div>
+            <div class="field-value" id="cedula"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Rango</div>
+            <div class="field-value" id="rango"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Apellidos y Nombres</div>
+            <div class="field-value" id="apellidos_nombres"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Sexo</div>
+            <div class="field-value" id="sexo"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Dependencia</div>
+            <div class="field-value" id="dependencia"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Región</div>
+            <div class="field-value" id="region"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Estado</div>
+            <div class="field-value" id="estado"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Servicio</div>
+            <div class="field-value" id="servicio"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Cohorte / Promoción</div>
+            <div class="field-value" id="cohorte_promocion"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Institución de Origen</div>
+            <div class="field-value" id="institucion_origen"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Fecha de Ingreso</div>
+            <div class="field-value" id="fecha_ingreso"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Teléfono</div>
+            <div class="field-value" id="telefono"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Status</div>
+            <div class="field-value">
+              <span id="status" class="status-active"></span>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-label">Fecha de Nacimiento</div>
+            <div class="field-value" id="fecha_nacimiento"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Edad</div>
+            <div class="field-value" id="edad_funcionario"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Fecha de Oficio</div>
+            <div class="field-value" id="fecha_oficio"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Fecha Transferencia/Normalización</div>
+            <div class="field-value" id="fecha_transferencia_normalizacion"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Tipo de Movimiento</div>
+            <div class="field-value" id="tipo_movimiento"></div>
+          </div>
+          <div class="field" style="grid-column:1/-1;">
+            <div class="field-label">Observaciones</div>
+            <div class="field-value" id="observaciones" style="background:#f9f9f9; padding:10px; border-radius:6px;"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Fechas de Egreso</div>
+            <div class="field-value" id="fechas_egreso"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Dirección</div>
+            <div class="field-value" id="direccion"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Correo Electrónico</div>
+            <div class="field-value" id="correo_electronico"></div>
+          </div>
+        </div>
+      </div>
+
+      <button id="btnExportPDF" class="btn btn-pdf" style="width:100%;">📄 Exportar Ficha a PDF</button>
+    </div>
+  </div>
+  <script>
+    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+    let currentPage = 1;
+    const RESULTS_PER_PAGE = 15;
+    let currentUserEmail = '';
+    let currentUserRol = '';
+
+    // ✅ Registro de logs (para historial)
+    async function logActividad(accion, detalle = '') {
+      if (!currentUserEmail) return;
+      try {
+        await client
+          .from('auditoria_logs')
+          .insert({
+            usuario: currentUserEmail,
+            rol: currentUserRol,
+            accion,
+            detalle,
+            fecha: new Date().toISOString()
+          });
+      } catch (err) {
+        console.warn('⚠️ No se pudo registrar log:', err.message);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // ✅ Verificación con módulo 'rh'
+        const {  { session }, error } = await client.auth.getSession();
+        if (error || !session) return window.location.href = '../index.html';
+
+        const {  perfil } = await client
+          .from('perfiles')
+          .select('email, rol, modulos_asignados')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!perfil) return window.location.href = '../index.html';
+
+        const userRol = perfil.rol || 'consultor';
+        if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
+          alert('🔒 Acceso denegado: no tienes permiso para Recursos Humanos.');
+          return window.location.href = '../index.html';
+        }
+
+        currentUserEmail = perfil.email;
+        currentUserRol = userRol;
+        document.getElementById('userEmail').textContent = currentUserEmail;
+        document.getElementById('userRol').textContent = 
+          userRol === 'admin' ? 'Administrador' :
+          userRol === 'moderador' ? 'Moderador' : 'Consultor';
+
+        // ✅ Eventos
+        document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
+        document.getElementById('searchQuery').addEventListener('keypress', e => e.key === 'Enter' && iniciarBusqueda());
+        document.getElementById('btnCerrarFicha').addEventListener('click', cerrarFicha);
+        document.getElementById('btnExportPDF').addEventListener('click', exportarPDF);
+
+      } catch (err) {
+        console.error('Error al cargar sesión:', err);
+        window.location.href = '../index.html';
+      }
+    });
+
+    async function iniciarBusqueda() {
+      const query = document.getElementById('searchQuery').value.trim();
+      const msg = document.getElementById('searchMessage');
+      if (!query) {
+        msg.textContent = '⚠️ Ingresa un término de búsqueda.';
+        return;
+      }
+
+      if (/^\d{6,}$/.test(query)) {
+        msg.textContent = '🔍 Buscando por cédula...';
+        msg.style.color = '#1976d2';
+        try {
+          const { data, error } = await client
+            .from('auditoria_personal')
+            .select('*')
+            .eq('cedula', query)
+            .single();
+          if (error || !data) {
+            msg.textContent = `❌ Cédula ${query} no encontrada.`;
+            msg.style.color = '#c62828';
+            return;
+          }
+          mostrarFichaCompleta(data);
+          document.getElementById('resultsList').style.display = 'none';
+          document.getElementById('resultCard').style.display = 'block';
+          msg.textContent = '';
+          logActividad('Consulta directa por cédula', `C.I. ${query}`);
+        } catch (err) {
+          msg.textContent = '❌ Error al buscar cédula.';
+          msg.style.color = '#c62828';
+        }
+        return;
+      }
+
+      currentPage = 1;
+      buscarPorNombre(query);
+    }
+
+    async function buscarPorNombre(query) {
+      const msg = document.getElementById('searchMessage');
+      msg.textContent = '🔍 Buscando coincidencias...';
+      msg.style.color = '#1976d2';
+      document.getElementById('resultsList').style.display = 'none';
+      document.getElementById('resultCard').style.display = 'none';
+
+      try {
+        const searchTerm = query.toLowerCase();
+        const { data, error, count } = await client
+          .from('auditoria_personal')
+          .select('*', { count: 'exact' })
+          .or(`apellidos_nombres.ilike.%${searchTerm}%`)
+          .range((currentPage - 1) * RESULTS_PER_PAGE, currentPage * RESULTS_PER_PAGE - 1)
+          .order('apellidos_nombres', { ascending: true });
+
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          msg.textContent = `❌ No se encontraron coincidencias para "${query}"`;
+          msg.style.color = '#c62828';
+          return;
+        }
+
+        renderResults(data, count, query);
+        document.getElementById('resultsList').style.display = 'block';
+        msg.textContent = '';
+        logActividad('Búsqueda por nombre/apellido', query);
+      } catch (err) {
+        console.error('Error en búsqueda:', err);
+        msg.textContent = '❌ Error al consultar la base de datos.';
+        msg.style.color = '#c62828';
+      }
+    }
+
+    function renderResults(data, total, query) {
+      const container = document.getElementById('resultsContainer');
+      const title = document.getElementById('resultsTitle');
+      const countEl = document.getElementById('resultsCount');
+
+      title.textContent = `Resultados para: "${query}"`;
+      countEl.textContent = `(${data.length} de ${total})`;
+
+      container.innerHTML = data.map(f => `
+        <div class="result-item" onclick="mostrarFichaPorCedula('${f.cedula}')">
+          <div class="result-name">${f.apellidos_nombres || '—'}</div>
+          <div class="result-id">C.I. ${f.cedula || '—'}</div>
+        </div>
+      `).join('');
+
+      const totalPages = Math.ceil(total / RESULTS_PER_PAGE);
+      renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+      const el = document.getElementById('pagination');
+      if (totalPages <= 1) {
+        el.innerHTML = '';
+        return;
+      }
+
+      let pages = [];
+      const maxVisible = 5;
+      let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+      let end = Math.min(totalPages, start + maxVisible - 1);
+      if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
+
+      if (start > 1) pages.push(1);
+      if (start > 2) pages.push('...');
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (end < totalPages - 1) pages.push('...');
+      if (end < totalPages) pages.push(totalPages);
+
+      el.innerHTML = '';
+
+      if (currentPage > 1) {
+        const btn = document.createElement('button');
+        btn.textContent = '◀';
+        btn.onclick = () => { currentPage--; buscarPorNombre(document.getElementById('searchQuery').value); };
+        el.appendChild(btn);
+      }
+
+      pages.forEach(p => {
+        const elItem = document.createElement(p === '...' ? 'span' : 'button');
+        elItem.textContent = p;
+        if (p !== '...') {
+          elItem.className = p === currentPage ? 'active' : '';
+          elItem.onclick = () => { currentPage = p; buscarPorNombre(document.getElementById('searchQuery').value); };
+        }
+        el.appendChild(elItem);
+      });
+
+      if (currentPage < totalPages) {
+        const btn = document.createElement('button');
+        btn.textContent = '▶';
+        btn.onclick = () => { currentPage++; buscarPorNombre(document.getElementById('searchQuery').value); };
+        el.appendChild(btn);
+      }
+    }
+
+    async function mostrarFichaPorCedula(cedula) {
+      try {
+        const { data, error } = await client
+          .from('auditoria_personal')
+          .select('*')
+          .eq('cedula', cedula)
+          .single();
+        if (error || !data) throw new Error('No encontrado');
+        mostrarFichaCompleta(data);
+        document.getElementById('resultsList').style.display = 'none';
+        document.getElementById('resultCard').style.display = 'block';
+        logActividad('Visualización de ficha', `C.I. ${cedula}`);
+      } catch (err) {
+        alert(`❌ No se pudo cargar la ficha: ${err.message}`);
+      }
+    }
+
+    function mostrarFichaCompleta(f) {
+      const formatDate = s => s ? new Date(s).toLocaleDateString('es-VE') : '—';
+      const statusEl = document.getElementById('status');
+      
+      document.getElementById('cedula').textContent = f.cedula || '—';
+      document.getElementById('rango').textContent = f.rango || '—';
+      document.getElementById('apellidos_nombres').textContent = f.apellidos_nombres || '—';
+      document.getElementById('sexo').textContent = f.sexo || '—';
+      document.getElementById('dependencia').textContent = f.dependencia || '—';
+      document.getElementById('region').textContent = f.region || '—';
+      document.getElementById('estado').textContent = f.estado || '—';
+      document.getElementById('servicio').textContent = f.servicio || '—';
+      document.getElementById('cohorte_promocion').textContent = f.cohorte_promocion || '—';
+      document.getElementById('institucion_origen').textContent = f.institucion_origen || '—';
+      document.getElementById('fecha_ingreso').textContent = formatDate(f.fecha_ingreso);
+      document.getElementById('telefono').textContent = f.telefono || '—';
+      document.getElementById('fecha_nacimiento').textContent = formatDate(f.fecha_nacimiento);
+      document.getElementById('edad_funcionario').textContent = f.edad_funcionario || '—';
+      document.getElementById('fecha_oficio').textContent = f.fecha_oficio || '—';
+      document.getElementById('fecha_transferencia_normalizacion').textContent = f.fecha_transferencia_normalizacion || '—';
+      document.getElementById('tipo_movimiento').textContent = f.tipo_movimiento || '—';
+      document.getElementById('observaciones').textContent = f.observaciones || '—';
+      document.getElementById('fechas_egreso').textContent = f.fechas_egreso || '—';
+      document.getElementById('direccion').textContent = f.direccion || '—';
+      document.getElementById('correo_electronico').textContent = f.correo_electronico || '—';
+
+      if (f.status === 'A') {
+        statusEl.textContent = 'Activo';
+        statusEl.className = 'status-active';
+      } else if (f.status === 'S') {
+        statusEl.textContent = 'Suspendido';
+        statusEl.className = 'status-suspended';
+      } else {
+        statusEl.textContent = f.status || '—';
+        statusEl.className = '';
+      }
+
+      cargarFoto(f.cedula);
+    }
+
+    // ✅ ✅ ✅ Versión corregida para Supabase antiguo ✅ ✅ ✅
+    async function cargarFoto(cedula) {
+      const container = document.getElementById('photoContainer');
+      container.innerHTML = '🪪';
+      
+      // ✅ Buscar en múltiples extensiones
+      const extensions = ['jpg', 'jpeg', 'png', 'webp'];
+      for (let ext of extensions) {
+        const path = `uniformados/foto_${cedula}.${ext}`;
+        try {
+          // ✅ getPublicUrl() sin `` (correcto para Supabase v1/v2 antiguos)
+          const { publicUrl } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
+          
+          const img = new Image();
+          img.crossOrigin = 'Anonymous'; // ✅ necesario para html2pdf
+          img.src = publicUrl;
+          
+          await new Promise((resolve) => {
+            img.onload = () => {
+              container.innerHTML = '';
+              container.appendChild(img);
+              resolve(true);
+            };
+            img.onerror = () => resolve(false);
+          });
+
+          if (container.querySelector('img')) break;
+        } catch (err) {
+          continue; // sigue con siguiente extensión
+        }
+      }
+    }
+
+    function cerrarFicha() {
+      document.getElementById('resultCard').style.display = 'none';
+      document.getElementById('resultsList').style.display = 'block';
+    }
+
+    // ✅ PDF funcional
     function exportarPDF() {
       const ficha = document.getElementById('resultCard');
       if (!ficha || ficha.style.display === 'none') {
