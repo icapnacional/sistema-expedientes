@@ -630,22 +630,15 @@
 async function cargarFoto(cedula) {
   const container = document.getElementById('photoContainer');
   container.innerHTML = '🪪';
-  const extensions = ['jpg', 'jpeg', 'png', 'webp'];
-  
+  // Orden óptimo: .jpeg > .jpg > .png (webp es raro en fotos subidas manualmente)
+  const extensions = ['jpeg', 'jpg', 'png'];
   for (const ext of extensions) {
     const path = `foto_${cedula}.${ext}`;
-    
     try {
-      // ✅ Solo createSignedUrl (requiere usuario autenticado + política RLS)
       const { data, error } = await client.storage
         .from('fotos_funcionarios')
-        .createSignedUrl(path, 3600); // 1 hora
-
-      if (error) {
-        console.warn(`❌ Signed URL falló para ${path}:`, error.message);
-        continue; // prueba con la siguiente extensión
-      }
-
+        .createSignedUrl(path, 3600);
+      if (error) continue;
       if (data?.signedUrl) {
         const img = new Image();
         img.crossOrigin = 'anonymous';
@@ -653,19 +646,14 @@ async function cargarFoto(cedula) {
           container.innerHTML = '';
           container.appendChild(img);
         };
-        img.onerror = () => {
-          console.warn(`❌ Imagen no se cargó (onerror):`, data.signedUrl);
-        };
+        img.onerror = () => console.warn('Imagen falló:', path);
         img.src = data.signedUrl;
-        return; // ✅ éxito → salir
+        return;
       }
-
     } catch (err) {
-      console.error(`Error inesperado para ${path}:`, err);
+      // Ignorar y seguir
     }
   }
-
-  console.log(`🔍 No se encontró foto para cédula ${cedula}`);
 }
     function cerrarFicha() {
       document.getElementById('resultCard').style.display = 'none';
