@@ -629,25 +629,31 @@
 
 function cargarFoto(cedula) {
   const container = document.getElementById('photoContainer');
-  container.innerHTML = '🪪';
+  container.innerHTML = '🪪'; // Reset placeholder
   const extensions = ['jpg', 'jpeg', 'png', 'webp'];
-  extensions.forEach(ext => {
-    const path = `foto_${cedula}.${ext}`; // ✅ sin 'uniformados/'
+  
+  for (const ext of extensions) {
+    const path = `foto_${cedula}.${ext}`;
     try {
-      // ✅ CORRECCIÓN: getPublicUrl() devuelve { publicUrl }
+      // ✅ CORRECCIÓN: getPublicUrl() devuelve { publicUrl }, no { data: { publicUrl } }
       const { publicUrl } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
+      
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
         container.innerHTML = '';
         container.appendChild(img);
       };
-      img.onerror = () => {}; // ignorar errores silenciosamente
+      img.onerror = () => {}; // Ignorar errores silenciosamente para probar otras extensiones
       img.src = publicUrl;
+      
+      // ✅ Salir del bucle tan pronto como encuentre una imagen válida
+      return;
     } catch (err) {
-      // Silencioso: seguir probando otras extensiones
+      console.warn(`No se pudo cargar foto con extensión ${ext} para cédula ${cedula}:`, err.message);
+      // Continuar con la siguiente extensión
     }
-  });
+  }
 }
     function cerrarFicha() {
       document.getElementById('resultCard').style.display = 'none';
