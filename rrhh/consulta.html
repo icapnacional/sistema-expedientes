@@ -627,33 +627,53 @@
       cargarFoto(f.cedula);
     }
 
-function cargarFoto(cedula) {
+async function cargarFoto(cedula) {
   const container = document.getElementById('photoContainer');
-  container.innerHTML = '🪪'; // Reset placeholder
+  container.innerHTML = '🪪';
   const extensions = ['jpg', 'jpeg', 'png', 'webp'];
   
   for (const ext of extensions) {
     const path = `foto_${cedula}.${ext}`;
+    
     try {
-      // ✅ CORRECCIÓN: getPublicUrl() devuelve { publicUrl }, no { data: { publicUrl } }
-      const { publicUrl } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
-      
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        container.innerHTML = '';
-        container.appendChild(img);
-      };
-      img.onerror = () => {}; // Ignorar errores silenciosamente para probar otras extensiones
-      img.src = publicUrl;
-      
-      // ✅ Salir del bucle tan pronto como encuentre una imagen válida
-      return;
+      // ✅ Intentar primero con signed URL (funciona incluso en buckets privados)
+      const { data, error } = await client.storage
+        .from('fotos_funcionarios')
+        .createSignedUrl(path, 3600); // 1 hora
+
+      let url = null;
+      if (!error && data?.signedUrl) {
+        url = data.signedUrl;
+      } else {
+        // ✅ Fallback: intentar getPublicUrl (solo si el bucket es público)
+        try {
+          const res = client.storage.from('fotos_funcionarios').getPublicUrl(path);
+          // En versiones nuevas: { data: { publicUrl }, error }
+          // En versiones viejas: { publicUrl }
+          url = res?.data?.publicUrl || res?.publicUrl;
+        } catch (e) {
+          console.warn(`Error en getPublicUrl para ${path}:`, e);
+        }
+      }
+
+      if (url) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          container.innerHTML = '';
+          container.appendChild(img);
+        };
+        img.onerror = () => { console.warn('Imagen falló al cargar:', url); };
+        img.src = url;
+        return; // ✅ éxito → salir
+      }
+
     } catch (err) {
-      console.warn(`No se pudo cargar foto con extensión ${ext} para cédula ${cedula}:`, err.message);
-      // Continuar con la siguiente extensión
+      console.warn(`No se pudo obtener URL para ${path}:`, err.message);
     }
   }
+
+  console.log(`❌ No se encontró foto para cédula ${cedula} en ninguna extensión.`);
 }
     function cerrarFicha() {
       document.getElementById('resultCard').style.display = 'none';
