@@ -103,6 +103,7 @@
     .btn-pdf:hover {
       background-color: #1565c0;
     }
+    /* Lista de resultados */
     .results-list {
       background: white;
       border-radius: 12px;
@@ -138,6 +139,7 @@
       font-size: 13px;
       color: #666;
     }
+    /* Paginación */
     .pagination {
       display: flex;
       justify-content: center;
@@ -174,6 +176,7 @@
       border: none;
       color: #888;
     }
+    /* Ficha resultado */
     .result-card {
       background: white;
       border-radius: 12px;
@@ -184,14 +187,14 @@
     }
     .photo-section {
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
     }
     .photo-placeholder {
       width: 200px;
       height: 200px;
-      border-radius: 8px;
+      border-radius: 8px; /* cuadrada */
       background: #f0f0f0;
-      margin: 0 auto 16px;
+      margin: 0 auto 12px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -205,6 +208,25 @@
       height: 100%;
       object-fit: cover;
     }
+    /* ✅ BADGE DE ESTATUS (nuevo) */
+    .status-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      text-align: center;
+      margin: 8px auto 16px;
+      min-width: 120px;
+      color: white;
+      background-color: #9e9e9e;
+    }
+    .status-badge.status-A { background-color: #2e7d32; }     /* Activo */
+    .status-badge.status-P { background-color: #1976d2; }     /* Pre-nómina */
+    .status-badge.status-D { background-color: #fbc02d; color: #000; } /* Destacado */
+    .status-badge.status-S { background-color: #f57c00; }     /* Suspendido */
+    .status-badge.status-DA { background-color: #7b1fa2; }    /* Destituido A */
+    .status-badge.status-E { background-color: #c62828; }     /* Destituido */
     .fields-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -222,8 +244,6 @@
       font-size: 14px;
       color: #2d2d2d;
     }
-    .status-active { color: #2e7d32; font-weight: 600; }
-    .status-suspended { color: #c62828; font-weight: 600; }
     .breadcrumb {
       background: #f8f9fa;
       border-radius: 12px;
@@ -253,6 +273,7 @@
       <strong>Usuario:</strong> <span id="userEmail">—</span> |
       <strong>Rol:</strong> <span id="userRol">—</span>
     </div>
+    <!-- 🔍 Búsqueda -->
     <div class="search-section">
       <h2 style="font-size: 20px; margin-bottom: 16px; color: #2d2d2d;">🔍 Consulta de Personal</h2>
       <div class="search-group">
@@ -262,6 +283,7 @@
       <button id="btnBuscar" class="btn" style="width:100%;">Buscar</button>
       <div id="searchMessage" style="margin-top:12px; font-size:14px; min-height:20px;"></div>
     </div>
+    <!-- 📋 Lista de resultados -->
     <div id="resultsList" class="results-list">
       <div class="results-header">
         <h3 id="resultsTitle">Resultados encontrados</h3>
@@ -270,11 +292,14 @@
       <div id="resultsContainer"></div>
       <div class="pagination" id="pagination"></div>
     </div>
+    <!-- 📄 Ficha resultado -->
     <div id="resultCard" class="result-card">
       <div class="photo-section">
         <div class="photo-placeholder" id="photoContainer">
           🪪
         </div>
+        <!-- ✅ BADGE DE ESTATUS justo debajo de la foto -->
+        <div id="statusBadge" class="status-badge">—</div>
       </div>
       <h3 style="font-size:18px; margin-bottom:16px; color:#722F37;">
         🪪 Ficha del Funcionario
@@ -331,12 +356,6 @@
             <div class="field-value" id="telefono"></div>
           </div>
           <div class="field">
-            <div class="field-label">Status</div>
-            <div class="field-value">
-              <span id="status" class="status-active"></span>
-            </div>
-          </div>
-          <div class="field">
             <div class="field-label">Fecha de Nacimiento</div>
             <div class="field-value" id="fecha_nacimiento"></div>
           </div>
@@ -387,11 +406,11 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        // ✅ Corregido: sintaxis válida para Supabase v2
-        const { data: { session }, error: sessionError } = await client.auth.getSession();
+        // ✅ Autenticación corregida
+        const {  { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError || !session) return window.location.href = '../index.html';
 
-        const { data: perfil } = await client
+        const {  perfil } = await client
           .from('perfiles')
           .select('email, rol, modulos_asignados')
           .eq('id', session.user.id)
@@ -400,7 +419,6 @@
         if (!perfil) return window.location.href = '../index.html';
 
         const userRol = perfil.rol || 'consultor';
-        // ✅ Permitir acceso si es admin o tiene módulo 'rh'
         if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
           alert('🔒 Acceso denegado: no tienes permiso para Recursos Humanos.');
           return window.location.href = '../index.html';
@@ -411,7 +429,7 @@
           userRol === 'admin' ? 'Administrador' :
           userRol === 'moderador' ? 'Moderador' : 'Consultor';
 
-        // ✅ Asignar eventos
+        // ✅ Eventos
         document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
         document.getElementById('searchQuery').addEventListener('keypress', e => e.key === 'Enter' && iniciarBusqueda());
         document.getElementById('btnCerrarFicha').addEventListener('click', cerrarFicha);
@@ -431,7 +449,7 @@
         return;
       }
 
-      // 🪪 Si es solo números y ≥6 dígitos → búsqueda por cédula (directa)
+      // 🪪 Si es cédula → ficha directa
       if (/^\d{6,}$/.test(query)) {
         msg.textContent = '🔍 Buscando por cédula...';
         msg.style.color = '#1976d2';
@@ -460,7 +478,7 @@
         return;
       }
 
-      // 👥 Si no, búsqueda por nombre/apellido → lista paginada
+      // 👥 Si no → lista paginada
       currentPage = 1;
       buscarPorNombre(query);
     }
@@ -579,8 +597,9 @@
 
     function mostrarFichaCompleta(f) {
       const formatDate = s => s ? new Date(s).toLocaleDateString('es-VE') : '—';
-      const statusEl = document.getElementById('status');
+      const statusBadge = document.getElementById('statusBadge');
 
+      // ✅ Llenar campos
       document.getElementById('cedula').textContent = f.cedula || '—';
       document.getElementById('rango').textContent = f.rango || '—';
       document.getElementById('apellidos_nombres').textContent = f.apellidos_nombres || '—';
@@ -603,36 +622,38 @@
       document.getElementById('direccion').textContent = f.direccion || '—';
       document.getElementById('correo_electronico').textContent = f.correo_electronico || '—';
 
-      if (f.status === 'A') {
-        statusEl.textContent = 'Activo';
-        statusEl.className = 'status-active';
-      } else if (f.status === 'S') {
-        statusEl.textContent = 'Suspendido';
-        statusEl.className = 'status-suspended';
-      } else {
-        statusEl.textContent = f.status || '—';
-        statusEl.className = '';
+      // ✅ BADGE DE ESTATUS (nuevo y solicitado explícitamente)
+      const statusValue = (f.status || '').toUpperCase();
+      const statusText = 
+        statusValue === 'A' ? 'Activo' :
+        statusValue === 'P' ? 'Pre-nómina' :
+        statusValue === 'D' ? 'Destacado' :
+        statusValue === 'S' ? 'Suspendido' :
+        statusValue === 'DA' ? 'Destituido A' :
+        statusValue === 'E' ? 'Destituido' :
+        '—';
+
+      statusBadge.textContent = statusText;
+      statusBadge.className = 'status-badge';
+      if (statusValue) {
+        statusBadge.classList.add(`status-${statusValue}`);
       }
 
       cargarFoto(f.cedula);
     }
 
-    // ✅ Corregido: { publicUrl } en lugar de { { publicUrl } }
+    // ✅ Cargar foto (corregido para Supabase v2)
     async function cargarFoto(cedula) {
       const container = document.getElementById('photoContainer');
       container.innerHTML = '🪪';
-
       const extensions = ['jpg', 'jpeg', 'png', 'webp'];
       for (let ext of extensions) {
         const path = `uniformados/foto_${cedula}.${ext}`;
         try {
-          // ✅ Sintaxis válida para Supabase v2
           const { publicUrl } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
-
           const img = new Image();
           img.crossOrigin = 'anonymous';
           img.src = publicUrl;
-
           await new Promise(resolve => {
             img.onload = () => {
               container.innerHTML = '';
@@ -641,7 +662,6 @@
             };
             img.onerror = () => resolve(false);
           });
-
           if (container.querySelector('img')) break;
         } catch (err) {
           continue;
@@ -654,7 +674,7 @@
       document.getElementById('resultsList').style.display = 'block';
     }
 
-    // ✅ PDF funcional con número de reporte (solo en PDF)
+    // ✅ PDF con número de reporte (solo en PDF)
     async function exportarPDF() {
       const ficha = document.getElementById('resultCard');
       if (!ficha || ficha.style.display === 'none') {
@@ -666,7 +686,7 @@
       const cedula = document.getElementById('cedula')?.textContent?.trim() || 'desconocida';
       const filename = `ficha_${nombre.replace(/\s+/g, '_')}_${cedula}.pdf`;
 
-      // ✅ Generar número de reporte único
+      // ✅ Número de reporte único
       const now = new Date();
       const fechaStr = now.toISOString().slice(0, 10).replace(/-/g, '');
       const hora = String(now.getHours()).padStart(2, '0');
