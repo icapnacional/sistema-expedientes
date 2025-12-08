@@ -390,16 +390,24 @@
     let currentPage = 1;
     const RESULTS_PER_PAGE = 15;
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const { data: { session }, error: sessionError } = await client.auth.getSession();
-        if (sessionError || !session) return window.location.href = '../index.html';
-        const { data: perfil } = await client
-          .from('perfiles')
-          .select('email, rol, modulos_asignados')
-          .eq('id', session.user.id)
-          .single();
-        if (!perfil) return window.location.href = '../index.html';
+ document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    // ✅ Corregido: sin destructuring anidado, sin riesgo de caracteres ocultos
+    const sessionResponse = await client.auth.getSession();
+    const session = sessionResponse?.data?.session;
+    const sessionError = sessionResponse?.error;
+
+    if (sessionError || !session) return window.location.href = '../index.html';
+
+    const { data: perfil } = await client
+      .from('perfiles')
+      .select('email, rol, modulos_asignados')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!perfil) return window.location.href = '../index.html';
+
+    // ... resto del código (userRol, eventos, etc.)
         const userRol = perfil.rol || 'consultor';
         if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
           alert('🔒 Acceso denegado: no tienes permiso para Recursos Humanos.');
