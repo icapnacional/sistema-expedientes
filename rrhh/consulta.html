@@ -644,28 +644,6 @@ function cargarFoto(cedula) {
     }
   });
 }
-  // ✅ Si no encontró ninguna, intentar con mayúsculas
-  for (let ext of extensions.map(e => e.toUpperCase())) {
-    const path = `foto_${cedula}.${ext}`;
-    try {
-      const { data: { publicUrl } } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = publicUrl;
-      await new Promise(resolve => {
-        img.onload = () => {
-          container.innerHTML = '';
-          container.appendChild(img);
-          resolve(true);
-        };
-        img.onerror = () => resolve(false);
-      });
-      if (container.querySelector('img')) break;
-    } catch (err) {
-      continue;
-    }
-  }
-}
     function cerrarFicha() {
       document.getElementById('resultCard').style.display = 'none';
       document.getElementById('resultsList').style.display = 'block';
