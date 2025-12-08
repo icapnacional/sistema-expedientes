@@ -408,7 +408,7 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-       const { data: { session }, error: sessionError } = await client.auth.getSession();
+      const { publicUrl } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
         if (sessionError || !session) return window.location.href = '../index.html';
         const {  perfil } = await client
           .from('perfiles')
