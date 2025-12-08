@@ -636,44 +636,36 @@ async function cargarFoto(cedula) {
     const path = `foto_${cedula}.${ext}`;
     
     try {
-      // ✅ Intentar primero con signed URL (funciona incluso en buckets privados)
+      // ✅ Solo createSignedUrl (requiere usuario autenticado + política RLS)
       const { data, error } = await client.storage
         .from('fotos_funcionarios')
         .createSignedUrl(path, 3600); // 1 hora
 
-      let url = null;
-      if (!error && data?.signedUrl) {
-        url = data.signedUrl;
-      } else {
-        // ✅ Fallback: intentar getPublicUrl (solo si el bucket es público)
-        try {
-          const res = client.storage.from('fotos_funcionarios').getPublicUrl(path);
-          // En versiones nuevas: { data: { publicUrl }, error }
-          // En versiones viejas: { publicUrl }
-          url = res?.data?.publicUrl || res?.publicUrl;
-        } catch (e) {
-          console.warn(`Error en getPublicUrl para ${path}:`, e);
-        }
+      if (error) {
+        console.warn(`❌ Signed URL falló para ${path}:`, error.message);
+        continue; // prueba con la siguiente extensión
       }
 
-      if (url) {
+      if (data?.signedUrl) {
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
           container.innerHTML = '';
           container.appendChild(img);
         };
-        img.onerror = () => { console.warn('Imagen falló al cargar:', url); };
-        img.src = url;
+        img.onerror = () => {
+          console.warn(`❌ Imagen no se cargó (onerror):`, data.signedUrl);
+        };
+        img.src = data.signedUrl;
         return; // ✅ éxito → salir
       }
 
     } catch (err) {
-      console.warn(`No se pudo obtener URL para ${path}:`, err.message);
+      console.error(`Error inesperado para ${path}:`, err);
     }
   }
 
-  console.log(`❌ No se encontró foto para cédula ${cedula} en ninguna extensión.`);
+  console.log(`🔍 No se encontró foto para cédula ${cedula}`);
 }
     function cerrarFicha() {
       document.getElementById('resultCard').style.display = 'none';
