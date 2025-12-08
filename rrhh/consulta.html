@@ -619,37 +619,30 @@
       cargarFoto(f.cedula);
     }
 
-async function cargarFoto(cedula) {
+function cargarFoto(cedula) {
   const container = document.getElementById('photoContainer');
   container.innerHTML = '🪪';
   const extensions = ['jpg', 'jpeg', 'png', 'webp'];
-  for (let ext of extensions) {
-    const path = `foto_${cedula}.${ext}`; // ✅ SIN 'uniformados/'
 
+  extensions.forEach(ext => {
+    const path = `foto_${cedula}.${ext}`; // ✅ sin 'uniformados/'
     try {
-      // ✅ CORRECTO: SIN await, y destructuración de data.publicUrl
-      const { data: { publicUrl } } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
-
+      // ✅ getPublicUrl() es síncrono → NO usar await
+      const {  { publicUrl } } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
+      
       const img = new Image();
       img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        container.innerHTML = '';
+        container.appendChild(img);
+      };
+      img.onerror = () => {}; // ignorar errores silenciosamente
       img.src = publicUrl;
 
-      await new Promise(resolve => {
-        img.onload = () => {
-          container.innerHTML = '';
-          container.appendChild(img);
-          resolve(true);
-        };
-        img.onerror = () => resolve(false);
-      });
-
-      if (container.querySelector('img')) break;
-
     } catch (err) {
-      console.warn(`Foto no encontrada con extensión: ${ext}`, err.message);
-      continue;
+      // Silencioso: seguir probando otras extensiones
     }
-  }
+  });
 }
   // ✅ Si no encontró ninguna, intentar con mayúsculas
   for (let ext of extensions.map(e => e.toUpperCase())) {
