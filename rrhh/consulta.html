@@ -236,25 +236,13 @@
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb span { margin: 0 8px; color: #888; }
 
-    /* ✅ SOLO ESTO SE AGREGA: estilos de los badges de estatus */
-    .status-badge {
-      display: inline-block;
-      padding: 6px 16px;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 14px;
-      text-align: center;
-      margin: 8px auto 0;
-      min-width: 120px;
-      color: white;
-      background-color: #9e9e9e;
-    }
-    .status-A { background-color: #2e7d32; }     /* Activo */
-    .status-P { background-color: #1976d2; }     /* P */
-    .status-D { background-color: #fbc02d; color: #000; } /* D */
-    .status-S { background-color: #f57c00; }     /* Suspendido */
-    .status-DA { background-color: #7b1fa2; }    /* DA */
-    .status-E { background-color: #c62828; }     /* Destituido */
+    /* ✅ SOLO ESTO SE AÑADE: estilos de los badges de estatus */
+    #statusBadge.status-A { background-color: #2e7d32; color: white; }     /* Activo */
+    #statusBadge.status-P { background-color: #1976d2; color: white; }     /* P */
+    #statusBadge.status-D { background-color: #fbc02d; color: black; }     /* D */
+    #statusBadge.status-S { background-color: #f57c00; color: white; }     /* Suspendido */
+    #statusBadge.status-DA { background-color: #7b1fa2; color: white; }    /* DA */
+    #statusBadge.status-E { background-color: #c62828; color: white; }     /* Destituido */
   </style>
 </head>
 <body>
@@ -295,8 +283,19 @@
         <div class="photo-placeholder" id="photoContainer">
           🪪
         </div>
-        <!-- ✅ SOLO ESTO SE AGREGA: badge de estatus -->
-        <div id="statusBadge" class="status-badge">—</div>
+        <!-- ✅ SOLO ESTO SE AÑADE: badge de estatus debajo de la foto -->
+        <div id="statusBadge" style="
+          display: inline-block;
+          padding: 6px 16px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 14px;
+          text-align: center;
+          margin: 8px auto 0;
+          min-width: 120px;
+          color: white;
+          background-color: #9e9e9e;
+        ">—</div>
       </div>
       <h3 style="font-size:18px; margin-bottom:16px; color:#722F37;">
         🪪 Ficha del Funcionario
@@ -409,9 +408,9 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const { data: { session }, error: sessionError } = await client.auth.getSession();
+        const {  { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError || !session) return window.location.href = '../index.html';
-        const { data: perfil } = await client
+        const {  perfil } = await client
           .from('perfiles')
           .select('email, rol, modulos_asignados')
           .eq('id', session.user.id)
@@ -583,10 +582,8 @@
         statusValue === 'E' ? 'Destituido' :
         '—';
       statusBadge.textContent = statusText;
-      statusBadge.className = 'status-badge';
-      if (statusValue) {
-        statusBadge.classList.add(`status-${statusValue}`);
-      }
+      statusBadge.className = '';
+      statusBadge.classList.add(`status-${statusValue}`);
 
       document.getElementById('cedula').textContent = f.cedula || '—';
       document.getElementById('rango').textContent = f.rango || '—';
@@ -649,7 +646,6 @@
         alert('⚠️ Primero selecciona un funcionario.');
         return;
       }
-
       const nombre = document.getElementById('apellidos_nombres')?.textContent?.trim() || 'funcionario';
       const cedula = document.getElementById('cedula')?.textContent?.trim() || 'desconocida';
       const filename = `ficha_${nombre.replace(/\s+/g, '_')}_${cedula}.pdf`;
@@ -660,7 +656,6 @@
       const seg = String(now.getSeconds()).padStart(2, '0');
       const sec = Math.floor(Math.random() * 900) + 100;
       const numeroReporte = `REP-${fechaStr}-${hora}${min}${seg}-${sec}`;
-
       const clone = ficha.cloneNode(true);
       clone.id = 'pdf-clone';
       clone.style.position = 'fixed';
@@ -672,7 +667,6 @@
       clone.style.background = 'white';
       clone.style.display = 'block';
       clone.style.fontSize = '13px';
-
       const reportDiv = document.createElement('div');
       reportDiv.style.textAlign = 'center';
       reportDiv.style.marginBottom = '16px';
@@ -681,14 +675,11 @@
       reportDiv.style.color = '#666';
       reportDiv.textContent = `📄 Número de Reporte: ${numeroReporte}`;
       clone.insertBefore(reportDiv, clone.firstChild);
-
       const closeBtn = clone.querySelector('#btnCerrarFicha');
       const exportBtn = clone.querySelector('#btnExportPDF');
       if (closeBtn) closeBtn.remove();
       if (exportBtn) exportBtn.remove();
-
       document.body.appendChild(clone);
-
       try {
         const canvas = await html2canvas(clone, {
           scale: 2,
@@ -696,20 +687,17 @@
           allowTaint: true,
           logging: false
         });
-
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const pdf = new jsPDF('p', 'mm', [215.9, 279.4]);
         const imgWidth = 190;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
         const yPos = (279.4 - imgHeight) / 2;
-
         if (imgHeight <= 254) {
           pdf.addImage(imgData, 'JPEG', 12.5, yPos, imgWidth, imgHeight);
         } else {
           const scale = 254 / imgHeight;
           pdf.addImage(imgData, 'JPEG', 12.5, 12.5, imgWidth * scale, imgHeight * scale);
         }
-
         pdf.save(filename);
         if (clone.parentNode) clone.parentNode.removeChild(clone);
       } catch (err) {
