@@ -619,7 +619,7 @@
       cargarFoto(f.cedula);
     }
 
-  async function cargarFoto(cedula) {
+async function cargarFoto(cedula) {
   const container = document.getElementById('photoContainer');
   container.innerHTML = '🪪'; // placeholder mientras carga
   const extensions = ['jpg', 'jpeg', 'png', 'webp'];
@@ -628,8 +628,8 @@
     const path = `foto_${cedula}.${ext}`; // ✅ SIN 'uniformados/'
 
     try {
-      // Obtener URL pública
-      const { publicUrl } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
+      // ✅ Corrección: getPublicUrl() devuelve { data: { publicUrl } }
+      const { data: { publicUrl } } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
 
       // Crear imagen
       const img = new Image();
