@@ -440,11 +440,12 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const {  { session }, error: sessionError } = await client.auth.getSession();
-        if (sessionError || !session) {
-          window.location.href = '../index.html';
-          return;
-        }
+        const sessionResponse = await client.auth.getSession();
+const { data, error: sessionError } = sessionResponse;
+if (sessionError || !data || !data.session) {
+  return window.location.href = '../index.html';
+}
+const session = data.session;
         const {  perfil } = await client
           .from('perfiles')
           .select('email, rol')
