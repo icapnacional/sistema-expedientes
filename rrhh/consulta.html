@@ -244,6 +244,15 @@
     .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb span { margin: 0 8px; color: #888; }
+    /* Botón de descarga (solo visible para roles permitidos) */
+#btnDescargarFoto {
+  background: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #1976d2;
+}
+#btnDescargarFoto:hover {
+  background: #bbdefb;
+}
   </style>
 </head>
 <body>
@@ -280,12 +289,15 @@
       <div class="pagination" id="pagination"></div>
     </div>
     <div id="resultCard" class="result-card">
-      <div class="photo-section">
-        <div class="photo-placeholder" id="photoContainer">
-          🪪
-        </div>
-        <div id="statusBox"></div>
-      </div>
+ <div class="photo-section">
+  <div class="photo-placeholder" id="photoContainer">
+    🪪
+  </div>
+  <div id="statusBox"></div>
+  <button id="btnDescargarFoto" class="btn btn-outline" style="margin-top:12px; display:none; width:180px; margin:12px auto 0; font-size:14px;">
+    📥 Descargar Foto
+  </button>
+</div>>
       <h3 style="font-size:18px; margin-bottom:16px; color:#722F37;">
         🪪 Ficha del Funcionario
         <button id="btnCerrarFicha" style="float:right; background:#eee; border:none; width:24px; height:24px; border-radius:50%; font-weight:bold;">✕</button>
@@ -627,11 +639,16 @@
       cargarFoto(f.cedula);
     }
 
+let currentFotoURL = null; // ← para guardar la URL válida
+
 async function cargarFoto(cedula) {
   const container = document.getElementById('photoContainer');
+  const btnDescargar = document.getElementById('btnDescargarFoto');
   container.innerHTML = '🪪';
-  // Orden óptimo: .jpeg > .jpg > .png (webp es raro en fotos subidas manualmente)
-  const extensions = ['jpeg', 'jpg', 'png'];
+  btnDescargar.style.display = 'none'; // ocultar por defecto
+  currentFotoURL = null;
+
+  const extensions = ['jpeg', 'jpg', 'png']; // orden óptimo
   for (const ext of extensions) {
     const path = `foto_${cedula}.${ext}`;
     try {
@@ -645,13 +662,20 @@ async function cargarFoto(cedula) {
         img.onload = () => {
           container.innerHTML = '';
           container.appendChild(img);
+          // ✅ Solo mostrar botón si rol es admin o moderador
+          const userRolElement = document.getElementById('userRol');
+          const userRol = userRolElement?.textContent?.trim();
+          if (['Administrador', 'Moderador'].includes(userRol)) {
+            btnDescargar.style.display = 'inline-block'; // mostrar
+          }
+          currentFotoURL = data.signedUrl; // guardar URL para descargar
         };
         img.onerror = () => console.warn('Imagen falló:', path);
         img.src = data.signedUrl;
         return;
       }
     } catch (err) {
-      // Ignorar y seguir
+      continue;
     }
   }
 }
@@ -732,6 +756,24 @@ async function cargarFoto(cedula) {
         if (clone.parentNode) clone.parentNode.removeChild(clone);
       }
     }
+    // ✅ Descargar foto (solo para admin/moderador)
+document.getElementById('btnDescargarFoto')?.addEventListener('click', () => {
+  if (!currentFotoURL) {
+    alert('❌ No hay foto disponible para descargar.');
+    return;
+  }
+
+  const link = document.createElement('a');
+  link.href = currentFotoURL;
+  // Extraer nombre del archivo desde la URL
+  const url = new URL(currentFotoURL);
+  const path = url.pathname;
+  const filename = path.split('/').pop() || 'foto_funcionario.jpg';
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+});
   </script>
 </body>
 </html>
