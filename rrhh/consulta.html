@@ -628,7 +628,7 @@ async function cargarFoto(cedula) {
     const path = `foto_${cedula}.${ext}`; // ✅ SIN 'uniformados/'
 
     try {
-      // ✅ Obtener URL pública
+      // ✅ Corrección: getPublicUrl() devuelve { data: { publicUrl } }
       const { data: { publicUrl } } = client.storage.from('fotos_funcionarios').getPublicUrl(path);
 
       // Crear imagen
@@ -654,6 +654,7 @@ async function cargarFoto(cedula) {
       continue; // intentar con la siguiente extensión
     }
   }
+}
 
   // ✅ Si no encontró ninguna, intentar con mayúsculas
   for (let ext of extensions.map(e => e.toUpperCase())) {
