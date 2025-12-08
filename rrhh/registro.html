@@ -440,11 +440,27 @@
 
     ddocument.addEventListener('DOMContentLoaded', async () => {
   try {
-    const sessionResponse = await client.auth.getSession();
-    const { data, error: sessionError } = sessionResponse;
-    if (sessionError || !data || !data.session) {
-      return window.location.href = '../index.html';
+    // ✅ Usa getSession() + fallback a currentSession si necesario
+let session = null;
+try {
+  const { data: { session: s }, error } = await client.auth.getSession();
+  if (!error && s) {
+    session = s;
+  } else {
+    // fallback: en algunos casos, session puede estar en el contexto global
+    const { data } = await client.auth.getUser();
+    if (data.user) {
+      session = { user: data.user };
     }
+  }
+} catch (e) {
+  console.warn('getSession fallback failed', e);
+}
+
+if (!session) {
+  console.warn('❌ No active session. Redirecting to login.');
+  return window.location.href = '../index.html';
+}
     const session = data.session;
 
     const { data: perfil } = await client
