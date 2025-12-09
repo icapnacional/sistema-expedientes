@@ -427,18 +427,26 @@
         const sessionResponse = await client.auth.getSession();
         const session = sessionResponse?.data?.session;
         if (!session) return window.location.href = '../index.html';
+
         const {  perfil } = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
           .single();
-        if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
+
+        if (!perfil) return window.location.href = '../index.html';
+
+        // ✅ 🔑 CRÍTICA: Aceptar rol = 'admin', '1' o 'moderador'
+        const userRol = String(perfil.rol || '').trim();
+        if (userRol !== 'admin' && userRol !== '1' && userRol !== 'moderador') {
           alert('🔒 Solo administradores y moderadores pueden modificar.');
           return window.location.href = 'index.html#auditoria';
         }
+
         document.getElementById('userEmail').textContent = perfil.email;
         document.getElementById('userRol').textContent = 
-          perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
+          userRol === 'admin' || userRol === '1' ? 'Administrador' : 'Moderador';
+
         document.getElementById('btnBuscar').addEventListener('click', buscarPorCedula);
         document.getElementById('searchCedula').addEventListener('keypress', e => {
           if (e.key === 'Enter') buscarPorCedula();
@@ -478,7 +486,6 @@
 
     function cargarDatosFormulario(f) {
       currentCedula = f.cedula;
-      // Header
       document.getElementById('headerCedula').textContent = f.cedula;
       document.getElementById('headerNombre').textContent = f.apellidos_nombres || '—';
       const statusEl = document.getElementById('headerStatus');
@@ -491,7 +498,6 @@
       else if (f.status === 'DA') bgColor = '#7b1fa2';
       statusEl.style.backgroundColor = bgColor;
 
-      // Campos
       document.getElementById('cedula').value = f.cedula || '';
       document.getElementById('rango').value = f.rango || '';
       document.getElementById('apellidos_nombres').value = f.apellidos_nombres || '';
@@ -514,7 +520,6 @@
       document.getElementById('status').value = f.status || '';
       document.getElementById('telefono').value = f.telefono || '';
 
-      // Correo
       if (f.correo_electronico) {
         const parts = f.correo_electronico.split('@');
         if (parts.length === 2) {
@@ -523,17 +528,14 @@
         }
       }
 
-      // Foto
       cargarFotoActual(f.cedula);
 
-      // Ajustar altura
       document.querySelectorAll('textarea.autoresize').forEach(el => {
         el.style.height = 'auto';
         el.style.height = el.scrollHeight + 'px';
       });
     }
 
-    // ✅ FUNCIÓN CORREGIDA: igual que en consulta.html y registro.html
     async function cargarFotoActual(cedula) {
       const container = document.getElementById('photoContainer');
       container.innerHTML = '🪪';
@@ -583,13 +585,11 @@
       showAlert('', '');
       if (!currentCedula) return showAlert('⚠️ Primero busca una cédula.', 'error');
 
-      // ✅ Teléfono validado
       const telefono = document.getElementById('telefono').value.trim();
       if (telefono && !/^04\d{9}$/.test(telefono)) {
         return showAlert('⚠️ Teléfono debe ser venezolano (ej: 04121234567).', 'error');
       }
 
-      // ✅ Correo
       const local = document.getElementById('correo_local').value.trim();
       const dom = document.getElementById('correo_dominio').value;
       let correo = '';
@@ -619,7 +619,6 @@
         correo_electronico: correo
       };
 
-      // ✅ Validar obligatorios
       const required = ['apellidos_nombres', 'rango', 'estado', 'region', 'status'];
       for (let field of required) {
         if (!data[field]) {
@@ -634,7 +633,6 @@
           .eq('cedula', currentCedula);
         if (error) throw error;
 
-        // ✅ Subir nueva foto (si se seleccionó)
         const photoInput = document.getElementById('photoInput');
         if (photoInput.files.length > 0) {
           const file = photoInput.files[0];
@@ -646,7 +644,7 @@
           if (upErr) console.warn('Foto subida con advertencia:', upErr.message);
         }
 
-        // ✅ 🔑 REGISTRO DE LOG (edición)
+        // ✅ Registrar log de edición
         try {
           const sessionResponse = await client.auth.getSession();
           const session = sessionResponse?.data?.session;
@@ -665,7 +663,6 @@
                 cedula_afectada: currentCedula,
                 nombre_afectado: data.apellidos_nombres,
                 detalles: {
-                  campos_modificados: Object.keys(data),
                   nuevo_status: data.status,
                   nuevo_telefono: data.telefono
                 }
