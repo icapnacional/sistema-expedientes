@@ -83,18 +83,16 @@
       background: #fdfdfd;
     }
     textarea.autoresize {
-  resize: none;
-  overflow: hidden;
-  min-height: 44px; /* mínimo para 2 líneas */
-  line-height: 1.5;
-  padding: 10px 12px;
-  font-size: 15px;
-}
-/* ✅ Especial para Dirección: más alto por defecto */
-#direccion {
-  min-height: 60px !important; /* 3–4 líneas visibles */
-  line-height: 1.5;
-}
+      resize: none;
+      overflow: hidden;
+      min-height: 44px;
+      line-height: 1.5;
+      padding: 10px 12px;
+    }
+    /* ✅ Dirección más alta por defecto */
+    #direccion {
+      min-height: 60px !important;
+    }
     input[type="number"] {
       -moz-appearance: textfield;
     }
@@ -148,16 +146,6 @@
     }
     .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
     .breadcrumb span { margin: 0 8px; color: #888; }
-    /* Teléfono */
-    .phone-group { display: flex; gap: 8px; }
-    .phone-group select, .phone-group input { flex: 1; width: auto; }
-    /* Correo */
-    .email-group { display: flex; gap: 4px; }
-    .email-group input { flex: 1; width: auto; }
-    .email-group span { align-self: center; font-weight: bold; color: #555; }
-    /* Edad */
-    .age-group { display: flex; align-items: center; gap: 8px; }
-    .age-group span { font-weight: 500; color: #555; }
     /* Foto */
     .photo-section {
       text-align: center;
@@ -350,20 +338,10 @@
             <label for="fecha_ingreso">Fecha de Ingreso</label>
             <input type="date" id="fecha_ingreso">
           </div>
+          <!-- ✅ Teléfono unificado -->
           <div class="form-group">
             <label for="telefono">Teléfono</label>
-            <div class="phone-group">
-              <select id="operadora">
-                <option value="">—</option>
-                <option value="0412">0412</option>
-                <option value="0414">0414</option>
-                <option value="0416">0416</option>
-                <option value="0424">0424</option>
-                <option value="0426">0426</option>
-                <option value="0422">0422</option>
-              </select>
-              <input type="text" id="telefono_numero" inputmode="numeric" maxlength="7" placeholder="1234567">
-            </div>
+            <input type="tel" id="telefono" placeholder="Ej: 04121234567">
           </div>
           <div class="form-group">
             <label for="status">Status *</label>
@@ -382,9 +360,9 @@
           </div>
           <div class="form-group">
             <label for="edad_funcionario">Edad</label>
-            <div class="age-group">
+            <div style="display:flex; align-items:center; gap:8px;">
               <input type="number" id="edad_funcionario" min="18" max="99" placeholder="25">
-              <span>años</span>
+              <span style="font-weight:500; color:#555;">años</span>
             </div>
           </div>
           <div class="form-group">
@@ -407,15 +385,15 @@
             <label for="fechas_egreso">Fechas de Egreso</label>
             <input type="text" id="fechas_egreso" placeholder="Ej: 2025-01-10">
           </div>
-          <div class="form-group">
+          <div class="form-group" style="grid-column:1/-1;">
             <label for="direccion">Dirección</label>
-            <textarea id="direccion" class="autoresize" rows="2"></textarea>
+            <textarea id="direccion" class="autoresize"></textarea>
           </div>
           <div class="form-group">
             <label for="correo_local">Correo Electrónico</label>
-            <div class="email-group">
+            <div style="display:flex; gap:4px;">
               <input type="text" id="correo_local" placeholder="nombre">
-              <span>@</span>
+              <span style="align-self:center; font-weight:bold; color:#555;">@</span>
               <select id="correo_dominio">
                 <option value="gmail.com">@gmail.com</option>
                 <option value="hotmail.com">@hotmail.com</option>
@@ -517,9 +495,8 @@
       else if (f.status === 'DA') bgColor = '#7b1fa2';
       statusEl.style.backgroundColor = bgColor;
 
-      // Llenar campos
-      document.getElementById('cedula').value = f.cedula;
-      document.getElementById('rango').value = f.rango || '';
+      // ✅ Campos de texto simples
+      document.getElementById('cedula').value = f.cedula || '';
       document.getElementById('apellidos_nombres').value = f.apellidos_nombres || '';
       document.getElementById('sexo').value = f.sexo || '';
       document.getElementById('dependencia').value = f.dependencia || '';
@@ -539,15 +516,10 @@
       document.getElementById('direccion').value = f.direccion || '';
       document.getElementById('status').value = f.status || '';
 
-      // Teléfono
-      if (f.telefono && f.telefono.length >= 7) {
-        const prefix = f.telefono.slice(0, 4);
-        const number = f.telefono.slice(4);
-        document.getElementById('operadora').value = prefix;
-        document.getElementById('telefono_numero').value = number;
-      }
+      // ✅ Teléfono completo (sin separar)
+      document.getElementById('telefono').value = f.telefono || '';
 
-      // Correo
+      // ✅ Correo
       if (f.correo_electronico) {
         const parts = f.correo_electronico.split('@');
         if (parts.length === 2) {
@@ -556,38 +528,45 @@
         }
       }
 
-      // Foto
+      // ✅ Foto
       cargarFotoActual(f.cedula);
+
+      // ✅ Ajustar altura de textareas tras cargar
+      document.querySelectorAll('textarea.autoresize').forEach(el => {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+      });
     }
 
-   // ✅ FUNCIÓN CORREGIDA (usa createSignedUrl, igual que en consulta.html)
-async function cargarFotoActual(cedula) {
-  const container = document.getElementById('photoContainer');
-  container.innerHTML = '🪪';
-  const extensions = ['jpeg', 'jpg', 'png'];
-  for (const ext of extensions) {
-    const path = `foto_${cedula}.${ext}`;
-    try {
-      const { data, error } = await client.storage
-        .from('fotos_funcionarios')
-        .createSignedUrl(path, 3600);
-      if (error) continue;
-      if (data?.signedUrl) {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-          container.innerHTML = '';
-          container.appendChild(img);
-        };
-        img.onerror = () => {};
-        img.src = data.signedUrl;
-        return;
+    // ✅ FUNCIÓN CORREGIDA: igual que en consulta.html
+    async function cargarFotoActual(cedula) {
+      const container = document.getElementById('photoContainer');
+      container.innerHTML = '🪪';
+      const extensions = ['jpeg', 'jpg', 'png'];
+      for (const ext of extensions) {
+        const path = `foto_${cedula}.${ext}`;
+        try {
+          const { data, error } = await client.storage
+            .from('fotos_funcionarios')
+            .createSignedUrl(path, 3600);
+          if (error) continue;
+          if (data?.signedUrl) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+              container.innerHTML = '';
+              container.appendChild(img);
+            };
+            img.onerror = () => {};
+            img.src = data.signedUrl;
+            return;
+          }
+        } catch (err) {
+          continue;
+        }
       }
-    } catch (err) {
-      continue;
     }
-  }
-}
+
     function previsualizarFoto(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -608,19 +587,15 @@ async function cargarFotoActual(cedula) {
       e.preventDefault();
       showAlert('', '');
 
-      // Validar cédula (ya está cargada)
       if (!currentCedula) return showAlert('⚠️ Primero busca una cédula.', 'error');
 
-      // Teléfono
-      const op = document.getElementById('operadora').value;
-      const num = document.getElementById('telefono_numero').value.trim();
-      let telefono = '';
-      if (op && num) {
-        if (!/^\d{7}$/.test(num)) return showAlert('⚠️ El número debe tener 7 dígitos.', 'error');
-        telefono = op + num;
+      // ✅ Teléfono completo con validación
+      const telefono = document.getElementById('telefono').value.trim();
+      if (telefono && !/^04\d{9}$/.test(telefono)) {
+        return showAlert('⚠️ El teléfono debe ser venezolano válido (ej: 04121234567).', 'error');
       }
 
-      // Correo
+      // ✅ Correo
       const local = document.getElementById('correo_local').value.trim();
       const dom = document.getElementById('correo_dominio').value;
       let correo = '';
@@ -650,7 +625,7 @@ async function cargarFotoActual(cedula) {
         correo_electronico: correo
       };
 
-      // Validar obligatorios
+      // ✅ Validar obligatorios
       const required = ['apellidos_nombres', 'rango', 'estado', 'region', 'status'];
       for (let field of required) {
         if (!data[field]) {
@@ -659,7 +634,6 @@ async function cargarFotoActual(cedula) {
       }
 
       try {
-        // ✅ Actualizar en base de datos
         const { error } = await client
           .from('auditoria_personal')
           .update(data)
