@@ -568,17 +568,11 @@
       alertDiv.style.display = msg ? 'block' : 'none';
     }
 async function registrarLogRegistro(cedula, nombre, rango, status) {
+  console.log('📝 Intentando registrar log de REGISTRO:', {cedula, nombre, rango, status});
   try {
-    const sessionResponse = await client.auth.getSession();
-    const session = sessionResponse?.data?.session;
-    if (!session) return;
-    const { data: perfil } = await client
-      .from('perfiles')
-      .select('email, rol')
-      .eq('id', session.user.id)
-      .single();
-    if (!perfil) return;
-    await client.from('rrhh_logs').insert({
+    const { data: { session } } = await client.auth.getSession();
+    const { data: perfil } = await client.from('perfiles').select('email,rol').eq('id', session.user.id).single();
+    const { error } = await client.from('rrhh_logs').insert({
       user_id: session.user.id,
       email: perfil.email,
       rol: perfil.rol,
@@ -587,8 +581,10 @@ async function registrarLogRegistro(cedula, nombre, rango, status) {
       nombre_afectado: nombre,
       detalles: { rango, status }
     });
+    if (error) throw error;
+    console.log('✅ Log de registro registrado');
   } catch (err) {
-    console.warn('⚠️ Log de registro no guardado:', err.message);
+    console.error('❌ Falló log de registro:', err);
   }
 }
 // ✅ Inyectar llamada en el submit del formulario
