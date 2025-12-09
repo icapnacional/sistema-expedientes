@@ -567,6 +567,44 @@
       alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
       alertDiv.style.display = msg ? 'block' : 'none';
     }
+async function registrarLogRegistro(cedula, nombre, rango, status) {
+  try {
+    const sessionResponse = await client.auth.getSession();
+    const session = sessionResponse?.data?.session;
+    if (!session) return;
+    const { data: perfil } = await client
+      .from('perfiles')
+      .select('email, rol')
+      .eq('id', session.user.id)
+      .single();
+    if (!perfil) return;
+    await client.from('rrhh_logs').insert({
+      user_id: session.user.id,
+      email: perfil.email,
+      rol: perfil.rol,
+      accion: 'registro',
+      cedula_afectada: cedula,
+      nombre_afectado: nombre,
+      detalles: { rango, status }
+    });
+  } catch (err) {
+    console.warn('⚠️ Log de registro no guardado:', err.message);
+  }
+}
+// ✅ Inyectar llamada en el submit del formulario
+const original_submit = document.getElementById('registroForm').onsubmit || (() => {});
+document.getElementById('registroForm').onsubmit = async function(e) {
+  await original_submit(e);
+  if (!e.defaultPrevented) {
+    // Solo registrar si no hubo error (simulamos éxito tras inserción)
+    const cedula = document.getElementById('cedula')?.value?.trim();
+    const nombre = document.getElementById('apellidos_nombres')?.value?.trim();
+    const rango = document.getElementById('rango')?.value;
+    const status = document.getElementById('status')?.value;
+    if (cedula && nombre) registrarLogRegistro(cedula, nombre, rango, status);
+  }
+};
+</script>
   </script>
 </body>
 </html>
