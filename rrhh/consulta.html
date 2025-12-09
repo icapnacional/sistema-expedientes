@@ -775,18 +775,13 @@ document.getElementById('btnDescargarFoto')?.addEventListener('click', () => {
   link.click();
   document.body.removeChild(link);
 });
+// En registro.html y consulta.html, reemplaza las funciones por:
 async function registrarLogConsulta(cedula = null, nombre = null) {
+  console.log('📝 Intentando registrar log de CONSULTA:', {cedula, nombre});
   try {
-    const sessionResponse = await client.auth.getSession();
-    const session = sessionResponse?.data?.session;
-    if (!session) return;
-    const { data: perfil } = await client
-      .from('perfiles')
-      .select('email, rol')
-      .eq('id', session.user.id)
-      .single();
-    if (!perfil) return;
-    await client.from('rrhh_logs').insert({
+    const { data: { session } } = await client.auth.getSession();
+    const { data: perfil } = await client.from('perfiles').select('email,rol').eq('id', session.user.id).single();
+    const { error } = await client.from('rrhh_logs').insert({
       user_id: session.user.id,
       email: perfil.email,
       rol: perfil.rol,
@@ -795,11 +790,33 @@ async function registrarLogConsulta(cedula = null, nombre = null) {
       nombre_afectado: nombre,
       detalles: { tipo: cedula ? 'cedula' : 'nombre' }
     });
+    if (error) throw error;
+    console.log('✅ Log de consulta registrado');
   } catch (err) {
-    console.warn('⚠️ Log no registrado:', err.message);
+    console.error('❌ Falló log de consulta:', err);
   }
 }
 
+async function registrarLogRegistro(cedula, nombre, rango, status) {
+  console.log('📝 Intentando registrar log de REGISTRO:', {cedula, nombre, rango, status});
+  try {
+    const { data: { session } } = await client.auth.getSession();
+    const { data: perfil } = await client.from('perfiles').select('email,rol').eq('id', session.user.id).single();
+    const { error } = await client.from('rrhh_logs').insert({
+      user_id: session.user.id,
+      email: perfil.email,
+      rol: perfil.rol,
+      accion: 'registro',
+      cedula_afectada: cedula,
+      nombre_afectado: nombre,
+      detalles: { rango, status }
+    });
+    if (error) throw error;
+    console.log('✅ Log de registro registrado');
+  } catch (err) {
+    console.error('❌ Falló log de registro:', err);
+  }
+}
 // ✅ Inyectar llamada en las funciones existentes (sin reescribirlas)
 const original_mostrarFichaCompleta = mostrarFichaCompleta;
 mostrarFichaCompleta = function(f) {
