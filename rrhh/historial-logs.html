@@ -23,6 +23,7 @@
     .rol-consultor { color: #1565c0; font-weight: 600; }
     .accion-consulta { background: #e3f2fd; color: #0d47a1; padding: 4px 8px; border-radius: 4px; }
     .accion-registro { background: #e8f5e9; color: #1b5e20; padding: 4px 8px; border-radius: 4px; }
+    .accion-edicion { background: #fff8e1; color: #e65100; padding: 4px 8px; border-radius: 4px; }
     .pagination { display: flex; justify-content: center; gap: 6px; margin-top: 24px; }
     .page-btn { width: 36px; height: 36px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; }
     .page-btn.active { background: #722F37; color: white; }
@@ -42,7 +43,6 @@
           <option value="consulta">Consulta</option>
           <option value="registro">Registro</option>
           <option value="edicion">Edición</option>
-          <option value="eliminacion">Eliminación</option>
         </select>
         <select id="filterRol">
           <option value="">Todos los roles</option>
@@ -74,7 +74,6 @@
       <div class="pagination" id="pagination"></div>
     </div>
   </div>
-
   <script>
     const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
@@ -83,20 +82,28 @@
     const perPage = 20;
 
     document.addEventListener('DOMContentLoaded', async () => {
-          // ✅ Verificar sesión y perfil
-const { data: { session }, error: sessionError } = await client.auth.getSession();
-if (sessionError || !session) {
-  window.location.href = '../index.html';
-  return;
-};
+      // ✅ Corrección: forma segura de obtener sesión (igual que en tus otros archivos)
+      const sessionResponse = await client.auth.getSession();
+      const session = sessionResponse?.data?.session;
+      if (!session) return window.location.href = '../index.html';
 
-      const { data: perfil } = await client.from('perfiles').select('rol').eq('id', session.user.id).single();
-const userRol = perfil?.rol;
-if (userRol !== 'admin') {
-  alert('🔒 Acceso denegado: solo el Administrador puede ver el historial.');
-  window.location.href = 'index.html';
-  return;
-}
+      // ✅ Verificación de rol: admite 'admin' o '1' (como en tu Supabase)
+      const { data: perfil, error } = await client
+        .from('perfiles')
+        .select('rol')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error || !perfil) return window.location.href = '../index.html';
+
+      const userRol = perfil.rol;
+      if (userRol !== 'admin' && userRol !== '1') {
+        alert('🔒 Acceso denegado: solo el Administrador puede ver el historial.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // ✅ Cargar logs y asignar eventos
       loadLogs();
       document.getElementById('btnFiltrar').addEventListener('click', loadLogs);
       document.getElementById('searchLogs').addEventListener('keypress', e => {
@@ -110,7 +117,10 @@ if (userRol !== 'admin') {
       const rol = document.getElementById('filterRol').value;
 
       try {
-        let query = client.from('rrhh_logs').select('*', { count: 'exact' }).order('created_at', { ascending: false });
+        let query = client
+          .from('rrhh_logs')
+          .select('*', { count: 'exact' })
+          .order('created_at', { ascending: false });
 
         if (search) {
           query = query.or(`cedula_afectada.ilike.%${search}%,nombre_afectado.ilike.%${search}%,email.ilike.%${search}%`);
@@ -122,7 +132,6 @@ if (userRol !== 'admin') {
         const { data, error, count } = await query.range(from, from + perPage - 1);
 
         if (error) throw error;
-
         renderLogs(data);
         renderPagination(Math.ceil(count / perPage));
       } catch (err) {
@@ -137,20 +146,21 @@ if (userRol !== 'admin') {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center">No hay registros.</td></tr>';
         return;
       }
-
       tbody.innerHTML = logs.map(log => {
         const fecha = new Date(log.created_at).toLocaleString('es-VE');
         const rolClass = `rol-${log.rol}`;
-        const accionClass = `accion-${log.accion}`;
+        const accionClass = `accion-${log.accion || 'consulta'}`;
         return `
           <tr>
             <td>${fecha}</td>
-            <td>${log.email}</td>
-            <td><span class="${rolClass}">${log.rol}</span></td>
-            <td><span class="${accionClass}">${log.accion}</span></td>
+            <td>${log.email || '—'}</td>
+            <td><span class="${rolClass}">${log.rol || '—'}</span></td>
+            <td><span class="${accionClass}">${log.accion || '—'}</span></td>
             <td>${log.cedula_afectada || '—'}</td>
             <td>${log.nombre_afectado || '—'}</td>
-            <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">${log.detalles ? JSON.stringify(log.detalles).substring(0,50)+'...' : '—'}</td>
+            <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">
+              ${log.detalles ? JSON.stringify(log.detalles).substring(0,50) + '…' : '—'}
+            </td>
           </tr>
         `;
       }).join('');
