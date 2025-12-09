@@ -128,20 +128,16 @@
     }
     .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
     .breadcrumb span { margin: 0 8px; color: #888; }
-
     /* Teléfono */
     .phone-group { display: flex; gap: 8px; }
     .phone-group select, .phone-group input { flex: 1; width: auto; }
-
     /* Correo */
     .email-group { display: flex; gap: 4px; }
     .email-group input { flex: 1; width: auto; }
     .email-group span { align-self: center; font-weight: bold; color: #555; }
-
     /* Edad */
     .age-group { display: flex; align-items: center; gap: 8px; }
     .age-group span { font-weight: 500; color: #555; }
-
     /* Foto */
     .photo-section {
       text-align: center;
@@ -184,11 +180,11 @@
 <body>
   <div class="container">
     <div class="breadcrumb">
-  <a href="../index.html">Inicio</a> <span>›</span>
-  <a href="index.html">RRHH</a> <span>›</span>
-  <a href="index.html#auditoria">Auditoría</a> <span>›</span>
-  <strong>Registro</strong>
-</div>
+      <a href="../index.html">Inicio</a> <span>›</span>
+      <a href="index.html">RRHH</a> <span>›</span>
+      <a href="index.html#auditoria">Auditoría</a> <span>›</span>
+      <strong>Registro</strong>
+    </div>
     <div class="header">
       <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
       <h1>Inspectable para el Control de la Actuación Policial</h1>
@@ -209,7 +205,6 @@
           <input type="file" id="photoInput" accept="image/*">
           <button type="button" class="upload-btn" onclick="document.getElementById('photoInput').click()">📷 Subir Foto</button>
         </div>
-
         <div class="form-grid">
           <div class="form-group">
             <label for="cedula">Cédula *</label>
@@ -403,12 +398,10 @@
       el.addEventListener('input', adjust);
       adjust(); // inicial
     });
-
     const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const alertDiv = document.getElementById('alertMessage');
-
     // ✅ Autenticación robusta: sin errores de 'session' duplicada
     document.addEventListener('DOMContentLoaded', async () => {
       try {
@@ -416,38 +409,31 @@
         const sessionResponse = await client.auth.getSession();
         const session = sessionResponse?.data?.session;
         const sessionError = sessionResponse?.error;
-
         if (sessionError || !session) {
           console.warn('❌ No hay sesión activa');
           return window.location.href = '../index.html';
         }
-
         // ✅ Perfil
         const { data: perfil, error: perfilError } = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
           .single();
-
         if (perfilError || !perfil) {
           console.error('Perfil no encontrado', perfilError);
           return window.location.href = '../index.html';
         }
-
         // ✅ Solo admin/moderador
         if (perfil.rol !== 'admin' && perfil.rol !== 'moderador') {
           alert('🔒 Acceso denegado: solo Administradores y Moderadores pueden registrar.');
           return window.location.href = 'auditoria-nacional.html';
         }
-
         document.getElementById('userEmail').textContent = perfil.email;
         document.getElementById('userRol').textContent = 
           perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
-
         // ✅ Previsualización de foto
         const photoInput = document.getElementById('photoInput');
         const photoContainer = document.getElementById('photoContainer');
-
         photoInput.addEventListener('change', (e) => {
           const file = e.target.files[0];
           if (!file) return;
@@ -462,23 +448,19 @@
           };
           reader.readAsDataURL(file);
         });
-
       } catch (err) {
         console.error('Error en inicialización:', err);
         window.location.href = '../index.html';
       }
     });
-
     document.getElementById('registroForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       showAlert('', '');
-
       // ✅ Validar cédula 8 dígitos exactos
       const cedula = document.getElementById('cedula').value.trim();
       if (!/^\d{8}$/.test(cedula)) {
         return showAlert('⚠️ La cédula debe tener exactamente 8 dígitos.', 'error');
       }
-
       // ✅ Teléfono
       const op = document.getElementById('operadora').value;
       const num = document.getElementById('telefono_numero').value.trim();
@@ -489,7 +471,6 @@
         }
         telefono = op + num;
       }
-
       // ✅ Correo
       const local = document.getElementById('correo_local').value.trim();
       const dom = document.getElementById('correo_dominio').value;
@@ -498,7 +479,6 @@
       else if (local || dom) {
         return showAlert('⚠️ Complete ambas partes del correo.', 'error');
       }
-
       const data = {
         cedula: cedula,
         rango: document.getElementById('rango').value,
@@ -523,7 +503,6 @@
         direccion: document.getElementById('direccion').value.trim(),
         correo_electronico: correo
       };
-
       // ✅ Validar obligatorios
       const required = ['apellidos_nombres', 'rango', 'estado', 'region', 'status'];
       for (let field of required) {
@@ -531,14 +510,11 @@
           return showAlert(`⚠️ El campo "${field}" es obligatorio.`, 'error');
         }
       }
-
       try {
         const { error } = await client
           .from('auditoria_personal')
           .insert(data);
-
         if (error) throw error;
-
         // ✅ Subir foto si existe
         const photoInput = document.getElementById('photoInput');
         if (photoInput.files.length > 0) {
@@ -551,56 +527,51 @@
           if (upErr) console.warn('Foto subida con advertencia:', upErr.message);
         }
 
+        // ✅ 🔑 REGISTRO DE LOG (ÚNICA MODIFICACIÓN) — justo antes del éxito
+        try {
+          const sessionResponse = await client.auth.getSession();
+          const session = sessionResponse?.data?.session;
+          if (session) {
+            const { data: perfil } = await client
+              .from('perfiles')
+              .select('email, rol')
+              .eq('id', session.user.id)
+              .single();
+            if (perfil) {
+              await client.from('rrhh_logs').insert({
+                user_id: session.user.id,
+                email: perfil.email,
+                rol: perfil.rol,
+                accion: 'registro',
+                cedula_afectada: cedula,
+                nombre_afectado: data.apellidos_nombres,
+                detalles: {
+                  rango: data.rango,
+                  status: data.status,
+                  estado: data.estado
+                }
+              });
+            }
+          }
+        } catch (logErr) {
+          console.warn('⚠️ Log de registro no guardado:', logErr.message);
+        }
+
+        // ✅ Mensaje y redirección (sin cambios)
         showAlert('✅ Registro exitoso. Redirigiendo...', 'success');
         document.getElementById('registroForm').reset();
         document.getElementById('photoContainer').innerHTML = '🪪';
         setTimeout(() => window.location.href = 'index.html', 1500);
-
       } catch (err) {
         console.error('Error registro:', err);
         showAlert(`❌ Error: ${err.message || 'Verifique que la cédula no exista'}`, 'error');
       }
     });
-
     function showAlert(msg, type) {
       alertDiv.textContent = msg;
       alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
       alertDiv.style.display = msg ? 'block' : 'none';
     }
-async function registrarLogRegistro(cedula, nombre, rango, status) {
-  console.log('📝 Intentando registrar log de REGISTRO:', {cedula, nombre, rango, status});
-  try {
-    const { data: { session } } = await client.auth.getSession();
-    const { data: perfil } = await client.from('perfiles').select('email,rol').eq('id', session.user.id).single();
-    const { error } = await client.from('rrhh_logs').insert({
-      user_id: session.user.id,
-      email: perfil.email,
-      rol: perfil.rol,
-      accion: 'registro',
-      cedula_afectada: cedula,
-      nombre_afectado: nombre,
-      detalles: { rango, status }
-    });
-    if (error) throw error;
-    console.log('✅ Log de registro registrado');
-  } catch (err) {
-    console.error('❌ Falló log de registro:', err);
-  }
-}
-// ✅ Inyectar llamada en el submit del formulario
-const original_submit = document.getElementById('registroForm').onsubmit || (() => {});
-document.getElementById('registroForm').onsubmit = async function(e) {
-  await original_submit(e);
-  if (!e.defaultPrevented) {
-    // Solo registrar si no hubo error (simulamos éxito tras inserción)
-    const cedula = document.getElementById('cedula')?.value?.trim();
-    const nombre = document.getElementById('apellidos_nombres')?.value?.trim();
-    const rango = document.getElementById('rango')?.value;
-    const status = document.getElementById('status')?.value;
-    if (cedula && nombre) registrarLogRegistro(cedula, nombre, rango, status);
-  }
-};
-</script>
   </script>
 </body>
 </html>
