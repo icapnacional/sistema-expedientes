@@ -360,7 +360,10 @@
           </div>
           <div class="form-group">
             <label for="edad_funcionario">Edad</label>
-            <input type="number" id="edad_funcionario" min="18" max="99" placeholder="25">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="number" id="edad_funcionario" min="18" max="99" placeholder="25">
+              <span style="font-weight:500; color:#555;">años</span>
+            </div>
           </div>
           <div class="form-group">
             <label for="fecha_oficio">Fecha de Oficio</label>
@@ -490,7 +493,6 @@
       statusEl.style.backgroundColor = bgColor;
       // ✅ Campos de texto simples
       document.getElementById('cedula').value = f.cedula || '';
-      document.getElementById('rango').value = f.rango || '';
       document.getElementById('apellidos_nombres').value = f.apellidos_nombres || '';
       document.getElementById('sexo').value = f.sexo || '';
       document.getElementById('dependencia').value = f.dependencia || '';
@@ -632,12 +634,12 @@
           if (upErr) console.warn('Foto subida con advertencia:', upErr.message);
         }
 
-        // ✅ 🔑 ÚNICA INSERCIÓN: registrar log de edición
+        // ✅ 🔑 ÚNICA MODIFICACIÓN: registrar log de edición
         try {
           const sessionResponse = await client.auth.getSession();
           const session = sessionResponse?.data?.session;
           if (session) {
-            const {  perfil } = await client
+            const { data: perfil } = await client
               .from('perfiles')
               .select('email, rol')
               .eq('id', session.user.id)
