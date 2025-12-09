@@ -505,6 +505,11 @@
         msg.style.color = '#c62828';
       }
     }
+    // Registrar una búsqueda por nombre (sin cédula específica)
+registrarLog('consulta', null, null, {
+  tipo_busqueda: 'nombre',
+  termino: query
+});
 
     function renderResults(data, total, query) {
       const container = document.getElementById('resultsContainer');
@@ -639,7 +644,9 @@
 
       cargarFoto(f.cedula);
     }
-
+registrarLog('consulta', f.cedula, f.apellidos_nombres, {
+  tipo_busqueda: 'cedula'
+});
 let currentFotoURL = null; // ← para guardar la URL válida
 
 async function cargarFoto(cedula) {
@@ -775,6 +782,30 @@ document.getElementById('btnDescargarFoto')?.addEventListener('click', () => {
   link.click();
   document.body.removeChild(link);
 });
+    async function registrarLog(accion, cedula, nombre = null, detalles = {}) {
+  try {
+    const { data: { session } } = await client.auth.getSession();
+    if (!session) return;
+    const { data: perfil } = await client
+      .from('perfiles')
+      .select('email, rol')
+      .eq('id', session.user.id)
+      .single();
+    if (!perfil) return;
+
+    await client.from('rrhh_logs').insert({
+      user_id: session.user.id,
+      email: perfil.email,
+      rol: perfil.rol,
+      accion: accion,
+      cedula_afectada: cedula,
+      nombre_afectado: nombre,
+      detalles: detalles
+    });
+  } catch (err) {
+    console.warn('⚠️ Error registrando log:', err.message);
+  }
+}
   </script>
 </body>
 </html>
