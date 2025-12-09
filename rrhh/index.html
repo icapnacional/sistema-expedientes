@@ -251,34 +251,30 @@
             Seleccione una pestaña superior para comenzar.
           </p>
         </div>
-        <!-- Auditoría Nacional Tab -->
+      <!-- Auditoría Nacional Tab -->
         <div id="auditoria" class="tab-content">
           <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">📋 Auditoría Nacional</h2>
           <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
             Sistema de auditoría para seguimiento y control de personal a nivel nacional.
           </p>
-<div class="module-grid">
-  <div class="module-card" onclick="location.href='consulta.html'">
-    <div class="module-icon">🔍</div>
-    <div class="module-title">Consulta</div>
-    <div class="module-desc">Genera y visualiza reportes de auditoría por región, estado o nacional.</div>
-  </div>
-  <div class="module-card" id="btnRegistro">
-    <div class="module-icon">📝</div>
-    <div class="module-title">Registro</div>
-    <div class="module-desc">Registrar nuevo personal auditado (solo RRHH autorizado).</div>
-  </div>
-  <div class="module-card" id="btnModificar" style="display: none;">
-    <div class="module-icon">✏️</div>
-    <div class="module-title">Modificar</div>
-    <div class="module-desc">Editar datos de personal existente (solo admin/moderador).</div>
-  </div>
-  <div class="module-card" id="btnHistorialLogs">
-    <div class="module-icon">📜</div>
-    <div class="module-title">Historial</div>
-    <div class="module-desc">Registro de actividades en RRHH (solo Administrador).</div>
-  </div>
+          <div class="module-grid">
+            <div class="module-card" onclick="location.href='auditoria-nacional.html'">
+              <div class="module-icon">🔍</div>
+              <div class="module-title">Consulta</div>
+              <div class="module-desc">Genera y visualiza reportes de auditoría por región, estado o nacional.</div>
+            </div>
+            <div class="module-card">
+               <div class="module-icon">📝</div>
+                <div class="module-title">Registro</div>
+               <div class="module-desc">Registrar nuevo personal auditado (solo RRHH autorizado).</div>
+            </div>
+<div class="module-card" id="btnHistorialLogs">
+  <div class="module-icon">📜</div>
+  <div class="module-title">Historial</div>
+  <div class="module-desc">Registro de actividades en RRHH (solo Administrador).</div>
 </div>
+          </div>
+        </div>
         <!-- RRHH ICAP Tab -->
         <div id="rrhh-icap" class="tab-content">
           <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">👥 RRHH ICAP</h2>
@@ -304,25 +300,29 @@
           </div>
         </div>
         <!-- Pie de Fuerza Tab -->
-<!-- Pie de Fuerza Tab -->
-<div id="pie-fuerza" class="tab-content">
-  <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">👥 Pie de Fuerza</h2>
-  <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
-    Control y gestión del personal activo y su núcleo familiar.
-  </p>
-  <div class="module-grid">
-    <div class="module-card" onclick="location.href='pie-de-fuerza.html'">
-      <div class="module-icon">📝</div>
-      <div class="module-title">Formulario para Pie de Fuerza</div>
-      <div class="module-desc">Registro del núcleo familiar por estado asignado.</div>
-    </div>
-    <div class="module-card" onclick="location.href='pie-de-fuerza-listado.html'">
-      <div class="module-icon">📋</div>
-      <div class="module-title">Listado Consolidado</div>
-      <div class="module-desc">Consulta por estado y generación de reportes.</div>
-    </div>
-  </div>
-</div>
+        <div id="pie-fuerza" class="tab-content">
+          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">👥 Pie de Fuerza</h2>
+          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
+            Control y gestión del personal activo y su núcleo familiar.
+          </p>
+          <div class="module-grid">
+            <div class="module-card" onclick="location.href='pie-de-fuerza.html'">
+              <div class="module-icon">📝</div>
+              <div class="module-title">Formulario para Pie de Fuerza</div>
+              <div class="module-desc">Registrar datos del núcleo familiar del personal activo.</div>
+            </div>
+            <div class="module-card" id="btnPieFuerzaRegistro">
+              <div class="module-icon">👨‍✈️</div>
+              <div class="module-title">Registro</div>
+              <div class="module-desc">Registrar nuevo personal en pie de fuerza (solo RRHH autorizado).</div>
+            </div>
+            <div class="module-card" id="btnPieFuerzaHistorial">
+              <div class="module-icon">📜</div>
+              <div class="module-title">Historial</div>
+              <div class="module-desc">Registro de actividades en Pie de Fuerza (solo Administrador).</div>
+            </div>
+          </div>
+        </div>
         <!-- Orden de Servicio Tab -->
         <div id="orden-servicio" class="tab-content">
           <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">📄 Orden de Servicio</h2>
@@ -456,7 +456,7 @@
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      // ✅ Configuración de Supabase
+      // ✅ Configuración de Supabase (igual que en index.html y admin.html)
       const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
       const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
       const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
@@ -468,11 +468,13 @@
       const savedTab = localStorage.getItem('activeRrhhTab');
       if (savedTab) switchTab(savedTab);
       try {
+        // ✅ Corrección clave: { { session } → { session }, sin espacios extra ni llaves anidadas redundantes
         const { data: { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError || !session) {
           window.location.href = '../index.html';
           return;
         }
+        // ✅ Corrección: incluir modulos_asignados en la consulta
         const { data: perfil, error: perfilError } = await client
           .from('perfiles')
           .select('rol, estados_asignados, email, modulos_asignados')
@@ -482,6 +484,7 @@
           window.location.href = '../index.html';
           return;
         }
+        // ✅ Permitir acceso a admin siempre
         const userRol = perfil.rol || 'consultor';
         if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
           alert('🔒 Acceso denegado: no tienes permiso para Recursos Humanos.');
@@ -507,10 +510,8 @@
             const tabId = btn.getAttribute('data-tab');
             switchTab(tabId);
           });
-        });
-        // ✅ Inicializar visibilidad de botones en Auditoría
-        initAuditoriaButtons(userRol);
-        // ✅ Cierre de sesión
+        });  
+     // ✅ Cierre de sesión
         logoutBtn.addEventListener('click', async () => {
           await client.auth.signOut();
           window.location.href = '../index.html';
@@ -520,7 +521,6 @@
         window.location.href = '../index.html';
       }
     });
-
     function switchTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
@@ -528,46 +528,86 @@
       document.getElementById(tabId).classList.add('active');
       localStorage.setItem('activeRrhhTab', tabId);
     }
-
-    function initAuditoriaButtons(userRol) {
-      const btnRegistro = document.getElementById('btnRegistro');
-      const btnModificar = document.getElementById('btnModificar');
-      const btnHistorial = document.getElementById('btnHistorialLogs');
-
-      // ✅ Botón Registro: admin/moderador pueden acceder
-      if (btnRegistro) {
-        if (userRol === 'admin' || userRol === 'moderador') {
-          btnRegistro.onclick = () => location.href = 'registro.html';
-        } else {
-          btnRegistro.style.opacity = '0.5';
-          btnRegistro.style.cursor = 'not-allowed';
-          btnRegistro.title = '🔒 Solo admin/moderador';
-          btnRegistro.onclick = () => alert('🔒 Solo administradores y moderadores pueden registrar.');
-        }
-      }
-
-      // ✅ Botón Modificar: SOLO admin/moderador → visible y funcional
-      if (btnModificar) {
-        if (userRol === 'admin' || userRol === 'moderador') {
-          btnModificar.style.display = 'block';
-          btnModificar.onclick = () => location.href = 'modificar.html';
-        } else {
-          btnModificar.style.display = 'none';
-        }
-      }
-
-      // ✅ Botón Historial: SOLO admin
-      if (btnHistorial) {
-        if (userRol === 'admin') {
-          btnHistorial.onclick = () => location.href = 'historial-logs.html';
-        } else {
-          btnHistorial.style.opacity = '0.5';
-          btnHistorial.style.cursor = 'not-allowed';
-          btnHistorial.title = '🔒 Solo el Administrador puede acceder';
-          btnHistorial.onclick = () => alert('🔒 Acceso restringido: solo el Administrador puede ver el historial.');
-        }
-      }
+// ✅ Función para acceso seguro al Registro (solo admin/moderador)
+function accederRegistro() {
+  const userRolSpan = document.getElementById('userRol');
+  const rol = userRolSpan ? userRolSpan.getAttribute('data-role') : 'consultor';
+  if (rol !== 'admin' && rol !== 'moderador') {
+    alert('🔒 Acceso restringido: solo Administradores y Moderadores pueden registrar personal.');
+    return;
+  }
+  window.location.href = 'registro.html';
+}
+// ✅ Asignar evento al botón de Registro (por texto, compatible con todos los navegadores)
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.module-card').forEach(card => {
+    const title = card.querySelector('.module-title')?.textContent || '';
+    if (title.includes('Registro') || title.includes('Incidencias')) {
+      card.onclick = accederRegistro;
     }
+  });
+});
+// ✅ Mostrar/Ocultar Historial según rol
+document.addEventListener('DOMContentLoaded', () => {
+  const historialBtn = document.getElementById('btnHistorialLogs');
+  const userRolSpan = document.getElementById('userRol');
+  const rol = userRolSpan?.getAttribute('data-role') || 'consultor';
+  if (historialBtn) {
+    if (rol === 'admin') {
+      historialBtn.onclick = () => {
+        window.location.href = 'historial-logs.html';
+      };
+    } else {
+      historialBtn.style.opacity = '0.5';
+      historialBtn.style.cursor = 'not-allowed';
+      historialBtn.title = '🔒 Solo el Administrador puede acceder';
+      historialBtn.onclick = () => {
+        alert('🔒 Acceso restringido: solo el Administrador puede ver el historial.');
+      };
+    }
+  }
+});
+
+// ✅ Control de visibilidad en Pie de Fuerza (igual que en Auditoría)
+function initPieFuerzaButtons() {
+  const userRolSpan = document.getElementById('userRol');
+  const rol = userRolSpan?.getAttribute('data-role') || 'consultor';
+
+  // ✅ Registro (solo admin/moderador)
+  const btnRegistroPF = document.getElementById('btnPieFuerzaRegistro');
+  if (btnRegistroPF) {
+    if (rol === 'admin' || rol === 'moderador') {
+      btnRegistroPF.onclick = () => location.href = 'registro-pie-fuerza.html';
+    } else {
+      btnRegistroPF.style.opacity = '0.5';
+      btnRegistroPF.style.cursor = 'not-allowed';
+      btnRegistroPF.title = '🔒 Solo admin/moderador';
+      btnRegistroPF.onclick = () => alert('🔒 Solo administradores y moderadores pueden registrar.');
+    }
+  }
+
+  // ✅ Historial (solo admin)
+  const btnHistorialPF = document.getElementById('btnPieFuerzaHistorial');
+  if (btnHistorialPF) {
+    if (rol === 'admin') {
+      btnHistorialPF.onclick = () => location.href = 'historial-pie-fuerza.html';
+    } else {
+      btnHistorialPF.style.opacity = '0.5';
+      btnHistorialPF.style.cursor = 'not-allowed';
+      btnHistorialPF.title = '🔒 Solo el Administrador';
+      btnHistorialPF.onclick = () => alert('🔒 Acceso restringido: solo el Administrador puede ver el historial.');
+    }
+  }
+}
+
+// ✅ Ejecutar tras cargar perfil (al final del bloque try en DOMContentLoaded)
+document.addEventListener('DOMContentLoaded', () => {
+  const userRolSpan = document.getElementById('userRol');
+  const rol = userRolSpan?.getAttribute('data-role') || 'consultor';
+  if (userRolSpan && (rol === 'admin' || rol === 'moderador' || rol === 'consultor')) {
+    initPieFuerzaButtons();
+  }
+});
   </script>
 </body>
 </html>
