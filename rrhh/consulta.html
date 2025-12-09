@@ -505,11 +505,6 @@
         msg.style.color = '#c62828';
       }
     }
-    // Registrar una búsqueda por nombre (sin cédula específica)
-registrarLog('consulta', null, null, {
-  tipo_busqueda: 'nombre',
-  termino: query
-});
 
     function renderResults(data, total, query) {
       const container = document.getElementById('resultsContainer');
@@ -644,9 +639,7 @@ registrarLog('consulta', null, null, {
 
       cargarFoto(f.cedula);
     }
-registrarLog('consulta', f.cedula, f.apellidos_nombres, {
-  tipo_busqueda: 'cedula'
-});
+
 let currentFotoURL = null; // ← para guardar la URL válida
 
 async function cargarFoto(cedula) {
@@ -782,9 +775,12 @@ document.getElementById('btnDescargarFoto')?.addEventListener('click', () => {
   link.click();
   document.body.removeChild(link);
 });
-    async function registrarLog(accion, cedula, nombre = null, detalles = {}) {
+    <!-- ✅ Registro automático de logs para historial-logs.html -->
+<script>
+async function registrarLogConsulta(cedula = null, nombre = null) {
   try {
-    const { data: { session } } = await client.auth.getSession();
+    const sessionResponse = await client.auth.getSession();
+    const session = sessionResponse?.data?.session;
     if (!session) return;
     const { data: perfil } = await client
       .from('perfiles')
@@ -792,20 +788,33 @@ document.getElementById('btnDescargarFoto')?.addEventListener('click', () => {
       .eq('id', session.user.id)
       .single();
     if (!perfil) return;
-
     await client.from('rrhh_logs').insert({
       user_id: session.user.id,
       email: perfil.email,
       rol: perfil.rol,
-      accion: accion,
+      accion: 'consulta',
       cedula_afectada: cedula,
       nombre_afectado: nombre,
-      detalles: detalles
+      detalles: { tipo: cedula ? 'cedula' : 'nombre' }
     });
   } catch (err) {
-    console.warn('⚠️ Error registrando log:', err.message);
+    console.warn('⚠️ Log no registrado:', err.message);
   }
 }
+
+// ✅ Inyectar llamada en las funciones existentes (sin reescribirlas)
+const original_mostrarFichaCompleta = mostrarFichaCompleta;
+mostrarFichaCompleta = function(f) {
+  original_mostrarFichaCompleta(f);
+  registrarLogConsulta(f.cedula, f.apellidos_nombres);
+};
+
+const original_buscarPorNombre = buscarPorNombre;
+buscarPorNombre = async function(query) {
+  await original_buscarPorNombre(query);
+  registrarLogConsulta(null, null);
+};
+</script>
   </script>
 </body>
 </html>
