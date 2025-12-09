@@ -402,19 +402,24 @@
     const { jsPDF } = window.jspdf;
     let currentPage = 1;
     const RESULTS_PER_PAGE = 15;
+
  document.addEventListener('DOMContentLoaded', async () => {
   try {
     // ✅ Corregido: sin destructuring anidado, sin riesgo de caracteres ocultos
     const sessionResponse = await client.auth.getSession();
     const session = sessionResponse?.data?.session;
     const sessionError = sessionResponse?.error;
+
     if (sessionError || !session) return window.location.href = '../index.html';
+
     const { data: perfil } = await client
       .from('perfiles')
       .select('email, rol, modulos_asignados')
       .eq('id', session.user.id)
       .single();
+
     if (!perfil) return window.location.href = '../index.html';
+
     // ... resto del código (userRol, eventos, etc.)
         const userRol = perfil.rol || 'consultor';
         if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
@@ -425,6 +430,7 @@
         document.getElementById('userRol').textContent = 
           userRol === 'admin' ? 'Administrador' :
           userRol === 'moderador' ? 'Moderador' : 'Consultor';
+
         document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
         document.getElementById('searchQuery').addEventListener('keypress', e => e.key === 'Enter' && iniciarBusqueda());
         document.getElementById('btnCerrarFicha').addEventListener('click', cerrarFicha);
@@ -434,6 +440,7 @@
         window.location.href = '../index.html';
       }
     });
+
     async function iniciarBusqueda() {
       const query = document.getElementById('searchQuery').value.trim();
       const msg = document.getElementById('searchMessage');
@@ -468,6 +475,7 @@
       currentPage = 1;
       buscarPorNombre(query);
     }
+
     async function buscarPorNombre(query) {
       const msg = document.getElementById('searchMessage');
       msg.textContent = '🔍 Buscando coincidencias...';
@@ -497,6 +505,7 @@
         msg.style.color = '#c62828';
       }
     }
+
     function renderResults(data, total, query) {
       const container = document.getElementById('resultsContainer');
       const title = document.getElementById('resultsTitle');
@@ -512,6 +521,7 @@
       const totalPages = Math.ceil(total / RESULTS_PER_PAGE);
       renderPagination(totalPages);
     }
+
     function renderPagination(totalPages) {
       const el = document.getElementById('pagination');
       el.innerHTML = '';
@@ -548,6 +558,7 @@
         el.appendChild(btn);
       }
     }
+
     async function mostrarFichaPorCedula(cedula) {
       try {
         const { data, error } = await client
@@ -563,6 +574,7 @@
         alert(`❌ No se pudo cargar la ficha: ${err.message}`);
       }
     }
+
     function mostrarFichaCompleta(f) {
       const formatDate = s => s ? new Date(s).toLocaleDateString('es-VE') : '—';
       document.getElementById('cedula').textContent = f.cedula || '—';
@@ -586,12 +598,14 @@
       document.getElementById('fechas_egreso').textContent = f.fechas_egreso || '—';
       document.getElementById('direccion').textContent = f.direccion || '—';
       document.getElementById('correo_electronico').textContent = f.correo_electronico || '—';
+
       // ✅ Nuevo: Mostrar status en el cuadro coloreado
       const statusBox = document.getElementById('statusBox');
       let statusValue = (f.status || '').trim().toLowerCase();
       let displayText = statusValue;
       let bgColor = '#9e9e9e';
       let textColor = 'white';
+
       if (['activo', 'a', 'active'].includes(statusValue)) {
         displayText = 'Activo';
         bgColor = '#2e7d32';
@@ -618,18 +632,23 @@
         displayText = statusValue || '—';
         bgColor = '#9e9e9e';
       }
+
       statusBox.textContent = displayText.toUpperCase();
       statusBox.style.backgroundColor = bgColor;
       statusBox.style.color = textColor;
+
       cargarFoto(f.cedula);
     }
+
 let currentFotoURL = null; // ← para guardar la URL válida
+
 async function cargarFoto(cedula) {
   const container = document.getElementById('photoContainer');
   const btnDescargar = document.getElementById('btnDescargarFoto');
   container.innerHTML = '🪪';
   btnDescargar.style.display = 'none'; // ocultar por defecto
   currentFotoURL = null;
+
   const extensions = ['jpeg', 'jpg', 'png']; // orden óptimo
   for (const ext of extensions) {
     const path = `foto_${cedula}.${ext}`;
@@ -665,6 +684,7 @@ async function cargarFoto(cedula) {
       document.getElementById('resultCard').style.display = 'none';
       document.getElementById('resultsList').style.display = 'block';
     }
+
     async function exportarPDF() {
       const ficha = document.getElementById('resultCard');
       if (!ficha || ficha.style.display === 'none') {
@@ -674,6 +694,7 @@ async function cargarFoto(cedula) {
       const nombre = document.getElementById('apellidos_nombres')?.textContent?.trim() || 'funcionario';
       const cedula = document.getElementById('cedula')?.textContent?.trim() || 'desconocida';
       const filename = `ficha_${nombre.replace(/\s+/g, '_')}_${cedula}.pdf`;
+
       const now = new Date();
       const fechaStr = now.toISOString().slice(0, 10).replace(/-/g, '');
       const hora = String(now.getHours()).padStart(2, '0');
@@ -681,6 +702,7 @@ async function cargarFoto(cedula) {
       const seg = String(now.getSeconds()).padStart(2, '0');
       const sec = Math.floor(Math.random() * 900) + 100;
       const numeroReporte = `REP-${fechaStr}-${hora}${min}${seg}-${sec}`;
+
       const clone = ficha.cloneNode(true);
       clone.id = 'pdf-clone';
       clone.style.position = 'fixed';
@@ -692,6 +714,7 @@ async function cargarFoto(cedula) {
       clone.style.background = 'white';
       clone.style.display = 'block';
       clone.style.fontSize = '13px';
+
       const reportDiv = document.createElement('div');
       reportDiv.style.textAlign = 'center';
       reportDiv.style.marginBottom = '16px';
@@ -700,11 +723,14 @@ async function cargarFoto(cedula) {
       reportDiv.style.color = '#666';
       reportDiv.textContent = `📄 Número de Reporte: ${numeroReporte}`;
       clone.insertBefore(reportDiv, clone.firstChild);
+
       const closeBtn = clone.querySelector('#btnCerrarFicha');
       const exportBtn = clone.querySelector('#btnExportPDF');
       if (closeBtn) closeBtn.remove();
       if (exportBtn) exportBtn.remove();
+
       document.body.appendChild(clone);
+
       try {
         const canvas = await html2canvas(clone, {
           scale: 2,
@@ -737,6 +763,7 @@ document.getElementById('btnDescargarFoto')?.addEventListener('click', () => {
     alert('❌ No hay foto disponible para descargar.');
     return;
   }
+
   const link = document.createElement('a');
   link.href = currentFotoURL;
   // Extraer nombre del archivo desde la URL
@@ -748,13 +775,12 @@ document.getElementById('btnDescargarFoto')?.addEventListener('click', () => {
   link.click();
   document.body.removeChild(link);
 });
-// ✅ REGISTRO DE LOGS CORREGIDO — única modificación
-async function registrarLogConsulta({ cedula = null, nombre = null, tipo = 'cedula' }) {
+async function registrarLogConsulta(cedula = null, nombre = null) {
   try {
     const sessionResponse = await client.auth.getSession();
     const session = sessionResponse?.data?.session;
     if (!session) return;
-    const {  perfil } = await client
+    const { data: perfil } = await client
       .from('perfiles')
       .select('email, rol')
       .eq('id', session.user.id)
@@ -767,26 +793,26 @@ async function registrarLogConsulta({ cedula = null, nombre = null, tipo = 'cedu
       accion: 'consulta',
       cedula_afectada: cedula,
       nombre_afectado: nombre,
-      detalles: { tipo }
+      detalles: { tipo: cedula ? 'cedula' : 'nombre' }
     });
   } catch (err) {
-    console.warn('⚠️ Log de consulta no registrado:', err.message);
+    console.warn('⚠️ Log no registrado:', err.message);
   }
 }
 
-// Inyectar en mostrarFichaCompleta (consulta por cédula)
+// ✅ Inyectar llamada en las funciones existentes (sin reescribirlas)
 const original_mostrarFichaCompleta = mostrarFichaCompleta;
 mostrarFichaCompleta = function(f) {
   original_mostrarFichaCompleta(f);
-  registrarLogConsulta({ cedula: f.cedula, nombre: f.apellidos_nombres, tipo: 'cedula' });
+  registrarLogConsulta(f.cedula, f.apellidos_nombres);
 };
 
-// Inyectar en buscarPorNombre (consulta por nombre)
 const original_buscarPorNombre = buscarPorNombre;
 buscarPorNombre = async function(query) {
   await original_buscarPorNombre(query);
-  registrarLogConsulta({ nombre: query, tipo: 'nombre' }); // ✅ Ahora dice 'nombre'
+  registrarLogConsulta(null, null);
 };
+</script>
   </script>
 </body>
 </html>
