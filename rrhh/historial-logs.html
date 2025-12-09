@@ -81,78 +81,88 @@
   let currentPage = 1;
   const perPage = 20;
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    // ✅ Corrección: forma segura de obtener sesión (igual que en consulta.html)
-    const sessionResponse = await client.auth.getSession();
-    const session = sessionResponse?.data?.session;
-    if (!session) return window.location.href = '../index.html';
+  // ✅ Función para mostrar modal de detalles
+  function mostrarDetalles(log) {
+    // Crear overlay y modal si no existen
+    let overlay = document.getElementById('logOverlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'logOverlay';
+      overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6); z-index: 1000; display: flex;
+        align-items: center; justify-content: center; padding: 20px;
+      `;
+      document.body.appendChild(overlay);
 
-    // ✅ Verificación de rol: admite 'admin' o '1' (como en tu Supabase)
-    const { data: perfil, error: perfilError } = await client
-      .from('perfiles')
-      .select('rol')
-      .eq('id', session.user.id)
-      .single();
-
-    if (perfilError || !perfil) return window.location.href = '../index.html';
-
-    // ✅ Aceptar rol = 'admin', '1', o 1 (número)
-    const userRol = String(perfil.rol).trim();
-    if (userRol !== 'admin' && userRol !== '1') {
-      alert('🔒 Acceso denegado: solo el Administrador puede ver el historial.');
-      window.location.href = 'index.html';
-      return;
+      const modal = document.createElement('div');
+      modal.id = 'logModal';
+      modal.style.cssText = `
+        background: white; border-radius: 16px; width: 100%; max-width: 800px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow: hidden;
+      `;
+      overlay.appendChild(modal);
     }
 
-    // ✅ Cargar logs y asignar eventos
-    loadLogs();
-    document.getElementById('btnFiltrar').addEventListener('click', loadLogs);
-    document.getElementById('searchLogs').addEventListener('keypress', e => {
-      if (e.key === 'Enter') loadLogs();
+    const modal = document.getElementById('logModal');
+    const fecha = new Date(log.created_at).toLocaleString('es-VE', {
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
-  });
 
-  async function loadLogs() {
-    const search = document.getElementById('searchLogs').value.trim();
-    const accion = document.getElementById('filterAccion').value;
-    const rol = document.getElementById('filterRol').value;
+    // Formatear detalles según acción
+    let detallesHTML = '<pre style="margin:0; white-space:pre-wrap; word-break:break-word;">' + 
+      (log.detalles ? JSON.stringify(log.detalles, null, 2) : '{}') + 
+      '</pre>';
 
-    try {
-      let query = client
-        .from('rrhh_logs')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false });
+    modal.innerHTML = `
+      <div style="background:#722F37; color:white; padding:16px 24px; display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="margin:0; font-size:20px;">🔍 Detalles del Registro</h2>
+        <button id="btnCerrarModal" style="background:#c62828; border:none; width:32px; height:32px; border-radius:50%; font-weight:bold; cursor:pointer;">×</button>
+      </div>
+      <div style="padding:24px; max-height:70vh; overflow:auto;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+          <div><strong>📅 Fecha y Hora:</strong><br><span style="color:#2d2d2d;">${fecha}</span></div>
+          <div><strong>👤 Usuario:</strong><br><span style="color:#2d2d2d;">${log.email || '—'}</span></div>
+          <div><strong>🛡️ Rol:</strong><br><span style="color:#2d2d2d; font-weight:600;">${log.rol || '—'}</span></div>
+          <div><strong>🔧 Acción:</strong><br><span style="color:#2d2d2d; font-weight:600;">${log.accion || '—'}</span></div>
+          <div><strong>🆔 Cédula afectada:</strong><br><span style="color:#2d2d2d;">${log.cedula_afectada || '—'}</span></div>
+          <div><strong>📛 Funcionario:</strong><br><span style="color:#2d2d2d;">${log.nombre_afectado || '—'}</span></div>
+        </div>
+        <div style="margin-top:24px;">
+          <h3 style="margin:0 0 12px; color:#722F37;">📝 Detalles completos</h3>
+          <div style="background:#f8f9fa; padding:16px; border-radius:8px; font-family:monospace; font-size:14px;">
+            ${detallesHTML}
+          </div>
+        </div>
+      </div>
+    `;
 
-      if (search) {
-        query = query.or(`cedula_afectada.ilike.%${search}%,nombre_afectado.ilike.%${search}%,email.ilike.%${search}%`);
-      }
-      if (accion) query = query.eq('accion', accion);
-      if (rol) query = query.eq('rol', rol);
-
-      const from = (currentPage - 1) * perPage;
-      const { data, error, count } = await query.range(from, from + perPage - 1);
-
-      if (error) throw error;
-      renderLogs(data);
-      renderPagination(Math.ceil(count / perPage));
-    } catch (err) {
-      console.error('❌ Error al cargar logs:', err);
-      document.getElementById('logsBody').innerHTML = `<tr><td colspan="7" style="color:#c00;text-align:center">Error: ${err.message || 'No se pudo cargar el historial'}</td></tr>`;
-    }
+    // Eventos
+    document.getElementById('btnCerrarModal').onclick = cerrarModal;
+    overlay.onclick = (e) => { if (e.target === overlay) cerrarModal(); };
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarModal(); });
+    overlay.style.display = 'flex';
   }
 
+  function cerrarModal() {
+    const overlay = document.getElementById('logOverlay');
+    if (overlay) overlay.style.display = 'none';
+  }
+
+  // ✅ Modificar renderLogs para añadir evento de clic
   function renderLogs(logs) {
     const tbody = document.getElementById('logsBody');
     if (logs.length === 0) {
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center">No hay registros.</td></tr>';
       return;
     }
-    tbody.innerHTML = logs.map(log => {
+    tbody.innerHTML = logs.map((log, i) => {
       const fecha = new Date(log.created_at).toLocaleString('es-VE');
       const rolClass = `rol-${String(log.rol || 'unknown').toLowerCase()}`;
       const accionClass = `accion-${String(log.accion || 'unknown').toLowerCase()}`;
       return `
-        <tr>
+        <tr style="cursor:pointer; transition:background 0.2s;" onclick="mostrarDetalles(${JSON.stringify(log).replace(/"/g, '&quot;')})">
           <td>${fecha}</td>
           <td>${log.email || '—'}</td>
           <td><span class="${rolClass}">${log.rol || '—'}</span></td>
@@ -167,11 +177,58 @@
     }).join('');
   }
 
+  // Resto de funciones (loadLogs, renderPagination, etc.) permanecen igual...
+  document.addEventListener('DOMContentLoaded', async () => {
+    const sessionResponse = await client.auth.getSession();
+    const session = sessionResponse?.data?.session;
+    if (!session) return window.location.href = '../index.html';
+    const { data: perfil } = await client
+      .from('perfiles')
+      .select('rol')
+      .eq('id', session.user.id)
+      .single();
+    const userRol = String(perfil?.rol || '').trim();
+    if (userRol !== 'admin' && userRol !== '1') {
+      alert('🔒 Acceso denegado: solo el Administrador puede ver el historial.');
+      window.location.href = 'index.html';
+      return;
+    }
+    loadLogs();
+    document.getElementById('btnFiltrar').addEventListener('click', loadLogs);
+    document.getElementById('searchLogs').addEventListener('keypress', e => {
+      if (e.key === 'Enter') loadLogs();
+    });
+  });
+
+  async function loadLogs() {
+    const search = document.getElementById('searchLogs').value.trim();
+    const accion = document.getElementById('filterAccion').value;
+    const rol = document.getElementById('filterRol').value;
+    try {
+      let query = client
+        .from('rrhh_logs')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false });
+      if (search) {
+        query = query.or(`cedula_afectada.ilike.%${search}%,nombre_afectado.ilike.%${search}%,email.ilike.%${search}%`);
+      }
+      if (accion) query = query.eq('accion', accion);
+      if (rol) query = query.eq('rol', rol);
+      const from = (currentPage - 1) * perPage;
+      const { data, error, count } = await query.range(from, from + perPage - 1);
+      if (error) throw error;
+      renderLogs(data);
+      renderPagination(Math.ceil(count / perPage));
+    } catch (err) {
+      console.error('❌ Error al cargar logs:', err);
+      document.getElementById('logsBody').innerHTML = `<tr><td colspan="7" style="color:#c00;text-align:center">Error: ${err.message || 'No se pudo cargar el historial'}</td></tr>`;
+    }
+  }
+
   function renderPagination(totalPages) {
     const div = document.getElementById('pagination');
     div.innerHTML = '';
     if (totalPages <= 1) return;
-
     const addBtn = (text, page, active = false, disabled = false) => {
       const btn = document.createElement('button');
       btn.className = 'page-btn' + (active ? ' active' : '') + (disabled ? ' disabled' : '');
@@ -179,7 +236,6 @@
       if (!disabled) btn.onclick = () => { currentPage = page; loadLogs(); };
       div.appendChild(btn);
     };
-
     addBtn('«', 1, false, currentPage === 1);
     for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
       addBtn(i, i, i === currentPage);
