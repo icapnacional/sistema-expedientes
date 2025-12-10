@@ -1,7 +1,5 @@
 /**
- * role-permissions.js
- * Sistema centralizado de control de acceso por rol.
- * ✅ Solo edita PERMISSIONS. El resto no se toca.
+ * role-permissions.js — ✅ CORREGIDO
  */
 const PERMISSIONS = {
   // 🔹 Auditoría Nacional
@@ -24,13 +22,13 @@ const PERMISSIONS = {
     action: () => window.location.href = 'historial-logs.html',
     tooltip: '🔒 Solo Administrador'
   },
+  // ✅ Formulario de Pie de Fuerza — accesible para los 3 roles
+  'btnPieFuerzaFormulario': {
+    roles: ['admin', 'moderador', 'consultor'],
+    action: () => window.location.href = 'pie-de-fuerza.html'
+  }
+};
 
-'btnPieFuerzaFormulario': {
-  roles: ['admin', 'moderador', 'consultor'],
-  action: () => window.location.href = 'pie-de-fuerza.html'
-}
-
-// ▼▼▼ NO EDITAR A PARTIR DE AQUÍ ▼▼▼
 function initRolePermissions(userRol) {
   if (!userRol) {
     console.warn('initRolePermissions llamado sin userRol');
@@ -40,7 +38,7 @@ function initRolePermissions(userRol) {
     const btn = document.getElementById(btnId);
     if (!btn) return;
     const hasAccess = config.roles.includes(userRol);
-    if (hasAccess && typeof config.action === 'function') {
+    if (hasAccess && config.action) {
       btn.style.opacity = '1';
       btn.style.cursor = 'pointer';
       btn.removeAttribute('disabled');
@@ -56,4 +54,3 @@ function initRolePermissions(userRol) {
   });
 }
 window.initRolePermissions = initRolePermissions;
-// ▲▲▲ FIN — NO EDITAR ▲▲▲
