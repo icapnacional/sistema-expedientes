@@ -25,6 +25,11 @@ const PERMISSIONS = {
 
   // 👇 AQUÍ IRÁN TUS PERMISOS (agrega uno por uno conforme los definas)
 };
+'btnAuditoriaConsulta': {
+  roles: ['admin', 'moderador', 'consultor'], // ✅ Todos los roles
+  action: () => window.location.href = 'consulta.html',
+  tooltip: '🔍 Consulta pública de personal auditado'
+}
 
 // ▲▲▲ EDITA HASTA AQUÍ ▲▲▲
 
