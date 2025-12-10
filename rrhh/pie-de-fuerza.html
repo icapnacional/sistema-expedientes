@@ -413,10 +413,10 @@
         .select('email, rol, estados_asignados, modulos_asignados')
         .eq('id', session.user.id)
         .single();
-     if (!perfil || (perfil.rol !== 'admin' && !perfil.modulos_asignados?.includes('rh'))) {
-  alert('🔒 Acceso denegado: solo RRHH autorizado o Administrador pueden acceder.');
+if (!perfil || perfil.rol !== 'admin') {
+  alert('🔒 Acceso denegado: solo Administradores pueden acceder a Pie de Fuerza.');
   return window.location.href = 'index.html';
-      }
+}
       document.getElementById('userEmail').textContent = perfil.email;
       document.getElementById('userEstado').textContent = perfil.estados_asignados?.join(', ') || '—';
       document.getElementById('userRol').textContent = 
