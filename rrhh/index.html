@@ -373,12 +373,27 @@
           userRolSpan.innerHTML += ' <span title="Administrador" style="color:#c62828; cursor:help;">ⓘ</span>';
         }
 
-        // ✅ ÚNICA llamada: delegar TODO al sistema externo
-        if (typeof initRolePermissions === 'function') {
-          initRolePermissions(userRol);
-        } else {
-          console.error('❌ role-permissions.js no cargado');
-        }
+  // ✅ Control de acceso directo para Pie de Fuerza (sin depender de role-permissions.js)
+const isAdmin = userRol === 'admin' || userRol === '1';
+
+// Botón: Formulario de Pie de Fuerza
+const btnForm = document.getElementById('btnPieFuerzaFormulario');
+if (btnForm) {
+  if (isAdmin) {
+    btnForm.style.opacity = '1';
+    btnForm.style.cursor = 'pointer';
+    btnForm.removeAttribute('disabled');
+    btnForm.onclick = () => window.location.href = 'pie-de-fuerza.html';
+    // Remueve tooltip si existe
+    btnForm.removeAttribute('title');
+  } else {
+    btnForm.style.opacity = '0.5';
+    btnForm.style.cursor = 'not-allowed';
+    btnForm.setAttribute('disabled', 'true');
+    btnForm.title = '🔒 Solo Administrador';
+    btnForm.onclick = () => alert('🔒 Solo Administrador');
+  }
+}
 
         logoutBtn.onclick = async () => {
           await client.auth.signOut();
