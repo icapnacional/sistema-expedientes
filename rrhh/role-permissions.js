@@ -25,23 +25,23 @@ const PERMISSIONS = {
     tooltip: '🔒 Solo Administrador'
   },
 
-  // 🔹 Pie de Fuerza (ajustado según pestaña)
+ // 🔹 Pie de Fuerza — ✅ AQUÍ VA LA CORRECCIÓN PRINCIPAL
   'btnPieFuerzaListado': {
     roles: ['admin', 'moderador', 'consultor'],
-    action: () => window.location.href = 'pie-fuerza/listado.html',
-    tooltip: '👥 Listado de personal'
+    action: () => window.location.href = 'pie-de-fuerza.html',
+    tooltip: '📋 Formulario integral de Pie de Fuerza'
   },
   'btnPieFuerzaAsignaciones': {
     roles: ['admin', 'moderador'],
-    action: () => window.location.href = 'pie-fuerza/asignaciones.html',
+    action: () => alert('⚠️ Módulo en desarrollo'),
     tooltip: '🔒 Solo RRHH autorizado'
   },
   'btnPieFuerzaMovimientos': {
     roles: ['admin'],
-    action: () => window.location.href = 'pie-fuerza/movimientos.html',
+    action: () => alert('⚠️ Módulo en desarrollo'),
     tooltip: '🔒 Solo Administrador'
   },
-
+  
   // 🔹 RRHH ICAP
   'btnRhObjetivos': {
     roles: ['admin', 'moderador'],
