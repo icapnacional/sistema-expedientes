@@ -1,5 +1,5 @@
 /**
- * role-permissions.js — ✅ CORREGIDO
+ * role-permissions.js — CORREGIDO Y FUNCIONAL
  */
 const PERMISSIONS = {
   // 🔹 Auditoría Nacional
@@ -29,6 +29,7 @@ const PERMISSIONS = {
   }
 };
 
+// ▼▼▼ NO EDITAR A PARTIR DE AQUÍ ▼▼▼
 function initRolePermissions(userRol) {
   if (!userRol) {
     console.warn('initRolePermissions llamado sin userRol');
@@ -38,7 +39,7 @@ function initRolePermissions(userRol) {
     const btn = document.getElementById(btnId);
     if (!btn) return;
     const hasAccess = config.roles.includes(userRol);
-    if (hasAccess && config.action) {
+    if (hasAccess && typeof config.action === 'function') {
       btn.style.opacity = '1';
       btn.style.cursor = 'pointer';
       btn.removeAttribute('disabled');
@@ -54,3 +55,4 @@ function initRolePermissions(userRol) {
   });
 }
 window.initRolePermissions = initRolePermissions;
+// ▲▲▲ FIN — NO EDITAR ▲▲▲
