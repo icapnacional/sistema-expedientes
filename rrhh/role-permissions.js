@@ -1,7 +1,7 @@
 /**
  * role-permissions.js
- * Sistema centralizado de control de acceso por rol.
- * ✅ Solo edita PERMISSIONS. El resto no se toca.
+ * Sistema centralizado de acceso por rol.
+ * ✅ Solo edita PERMISSIONS.
  */
 
 const PERMISSIONS = {
@@ -12,46 +12,57 @@ const PERMISSIONS = {
   },
   'btnAuditoriaRegistro': {
     roles: ['admin', 'moderador'],
-    action: () => window.location.href = 'registro.html',
-    tooltip: '🔒 Solo RRHH autorizado'
+    action: () => window.location.href = 'registro.html'
   },
   'btnAuditoriaModificar': {
     roles: ['admin', 'moderador'],
-    action: () => window.location.href = 'modificar.html',
-    tooltip: '🔒 Solo RRHH autorizado'
+    action: () => window.location.href = 'modificar.html'
   },
   'btnAuditoriaHistorial': {
     roles: ['admin'],
-    action: () => window.location.href = 'historial-logs.html',
-    tooltip: '🔒 Solo Administrador'
+    action: () => window.location.href = 'historial-logs.html'
+  },
+  // 🔹 Pie de Fuerza — ✅ Nuevo
+  'btnPieFuerzaFormulario': {
+    roles: ['admin', 'moderador'],
+    action: () => window.location.href = 'pie-de-fuerza.html'
   }
 };
 
 // ▼▼▼ NO EDITAR A PARTIR DE AQUÍ ▼▼▼
 function initRolePermissions(userRol) {
-  if (!userRol) {
-    console.warn('initRolePermissions llamado sin userRol');
-    return;
-  }
-
+  if (!userRol) return console.warn('initRolePermissions: userRol no definido');
+  
   Object.entries(PERMISSIONS).forEach(([btnId, config]) => {
     const btn = document.getElementById(btnId);
-    if (!btn) return;
+    if (!btn) return console.warn(`⚠️ Botón "${btnId}" no encontrado`);
 
     const hasAccess = config.roles.includes(userRol);
 
-    if (hasAccess && typeof config.action === 'function') {
+    if (hasAccess) {
+      // ✅ Acceso permitido
       btn.style.opacity = '1';
       btn.style.cursor = 'pointer';
-      btn.removeAttribute('disabled');
       btn.onclick = config.action;
+      // Limpiar tooltip si existía
+      const tooltipEl = btn.querySelector('.tooltip-i');
+      if (tooltipEl) tooltipEl.remove();
       btn.removeAttribute('title');
     } else {
+      // ❌ Acceso restringido: solo tooltip rojo
       btn.style.opacity = '0.5';
       btn.style.cursor = 'not-allowed';
-      btn.setAttribute('disabled', 'true');
-      btn.title = config.tooltip || '🔒 Acceso restringido';
-      btn.onclick = () => alert(btn.title);
+      btn.onclick = null;
+      btn.title = ' ⓘ RRHH autorizado';
+      
+      // Añadir ⓘ rojo visual (solo si no existe)
+      const titleEl = btn.querySelector('.module-title');
+      if (titleEl && !titleEl.querySelector('.tooltip-i')) {
+        const i = document.createElement('span');
+        i.className = 'tooltip-i';
+        i.innerHTML = ' <span style="color:#c62828; font-size:14px; cursor:help;" title=" ⓘ RRHH autorizado">ⓘ</span>';
+        titleEl.appendChild(i);
+      }
     }
   });
 }
