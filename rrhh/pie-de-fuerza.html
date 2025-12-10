@@ -199,13 +199,24 @@
         const sessionResponse = await client.auth.getSession();
         const session = sessionResponse?.data?.session;
         if (!session) return window.location.href = '../index.html';
+// ✅ Corrección: incluir rol y modulos_asignados
+const { data: perfil, error: perfilError } = await client
+  .from('perfiles')
+  .select('email, estados_asignados, rol, modulos_asignados')
+  .eq('id', session.user.id)
+  .single();
 
-        const {  perfil } = await client
-          .from('perfiles')
-          .select('email, estados_asignados')
-          .eq('id', session.user.id)
-          .single();
-        if (!perfil) return window.location.href = '../index.html';
+if (perfilError || !perfil) {
+  console.error('Perfil no encontrado');
+  return window.location.href = '../index.html';
+}
+
+// ✅ Permitir acceso a admin siempre, y a moderador si tiene módulo 'rh'
+const userRol = perfil.rol || 'consultor';
+if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
+  alert('🔒 Acceso denegado: no tienes permiso para Pie de Fuerza.');
+  return window.location.href = '../index.html';
+}
 
         document.getElementById('userEmail').textContent = perfil.email;
         userEstado = perfil.estados_asignados?.[0] || '—';
