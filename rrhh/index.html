@@ -251,7 +251,7 @@
             Seleccione una pestaña superior para comenzar.
           </p>
         </div>
-      <!-- Auditoría Nacional Tab -->
+        <!-- Auditoría Nacional Tab -->
         <div id="auditoria" class="tab-content">
           <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">📋 Auditoría Nacional</h2>
           <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
@@ -263,16 +263,21 @@
               <div class="module-title">Consulta</div>
               <div class="module-desc">Genera y visualiza reportes de auditoría por región, estado o nacional.</div>
             </div>
-            <div class="module-card">
-               <div class="module-icon">📝</div>
-                <div class="module-title">Registro</div>
-               <div class="module-desc">Registrar nuevo personal auditado (solo RRHH autorizado).</div>
+            <div class="module-card" id="btnRegistro">
+              <div class="module-icon">📝</div>
+              <div class="module-title">Registro</div>
+              <div class="module-desc">Registrar nuevo personal auditado (solo RRHH autorizado).</div>
             </div>
-<div class="module-card" id="btnHistorialLogs">
-  <div class="module-icon">📜</div>
-  <div class="module-title">Historial</div>
-  <div class="module-desc">Registro de actividades en RRHH (solo Administrador).</div>
-</div>
+            <div class="module-card" id="btnModificar" style="display: none;">
+              <div class="module-icon">✏️</div>
+              <div class="module-title">Modificar</div>
+              <div class="module-desc">Editar datos de personal existente (solo admin/moderador).</div>
+            </div>
+            <div class="module-card" id="btnHistorialLogs">
+              <div class="module-icon">📜</div>
+              <div class="module-title">Historial</div>
+              <div class="module-desc">Registro de actividades en RRHH (solo Administrador).</div>
+            </div>
           </div>
         </div>
         <!-- RRHH ICAP Tab -->
@@ -454,80 +459,67 @@
       <p>Información: 0424-6962840 / 0412-2714179</p>
     </footer>
   </div>
-
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      // ✅ Configuración de Supabase (igual que en index.html y admin.html)
+      // ✅ Configuración de Supabase
       const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
       const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
       const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
-      
       const userEmailSpan = document.getElementById('userEmail');
       const userEstadoSpan = document.getElementById('userEstado');
       const userRolSpan = document.getElementById('userRol');
       const logoutBtn = document.getElementById('logoutBtn');
-
       // ✅ Restaurar pestaña activa
       const savedTab = localStorage.getItem('activeRrhhTab');
       if (savedTab) switchTab(savedTab);
-
       try {
-        // ✅ Corrección clave: { { session } → { session }, sin espacios extra ni llaves anidadas redundantes
-        const { data: { session }, error: sessionError } = await client.auth.getSession();
+        const {  { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError || !session) {
           window.location.href = '../index.html';
           return;
         }
-
-        // ✅ Corrección: incluir modulos_asignados en la consulta
-        const { data: perfil, error: perfilError } = await client
+        const {  perfil, error: perfilError } = await client
           .from('perfiles')
           .select('rol, estados_asignados, email, modulos_asignados')
           .eq('id', session.user.id)
           .single();
-
         if (perfilError || !perfil) {
           window.location.href = '../index.html';
           return;
         }
-
-        // ✅ Permitir acceso a admin siempre
         const userRol = perfil.rol || 'consultor';
         if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
           alert('🔒 Acceso denegado: no tienes permiso para Recursos Humanos.');
           window.location.href = '../index.html';
           return;
         }
-
         const userEmail = perfil.email || session.user.email;
         const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
         const rolText = userRol === 'admin' ? 'Administrador' : userRol === 'moderador' ? 'Moderador' : 'Consultor';
-
         userEmailSpan.textContent = userEmail;
         userEstadoSpan.textContent = estadosTxt;
         userRolSpan.textContent = rolText;
         userRolSpan.setAttribute('data-role', userRol);
-
         // ✅ Tooltip rojo para Administrador
         if (userRol === 'admin') {
           userRolSpan.style.fontWeight = '600';
           userRolSpan.innerHTML += ' ⓘ';
           userRolSpan.title = 'Administrador';
         }
-
         // ✅ Eventos para pestañas
         document.querySelectorAll('.tab-btn').forEach(btn => {
           btn.addEventListener('click', () => {
             const tabId = btn.getAttribute('data-tab');
             switchTab(tabId);
           });
-        });  
-     // ✅ Cierre de sesión
+        });
+        // ✅ Inicializar visibilidad de botones en Auditoría
+        initAuditoriaButtons(userRol);
+        // ✅ Cierre de sesión
         logoutBtn.addEventListener('click', async () => {
           await client.auth.signOut();
           window.location.href = '../index.html';
         });
-
       } catch (err) {
         console.error('Error en RRHH:', err);
         window.location.href = '../index.html';
@@ -541,49 +533,46 @@
       document.getElementById(tabId).classList.add('active');
       localStorage.setItem('activeRrhhTab', tabId);
     }
-// ✅ Función para acceso seguro al Registro (solo admin/moderador)
-function accederRegistro() {
-  const userRolSpan = document.getElementById('userRol');
-  const rol = userRolSpan ? userRolSpan.getAttribute('data-role') : 'consultor';
-  
-  if (rol !== 'admin' && rol !== 'moderador') {
-    alert('🔒 Acceso restringido: solo Administradores y Moderadores pueden registrar personal.');
-    return;
-  }
-  
-  window.location.href = 'registro.html';
-}
 
-// ✅ Asignar evento al botón de Registro (por texto, compatible con todos los navegadores)
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.module-card').forEach(card => {
-    const title = card.querySelector('.module-title')?.textContent || '';
-    if (title.includes('Registro') || title.includes('Incidencias')) {
-      card.onclick = accederRegistro;
-    }
-  });
-});
-// ✅ Mostrar/Ocultar Historial según rol
-document.addEventListener('DOMContentLoaded', () => {
-  const historialBtn = document.getElementById('btnHistorialLogs');
-  const userRolSpan = document.getElementById('userRol');
-  const rol = userRolSpan?.getAttribute('data-role') || 'consultor';
+    function initAuditoriaButtons(userRol) {
+      const btnRegistro = document.getElementById('btnRegistro');
+      const btnModificar = document.getElementById('btnModificar');
+      const btnHistorial = document.getElementById('btnHistorialLogs');
 
-  if (historialBtn) {
-    if (rol === 'admin') {
-      historialBtn.onclick = () => {
-        window.location.href = 'historial-logs.html';
-      };
-    } else {
-      historialBtn.style.opacity = '0.5';
-      historialBtn.style.cursor = 'not-allowed';
-      historialBtn.title = '🔒 Solo el Administrador puede acceder';
-      historialBtn.onclick = () => {
-        alert('🔒 Acceso restringido: solo el Administrador puede ver el historial.');
-      };
+      // ✅ Botón Registro: admin/moderador pueden acceder
+      if (btnRegistro) {
+        if (userRol === 'admin' || userRol === 'moderador') {
+          btnRegistro.onclick = () => location.href = 'registro.html';
+        } else {
+          btnRegistro.style.opacity = '0.5';
+          btnRegistro.style.cursor = 'not-allowed';
+          btnRegistro.title = '🔒 Solo admin/moderador';
+          btnRegistro.onclick = () => alert('🔒 Solo administradores y moderadores pueden registrar.');
+        }
+      }
+
+      // ✅ Botón Modificar: SOLO admin/moderador → visible y funcional
+      if (btnModificar) {
+        if (userRol === 'admin' || userRol === 'moderador') {
+          btnModificar.style.display = 'block';
+          btnModificar.onclick = () => location.href = 'modificar.html';
+        } else {
+          btnModificar.style.display = 'none';
+        }
+      }
+
+      // ✅ Botón Historial: SOLO admin
+      if (btnHistorial) {
+        if (userRol === 'admin') {
+          btnHistorial.onclick = () => location.href = 'historial-logs.html';
+        } else {
+          btnHistorial.style.opacity = '0.5';
+          btnHistorial.style.cursor = 'not-allowed';
+          btnHistorial.title = '🔒 Solo el Administrador puede acceder';
+          btnHistorial.onclick = () => alert('🔒 Acceso restringido: solo el Administrador puede ver el historial.');
+        }
+      }
     }
-  }
-});
   </script>
 </body>
 </html>
