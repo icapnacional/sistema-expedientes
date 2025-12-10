@@ -408,20 +408,16 @@
       const sessionResponse = await client.auth.getSession();
       const session = sessionResponse?.data?.session;
       if (!session) return window.location.href = '../index.html';
-      const {  perfil } = await client
-        .from('perfiles')
-        .select('email, rol, estados_asignados, modulos_asignados')
-        .eq('id', session.user.id)
-        .single();
-      if (!perfil) return window.location.href = 'index.html';
+     const { data: perfil, error: perfilError } = await client
+  .from('perfiles')
+  .select('email, rol, estados_asignados, modulos_asignados')
+  .eq('id', session.user.id)
+  .single();
 
-      // ✅ CORREGIDO: acepta 'admin' o '1'
-      const userRol = perfil.rol;
-      const isAdmin = userRol === 'admin' || userRol === '1';
-      if (!isAdmin) {
-        alert('🔒 Acceso denegado: solo Administradores pueden acceder a Pie de Fuerza.');
-        return window.location.href = 'index.html';
-      }
+if (perfilError || !perfil) {
+  console.error('❌ No se pudo cargar el perfil:', perfilError);
+  return window.location.href = '../index.html';
+}
 
       document.getElementById('userEmail').textContent = perfil.email;
       document.getElementById('userEstado').textContent = perfil.estados_asignados?.join(', ') || '—';
