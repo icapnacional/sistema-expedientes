@@ -413,7 +413,7 @@
         .select('email, rol, estados_asignados, modulos_asignados')
         .eq('id', session.user.id)
         .single();
-      if (!perfil || !perfil.modulos_asignados?.includes('rh')) {
+     if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== '1')) {
         alert('🔒 Acceso denegado: no tienes permiso para Pie de Fuerza.');
         return window.location.href = 'index.html';
       }
