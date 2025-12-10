@@ -71,7 +71,6 @@
       font-size: 15px;
       font-weight: 600;
       color: #555;
-      font-size: 15px;
       cursor: pointer;
       transition: all 0.3s ease;
       position: relative;
@@ -272,15 +271,14 @@
             <div class="module-card" id="btnRhCapacitacion"><div class="module-icon">🎓</div><div class="module-title">Capacitación</div></div>
           </div>
         </div>
-<div id="pie-fuerza" class="tab-content">
-  <h2>👥 Pie de Fuerza</h2>
-  <div class="module-grid">
-    <div class="module-card" id="btnPieFuerzaFormulario">
-      <div class="module-icon">📋</div>
-      <div class="module-title">Formulario</div>
-    </div>
-  </div>
-</div>
+        <div id="pie-fuerza" class="tab-content">
+          <h2>👥 Pie de Fuerza</h2>
+          <div class="module-grid">
+            <div class="module-card" id="btnPieFuerzaListado"><div class="module-icon">👨‍✈️</div><div class="module-title">Personal</div></div>
+            <div class="module-card" id="btnPieFuerzaAsignaciones"><div class="module-icon">📍</div><div class="module-title">Asignaciones</div></div>
+            <div class="module-card" id="btnPieFuerzaMovimientos"><div class="module-icon">🔄</div><div class="module-title">Movimientos</div></div>
+          </div>
+        </div>
         <div id="orden-servicio" class="tab-content">
           <h2>📄 Orden de Servicio</h2>
           <div class="module-grid">
@@ -364,27 +362,12 @@
           userRolSpan.innerHTML += ' <span title="Administrador" style="color:#c62828; cursor:help;">ⓘ</span>';
         }
 
-  // ✅ Control de acceso directo para Pie de Fuerza (sin depender de role-permissions.js)
-const isAdmin = userRol === 'admin' || userRol === '1';
-
-// Botón: Formulario de Pie de Fuerza
-const btnForm = document.getElementById('btnPieFuerzaFormulario');
-if (btnForm) {
-  if (isAdmin) {
-    btnForm.style.opacity = '1';
-    btnForm.style.cursor = 'pointer';
-    btnForm.removeAttribute('disabled');
-    btnForm.onclick = () => window.location.href = 'pie-de-fuerza.html';
-    // Remueve tooltip si existe
-    btnForm.removeAttribute('title');
-  } else {
-    btnForm.style.opacity = '0.5';
-    btnForm.style.cursor = 'not-allowed';
-    btnForm.setAttribute('disabled', 'true');
-    btnForm.title = '🔒 Solo Administrador';
-    btnForm.onclick = () => alert('🔒 Solo Administrador');
-  }
-}
+        // ✅ ÚNICA llamada: delegar TODO al sistema externo
+        if (typeof initRolePermissions === 'function') {
+          initRolePermissions(userRol);
+        } else {
+          console.error('❌ role-permissions.js no cargado');
+        }
 
         logoutBtn.onclick = async () => {
           await client.auth.signOut();
@@ -406,31 +389,6 @@ if (btnForm) {
         location.href = '../index.html';
       }
     });
-    // ✅ Control de acceso al Formulario de Pie de Fuerza
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('btnPieFuerzaFormulario');
-  if (!btn) return;
-
-  const userRolSpan = document.getElementById('userRol');
-  const rol = userRolSpan?.getAttribute('data-role') || 'consultor';
-
-  if (['admin', 'moderador'].includes(rol)) {
-    // ✅ Acceso permitido: redirige directamente
-    btn.onclick = () => location.href = 'pie-de-fuerza.html';
-  } else {
-    // ❌ Acceso restringido: solo tooltip rojo
-    btn.style.opacity = '0.5';
-    btn.style.cursor = 'not-allowed';
-    btn.title = ' ⓘ Solo RRHH autorizado';
-    const titleEl = btn.querySelector('.module-title');
-    if (titleEl && !titleEl.querySelector('.tooltip-i')) {
-      const tooltip = document.createElement('span');
-      tooltip.className = 'tooltip-i';
-      tooltip.innerHTML = ' <span style="color:#c62828; font-size:14px; cursor:help;" title=" ⓘ Solo RRHH autorizado">ⓘ</span>';
-      titleEl.appendChild(tooltip);
-    }
-  }
-});
   </script>
 </body>
 </html>
