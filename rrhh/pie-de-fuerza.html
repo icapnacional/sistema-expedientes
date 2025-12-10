@@ -351,3 +351,377 @@
       <p>© OTIC ZULIA — ICAP Nacional - PNB</p>
     </footer>
   </div>
+  <script>
+  const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+  const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+  let currentCedula = null;
+  let currentUserRol = null;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    // ✅ Autenticación
+    const sessionResponse = await client.auth.getSession();
+    const session = sessionResponse?.data?.session;
+    if (!session) return window.location.href = '../index.html';
+
+    const { data: perfil, error } = await client
+      .from('perfiles')
+      .select('email, rol, estados_asignados, modulos_asignados')
+      .eq('id', session.user.id)
+      .single();
+    if (!perfil || !perfil.modulos_asignados?.includes('rh')) {
+      alert('🔒 Acceso denegado: no tienes permiso para Pie de Fuerza.');
+      return window.location.href = 'index.html';
+    }
+
+    document.getElementById('userEmail').textContent = perfil.email;
+    document.getElementById('userEstado').textContent = perfil.estados_asignados?.join(', ') || '—';
+    document.getElementById('userRol').textContent = 
+      perfil.rol === 'admin' ? 'Administrador' :
+      perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
+    currentUserRol = perfil.rol;
+
+    // ✅ Eventos
+    document.getElementById('btnBuscar').addEventListener('click', buscarPorCedula);
+    document.getElementById('searchCedula').addEventListener('keypress', e => e.key === 'Enter' && buscarPorCedula());
+    document.getElementById('btnGuardar').addEventListener('click', guardarDatos);
+    document.getElementById('btnLimpiar').addEventListener('click', () => {
+      if (confirm('¿Limpiar formulario? Perderás los cambios no guardados.')) {
+        limpiarFormulario();
+      }
+    });
+
+    // ✅ Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab)?.classList.add('active');
+        actualizarResumen();
+      });
+    });
+  });
+
+  async function buscarPorCedula() {
+    const cedula = document.getElementById('searchCedula').value.trim();
+    const msg = document.getElementById('searchMessage');
+    msg.style.display = 'block';
+
+    if (!/^\d{8}$/.test(cedula)) {
+      msg.className = 'alert error';
+      msg.textContent = '⚠️ Ingresa una cédula válida de 8 dígitos.';
+      return;
+    }
+
+    msg.className = 'alert info';
+    msg.textContent = '🔍 Buscando...';
+    
+    try {
+      const { data, error } = await client
+        .from('pie_de_fuerza')
+        .select('*')
+        .eq('cedula', cedula)
+        .single();
+
+      const { data: dataAud, error: errAud } = await client
+        .from('auditoria_personal')
+        .select('apellidos_nombres, rango')
+        .eq('cedula', cedula)
+        .single();
+
+      document.getElementById('cedula_f').value = cedula;
+      document.getElementById('nombre_f').value = dataAud?.apellidos_nombres || '—';
+      if (dataAud?.rango) document.getElementById('rango_l').value = dataAud.rango;
+
+      if (!error && data) {
+        cargarDatos(data);
+        msg.className = 'alert success';
+        msg.textContent = '✅ Ficha encontrada. Puedes editarla.';
+      } else {
+        limpiarFormulario();
+        document.getElementById('cedula_f').value = cedula;
+        document.getElementById('nombre_f').value = dataAud?.apellidos_nombres || 'Nuevo registro';
+        msg.className = 'alert info';
+        msg.textContent = 'ℹ️ Cédula no encontrada en Pie de Fuerza. Puedes crear una nueva ficha.';
+      }
+
+      document.getElementById('formContainer').style.display = 'block';
+      document.getElementById('nombreFuncionario').textContent = dataAud?.apellidos_nombres 
+        ? `📋 ${dataAud.apellidos_nombres}` 
+        : `📋 Nuevo funcionario — C.I. ${cedula}`;
+      
+      // Registrar log
+      await registrarLog('pie_fuerza_consulta', cedula, dataAud?.apellidos_nombres);
+
+    } catch (err) {
+      console.error('Error:', err);
+      msg.className = 'alert error';
+      msg.textContent = `❌ Error: ${err.message || 'intente nuevamente'}`;
+    }
+  }
+
+  function limpiarFormulario() {
+    currentCedula = null;
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+      if (!el.hasAttribute('readonly')) {
+        if (el.type === 'checkbox') el.checked = false;
+        else if (el.tagName === 'SELECT') el.selectedIndex = 0;
+        else el.value = '';
+      }
+    });
+    document.getElementById('nombreFuncionario').textContent = '📋 Ficha Integral del Funcionario';
+  }
+
+  function cargarDatos(data) {
+    currentCedula = data.cedula;
+
+    // Núcleo familiar
+    document.getElementById('cedula_f').value = data.cedula || '';
+    document.getElementById('parentesco_f').value = data.parentesco || '';
+    document.getElementById('cedula_familiar_f').value = data.cedula_familiar || '';
+    document.getElementById('nacionalidad_f').value = data.nacionalidad || 'Venezolana';
+    document.getElementById('estado_civil_f').value = data.estado_civil || '';
+    document.getElementById('sexo_f').value = data.sexo || '';
+    document.getElementById('edad_f').value = data.edad || '';
+    document.getElementById('telefono_f').value = data.telefono || '';
+    document.getElementById('direccion_f').value = data.direccion || '';
+
+    // Laboral
+    document.getElementById('rango_l').value = data.rango || '';
+    document.getElementById('providencia_l').value = data.providencia_ascenso || '';
+    document.getElementById('nivel_l').value = data.nivel_jerarquico || '';
+    document.getElementById('fecha_ingreso_l').value = data.fecha_ingreso || '';
+    document.getElementById('credencial_l').value = data.credencial || '';
+    document.getElementById('dependencia_l').value = data.dependencia || '';
+    document.getElementById('servicio_l').value = data.servicio || '';
+    document.getElementById('cargo_l').value = data.cargo || '';
+    document.getElementById('nombramiento_l').value = data.nombramiento || '';
+    document.getElementById('tiempo_cnpb_l').value = data.tiempo_cnpb || '';
+    document.getElementById('tiempo_otras_l').value = data.tiempo_otras || '';
+    document.getElementById('antiguedad_l').value = data.antiguedad || '';
+
+    // Académico
+    document.getElementById('fecha_grad_a').value = data.fecha_graduacion || '';
+    document.getElementById('titulo_a').value = data.titulo_obtenido || '';
+    document.getElementById('nivel_a').value = data.nivel_academico || '';
+    document.getElementById('institucion_a').value = data.institucion || '';
+    document.getElementById('registro_a').value = data.numero_registro || '';
+
+    // Documentos
+    document.getElementById('tipo_doc').value = data.tipo_documento || 'Cédula';
+    document.getElementById('numero_doc').value = data.numero_documento || '';
+    document.getElementById('expedicion_doc').value = data.fecha_expedicion || '';
+    document.getElementById('vencimiento_doc').value = data.fecha_vencimiento || '';
+    document.getElementById('entidad_doc').value = data.entidad_emisora || '';
+
+    // Electorales
+    document.getElementById('cne_e').value = data.inscrito_cne ? 'true' : 'false';
+    document.getElementById('centro_e').value = data.centro_votacion || '';
+    document.getElementById('estado_e').value = data.estado_electoral || '';
+    document.getElementById('municipio_e').value = data.municipio_electoral || '';
+    document.getElementById('parroquia_e').value = data.parroquia_electoral || '';
+
+    // Salud
+    document.getElementById('seguro_s').value = data.seguro_social || '';
+    document.getElementById('afiliacion_s').value = data.numero_afiliacion || '';
+    document.getElementById('sangre_s').value = data.grupo_sanguineo || '';
+    document.getElementById('condicion_s').value = data.condicion_salud || '';
+
+    // Disciplinarios
+    document.getElementById('sancion_d').value = data.tipo_sancion || '';
+    document.getElementById('apertura_d').value = data.fecha_apertura || '';
+    document.getElementById('cierre_d').value = data.fecha_cierre || '';
+    document.getElementById('estatus_d').value = data.estatus_disciplinario || 'Abierto';
+    document.getElementById('resolucion_d').value = data.resolucion || '';
+
+    // Desempeño
+    document.getElementById('periodo_des').value = data.periodo_desempeno || '';
+    document.getElementById('calif_des').value = data.calificacion || '';
+    document.getElementById('supervisor_des').value = data.supervisor || '';
+    document.getElementById('fecha_des').value = data.fecha_evaluacion || '';
+
+    // Asignaciones
+    document.getElementById('tipo_mov_asig').value = data.tipo_movimiento || '';
+    document.getElementById('ant_asig').value = data.unidad_anterior || '';
+    document.getElementById('nueva_asig').value = data.unidad_nueva || '';
+    document.getElementById('fecha_asig').value = data.fecha_asignacion || '';
+    document.getElementById('orden_asig').value = data.orden_servicio || '';
+
+    // Vacaciones
+    document.getElementById('tipo_vr').value = data.tipo_vr || 'Vacaciones';
+    document.getElementById('inicio_vr').value = data.fecha_inicio_vr || '';
+    document.getElementById('fin_vr').value = data.fecha_fin_vr || '';
+    document.getElementById('dias_vr').value = data.dias_vr || '';
+    document.getElementById('aprobado_vr').value = data.aprobado_vr ? 'true' : 'false';
+    document.getElementById('orden_vr').value = data.numero_orden_vr || '';
+
+    // Observaciones
+    document.getElementById('contenido_obs').value = data.observaciones || '';
+    document.getElementById('tipo_obs').value = data.tipo_observacion || 'General';
+
+    actualizarResumen();
+  }
+
+  function actualizarResumen() {
+    const completados = {
+      familiar: !!document.getElementById('parentesco_f').value,
+      laboral: !!document.getElementById('rango_l').value,
+      academico: !!document.getElementById('titulo_a').value,
+      documentos: !!document.getElementById('numero_doc').value,
+      electorales: !!document.getElementById('centro_e').value,
+      salud: !!document.getElementById('seguro_s').value,
+      disciplinario: !!document.getElementById('sancion_d').value,
+      desempeno: !!document.getElementById('calif_des').value,
+      asignaciones: !!document.getElementById('tipo_mov_asig').value,
+      vacaciones: !!document.getElementById('tipo_vr').value,
+      observaciones: !!document.getElementById('contenido_obs').value
+    };
+
+    Object.entries(completados).forEach(([key, val]) => {
+      document.getElementById(`res_${key}`).textContent = val ? '✅ Completo' : '⚠️ Incompleto';
+    });
+  }
+
+  async function guardarDatos() {
+    const cedula = document.getElementById('cedula_f').value.trim();
+    if (!cedula || !/^\d{8}$/.test(cedula)) {
+      alert('⚠️ Cédula inválida.');
+      return;
+    }
+
+    const data = {
+      cedula,
+      // Núcleo familiar
+      parentesco: document.getElementById('parentesco_f').value,
+      cedula_familiar: document.getElementById('cedula_familiar_f').value,
+      nacionalidad: document.getElementById('nacionalidad_f').value,
+      estado_civil: document.getElementById('estado_civil_f').value,
+      sexo: document.getElementById('sexo_f').value,
+      edad: parseInt(document.getElementById('edad_f').value) || null,
+      telefono: document.getElementById('telefono_f').value,
+      direccion: document.getElementById('direccion_f').value,
+      // Laboral
+      rango: document.getElementById('rango_l').value,
+      providencia_ascenso: document.getElementById('providencia_l').value,
+      nivel_jerarquico: document.getElementById('nivel_l').value,
+      fecha_ingreso: document.getElementById('fecha_ingreso_l').value || null,
+      credencial: document.getElementById('credencial_l').value,
+      dependencia: document.getElementById('dependencia_l').value,
+      servicio: document.getElementById('servicio_l').value,
+      cargo: document.getElementById('cargo_l').value,
+      nombramiento: document.getElementById('nombramiento_l').value,
+      tiempo_cnpb: document.getElementById('tiempo_cnpb_l').value,
+      tiempo_otras: document.getElementById('tiempo_otras_l').value,
+      antiguedad: document.getElementById('antiguedad_l').value,
+      // Académico
+      fecha_graduacion: document.getElementById('fecha_grad_a').value || null,
+      titulo_obtenido: document.getElementById('titulo_a').value,
+      nivel_academico: document.getElementById('nivel_a').value,
+      institucion: document.getElementById('institucion_a').value,
+      numero_registro: document.getElementById('registro_a').value,
+      // Documentos
+      tipo_documento: document.getElementById('tipo_doc').value,
+      numero_documento: document.getElementById('numero_doc').value,
+      fecha_expedicion: document.getElementById('expedicion_doc').value || null,
+      fecha_vencimiento: document.getElementById('vencimiento_doc').value || null,
+      entidad_emisora: document.getElementById('entidad_doc').value,
+      // Electorales
+      inscrito_cne: document.getElementById('cne_e').value === 'true',
+      centro_votacion: document.getElementById('centro_e').value,
+      estado_electoral: document.getElementById('estado_e').value,
+      municipio_electoral: document.getElementById('municipio_e').value,
+      parroquia_electoral: document.getElementById('parroquia_e').value,
+      // Salud
+      seguro_social: document.getElementById('seguro_s').value,
+      numero_afiliacion: document.getElementById('afiliacion_s').value,
+      grupo_sanguineo: document.getElementById('sangre_s').value,
+      condicion_salud: document.getElementById('condicion_s').value,
+      // Disciplinarios
+      tipo_sancion: document.getElementById('sancion_d').value,
+      fecha_apertura: document.getElementById('apertura_d').value || null,
+      fecha_cierre: document.getElementById('cierre_d').value || null,
+      estatus_disciplinario: document.getElementById('estatus_d').value,
+      resolucion: document.getElementById('resolucion_d').value,
+      // Desempeño
+      periodo_desempeno: document.getElementById('periodo_des').value,
+      calificacion: document.getElementById('calif_des').value,
+      supervisor: document.getElementById('supervisor_des').value,
+      fecha_evaluacion: document.getElementById('fecha_des').value || null,
+      // Asignaciones
+      tipo_movimiento: document.getElementById('tipo_mov_asig').value,
+      unidad_anterior: document.getElementById('ant_asig').value,
+      unidad_nueva: document.getElementById('nueva_asig').value,
+      fecha_asignacion: document.getElementById('fecha_asig').value || null,
+      orden_servicio: document.getElementById('orden_asig').value,
+      // Vacaciones
+      tipo_vr: document.getElementById('tipo_vr').value,
+      fecha_inicio_vr: document.getElementById('inicio_vr').value || null,
+      fecha_fin_vr: document.getElementById('fin_vr').value || null,
+      dias_vr: parseInt(document.getElementById('dias_vr').value) || null,
+      aprobado_vr: document.getElementById('aprobado_vr').value === 'true',
+      numero_orden_vr: document.getElementById('orden_vr').value,
+      // Observaciones
+      observaciones: document.getElementById('contenido_obs').value,
+      tipo_observacion: document.getElementById('tipo_obs').value
+    };
+
+    const msg = document.getElementById('searchMessage');
+    msg.className = 'alert info';
+    msg.textContent = '💾 Guardando...';
+    msg.style.display = 'block';
+
+    try {
+      let result;
+      if (currentCedula) {
+        result = await client
+          .from('pie_de_fuerza')
+          .update(data)
+          .eq('cedula', cedula);
+      } else {
+        result = await client
+          .from('pie_de_fuerza')
+          .insert([data]);
+      }
+
+      if (result.error) throw result.error;
+
+      msg.className = 'alert success';
+      msg.textContent = '✅ Ficha guardada correctamente.';
+      currentCedula = cedula;
+
+      // Registrar log
+      await registrarLog('pie_fuerza_edicion', cedula, document.getElementById('nombre_f').value);
+
+      setTimeout(() => msg.style.display = 'none', 3000);
+    } catch (err) {
+      console.error('Error al guardar:', err);
+      msg.className = 'alert error';
+      msg.textContent = `❌ Error: ${err.message || 'verifique los datos'}`;
+    }
+  }
+
+  async function registrarLog(accion, cedula = null, nombre = null) {
+    try {
+      const session = (await client.auth.getSession()).data.session;
+      if (!session) return;
+      const { data: perfil } = await client
+        .from('perfiles')
+        .select('email, rol')
+        .eq('id', session.user.id)
+        .single();
+      if (!perfil) return;
+      await client.from('rrhh_logs').insert({
+        user_id: session.user.id,
+        email: perfil.email,
+        rol: perfil.rol,
+        accion,
+        cedula_afectada: cedula,
+        nombre_afectado: nombre,
+        detalles: { modulo: 'pie_de_fuerza' }
+      });
+    } catch (e) {
+      console.warn('Log no registrado:', e.message);
+    }
+  }
+</script>
