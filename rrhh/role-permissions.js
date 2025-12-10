@@ -1,6 +1,6 @@
 /**
  * role-permissions.js
- * Sistema centralizado de acceso por rol.
+ * Sistema centralizado de control de acceso por rol.
  * ✅ Solo edita PERMISSIONS. El resto no se toca.
  */
 
@@ -25,7 +25,6 @@ const PERMISSIONS = {
     action: () => window.location.href = 'historial-logs.html',
     tooltip: '🔒 Solo Administrador'
   }
-  // 👇 Añadirás más aquí poco a poco...
 };
 
 // ▼▼▼ NO EDITAR A PARTIR DE AQUÍ ▼▼▼
