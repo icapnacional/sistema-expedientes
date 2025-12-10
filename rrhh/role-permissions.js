@@ -25,10 +25,70 @@ const PERMISSIONS = {
     tooltip: '🔒 Solo Administrador'
   },
 
-  // ✅ Formulario de Pie de Fuerza: accesible para admin, moderador y consultor
-  const formBtn = document.getElementById('btnPieFuerzaFormulario');
-  if (formBtn) formBtn.removeAttribute('disabled');
-}
+  // 🔹 Pie de Fuerza (ajustado según pestaña)
+  'btnPieFuerzaListado': {
+    roles: ['admin', 'moderador', 'consultor'],
+    action: () => window.location.href = 'pie-fuerza/listado.html',
+    tooltip: '👥 Listado de personal'
+  },
+  'btnPieFuerzaAsignaciones': {
+    roles: ['admin', 'moderador'],
+    action: () => window.location.href = 'pie-fuerza/asignaciones.html',
+    tooltip: '🔒 Solo RRHH autorizado'
+  },
+  'btnPieFuerzaMovimientos': {
+    roles: ['admin'],
+    action: () => window.location.href = 'pie-fuerza/movimientos.html',
+    tooltip: '🔒 Solo Administrador'
+  },
+
+  // 🔹 RRHH ICAP
+  'btnRhObjetivos': {
+    roles: ['admin', 'moderador'],
+    action: () => alert('Módulo en desarrollo'),
+    tooltip: '🔒 Solo RRHH autorizado'
+  },
+  'btnRhDesempeno': {
+    roles: ['admin', 'moderador'],
+    action: () => alert('Módulo en desarrollo'),
+    tooltip: '🔒 Solo RRHH autorizado'
+  },
+  'btnRhCapacitacion': {
+    roles: ['admin', 'moderador'],
+    action: () => alert('Módulo en desarrollo'),
+    tooltip: '🔒 Solo RRHH autorizado'
+  },
+
+  // 🔹 Orden de Servicio
+  'btnOrdenNueva': {
+    roles: ['admin', 'moderador'],
+    action: () => alert('Módulo en desarrollo'),
+    tooltip: '🔒 Solo RRHH autorizado'
+  },
+  'btnOrdenSeguimiento': {
+    roles: ['admin', 'moderador', 'consultor'],
+    action: () => alert('Módulo en desarrollo')
+  },
+
+  // 🔹 Reposo
+  'btnReposoSolicitud': {
+    roles: ['admin', 'moderador'],
+    action: () => alert('Módulo en desarrollo'),
+    tooltip: '🔒 Solo RRHH autorizado'
+  },
+  'btnReposoAprobadas': {
+    roles: ['admin', 'moderador', 'consultor'],
+    action: () => alert('Módulo en desarrollo')
+  },
+
+  // 🔹 Vacaciones, Cambio de Servicios, Documentos → todos visibles para admin/moderador/consultor (solo lectura si aplica)
+  'btnVacacionesPlan': { roles: ['admin', 'moderador', 'consultor'], action: () => alert('Módulo en desarrollo') },
+  'btnVacacionesSolicitudes': { roles: ['admin', 'moderador'], action: () => alert('Módulo en desarrollo'), tooltip: '🔒 Solo RRHH autorizado' },
+  'btnCambioNueva': { roles: ['admin', 'moderador'], action: () => alert('Módulo en desarrollo'), tooltip: '🔒 Solo RRHH autorizado' },
+  'btnCambioHistorial': { roles: ['admin', 'moderador', 'consultor'], action: () => alert('Módulo en desarrollo') },
+  'btnDocFormularios': { roles: ['admin', 'moderador', 'consultor'], action: () => alert('Módulo en desarrollo') },
+  'btnDocManuales': { roles: ['admin', 'moderador', 'consultor'], action: () => alert('Módulo en desarrollo') }
+};
 
 // ▼▼▼ NO EDITAR A PARTIR DE AQUÍ ▼▼▼
 function initRolePermissions(userRol) {
@@ -39,6 +99,7 @@ function initRolePermissions(userRol) {
   Object.entries(PERMISSIONS).forEach(([btnId, config]) => {
     const btn = document.getElementById(btnId);
     if (!btn) return;
+
     const hasAccess = config.roles.includes(userRol);
     if (hasAccess && typeof config.action === 'function') {
       btn.style.opacity = '1';
