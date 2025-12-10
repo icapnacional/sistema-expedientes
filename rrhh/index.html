@@ -119,19 +119,15 @@
       text-align: center;
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
       border: 2px solid #eaeaea;
-      cursor: default;
+      cursor: pointer;
       transition: all 0.3s ease;
       height: 100%;
     }
-    .module-card:hover:not([disabled]) {
+    .module-card:hover {
       transform: translateY(-4px);
       box-shadow: 0 8px 20px rgba(114, 47, 55, 0.15);
       border-color: #722F37;
       background-color: #fdf7f7;
-    }
-    .module-card[disabled] {
-      opacity: 0.5;
-      cursor: not-allowed;
     }
     .module-icon {
       font-size: 36px;
@@ -143,6 +139,10 @@
       font-weight: 700;
       color: #2d2d2d;
       margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
     }
     .module-desc {
       font-size: 14px;
@@ -237,32 +237,34 @@
           <h2>📊 Dashboard de Recursos Humanos</h2>
           <p>Seleccione una pestaña superior para comenzar.</p>
         </div>
+        <!-- 🔹 Auditoría Nacional — con 4 botones -->
         <div id="auditoria" class="tab-content">
           <h2>📋 Auditoría Nacional</h2>
-          <p>Sistema de auditoría para seguimiento y control de personal.</p>
+          <p>Sistema de auditoría para seguimiento y control de personal a nivel nacional.</p>
           <div class="module-grid">
             <div class="module-card" id="btnAuditoriaConsulta">
               <div class="module-icon">🔍</div>
               <div class="module-title">Consulta</div>
-              <div class="module-desc">Consulta pública de personal.</div>
+              <div class="module-desc">Genera y visualiza reportes de auditoría.</div>
             </div>
             <div class="module-card" id="btnAuditoriaRegistro">
               <div class="module-icon">📝</div>
               <div class="module-title">Registro</div>
-              <div class="module-desc">Registrar nuevo personal.</div>
+              <div class="module-desc">Registrar nuevo personal auditado.</div>
             </div>
             <div class="module-card" id="btnAuditoriaModificar">
               <div class="module-icon">✏️</div>
               <div class="module-title">Modificar</div>
-              <div class="module-desc">Edita datos existentes.</div>
+              <div class="module-desc">Edita información existente.</div>
             </div>
             <div class="module-card" id="btnAuditoriaHistorial">
               <div class="module-icon">📜</div>
               <div class="module-title">Historial</div>
-              <div class="module-desc">Registro de actividades.</div>
+              <div class="module-desc">Registro de actividades en RRHH.</div>
             </div>
           </div>
         </div>
+        <!-- Otras pestañas (resumidas, pero con IDs si se necesitan luego) -->
         <div id="rrhh-icap" class="tab-content">
           <h2>👥 RRHH ICAP</h2>
           <div class="module-grid">
@@ -282,7 +284,7 @@
         <div id="orden-servicio" class="tab-content">
           <h2>📄 Orden de Servicio</h2>
           <div class="module-grid">
-            <div class="module-card" id="btnOrdenNueva"><div class="module-icon">➕</div><div class="module-title">Nueva</div></div>
+            <div class="module-card" id="btnOrdenNueva"><div class="module-icon">➕</div><div class="module-title">Nueva Orden</div></div>
             <div class="module-card" id="btnOrdenSeguimiento"><div class="module-icon">🔍</div><div class="module-title">Seguimiento</div></div>
           </div>
         </div>
@@ -325,9 +327,6 @@
     </footer>
   </div>
 
-  <!-- ✅ Carga el sistema centralizado -->
-  <script src="role-permissions.js"></script>
-
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
@@ -348,33 +347,33 @@
           .select('rol, estados_asignados, email')
           .eq('id', session.user.id)
           .single();
-
         if (!perfil) return window.location.href = '../index.html';
 
         const userRol = perfil.rol || 'consultor';
+        const rolText = userRol === 'admin' ? 'Administrador' :
+                        userRol === 'moderador' ? 'Moderador' : 'Consultor';
+
         userEmailSpan.textContent = perfil.email;
         userEstadoSpan.textContent = perfil.estados_asignados?.join(', ') || '—';
-        userRolSpan.textContent = userRol === 'admin' ? 'Administrador' :
-                                   userRol === 'moderador' ? 'Moderador' : 'Consultor';
+        userRolSpan.textContent = rolText;
         userRolSpan.setAttribute('data-role', userRol);
         userRolSpan.style.fontWeight = '600';
+
+        // ✅ Tooltip rojo solo para Administrador
         if (userRol === 'admin') {
           userRolSpan.innerHTML += ' <span title="Administrador" style="color:#c62828; cursor:help;">ⓘ</span>';
         }
 
-        // ✅ ÚNICA llamada: delegar TODO al sistema externo
-        if (typeof initRolePermissions === 'function') {
-          initRolePermissions(userRol);
-        } else {
-          console.error('❌ role-permissions.js no cargado');
-        }
+        // ✅ Aplicar permisos (sin role-permissions.js aún — embebido mínimo)
+        applyPermissions(userRol);
 
+        // Cierre sesión
         logoutBtn.onclick = async () => {
           await client.auth.signOut();
           location.href = '../index.html';
         };
 
-        // Cambiar pestañas (UI puro)
+        // Cambiar pestañas
         document.querySelectorAll('.tab-btn').forEach(btn =>
           btn.onclick = () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -389,6 +388,60 @@
         location.href = '../index.html';
       }
     });
+
+    // 🔴 Sistema de permisos embebido (hasta que uses role-permissions.js)
+    function applyPermissions(userRol) {
+      // 🔹 Auditoría Nacional
+      setAccess('btnAuditoriaConsulta', ['admin','moderador','consultor'], () => location.href = 'consulta.html');
+      setAccess('btnAuditoriaRegistro',  ['admin','moderador'],           () => location.href = 'registro.html',      ' ⓘ RRHH autorizado');
+      setAccess('btnAuditoriaModificar', ['admin','moderador'],           () => location.href = 'modificar.html',     ' ⓘ RRHH autorizado');
+      setAccess('btnAuditoriaHistorial', ['admin'],                       () => location.href = 'historial-logs.html',' ⓘ Administrador');
+
+      // 🔹 Otros módulos pueden ir aquí cuando los definas
+    }
+
+    function setAccess(btnId, allowedRoles, actionFn, tooltipText = '') {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+
+      const hasAccess = allowedRoles.includes(userRol);
+
+      if (hasAccess && actionFn) {
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        btn.onclick = actionFn;
+        // Limpiar tooltip visual
+        cleanTooltip(btn);
+      } else {
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+        btn.onclick = null;
+        btn.title = tooltipText.trim();
+        // Añadir ⓘ rojo al título visual
+        appendRedTooltipIcon(btn, tooltipText);
+      }
+    }
+
+    function cleanTooltip(btn) {
+      const titleEl = btn.querySelector('.module-title');
+      if (titleEl) {
+        const icon = titleEl.querySelector('.tooltip-i');
+        if (icon) icon.remove();
+      }
+    }
+
+    function appendRedTooltipIcon(btn, tooltipText) {
+      const titleEl = btn.querySelector('.module-title');
+      if (!titleEl) return;
+      // Evitar duplicados
+      const existing = titleEl.querySelector('.tooltip-i');
+      if (existing) return;
+
+      const icon = document.createElement('span');
+      icon.className = 'tooltip-i';
+      icon.innerHTML = ' <span style="color:#c62828; font-size:14px; cursor:help;" title="' + tooltipText.trim() + '">ⓘ</span>';
+      titleEl.appendChild(icon);
+    }
   </script>
 </body>
 </html>
