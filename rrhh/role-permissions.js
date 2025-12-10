@@ -1,5 +1,7 @@
 /**
- * role-permissions.js — CORREGIDO Y FUNCIONAL
+ * role-permissions.js
+ * Sistema centralizado de control de acceso por rol.
+ * ✅ Solo edita PERMISSIONS. El resto no se toca.
  */
 const PERMISSIONS = {
   // 🔹 Auditoría Nacional
@@ -22,12 +24,11 @@ const PERMISSIONS = {
     action: () => window.location.href = 'historial-logs.html',
     tooltip: '🔒 Solo Administrador'
   },
-  // ✅ Formulario de Pie de Fuerza — accesible para los 3 roles
-  'btnPieFuerzaFormulario': {
-    roles: ['admin', 'moderador', 'consultor'],
-    action: () => window.location.href = 'pie-de-fuerza.html'
-  }
-};
+
+  // ✅ Formulario de Pie de Fuerza: accesible para admin, moderador y consultor
+  const formBtn = document.getElementById('btnPieFuerzaFormulario');
+  if (formBtn) formBtn.removeAttribute('disabled');
+}
 
 // ▼▼▼ NO EDITAR A PARTIR DE AQUÍ ▼▼▼
 function initRolePermissions(userRol) {
