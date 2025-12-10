@@ -25,22 +25,22 @@ const PERMISSIONS = {
     tooltip: '🔒 Solo Administrador'
   },
 
-  // 🔹 Pie de Fuerza — ✅ Agregado ahora
-  'btnPieFuerzaListado': {
-    roles: ['admin'],
-    action: () => window.location.href = 'pie-de-fuerza.html',
-    tooltip: '🔒 Solo Administrador'
-  },
-  'btnPieFuerzaAsignaciones': {
-    roles: ['admin'],
-    action: () => alert('Módulo de Asignaciones en desarrollo'),
-    tooltip: '🔒 Solo Administrador'
-  },
-  'btnPieFuerzaMovimientos': {
-    roles: ['admin'],
-    action: () => alert('Módulo de Movimientos en desarrollo'),
-    tooltip: '🔒 Solo Administrador'
-  }
+ // 🔹 Pie de Fuerza — ✅ CORREGIDO
+'btnPieFuerzaListado': {
+  roles: ['admin', '1'],  // ✅ ahora sí acepta '1'
+  action: () => window.location.href = 'pie-de-fuerza.html',
+  tooltip: '🔒 Solo Administrador'
+},
+'btnPieFuerzaAsignaciones': {
+  roles: ['admin', '1'],  // ✅
+  action: () => alert('Módulo de Asignaciones en desarrollo'),
+  tooltip: '🔒 Solo Administrador'
+},
+'btnPieFuerzaMovimientos': {
+  roles: ['admin', '1'],  // ✅
+  action: () => alert('Módulo de Movimientos en desarrollo'),
+  tooltip: '🔒 Solo Administrador'
+}
 };
 
 // ▼▼▼ NO EDITAR A PARTIR DE AQUÍ ▼▼▼
