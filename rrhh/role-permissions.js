@@ -1,78 +1,86 @@
-// role-permissions.js
-// ✅ Sistema centralizado de control de acceso por rol y módulo
-// ✅ Extensible: añade nuevas pestañas/módulos sin tocar el index
-
 /**
- * Definición de permisos por rol y módulo
- * Formato:
- *   [moduloId]: { roles: ['rol1', 'rol2', ...], action: () => redirección o función }
+ * role-permissions.js
+ * ── Sistema centralizado de control de acceso por rol
+ * 
+ * ✅ Cómo usar:
+ * 1. En index.html: asegúrate de tener <span id="userRol" data-role="admin|moderador|consultor">...
+ * 2. Cada botón debe tener un `id` único (ej. id="btnAuditoriaRegistro").
+ * 3. Aquí defines qué rol puede acceder a cada botón.
+ * 4. Llama a `initRolePermissions(userRol)` tras cargar la sesión.
  */
-const PERMISSIONS = {
-  // 🔹 Auditoría de Personal
-  'btnConsulta': {
-    roles: ['admin', 'moderador', 'consultor'],
-    action: () => window.location.href = 'auditoria-personal-consulta.html'
-  },
-  'btnRegistro': {
-    roles: ['admin', 'moderador'],
-    action: () => window.location.href = 'registro-personal.html',
-    tooltip: '🔒 Solo RRHH autorizado puede registrar'
-  },
-  'btnModificar': {
-    roles: ['admin', 'moderador'],
-    action: () => window.location.href = 'modificar-personal.html',
-    tooltip: '🔒 Solo RRHH autorizado puede modificar'
-  },
-  'btnHistorial': {
-    roles: ['admin'],
-    action: () => window.location.href = 'historial-personal.html',
-    tooltip: '🔒 Solo el Administrador puede ver el historial'
-  },
 
-  // 🔹 Ejemplo de cómo añadir más después (descomentar/editar):
-  /*
-  'btnOrdenNueva': {
-    roles: ['admin', 'moderador'],
-    action: () => window.location.href = 'orden-servicio-nueva.html'
-  },
-  'btnVacacionesCalendario': {
-    roles: ['admin', 'moderador', 'consultor'],
-    action: () => window.location.href = 'vacaciones-calendario.html'
-  }
-  */
+// ▼▼▼ EDITA A PARTIR DE AQUÍ ▼▼▼
+const PERMISSIONS = {
+  // Ejemplo base (puedes eliminarlo o mantenerlo como plantilla):
+  // 'btnAuditoriaRegistro': {
+  //   roles: ['admin', 'moderador'], // quiénes pueden acceder
+  //   action: () => window.location.href = 'registro.html',
+  //   tooltip: '🔒 Solo RRHH autorizado puede registrar'
+  // },
+  // 'btnHistorialLogs': {
+  //   roles: ['admin'],
+  //   action: () => window.location.href = 'historial-logs.html',
+  //   tooltip: '🔒 Solo el Administrador puede ver el historial'
+  // }
+
+  // 👇 AQUÍ IRÁN TUS PERMISOS (agrega uno por uno conforme los definas)
 };
 
+// ▲▲▲ EDITA HASTA AQUÍ ▲▲▲
+
 /**
- * Inicializa los permisos para el rol actual
- * @param {string} userRole - 'admin', 'moderador', o 'consultor'
+ * Aplica permisos según el rol del usuario
+ * @param {string} userRol - 'admin', 'moderador', o 'consultor'
  */
-function initRolePermissions(userRole) {
-  // Recorre cada módulo definido
-  Object.entries(PERMISSIONS).forEach(([moduleId, config]) => {
-    const element = document.getElementById(moduleId);
-    if (!element) return;
+function initRolePermissions(userRol) {
+  if (!userRol) {
+    console.warn('⚠️ initRolePermissions llamado sin userRol');
+    return;
+  }
 
-    const hasAccess = config.roles.includes(userRole);
+  Object.entries(PERMISSIONS).forEach(([btnId, config]) => {
+    const btn = document.getElementById(btnId);
+    if (!btn) {
+      console.warn(`⚠️ Botón con id="${btnId}" no encontrado en el DOM.`);
+      return;
+    }
 
-    if (hasAccess) {
-      // ✅ Acceso permitido: habilitar y asignar acción
-      element.removeAttribute('disabled');
-      element.style.opacity = '1';
-      element.style.cursor = 'pointer';
-      element.onclick = config.action;
-      element.removeAttribute('title'); // limpia tooltip anterior
+    const hasAccess = config.roles.includes(userRol);
+
+    if (hasAccess && typeof config.action === 'function') {
+      // ✅ Acceso permitido
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.removeAttribute('disabled');
+      btn.removeAttribute('title');
+      // Remueve onclick anterior (por si acaso)
+      btn.onclick = null;
+      // Asigna nueva acción
+      btn.addEventListener('click', config.action, { once: false });
+      // Añade efecto hover visual si no estaba
+      btn.classList.add('module-card'); // asegura clases de estilo
     } else {
-      // ❌ Acceso restringido: deshabilitar + tooltip
-      element.setAttribute('disabled', 'true');
-      element.style.opacity = '0.5';
-      element.style.cursor = 'not-allowed';
-      element.onclick = () => alert(config.tooltip || '🔒 Acceso restringido');
-      if (config.tooltip) {
-        element.title = config.tooltip;
-      }
+      // ❌ Acceso restringido
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'not-allowed';
+      btn.setAttribute('disabled', 'true');
+      btn.title = config.tooltip || '🔒 Acceso restringido';
+      // Evita redirección accidental
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (config.tooltip) alert(config.tooltip);
+      };
     }
   });
 }
 
-// ✅ Exponer globalmente (requerido por onclick inline y otros scripts)
+// ✅ Exponer globalmente para que index.html pueda llamarla
 window.initRolePermissions = initRolePermissions;
+
+// ✅ Opcional: autodetección de rol desde el DOM (si no lo pasas explícitamente)
+window.detectAndApplyPermissions = function() {
+  const rolSpan = document.getElementById('userRol');
+  const userRol = rolSpan?.getAttribute('data-role') || 'consultor';
+  initRolePermissions(userRol);
+};
