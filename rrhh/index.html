@@ -393,6 +393,31 @@
         location.href = '../index.html';
       }
     });
+    // ✅ Acceso al Formulario de Pie de Fuerza (solo admin/moderador)
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('btnPieFuerzaFormulario');
+  if (!btn) return;
+
+  const userRolSpan = document.getElementById('userRol');
+  const rol = userRolSpan?.getAttribute('data-role') || 'consultor';
+
+  if (['admin', 'moderador'].includes(rol)) {
+    // ✅ Permitido: redirige directamente
+    btn.onclick = () => location.href = 'pie-de-fuerza.html';
+  } else {
+    // ❌ Restringido: solo tooltip rojo, sin alert
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+    btn.title = ' ⓘ Solo RRHH autorizado';
+    const titleEl = btn.querySelector('.module-title');
+    if (titleEl && !titleEl.querySelector('.tooltip-i')) {
+      const tooltip = document.createElement('span');
+      tooltip.className = 'tooltip-i';
+      tooltip.innerHTML = ' <span style="color:#c62828; font-size:14px; cursor:help;" title=" ⓘ Solo RRHH autorizado">ⓘ</span>';
+      titleEl.appendChild(tooltip);
+    }
+  }
+});
   </script>
 </body>
 </html>
