@@ -25,15 +25,10 @@ const PERMISSIONS = {
     tooltip: '🔒 Solo Administrador'
   },
 
-  // ✅ Formulario de Pie de Fuerza — accesible para los 3 roles
-  'btnPieFuerzaFormulario': {
-    roles: ['admin', 'moderador', 'consultor'],
-    action: () => alert('Formulario de Pie de Fuerza (pendiente de implementar)'),
-    // Cuando crees el archivo, cambia por:
-    // action: () => window.location.href = 'formulario-pie-fuerza.html'
-    tooltip: ''
-  }
-};
+'btnPieFuerzaFormulario': {
+  roles: ['admin', 'moderador', 'consultor'],
+  action: () => window.location.href = 'pie-de-fuerza.html'
+}
 
 // ▼▼▼ NO EDITAR A PARTIR DE AQUÍ ▼▼▼
 function initRolePermissions(userRol) {
