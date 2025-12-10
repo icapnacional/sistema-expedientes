@@ -43,11 +43,10 @@ const PERMISSIONS = {
     tooltip: ' ⓘ RRHH autorizado'
   },
 
-  // 🔹 Pie de Fuerza
-  'btnPieFuerzaFormulario': {
-    roles: ['admin', 'moderador'],
-    action: () => window.location.href = 'pie-de-fuerza.html',
-    tooltip: ' ⓘ RRHH autorizado'
+// 🔹 Pie de Fuerza (✅ agregado ahora)
+  'btnPieFuerzaListado': {
+    roles: ['admin', 'moderador', 'consultor'],
+    action: () => window.location.href = 'pie-de-fuerza.html'
   },
   'btnPieFuerzaAsignaciones': {
     roles: ['admin', 'moderador'],
