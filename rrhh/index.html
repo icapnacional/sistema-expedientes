@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Recursos Humanos | ICAP Nacional - PNB</title>
+  <title>Auditoría de Personal | ICAP Nacional - PNB</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -16,7 +16,7 @@
       padding: 20px;
     }
     .container {
-      max-width: 1200px;
+      max-width: 1000px;
       margin: 0 auto;
     }
     .header {
@@ -57,33 +57,23 @@
     }
     .tabs-header {
       display: flex;
-      flex-wrap: wrap;
       gap: 8px;
       margin-bottom: 24px;
       border-bottom: 2px solid #f0f0f0;
       padding-bottom: 16px;
     }
     .tab-btn {
-      background: #f8f9fa;
+      background: #722F37;
+      color: white;
       border: none;
       border-radius: 12px 12px 0 0;
       padding: 12px 24px;
       font-size: 15px;
       font-weight: 600;
-      color: #555;
       cursor: pointer;
-      transition: all 0.3s ease;
       position: relative;
     }
-    .tab-btn:hover {
-      background: #f0f0f0;
-      color: #722F37;
-    }
-    .tab-btn.active {
-      background: #722F37;
-      color: white;
-    }
-    .tab-btn.active::after {
+    .tab-btn::after {
       content: '';
       position: absolute;
       bottom: -2px;
@@ -94,17 +84,6 @@
     }
     .tabs-content {
       min-height: 400px;
-    }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
-      animation: fadeIn 0.4s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
     }
     .module-grid {
       display: grid;
@@ -123,11 +102,15 @@
       transition: all 0.3s ease;
       height: 100%;
     }
-    .module-card:hover {
+    .module-card:hover:not([disabled]) {
       transform: translateY(-4px);
       box-shadow: 0 8px 20px rgba(114, 47, 55, 0.15);
       border-color: #722F37;
       background-color: #fdf7f7;
+    }
+    .module-card[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
     .module-icon {
       font-size: 36px;
@@ -163,22 +146,6 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .btn:hover {
-      background-color: #5e262d;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(114, 47, 55, 0.3);
-    }
-    .btn-outline {
-      background: transparent;
-      border: 2px solid #722F37;
-      color: #722F37;
-    }
-    .btn-outline:hover {
-      background: #fdf7f7;
     }
     .breadcrumb {
       background: #f8f9fa;
@@ -193,23 +160,7 @@
       text-decoration: none;
       font-weight: 600;
     }
-    .breadcrumb a:hover {
-      text-decoration: underline;
-    }
-    .breadcrumb span {
-      margin: 0 8px;
-      color: #888;
-    }
-    .hidden { display: none !important; }
     @media (max-width: 768px) {
-      .tabs-header {
-        flex-direction: column;
-      }
-      .tab-btn {
-        width: 100%;
-        border-radius: 10px;
-        margin-bottom: 8px;
-      }
       .module-grid {
         grid-template-columns: 1fr;
       }
@@ -219,12 +170,12 @@
 <body>
   <div class="container">
     <div class="breadcrumb">
-      <a href="../index.html">Inicio</a> <span>›</span> <strong>Recursos Humanos</strong>
+      <a href="../index.html">Inicio</a> <span>›</span> <strong>Auditoría de Personal</strong>
     </div>
     <div class="header">
       <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
       <h1>Inspectoria para el Control de la Actuación Policial</h1>
-      <div class="subtitle">• Módulo de Recursos Humanos •</div>
+      <div class="subtitle">• Módulo de Auditoría de Personal •</div>
     </div>
     <div class="user-info">
       <strong>Usuario:</strong> <span id="userEmail">—</span> |
@@ -233,346 +184,104 @@
     </div>
     <div class="tabs-container">
       <div class="tabs-header">
-        <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
-        <button class="tab-btn" data-tab="auditoria">📋 Auditoría Nacional</button>
-        <button class="tab-btn" data-tab="rrhh-icap">👥 RRHH ICAP</button>
-        <button class="tab-btn" data-tab="pie-fuerza">👥 Pie de Fuerza</button>
-        <button class="tab-btn" data-tab="orden-servicio">📄 Orden de Servicio</button>
-        <button class="tab-btn" data-tab="reposo">🛏️ Reposo</button>
-        <button class="tab-btn" data-tab="vacaciones">🌴 Vacaciones</button>
-        <button class="tab-btn" data-tab="cambio-servicios">🔄 Cambio de Servicios</button>
-        <button class="tab-btn" data-tab="documentos">📁 Documentos</button>
+        <button class="tab-btn active">📋 Auditoría de Personal</button>
       </div>
       <div class="tabs-content">
-        <!-- Dashboard Tab -->
-        <div id="dashboard" class="tab-content active">
-          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">📊 Dashboard de Recursos Humanos</h2>
-          <p style="color: #555; margin-bottom: 24px;">
-            Seleccione una pestaña superior para comenzar.
-          </p>
-        </div>
-        <!-- Auditoría Nacional Tab -->
-        <div id="auditoria" class="tab-content">
-          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">📋 Auditoría Nacional</h2>
-          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
-            Sistema de auditoría para seguimiento y control de personal a nivel nacional.
-          </p>
-          <div class="module-grid">
-            <div class="module-card" onclick="location.href='auditoria-nacional.html'">
-              <div class="module-icon">🔍</div>
-              <div class="module-title">Consulta</div>
-              <div class="module-desc">Genera y visualiza reportes de auditoría por región, estado o nacional.</div>
-            </div>
-            <div class="module-card" id="btnRegistro">
-              <div class="module-icon">📝</div>
-              <div class="module-title">Registro</div>
-              <div class="module-desc">Registrar nuevo personal auditado (solo RRHH autorizado).</div>
-            </div>
-            <div class="module-card" id="btnModificar" style="display: none;">
-              <div class="module-icon">✏️</div>
-              <div class="module-title">Modificar</div>
-              <div class="module-desc">Editar datos de personal existente (solo admin/moderador).</div>
-            </div>
-            <div class="module-card" id="btnHistorialLogs">
-              <div class="module-icon">📜</div>
-              <div class="module-title">Historial</div>
-              <div class="module-desc">Registro de actividades en RRHH (solo Administrador).</div>
-            </div>
+        <div class="module-grid">
+          <div class="module-card" id="btnConsulta">
+            <div class="module-icon">🔍</div>
+            <div class="module-title">Consulta</div>
+            <div class="module-desc">Visualiza datos del personal auditado.</div>
           </div>
-        </div>
-        <!-- RRHH ICAP Tab -->
-        <div id="rrhh-icap" class="tab-content">
-          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">👥 RRHH ICAP</h2>
-          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
-            Gestión de recursos humanos específicos para la ICAP Nacional.
-          </p>
-          <div class="module-grid">
-            <div class="module-card" onclick="location.href='rrhh-icap.html'">
-              <div class="module-icon">🎯</div>
-              <div class="module-title">Objetivos</div>
-              <div class="module-desc">Establece y realiza seguimiento a objetivos institucionales.</div>
-            </div>
-            <div class="module-card" onclick="location.href='rrhh-icap.html#desempeno'">
-              <div class="module-icon">📈</div>
-              <div class="module-title">Desempeño</div>
-              <div class="module-desc">Evalúa el desempeño del personal ICAP.</div>
-            </div>
-            <div class="module-card" onclick="location.href='rrhh-icap.html#capacitacion'">
-              <div class="module-icon">🎓</div>
-              <div class="module-title">Capacitación</div>
-              <div class="module-desc">Gestiona planes de formación para el personal.</div>
-            </div>
+          <div class="module-card" id="btnRegistro">
+            <div class="module-icon">📝</div>
+            <div class="module-title">Registro</div>
+            <div class="module-desc">Registra nuevo personal (RRHH autorizado).</div>
           </div>
-        </div>
-        <!-- Pie de Fuerza Tab -->
-        <div id="pie-fuerza" class="tab-content">
-          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">👥 Pie de Fuerza</h2>
-          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
-            Control y gestión del personal activo en la institución.
-          </p>
-          <div class="module-grid">
-            <div class="module-card" onclick="location.href='pie-de-fuerza.html'">
-              <div class="module-icon">👨‍✈️</div>
-              <div class="module-title">Personal Activo</div>
-              <div class="module-desc">Listado del personal en servicio activo.</div>
-            </div>
-            <div class="module-card" onclick="location.href='pie-de-fuerza.html#asignaciones'">
-              <div class="module-icon">📍</div>
-              <div class="module-title">Asignaciones</div>
-              <div class="module-desc">Gestiona asignaciones a unidades.</div>
-            </div>
-            <div class="module-card" onclick="location.href='pie-de-fuerza.html#movimientos'">
-              <div class="module-icon">🔄</div>
-              <div class="module-title">Movimientos</div>
-              <div class="module-desc">Registra movimientos entre unidades.</div>
-            </div>
+          <div class="module-card" id="btnModificar">
+            <div class="module-icon">✏️</div>
+            <div class="module-title">Modificar</div>
+            <div class="module-desc">Edita información de personal existente.</div>
           </div>
-        </div>
-        <!-- Orden de Servicio Tab -->
-        <div id="orden-servicio" class="tab-content">
-          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">📄 Orden de Servicio</h2>
-          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
-            Genera y gestiona órdenes de servicio.
-          </p>
-          <div class="module-grid">
-            <div class="module-card" onclick="location.href='orden-servicio.html'">
-              <div class="module-icon">➕</div>
-              <div class="module-title">Nueva Orden</div>
-              <div class="module-desc">Crea nuevas órdenes de servicio.</div>
-            </div>
-            <div class="module-card" onclick="location.href='orden-servicio.html#seguimiento'">
-              <div class="module-icon">🔍</div>
-              <div class="module-title">Seguimiento</div>
-              <div class="module-desc">Realiza seguimiento a órdenes.</div>
-            </div>
-            <div class="module-card" onclick="location.href='orden-servicio.html#reportes'">
-              <div class="module-icon">📉</div>
-              <div class="module-title">Reportes</div>
-              <div class="module-desc">Genera reportes estadísticos.</div>
-            </div>
-          </div>
-        </div>
-        <!-- Reposo Tab -->
-        <div id="reposo" class="tab-content">
-          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">🛏️ Reposo</h2>
-          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
-            Gestión de licencias por reposo médico.
-          </p>
-          <div class="module-grid">
-            <div class="module-card" onclick="location.href='reposo.html'">
-              <div class="module-icon">📝</div>
-              <div class="module-title">Nueva Solicitud</div>
-              <div class="module-desc">Registra solicitudes con justificantes.</div>
-            </div>
-            <div class="module-card" onclick="location.href='reposo.html#aprobadas'">
-              <div class="module-icon">✅</div>
-              <div class="module-title">Aprobadas</div>
-              <div class="module-desc">Consulta solicitudes en curso.</div>
-            </div>
-            <div class="module-card" onclick="location.href='reposo.html#registro'">
-              <div class="module-icon">📋</div>
-              <div class="module-title">Registro Histórico</div>
-              <div class="module-desc">Accede al historial de reposos.</div>
-            </div>
-          </div>
-        </div>
-        <!-- Vacaciones Tab -->
-        <div id="vacaciones" class="tab-content">
-          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">🌴 Vacaciones</h2>
-          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
-            Gestión de períodos vacacionales.
-          </p>
-          <div class="module-grid">
-            <div class="module-card" onclick="location.href='vacaciones.html'">
-              <div class="module-icon">🏖️</div>
-              <div class="module-title">Planificación</div>
-              <div class="module-desc">Planifica vacaciones anuales.</div>
-            </div>
-            <div class="module-card" onclick="location.href='vacaciones.html#solicitudes'">
-              <div class="module-icon">📬</div>
-              <div class="module-title">Solicitudes</div>
-              <div class="module-desc">Gestiona solicitudes recibidas.</div>
-            </div>
-            <div class="module-card" onclick="location.href='vacaciones.html#calendario'">
-              <div class="module-icon">📅</div>
-              <div class="module-title">Calendario</div>
-              <div class="module-desc">Visualiza el calendario institucional.</div>
-            </div>
-          </div>
-        </div>
-        <!-- Cambio de Servicios Tab -->
-        <div id="cambio-servicios" class="tab-content">
-          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">🔄 Cambio de Servicios</h2>
-          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
-            Gestión de solicitudes de cambio de asignación.
-          </p>
-          <div class="module-grid">
-            <div class="module-card" onclick="location.href='cambio-servicios.html'">
-              <div class="module-icon">🔄</div>
-              <div class="module-title">Nueva Solicitud</div>
-              <div class="module-desc">Registra solicitudes de cambio.</div>
-            </div>
-            <div class="module-card" onclick="location.href='cambio-servicios.html#aprobadas'">
-              <div class="module-icon">🔍</div>
-              <div class="module-title">En Proceso</div>
-              <div class="module-desc">Gestiona solicitudes pendientes.</div>
-            </div>
-            <div class="module-card" onclick="location.href='cambio-servicios.html#historial'">
-              <div class="module-icon">📚</div>
-              <div class="module-title">Historial</div>
-              <div class="module-desc">Consulta cambios realizados.</div>
-            </div>
-          </div>
-        </div>
-        <!-- Documentos Tab -->
-        <div id="documentos" class="tab-content">
-          <h2 style="font-size: 22px; margin-bottom: 20px; color: #2d2d2d;">📁 Documentos</h2>
-          <p style="margin-bottom: 24px; color: #555; line-height: 1.6;">
-            Repositorio centralizado de documentos.
-          </p>
-          <div class="module-grid">
-            <div class="module-card" onclick="location.href='documentos.html#formularios'">
-              <div class="module-icon">📝</div>
-              <div class="module-title">Formularios</div>
-              <div class="module-desc">Formularios oficiales para trámites.</div>
-            </div>
-            <div class="module-card" onclick="location.href='documentos.html#manuales'">
-              <div class="module-icon">📖</div>
-              <div class="module-title">Manuales</div>
-              <div class="module-desc">Manuales de procedimientos.</div>
-            </div>
-            <div class="module-card" onclick="location.href='documentos.html#normativas'">
-              <div class="module-icon">⚖️</div>
-              <div class="module-title">Normativas</div>
-              <div class="module-desc">Normativas y resoluciones vigentes.</div>
-            </div>
+          <div class="module-card" id="btnHistorial">
+            <div class="module-icon">📜</div>
+            <div class="module-title">Historial</div>
+            <div class="module-desc">Registros de actividades (solo Admin).</div>
           </div>
         </div>
       </div>
       <div class="actions-bar">
-        <button class="btn btn-outline" onclick="location.href='../index.html'">← Volver al Panel Principal</button>
-        <button class="btn btn-logout" id="logoutBtn">Cerrar Sesión</button>
+        <button class="btn" onclick="location.href='../index.html'">← Volver</button>
+        <button class="btn" id="logoutBtn">Cerrar Sesión</button>
       </div>
     </div>
     <footer style="text-align:center; padding:20px; color:#666; font-size:14px; margin-top:20px; border-top:1px solid #eee;">
-      <p>© Desarrollado por OTIC ZULIA — Plataforma institucional de la ICAP Nacional del Cuerpo de Policía Nacional Bolivariana</p>
-      <p>Información: 0424-6962840 / 0412-2714179</p>
+      <p>© Desarrollado por OTIC ZULIA — ICAP Nacional - PNB</p>
     </footer>
   </div>
+
+  <!-- 🔹 Carga del sistema de roles externo -->
+  <script src="role-permissions.js"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      // ✅ Configuración de Supabase
       const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
       const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
       const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+
       const userEmailSpan = document.getElementById('userEmail');
       const userEstadoSpan = document.getElementById('userEstado');
       const userRolSpan = document.getElementById('userRol');
       const logoutBtn = document.getElementById('logoutBtn');
-      // ✅ Restaurar pestaña activa
-      const savedTab = localStorage.getItem('activeRrhhTab');
-      if (savedTab) switchTab(savedTab);
+
       try {
-        const {  { session }, error: sessionError } = await client.auth.getSession();
+        const { data: { session }, error: sessionError } = await client.auth.getSession();
         if (sessionError || !session) {
           window.location.href = '../index.html';
           return;
         }
-        const {  perfil, error: perfilError } = await client
+
+        const { data: perfil, error: perfilError } = await client
           .from('perfiles')
-          .select('rol, estados_asignados, email, modulos_asignados')
+          .select('rol, estados_asignados, email')
           .eq('id', session.user.id)
           .single();
+
         if (perfilError || !perfil) {
           window.location.href = '../index.html';
           return;
         }
+
         const userRol = perfil.rol || 'consultor';
-        if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
-          alert('🔒 Acceso denegado: no tienes permiso para Recursos Humanos.');
-          window.location.href = '../index.html';
-          return;
-        }
         const userEmail = perfil.email || session.user.email;
         const estadosTxt = perfil.estados_asignados?.join(', ') || '—';
         const rolText = userRol === 'admin' ? 'Administrador' : userRol === 'moderador' ? 'Moderador' : 'Consultor';
+
         userEmailSpan.textContent = userEmail;
         userEstadoSpan.textContent = estadosTxt;
         userRolSpan.textContent = rolText;
         userRolSpan.setAttribute('data-role', userRol);
-        // ✅ Tooltip rojo para Administrador
+
+        // ✅ Tooltip rojo solo para Administrador
         if (userRol === 'admin') {
           userRolSpan.style.fontWeight = '600';
-          userRolSpan.innerHTML += ' ⓘ';
           userRolSpan.title = 'Administrador';
         }
-        // ✅ Eventos para pestañas
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const tabId = btn.getAttribute('data-tab');
-            switchTab(tabId);
-          });
-        });
-        // ✅ Inicializar visibilidad de botones en Auditoría
-        initAuditoriaButtons(userRol);
+
+        // ✅ Inicializa permisos según rol
+        initRolePermissions(userRol);
+
         // ✅ Cierre de sesión
         logoutBtn.addEventListener('click', async () => {
           await client.auth.signOut();
           window.location.href = '../index.html';
         });
+
       } catch (err) {
-        console.error('Error en RRHH:', err);
+        console.error('Error:', err);
         window.location.href = '../index.html';
       }
     });
-
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      localStorage.setItem('activeRrhhTab', tabId);
-    }
-
-    function initAuditoriaButtons(userRol) {
-      const btnRegistro = document.getElementById('btnRegistro');
-      const btnModificar = document.getElementById('btnModificar');
-      const btnHistorial = document.getElementById('btnHistorialLogs');
-
-      // ✅ Botón Registro: admin/moderador pueden acceder
-      if (btnRegistro) {
-        if (userRol === 'admin' || userRol === 'moderador') {
-          btnRegistro.onclick = () => location.href = 'registro.html';
-        } else {
-          btnRegistro.style.opacity = '0.5';
-          btnRegistro.style.cursor = 'not-allowed';
-          btnRegistro.title = '🔒 Solo admin/moderador';
-          btnRegistro.onclick = () => alert('🔒 Solo administradores y moderadores pueden registrar.');
-        }
-      }
-
-      // ✅ Botón Modificar: SOLO admin/moderador → visible y funcional
-      if (btnModificar) {
-        if (userRol === 'admin' || userRol === 'moderador') {
-          btnModificar.style.display = 'block';
-          btnModificar.onclick = () => location.href = 'modificar.html';
-        } else {
-          btnModificar.style.display = 'none';
-        }
-      }
-
-      // ✅ Botón Historial: SOLO admin
-      if (btnHistorial) {
-        if (userRol === 'admin') {
-          btnHistorial.onclick = () => location.href = 'historial-logs.html';
-        } else {
-          btnHistorial.style.opacity = '0.5';
-          btnHistorial.style.cursor = 'not-allowed';
-          btnHistorial.title = '🔒 Solo el Administrador puede acceder';
-          btnHistorial.onclick = () => alert('🔒 Acceso restringido: solo el Administrador puede ver el historial.');
-        }
-      }
-    }
   </script>
 </body>
 </html>
