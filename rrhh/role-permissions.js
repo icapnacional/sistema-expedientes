@@ -6,41 +6,41 @@
 const PERMISSIONS = {
   // 🔹 Auditoría Nacional
   'btnAuditoriaConsulta': {
-    roles: ['admin', 'moderador', 'consultor', '1'],
+    roles: ['admin', 'moderador', 'consultor'],
     action: () => window.location.href = 'consulta.html'
   },
   'btnAuditoriaRegistro': {
-    roles: ['admin', 'moderador', '1'],
+    roles: ['admin', 'moderador'],
     action: () => window.location.href = 'registro.html',
     tooltip: '🔒 Solo RRHH autorizado'
   },
   'btnAuditoriaModificar': {
-    roles: ['admin', 'moderador', '1'],
+    roles: ['admin', 'moderador'],
     action: () => window.location.href = 'modificar.html',
     tooltip: '🔒 Solo RRHH autorizado'
   },
   'btnAuditoriaHistorial': {
-    roles: ['admin', '1'],
+    roles: ['admin'],
     action: () => window.location.href = 'historial-logs.html',
     tooltip: '🔒 Solo Administrador'
   },
-  
-// 🔹 Pie de Fuerza
-'btnPieFuerzaListado': {
-  roles: ['admin'],
-  action: () => window.location.href = 'pie-de-fuerza.html',
-  tooltip: '🔒 Solo Administrador'
-},
-'btnPieFuerzaAsignaciones': {
-  roles: ['admin'],
-  action: () => alert('Módulo en desarrollo'),
-  tooltip: '🔒 Solo Administrador'
-},
-'btnPieFuerzaMovimientos': {
-  roles: ['admin'],
-  action: () => alert('Módulo en desarrollo'),
-  tooltip: '🔒 Solo Administrador'
-}
+
+  // 🔹 Pie de Fuerza — ✅ Agregado ahora
+  'btnPieFuerzaListado': {
+    roles: ['admin'],
+    action: () => window.location.href = 'pie-de-fuerza.html',
+    tooltip: '🔒 Solo Administrador'
+  },
+  'btnPieFuerzaAsignaciones': {
+    roles: ['admin'],
+    action: () => alert('Módulo de Asignaciones en desarrollo'),
+    tooltip: '🔒 Solo Administrador'
+  },
+  'btnPieFuerzaMovimientos': {
+    roles: ['admin'],
+    action: () => alert('Módulo de Movimientos en desarrollo'),
+    tooltip: '🔒 Solo Administrador'
+  }
 };
 
 // ▼▼▼ NO EDITAR A PARTIR DE AQUÍ ▼▼▼
