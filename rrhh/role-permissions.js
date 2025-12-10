@@ -25,8 +25,10 @@ const PERMISSIONS = {
     tooltip: '🔒 Solo Administrador'
   },
 
-// ✅ Pie de Fuerza: Formulario → accesible para todos
-  disableModule('btnPieFuerzaFormulario', false); // nunca deshabilitado
+  // ✅ Formulario de Pie de Fuerza: accesible para admin, moderador y consultor
+  const formBtn = document.getElementById('btnPieFuerzaFormulario');
+  if (formBtn) formBtn.removeAttribute('disabled');
+}
 
 // ▼▼▼ NO EDITAR A PARTIR DE AQUÍ ▼▼▼
 function initRolePermissions(userRol) {
