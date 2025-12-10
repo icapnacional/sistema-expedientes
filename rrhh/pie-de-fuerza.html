@@ -209,24 +209,31 @@
 
     (async () => {
       try {
-        // ✅ Autenticación
-        const {  { session }, error: sessionErr } = await client.auth.getSession();
-        if (sessionErr || !session) return window.location.href = '../index.html';
+  const { data: { session } = {}, error: sessionErr } = await client.auth.getSession();
+  
+  if (sessionErr || !session) {
+    console.error('Error de sesión:', sessionErr);
+    return window.location.href = '../index.html';
+  }
 
-        // ✅ Perfil + validación de acceso
-        const {  perfil, error: perfilErr } = await client
-          .from('perfiles')
-          .select('email, estados_asignados, rol, modulos_asignados')
-          .eq('id', session.user.id)
-          .single();
+  const { data: perfil, error: perfilErr } = await client
+    .from('perfiles')
+    .select('email, estados_asignados, rol, modulos_asignados')
+    .eq('id', session.user.id)
+    .single();
 
-        if (perfilErr || !perfil) return window.location.href = '../index.html';
+  if (perfilErr || !perfil) {
+    return window.location.href = '../index.html';
+  }
 
-        const userRol = perfil.rol || 'consultor';
-        if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
-          alert('🔒 Acceso denegado: solo RRHH autorizado.');
-          return window.location.href = '../index.html';
-        }
+  // ✅ Ahora sí puedes usar `session` y `perfil` con seguridad
+  const userRol = perfil.rol || 'consultor';
+  // ... resto del código
+
+} catch (err) {
+  console.error('Error crítico:', err);
+  window.location.href = '../index.html';
+}
 
         // ✅ Mostrar datos del usuario
         document.getElementById('userEmail').textContent = perfil.email || '—';
