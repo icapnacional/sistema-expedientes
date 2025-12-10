@@ -43,22 +43,22 @@ const PERMISSIONS = {
     tooltip: ' ⓘ RRHH autorizado'
   },
 
-// 🔹 Pie de Fuerza (✅ agregado ahora)
+  // 🔹 ✅ Pie de Fuerza — NUEVO (solo admin y rol '1')
   'btnPieFuerzaListado': {
-    roles: ['admin', 'moderador', 'consultor'],
+    roles: ['admin', '1'],
     action: () => window.location.href = 'pie-de-fuerza.html'
   },
   'btnPieFuerzaAsignaciones': {
-    roles: ['admin', 'moderador'],
-    action: () => window.location.href = 'pie-de-fuerza.html#asignaciones',
-    tooltip: ' ⓘ RRHH autorizado'
+    roles: ['admin', '1'],
+    action: () => alert('📌 Módulo en desarrollo'),
+    tooltip: '🔒 Solo RRHH autorizado'
   },
   'btnPieFuerzaMovimientos': {
-    roles: ['admin', 'moderador'],
-    action: () => window.location.href = 'pie-de-fuerza.html#movimientos',
-    tooltip: ' ⓘ RRHH autorizado'
-  },
-
+    roles: ['admin', '1'],
+    action: () => alert('🔄 Módulo en desarrollo'),
+    tooltip: '🔒 Solo RRHH autorizado'
+  }
+};
   // 🔹 Orden de Servicio
   'btnOrdenNueva': {
     roles: ['admin', 'moderador'],
