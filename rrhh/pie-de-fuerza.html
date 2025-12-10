@@ -413,9 +413,9 @@
         .select('email, rol, estados_asignados, modulos_asignados')
         .eq('id', session.user.id)
         .single();
-      if (!perfil || !perfil.modulos_asignados?.includes('rh')) {
-        alert('🔒 Acceso denegado: no tienes permiso para Pie de Fuerza.');
-        return window.location.href = 'index.html';
+     if (!perfil || (perfil.rol !== 'admin' && !perfil.modulos_asignados?.includes('rh'))) {
+  alert('🔒 Acceso denegado: solo RRHH autorizado o Administrador pueden acceder.');
+  return window.location.href = 'index.html';
       }
       document.getElementById('userEmail').textContent = perfil.email;
       document.getElementById('userEstado').textContent = perfil.estados_asignados?.join(', ') || '—';
