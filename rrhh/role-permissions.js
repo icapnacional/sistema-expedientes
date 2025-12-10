@@ -25,21 +25,22 @@ const PERMISSIONS = {
     tooltip: '🔒 Solo Administrador'
   },
   
-  // 🔹 Pie de Fuerza (✅ agregado)
-  'btnPieFuerzaListado': {
-    roles: ['admin', '1'],
-    action: () => window.location.href = 'pie-de-fuerza.html'
-  },
-  'btnPieFuerzaAsignaciones': {
-    roles: ['admin', '1'],
-    action: () => alert('📌 Módulo en desarrollo: Asignaciones'),
-    tooltip: '🔒 Solo RRHH autorizado'
-  },
-  'btnPieFuerzaMovimientos': {
-    roles: ['admin', '1'],
-    action: () => alert('🔄 Módulo en desarrollo: Movimientos'),
-    tooltip: '🔒 Solo RRHH autorizado'
-  }
+// 🔹 Pie de Fuerza
+'btnPieFuerzaListado': {
+  roles: ['admin'],
+  action: () => window.location.href = 'pie-de-fuerza.html',
+  tooltip: '🔒 Solo Administrador'
+},
+'btnPieFuerzaAsignaciones': {
+  roles: ['admin'],
+  action: () => alert('Módulo en desarrollo'),
+  tooltip: '🔒 Solo Administrador'
+},
+'btnPieFuerzaMovimientos': {
+  roles: ['admin'],
+  action: () => alert('Módulo en desarrollo'),
+  tooltip: '🔒 Solo Administrador'
+}
 };
 
 // ▼▼▼ NO EDITAR A PARTIR DE AQUÍ ▼▼▼
