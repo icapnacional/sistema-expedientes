@@ -16,28 +16,14 @@
       min-height: 100vh;
     }
     .container { max-width: 1000px; margin: 0 auto; }
-    .header img { width: 90px; margin-bottom: 16px; }
-    .header h1 { font-size: 24px; font-weight: 700; color: #2d2d2d; margin-bottom: 8px; }
-    .subtitle { font-size: 16px; color: #722F37; font-weight: 600; }
     .user-info {
       background: white;
-      border-radius: 12px;
       padding: 16px;
+      border-radius: 12px;
       margin-bottom: 24px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.08);
       border: 1px solid #eee;
     }
-    .breadcrumb {
-      background: #f8f9fa;
-      border-radius: 12px;
-      padding: 12px 20px;
-      margin-bottom: 24px;
-      font-size: 14px;
-      color: #555;
-    }
-    .breadcrumb a { color: #722F37; font-weight: 600; text-decoration: none; }
-    .breadcrumb span { margin: 0 8px; color: #888; }
-
     .card {
       background: white;
       border-radius: 12px;
@@ -45,66 +31,19 @@
       margin-bottom: 24px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 20px;
-    }
-    .form-group { margin-bottom: 16px; }
-    label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #444; }
-    input, select, textarea {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 15px;
-      font-family: inherit;
-    }
-    input:read-only { background-color: #f9f9f9; cursor: not-allowed; }
     .btn {
-      background-color: #722F37;
+      background: #722F37;
       color: white;
       border: none;
       border-radius: 12px;
       padding: 14px 28px;
       font-size: 16px;
-      font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s;
     }
-    .btn:hover { background-color: #5e262d; transform: translateY(-2px); }
-    .btn-outline {
-      background: transparent;
-      border: 2px solid #722F37;
-      color: #722F37;
-    }
-    .btn-outline:hover { background: #fdf7f7; }
-    .alert {
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      text-align: center;
-      font-weight: 500;
-    }
-    .alert.success { background: #e8f5e9; color: #2e7d32; }
-    .alert.error { background: #ffebee; color: #c62828; }
-    .alert.info { background: #e3f2fd; color: #1565c0; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="breadcrumb">
-      <a href="../index.html">Inicio</a> <span>›</span>
-      <a href="index.html">RRHH</a> <span>›</span>
-      <strong>Pie de Fuerza</strong>
-    </div>
-
-    <div class="header" style="text-align:center; margin-bottom:24px;">
-      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
-      <h1>👥 Pie de Fuerza — Censo Familiar</h1>
-      <div class="subtitle">• Registro de núcleo familiar del funcionario •</div>
-    </div>
-
     <div class="user-info">
       <strong>Usuario:</strong> <span id="userEmail">—</span> |
       <strong>Estado asignado:</strong> <span id="userEstado">—</span> |
@@ -112,84 +51,31 @@
     </div>
 
     <div class="card">
-      <h2>🔍 Buscar Funcionario por Cédula</h2>
-      <div class="form-grid">
-        <div class="form-group">
+      <h2>👥 Pie de Fuerza — Censo Familiar</h2>
+      <div class="form-grid" style="display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end;">
+        <div>
           <label for="searchCedula">Cédula del Funcionario</label>
-          <input type="text" id="searchCedula" inputmode="numeric" maxlength="8" placeholder="Ej: 25653412" autocomplete="off">
+          <input type="text" id="searchCedula" inputmode="numeric" maxlength="8" placeholder="Ej: 25653412">
         </div>
-        <div class="form-group" style="align-self:end;">
-          <button id="btnBuscar" class="btn" style="width:100%;">Buscar</button>
-        </div>
+        <button id="btnBuscar" class="btn">🔍 Buscar</button>
       </div>
-      <div id="searchMessage" class="alert" style="display:none;"></div>
+      <div id="message" style="margin-top:12px;display:none;padding:12px;border-radius:8px;"></div>
     </div>
 
-    <div id="pieFuerzaForm" class="card" style="display:none;">
-      <h2 id="nombreFuncionario">📋 Datos del Funcionario</h2>
-      <form id="form">
+    <div id="formSection" class="card" style="display:none;">
+      <h3 id="nombreFuncionario">📋 Datos del Funcionario</h3>
+      <form id="fichaForm">
         <input type="hidden" id="cedula_funcionario">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Nombre Completo</label>
-            <input type="text" id="nombre_completo" readonly>
-          </div>
-          <div class="form-group">
-            <label>Parentesco</label>
-            <select id="parentesco" required>
-              <option value="">— Seleccione —</option>
-              <option value="Cónyuge">Cónyuge</option>
-              <option value="Hijo(a)">Hijo(a)</option>
-              <option value="Padre/Madre">Padre/Madre</option>
-              <option value="Hermano(a)">Hermano(a)</option>
-              <option value="Otro">Otro</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Cédula Familiar</label>
-            <input type="text" id="cedula_familiar" maxlength="8">
-          </div>
-          <div class="form-group">
-            <label>Nacionalidad</label>
-            <select id="nacionalidad">
-              <option value="Venezolana">Venezolana</option>
-              <option value="Extranjera">Extranjera</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Estado Civil</label>
-            <select id="estado_civil">
-              <option value="Soltero(a)">Soltero(a)</option>
-              <option value="Casado(a)">Casado(a)</option>
-              <option value="Divorciado(a)">Divorciado(a)</option>
-              <option value="Viudo(a)">Viudo(a)</option>
-              <option value="Unión Estable">Unión Estable</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Sexo</label>
-            <select id="sexo">
-              <option value="Masculino">Masculino</option>
-              <option value="Femenino">Femenino</option>
-              <option value="Otro">Otro</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Edad</label>
-            <input type="number" id="edad" min="0" max="120">
-          </div>
-          <div class="form-group">
-            <label>Teléfono Móvil</label>
-            <input type="tel" id="telefono_movil">
-          </div>
-          <div class="form-group" style="grid-column:1/-1;">
-            <label>Dirección Habitación</label>
-            <textarea id="direccion_habitacion" rows="2"></textarea>
-          </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;">
+          <div><label>Parentesco</label><select id="parentesco" required><option value="">—</option><option>Cónyuge</option><option>Hijo(a)</option><option>Padre/Madre</option><option>Hermano(a)</option><option>Otro</option></select></div>
+          <div><label>Cédula Familiar</label><input type="text" id="cedula_familiar" maxlength="8"></div>
+          <div><label>Teléfono Móvil</label><input type="tel" id="telefono_movil"></div>
+          <div><label>Edad</label><input type="number" id="edad" min="0" max="120"></div>
+          <div><label>Dirección</label><textarea id="direccion_habitacion" rows="2"></textarea></div>
         </div>
-        <div style="text-align:right; margin-top:24px;">
-          <button type="button" class="btn btn-outline" onclick="document.getElementById('pieFuerzaForm').style.display='none'">Cancelar</button>
-          <button type="submit" class="btn">💾 Guardar Registro</button>
+        <div style="text-align:right;margin-top:20px;">
+          <button type="button" class="btn" style="background:#eee;color:#333;" onclick="document.getElementById('formSection').style.display='none'">Cancelar</button>
+          <button type="submit" class="btn">💾 Guardar</button>
         </div>
       </form>
     </div>
@@ -204,11 +90,9 @@
 
     (async () => {
       try {
-        // ✅ Autenticación
-        const {  { session }, error: sessionErr } = await client.auth.getSession();
+        const { data: { session }, error: sessionErr } = await client.auth.getSession();
         if (sessionErr || !session) return window.location.href = '../index.html';
 
-        // ✅ Perfil + validación de acceso
         const { data: perfil, error: perfilErr } = await client
           .from('perfiles')
           .select('email, estados_asignados, rol, modulos_asignados')
@@ -223,116 +107,93 @@
           return window.location.href = '../index.html';
         }
 
-        // ✅ Mostrar datos del usuario
         document.getElementById('userEmail').textContent = perfil.email || '—';
         userEstado = perfil.estados_asignados?.[0] || '—';
         document.getElementById('userEstado').textContent = userEstado;
-
         const rolText = userRol === 'admin' ? 'Administrador' :
                         userRol === 'moderador' ? 'Moderador' : 'Consultor';
         document.getElementById('userRol').textContent = rolText;
-
         if (userRol === 'admin') {
           document.getElementById('userRol').innerHTML += ' <span title="Administrador" style="color:#c62828;cursor:help;">ⓘ</span>';
         }
 
-        // ✅ Eventos
         document.getElementById('btnBuscar').onclick = buscarFuncionario;
-        document.getElementById('searchCedula').addEventListener('keypress', e => {
-          if (e.key === 'Enter') buscarFuncionario();
-        });
-        document.getElementById('form').onsubmit = guardarRegistro;
+        document.getElementById('searchCedula').onkeypress = e => e.key === 'Enter' && buscarFuncionario();
+        document.getElementById('fichaForm').onsubmit = guardarRegistro;
 
       } catch (err) {
-        console.error('Error:', err);
+        console.error('Auth error:', err);
         alert('❌ Error de autenticación.');
         window.location.href = '../index.html';
       }
     })();
 
     async function buscarFuncionario() {
-      const cedula = document.getElementById('searchCedula').value.trim();
-      if (!cedula || cedula.length !== 8 || !/^\d+$/.test(cedula)) {
-        showAlert('⚠️ Ingresa una cédula válida de 8 dígitos.', 'error');
+      const ced = document.getElementById('searchCedula').value.trim();
+      if (!ced || ced.length !== 8 || !/^\d+$/.test(ced)) {
+        showMessage('⚠️ Cédula inválida (8 dígitos).', 'error');
         return;
       }
 
-      showAlert('🔍 Buscando en auditoría...', 'info');
+      showMessage('🔍 Buscando...', 'info');
       try {
-        const {  auditoria, error } = await client
+        const { data, error } = await client
           .from('auditoria_personal')
           .select('*')
-          .eq('cedula', cedula)
+          .eq('cedula', ced)
           .single();
 
-        if (error || !auditoria) {
-          return showAlert(`❌ Cédula ${cedula} no encontrada.`, 'error');
-        }
+        if (error || !data) throw new Error(`Cédula ${ced} no encontrada.`);
 
-        // ✅ Rellenar
-        document.getElementById('cedula_funcionario').value = auditoria.cedula;
-        document.getElementById('nombre_completo').value = auditoria.apellidos_nombres || '—';
-        document.getElementById('edad').value = auditoria.edad_funcionario || '';
-        document.getElementById('telefono_movil').value = auditoria.telefono || '';
-        document.getElementById('direccion_habitacion').value = auditoria.direccion || '';
-        document.getElementById('sexo').value = auditoria.sexo || 'Masculino';
-        document.getElementById('nombreFuncionario').textContent = `📋 ${auditoria.apellidos_nombres || '—'} (C.I. ${cedula})`;
+        document.getElementById('cedula_funcionario').value = data.cedula;
+        document.getElementById('nombreFuncionario').textContent = `📋 ${data.apellidos_nombres || '—'} (C.I. ${ced})`;
+        document.getElementById('edad').value = data.edad_funcionario || '';
+        document.getElementById('telefono_movil').value = data.telefono || '';
+        document.getElementById('direccion_habitacion').value = data.direccion || '';
 
-        document.getElementById('pieFuerzaForm').style.display = 'block';
-        showAlert('✅ Funcionario encontrado. Completa los datos familiares.', 'success');
+        document.getElementById('formSection').style.display = 'block';
+        showMessage('✅ Funcionario encontrado. Complete los datos.', 'success');
 
       } catch (err) {
-        console.error('Search error:', err);
-        showAlert(`❌ Error: ${err.message}`, 'error');
+        showMessage(`❌ ${err.message || 'No encontrado'}`, 'error');
       }
     }
 
     async function guardarRegistro(e) {
       e.preventDefault();
-      const cedula_funcionario = document.getElementById('cedula_funcionario').value;
-      if (!cedula_funcionario) return showAlert('⚠️ Primero busca un funcionario.', 'error');
+      const parentesco = document.getElementById('parentesco').value;
+      if (!parentesco) return showMessage('⚠️ Seleccione parentesco.', 'error');
 
       const data = {
-        cedula_funcionario,
-        parentesco: document.getElementById('parentesco').value,
+        cedula_funcionario: document.getElementById('cedula_funcionario').value,
+        parentesco,
         cedula_familiar: document.getElementById('cedula_familiar').value.trim(),
-        nacionalidad: document.getElementById('nacionalidad').value,
-        estado_civil: document.getElementById('estado_civil').value,
-        sexo: document.getElementById('sexo').value,
-        edad: parseInt(document.getElementById('edad').value) || null,
         telefono_movil: document.getElementById('telefono_movil').value.trim(),
+        edad: parseInt(document.getElementById('edad').value) || null,
         direccion_habitacion: document.getElementById('direccion_habitacion').value.trim(),
-        nombre_completo: document.getElementById('nombre_completo').value.trim(),
         estado_asignado: userEstado,
         user_id: (await client.auth.getSession()).data.session.user.id
       };
 
-      // Validar obligatorios
-      if (!data.parentesco) return showAlert('⚠️ El campo "Parentesco" es obligatorio.', 'error');
-
       try {
-        const {  error } = await client.from('pie_de_fuerza').insert(data);
+        const { error } = await client.from('pie_de_fuerza').insert(data);
         if (error) throw error;
-
-        showAlert('✅ Datos guardados exitosamente.', 'success');
-        document.getElementById('pieFuerzaForm').style.display = 'none';
+        showMessage('✅ Registro guardado.', 'success');
+        document.getElementById('formSection').style.display = 'none';
         document.getElementById('searchCedula').value = '';
-        document.getElementById('form').reset();
-
+        document.getElementById('fichaForm').reset();
       } catch (err) {
-        console.error('Save error:', err);
-        showAlert(`❌ Error al guardar: ${err.message || 'Desconocido'}`, 'error');
+        showMessage(`❌ Error: ${err.message}`, 'error');
       }
     }
 
-    function showAlert(msg, type) {
-      const el = document.getElementById('searchMessage');
-      el.className = `alert ${type}`;
-      el.textContent = msg;
+    function showMessage(text, type) {
+      const el = document.getElementById('message');
+      el.textContent = text;
       el.style.display = 'block';
-      setTimeout(() => {
-        if (type !== 'error') el.style.display = 'none';
-      }, type === 'success' ? 3000 : 5000);
+      el.style.background = type === 'success' ? '#e8f5e9' : type === 'error' ? '#ffebee' : '#e3f2fd';
+      el.style.color = type === 'success' ? '#2e7d32' : type === 'error' ? '#c62828' : '#1565c0';
+      if (type !== 'error') setTimeout(() => el.style.display = 'none', 3000);
     }
   </script>
 </body>
