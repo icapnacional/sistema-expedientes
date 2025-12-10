@@ -50,20 +50,22 @@
     .tabs-header {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       margin-bottom: 24px;
+      padding-bottom: 12px;
       border-bottom: 2px solid #f0f0f0;
-      padding-bottom: 16px;
+      overflow-x: auto;
     }
     .tab-btn {
       background: #f8f9fa;
       border: none;
-      border-radius: 12px 12px 0 0;
-      padding: 12px 20px;
-      font-size: 15px;
+      border-radius: 10px 10px 0 0;
+      padding: 10px 16px;
+      font-size: 13px;
       font-weight: 600;
       color: #555;
       cursor: pointer;
+      white-space: nowrap;
       transition: all 0.3s;
     }
     .tab-btn:hover { background: #f0f0f0; color: #722F37; }
@@ -89,10 +91,7 @@
       font-size: 15px;
       font-family: inherit;
     }
-    input:read-only, select:disabled {
-      background-color: #f9f9f9;
-      cursor: not-allowed;
-    }
+    input:read-only { background-color: #f9f9f9; cursor: not-allowed; }
     .btn {
       background-color: #722F37;
       color: white;
@@ -133,8 +132,8 @@
 
     <div class="header" style="text-align:center; margin-bottom:24px;">
       <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
-      <h1>👥 Pie de Fuerza — Gestión Integral</h1>
-      <div class="subtitle">• Formulario único basado en la Relación ICAP Nacional •</div>
+      <h1>👥 Relación de Pie de Fuerza ICAP Nacional</h1>
+      <div class="subtitle">• Formulario integral según Excel oficial •</div>
     </div>
 
     <div class="user-info">
@@ -158,9 +157,9 @@
       <div id="searchMessage" class="alert" style="display:none;"></div>
     </div>
 
-    <!-- 📋 Formulario (oculto hasta buscar) -->
+    <!-- 📋 Formulario -->
     <div id="formContainer" class="form-section" style="display:none;">
-      <h2 id="nombreFuncionario" style="margin-bottom:20px; color:#2d2d2d;">📋 Datos del Funcionario</h2>
+      <h2 id="nombreFuncionario" style="margin-bottom:20px; color:#2d2d2d;">📋 Ficha Integral del Funcionario</h2>
 
       <div class="tabs-container">
         <div class="tabs-header">
@@ -169,161 +168,174 @@
           <button class="tab-btn" data-tab="academico">🎓 Datos Académicos</button>
           <button class="tab-btn" data-tab="documentos">📄 Documentos Oficiales</button>
           <button class="tab-btn" data-tab="electoral">🗳️ Datos Electorales</button>
+          <button class="tab-btn" data-tab="capacitacion">📚 Capacitación</button>
+          <button class="tab-btn" data-tab="salud">🏥 Salud</button>
+          <button class="tab-btn" data-tab="disciplinario">⚖️ Disciplinarios</button>
+          <button class="tab-btn" data-tab="desempeno">📈 Desempeño</button>
+          <button class="tab-btn" data-tab="asignaciones">📍 Asignaciones</button>
+          <button class="tab-btn" data-tab="vacaciones">🌴 Vacaciones/Reposos</button>
+          <button class="tab-btn" data-tab="observaciones">📝 Observaciones</button>
+          <button class="tab-btn" data-tab="resumen">📊 Resumen</button>
         </div>
 
         <div class="tabs-content">
-          <!-- Núcleo Familiar -->
+          <!-- 1. Núcleo Familiar -->
           <div id="familiar" class="tab-content active">
             <div class="form-grid">
-              <div class="form-group">
-                <label>Cédula (auditoría)</label>
-                <input type="text" id="cedula_funcionario" readonly>
-              </div>
-              <div class="form-group">
-                <label>Nombre Completo</label>
-                <input type="text" id="nombre_completo" readonly>
-              </div>
-              <div class="form-group">
-                <label>Parentesco</label>
-                <select id="parentesco" required>
-                  <option value="">— Seleccione —</option>
-                  <option value="Cónyuge">Cónyuge</option>
-                  <option value="Hijo(a)">Hijo(a)</option>
-                  <option value="Padre/Madre">Padre/Madre</option>
-                  <option value="Hermano(a)">Hermano(a)</option>
-                  <option value="Otro">Otro</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Cédula Familiar</label>
-                <input type="text" id="cedula_familiar" maxlength="8" placeholder="00000000">
-              </div>
-              <div class="form-group">
-                <label>Nacionalidad</label>
-                <select id="nacionalidad">
-                  <option value="Venezolana">Venezolana</option>
-                  <option value="Extranjera">Extranjera</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Estado Civil</label>
-                <select id="estado_civil">
-                  <option value="Soltero(a)">Soltero(a)</option>
-                  <option value="Casado(a)">Casado(a)</option>
-                  <option value="Divorciado(a)">Divorciado(a)</option>
-                  <option value="Viudo(a)">Viudo(a)</option>
-                  <option value="Unión Estable">Unión Estable</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Sexo</label>
-                <select id="sexo">
-                  <option value="Masculino">Masculino</option>
-                  <option value="Femenino">Femenino</option>
-                  <option value="Otro">Otro</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Edad</label>
-                <input type="number" id="edad" min="0" max="120">
-              </div>
-              <div class="form-group">
-                <label>Teléfono Móvil</label>
-                <input type="tel" id="telefono_movil" placeholder="04xx-xxx-xxxx">
-              </div>
-              <div class="form-group">
-                <label>Dirección</label>
-                <textarea id="direccion_habitacion" rows="2" placeholder="Dirección completa"></textarea>
-              </div>
+              <div class="form-group"><label>Cédula</label><input type="text" id="cedula_f" readonly></div>
+              <div class="form-group"><label>Nombre Completo</label><input type="text" id="nombre_f" readonly></div>
+              <div class="form-group"><label>Parentesco</label><select id="parentesco_f"><option value="">—</option><option>Cónyuge</option><option>Hijo(a)</option><option>Padre/Madre</option><option>Hermano(a)</option><option>Otro</option></select></div>
+              <div class="form-group"><label>Cédula Familiar</label><input type="text" id="cedula_familiar_f" maxlength="8"></div>
+              <div class="form-group"><label>Nacionalidad</label><select id="nacionalidad_f"><option>Venezolana</option><option>Extranjera</option></select></div>
+              <div class="form-group"><label>Estado Civil</label><select id="estado_civil_f"><option>Soltero(a)</option><option>Casado(a)</option><option>Divorciado(a)</option><option>Viudo(a)</option><option>Unión Estable</option></select></div>
+              <div class="form-group"><label>Sexo</label><select id="sexo_f"><option>Masculino</option><option>Femenino</option><option>Otro</option></select></div>
+              <div class="form-group"><label>Edad</label><input type="number" id="edad_f" min="0" max="120"></div>
+              <div class="form-group"><label>Teléfono Móvil</label><input type="tel" id="telefono_f"></div>
+              <div class="form-group"><label>Dirección</label><textarea id="direccion_f" rows="2"></textarea></div>
             </div>
           </div>
 
-          <!-- Datos Laborales -->
+          <!-- 2. Datos Laborales -->
           <div id="laboral" class="tab-content">
             <div class="form-grid">
-              <div class="form-group">
-                <label>Rango</label>
-                <input type="text" id="rango_laboral" readonly>
-              </div>
-              <div class="form-group">
-                <label>Servicio</label>
-                <input type="text" id="servicio_laboral" readonly>
-              </div>
-              <div class="form-group">
-                <label>Dependencia</label>
-                <input type="text" id="dependencia_laboral" readonly>
-              </div>
-              <div class="form-group">
-                <label>Fecha de Ingreso</label>
-                <input type="date" id="fecha_ingreso_laboral" readonly>
-              </div>
+              <div class="form-group"><label>Rango</label><input type="text" id="rango_l"></div>
+              <div class="form-group"><label>Nº Providencia Ascenso</label><input type="text" id="providencia_l"></div>
+              <div class="form-group"><label>Nivel Jerárquico</label><input type="text" id="nivel_l"></div>
+              <div class="form-group"><label>Fecha de Ingreso</label><input type="date" id="fecha_ingreso_l"></div>
+              <div class="form-group"><label>Credencial</label><input type="text" id="credencial_l"></div>
+              <div class="form-group"><label>Dependencia</label><input type="text" id="dependencia_l"></div>
+              <div class="form-group"><label>Servicio</label><input type="text" id="servicio_l"></div>
+              <div class="form-group"><label>Cargo</label><input type="text" id="cargo_l"></div>
+              <div class="form-group"><label>Nombramiento</label><input type="text" id="nombramiento_l"></div>
+              <div class="form-group"><label>Tiempo CPNB</label><input type="text" id="tiempo_cnpb_l"></div>
+              <div class="form-group"><label>Tiempo Otras</label><input type="text" id="tiempo_otras_l"></div>
+              <div class="form-group"><label>Antigüedad</label><input type="text" id="antiguedad_l"></div>
             </div>
           </div>
 
-          <!-- Datos Académicos (ejemplo básico) -->
+          <!-- 3. Datos Académicos -->
           <div id="academico" class="tab-content">
             <div class="form-grid">
-              <div class="form-group">
-                <label>Título Obtenido</label>
-                <input type="text" id="titulo_obtenido">
-              </div>
-              <div class="form-group">
-                <label>Nivel Académico</label>
-                <select id="nivel_academico">
-                  <option value="">—</option>
-                  <option value="TSU">TSU</option>
-                  <option value="Pregrado">Pregrado</option>
-                  <option value="Postgrado">Postgrado</option>
-                  <option value="Doctorado">Doctorado</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Institución</label>
-                <input type="text" id="institucion_academica">
-              </div>
+              <div class="form-group"><label>Fecha Graduación</label><input type="date" id="fecha_grad_a"></div>
+              <div class="form-group"><label>Título Obtenido</label><input type="text" id="titulo_a"></div>
+              <div class="form-group"><label>Nivel Académico</label><select id="nivel_a"><option>—</option><option>TSU</option><option>Pregrado</option><option>Postgrado</option><option>Doctorado</option><option>Otros</option></select></div>
+              <div class="form-group"><label>Institución</label><input type="text" id="institucion_a"></div>
+              <div class="form-group"><label>Nº Registro</label><input type="text" id="registro_a"></div>
             </div>
           </div>
 
-          <!-- Documentos Oficiales -->
+          <!-- 4. Documentos Oficiales -->
           <div id="documentos" class="tab-content">
             <div class="form-grid">
-              <div class="form-group">
-                <label>Tipo de Documento</label>
-                <select id="tipo_documento">
-                  <option value="">—</option>
-                  <option value="Cédula">Cédula</option>
-                  <option value="Pasaporte">Pasaporte</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Fecha de Expedición</label>
-                <input type="date" id="fecha_expedicion">
-              </div>
-              <div class="form-group">
-                <label>Fecha de Vencimiento</label>
-                <input type="date" id="fecha_vencimiento">
-              </div>
+              <div class="form-group"><label>Tipo</label><select id="tipo_doc"><option>Cédula</option><option>Pasaporte</option><option>Carnet</option><option>Otro</option></select></div>
+              <div class="form-group"><label>Número</label><input type="text" id="numero_doc"></div>
+              <div class="form-group"><label>Expedición</label><input type="date" id="expedicion_doc"></div>
+              <div class="form-group"><label>Vencimiento</label><input type="date" id="vencimiento_doc"></div>
+              <div class="form-group"><label>Entidad Emisora</label><input type="text" id="entidad_doc"></div>
             </div>
           </div>
 
-          <!-- Datos Electorales -->
+          <!-- 5. Datos Electorales -->
           <div id="electoral" class="tab-content">
             <div class="form-grid">
-              <div class="form-group">
-                <label>Inscrito en CNE</label>
-                <select id="inscrito_cne">
-                  <option value="Sí">Sí</option>
-                  <option value="No">No</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Centro de Votación</label>
-                <input type="text" id="centro_votacion">
-              </div>
-              <div class="form-group">
-                <label>Estado</label>
-                <input type="text" id="estado_electoral">
-              </div>
+              <div class="form-group"><label>Inscrito CNE</label><select id="cne_e"><option value="true">Sí</option><option value="false">No</option></select></div>
+              <div class="form-group"><label>Centro Votación</label><input type="text" id="centro_e"></div>
+              <div class="form-group"><label>Estado</label><input type="text" id="estado_e"></div>
+              <div class="form-group"><label>Municipio</label><input type="text" id="municipio_e"></div>
+              <div class="form-group"><label>Parroquia</label><input type="text" id="parroquia_e"></div>
+            </div>
+          </div>
+
+          <!-- 6. Capacitación -->
+          <div id="capacitacion" class="tab-content">
+            <div class="form-grid">
+              <div class="form-group"><label>Curso</label><input type="text" id="curso_c"></div>
+              <div class="form-group"><label>Institución</label><input type="text" id="inst_c"></div>
+              <div class="form-group"><label>Horas</label><input type="number" id="horas_c"></div>
+              <div class="form-group"><label>Inicio</label><input type="date" id="inicio_c"></div>
+              <div class="form-group"><label>Fin</label><input type="date" id="fin_c"></div>
+              <div class="form-group"><label>Certificado URL</label><input type="url" id="url_c"></div>
+            </div>
+          </div>
+
+          <!-- 7. Salud -->
+          <div id="salud" class="tab-content">
+            <div class="form-grid">
+              <div class="form-group"><label>Seguro Social</label><input type="text" id="seguro_s"></div>
+              <div class="form-group"><label>Nº Afiliación</label><input type="text" id="afiliacion_s"></div>
+              <div class="form-group"><label>Grupo Sanguíneo</label><input type="text" id="sangre_s"></div>
+              <div class="form-group"><label>Condición Salud</label><textarea id="condicion_s" rows="2"></textarea></div>
+            </div>
+          </div>
+
+          <!-- 8. Disciplinarios -->
+          <div id="disciplinario" class="tab-content">
+            <div class="form-grid">
+              <div class="form-group"><label>Tipo Sanción</label><input type="text" id="sancion_d"></div>
+              <div class="form-group"><label>Apertura</label><input type="date" id="apertura_d"></div>
+              <div class="form-group"><label>Cierre</label><input type="date" id="cierre_d"></div>
+              <div class="form-group"><label>Estatus</label><select id="estatus_d"><option>Abierto</option><option>Cerrado</option><option>Archivado</option></select></div>
+              <div class="form-group" style="grid-column:1/-1;"><label>Resolución</label><textarea id="resolucion_d" rows="3"></textarea></div>
+            </div>
+          </div>
+
+          <!-- 9. Desempeño -->
+          <div id="desempeno" class="tab-content">
+            <div class="form-grid">
+              <div class="form-group"><label>Periodo</label><input type="text" id="periodo_des"></div>
+              <div class="form-group"><label>Calificación</label><select id="calif_des"><option>Excelente</option><option>Bueno</option><option>Regular</option><option>Deficiente</option></select></div>
+              <div class="form-group"><label>Supervisor</label><input type="text" id="supervisor_des"></div>
+              <div class="form-group"><label>Fecha</label><input type="date" id="fecha_des"></div>
+            </div>
+          </div>
+
+          <!-- 10. Asignaciones -->
+          <div id="asignaciones" class="tab-content">
+            <div class="form-grid">
+              <div class="form-group"><label>Tipo Movimiento</label><input type="text" id="tipo_mov_asig"></div>
+              <div class="form-group"><label>Unidad Anterior</label><input type="text" id="ant_asig"></div>
+              <div class="form-group"><label>Unidad Nueva</label><input type="text" id="nueva_asig"></div>
+              <div class="form-group"><label>Fecha</label><input type="date" id="fecha_asig"></div>
+              <div class="form-group"><label>Orden Servicio</label><input type="text" id="orden_asig"></div>
+            </div>
+          </div>
+
+          <!-- 11. Vacaciones/Reposos -->
+          <div id="vacaciones" class="tab-content">
+            <div class="form-grid">
+              <div class="form-group"><label>Tipo</label><select id="tipo_vr"><option>Vacaciones</option><option>Reposo Médico</option><option>Licencia</option></select></div>
+              <div class="form-group"><label>Inicio</label><input type="date" id="inicio_vr"></div>
+              <div class="form-group"><label>Fin</label><input type="date" id="fin_vr"></div>
+              <div class="form-group"><label>Días</label><input type="number" id="dias_vr"></div>
+              <div class="form-group"><label>Aprobado</label><select id="aprobado_vr"><option value="true">Sí</option><option value="false">No</option></select></div>
+              <div class="form-group"><label>Nº Orden</label><input type="text" id="orden_vr"></div>
+            </div>
+          </div>
+
+          <!-- 12. Observaciones -->
+          <div id="observaciones" class="tab-content">
+            <div class="form-grid">
+              <div class="form-group" style="grid-column:1/-1;"><label>Contenido</label><textarea id="contenido_obs" rows="4" placeholder="Escribe aquí observaciones generales o confidenciales..."></textarea></div>
+              <div class="form-group"><label>Tipo</label><select id="tipo_obs"><option>General</option><option>Confidencial</option><option>RRHH</option></select></div>
+            </div>
+          </div>
+
+          <!-- 13. Resumen -->
+          <div id="resumen" class="tab-content">
+            <div style="background:#f9f9f9; padding:20px; border-radius:12px;">
+              <h3>📊 Vista Resumen</h3>
+              <p><strong>✅ Núcleo Familiar:</strong> <span id="res_familiar">—</span></p>
+              <p><strong>✅ Datos Laborales:</strong> <span id="res_laboral">—</span></p>
+              <p><strong>✅ Académico:</strong> <span id="res_academico">—</span></p>
+              <p><strong>✅ Documentos:</strong> <span id="res_documentos">—</span></p>
+              <p><strong>✅ Electorales:</strong> <span id="res_electorales">—</span></p>
+              <p><strong>✅ Capacitación:</strong> <span id="res_capacitacion">—</span></p>
+              <p><strong>✅ Salud:</strong> <span id="res_salud">—</span></p>
+              <p><strong>✅ Disciplinarios:</strong> <span id="res_disciplinario">—</span></p>
+              <p><strong>✅ Desempeño:</strong> <span id="res_desempeno">—</span></p>
+              <p><strong>✅ Asignaciones:</strong> <span id="res_asignaciones">—</span></p>
+              <p><strong>✅ Vacaciones:</strong> <span id="res_vacaciones">—</span></p>
+              <p><strong>✅ Observaciones:</strong> <span id="res_observaciones">—</span></p>
             </div>
           </div>
         </div>
@@ -339,166 +351,3 @@
       <p>© OTIC ZULIA — ICAP Nacional - PNB</p>
     </footer>
   </div>
-
-  <script>
-    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
-    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
-
-    // DOM
-    const userEmailSpan = document.getElementById('userEmail');
-    const userEstadoSpan = document.getElementById('userEstado');
-    const userRolSpan = document.getElementById('userRol');
-    const searchCedula = document.getElementById('searchCedula');
-    const btnBuscar = document.getElementById('btnBuscar');
-    const searchMessage = document.getElementById('searchMessage');
-    const formContainer = document.getElementById('formContainer');
-    const nombreFuncionario = document.getElementById('nombreFuncionario');
-
-    // ✅ Autenticación y permisos
-    (async () => {
-      try {
-        const { data: { session }, error } = await client.auth.getSession();
-        if (error || !session) return window.location.href = '../index.html';
-
-        const { data: perfil, error: pErr } = await client
-          .from('perfiles')
-          .select('email, estados_asignados, rol, modulos_asignados')
-          .eq('id', session.user.id)
-          .single();
-
-        if (pErr || !perfil) return window.location.href = '../index.html';
-
-        const userRol = perfil.rol || 'consultor';
-        // ✅ Solo admin/moderador con módulo 'rh'
-        if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
-          alert('🔒 Acceso denegado: solo RRHH autorizado.');
-          return window.location.href = '../index.html';
-        }
-
-        userEmailSpan.textContent = perfil.email;
-        userEstadoSpan.textContent = perfil.estados_asignados?.[0] || '—';
-        userRolSpan.textContent = userRol === 'admin' ? 'Administrador' :
-                                   userRol === 'moderador' ? 'Moderador' : 'Consultor';
-        userRolSpan.setAttribute('data-role', userRol);
-
-        if (userRol === 'admin') {
-          const i = document.createElement('span');
-          i.innerHTML = ' <span title="Administrador" style="color:#c62828; cursor:help;">ⓘ</span>';
-          userRolSpan.appendChild(i);
-        }
-
-        // Eventos
-        btnBuscar.onclick = buscarFuncionario;
-        searchCedula.addEventListener('keypress', e => e.key === 'Enter' && buscarFuncionario());
-        document.getElementById('btnGuardar').onclick = guardarTodo;
-        document.getElementById('btnLimpiar').onclick = () => formContainer.style.display = 'none';
-
-        // Tabs
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-          btn.onclick = () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
-            const id = btn.dataset.tab;
-            document.getElementById(id)?.classList.add('active');
-          };
-        });
-
-      } catch (err) {
-        console.error('Auth error:', err);
-        window.location.href = '../index.html';
-      }
-    })();
-
-    let currentCedula = null;
-
-    async function buscarFuncionario() {
-      const ced = searchCedula.value.trim();
-      if (!ced || ced.length !== 8 || !/^\d+$/.test(ced)) {
-        showAlert('⚠️ Ingresa una cédula válida de 8 dígitos.', 'error');
-        return;
-      }
-
-      showAlert('🔍 Buscando en auditoría...', 'info');
-      try {
-        const { data, error } = await client
-          .from('auditoria_personal')
-          .select('*')
-          .eq('cedula', ced)
-          .single();
-
-        if (error || !data) {
-          return showAlert(`❌ Cédula ${ced} no encontrada.`, 'error');
-        }
-
-        // ✅ Rellenar campos
-        currentCedula = ced;
-        document.getElementById('cedula_funcionario').value = data.cedula;
-        document.getElementById('nombre_completo').value = data.apellidos_nombres || '—';
-        document.getElementById('rango_laboral').value = data.rango || '—';
-        document.getElementById('servicio_laboral').value = data.servicio || '—';
-        document.getElementById('dependencia_laboral').value = data.dependencia || '—';
-        document.getElementById('fecha_ingreso_laboral').value = data.fecha_ingreso ? data.fecha_ingreso.split('T')[0] : '';
-        document.getElementById('edad').value = data.edad_funcionario || '';
-        document.getElementById('telefono_movil').value = data.telefono || '';
-        document.getElementById('direccion_habitacion').value = data.direccion || '';
-
-        nombreFuncionario.textContent = `📋 ${data.apellidos_nombres || '—'} (C.I. ${ced})`;
-        formContainer.style.display = 'block';
-        showAlert('✅ Funcionario cargado. Edita y guarda.', 'success');
-
-      } catch (err) {
-        console.error('Search error:', err);
-        showAlert('❌ Error al buscar funcionario.', 'error');
-      }
-    }
-
-    async function guardarTodo() {
-      if (!currentCedula) return showAlert('⚠️ Primero busca un funcionario.', 'error');
-
-      const session = (await client.auth.getSession()).data.session;
-      if (!session) return window.location.href = '../index.html';
-
-      const userId = session.user.id;
-
-      try {
-        // 1. Núcleo Familiar → pie_de_fuerza
-        const familiarData = {
-          cedula_funcionario: currentCedula,
-          parentesco: document.getElementById('parentesco').value || null,
-          cedula_familiar: document.getElementById('cedula_familiar').value || null,
-          nacionalidad: document.getElementById('nacionalidad').value,
-          estado_civil: document.getElementById('estado_civil').value,
-          sexo: document.getElementById('sexo').value,
-          edad: parseInt(document.getElementById('edad').value) || null,
-          telefono_movil: document.getElementById('telefono_movil').value || null,
-          direccion_habitacion: document.getElementById('direccion_habitacion').value || null,
-          user_id: userId,
-          estado_asignado: userEstadoSpan.textContent.trim()
-        };
-
-        const { error: err1 } = await client.from('pie_de_fuerza').upsert(familiarData, { onConflict: 'cedula_funcionario,parentesco' });
-        if (err1) throw new Error(`Familiar: ${err1.message}`);
-
-        // 2. Datos Laborales → datos_laborales (opcional: si usas otra tabla)
-        // (Podemos extender aquí fácilmente)
-
-        showAlert('✅ Datos guardados exitosamente.', 'success');
-      } catch (err) {
-        console.error('Save error:', err);
-        showAlert(`❌ Error al guardar: ${err.message}`, 'error');
-      }
-    }
-
-    function showAlert(msg, type) {
-      searchMessage.className = `alert ${type}`;
-      searchMessage.textContent = msg;
-      searchMessage.style.display = 'block';
-      setTimeout(() => {
-        if (type !== 'error') searchMessage.style.display = 'none';
-      }, type === 'success' ? 3000 : 5000);
-    }
-  </script>
-</body>
-</html>
