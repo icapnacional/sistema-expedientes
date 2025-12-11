@@ -193,9 +193,62 @@
               <div class="form-group"><label>Fecha de Nacimiento *</label><input type="date" id="fecha_nacimiento" required onchange="calcularEdad()"></div>
               <div class="form-group"><label>Edad</label><input type="number" id="edad" min="18" max="99" readonly placeholder="Calculada"></div>
               <div class="form-group"><label>País de Nacimiento</label><select id="pais_nacimiento"></select></div>
-              <div class="form-group"><label>Estado de Nacimiento</label><input type="text" id="estado_nacimiento"></div>
-              <div class="form-group"><label>Ciudad de Nacimiento</label><input type="text" id="ciudad_nacimiento"></div>
-              <div class="form-group"><label>Municipio de Nacimiento</label><input type="text" id="municipio_nacimiento"></div>
+            <!-- Estado de Nacimiento -->
+<div class="form-group">
+  <label for="estado_nacimiento">Estado de Nacimiento *</label>
+  <select id="estado_nacimiento" required>
+    <option value="">— Seleccione —</option>
+    <option value="Amazonas">Amazonas</option>
+    <option value="Anzoátegui">Anzoátegui</option>
+    <option value="Apure">Apure</option>
+    <option value="Aragua">Aragua</option>
+    <option value="Barinas">Barinas</option>
+    <option value="Bolívar">Bolívar</option>
+    <option value="Carabobo">Carabobo</option>
+    <option value="Cojedes">Cojedes</option>
+    <option value="Delta Amacuro">Delta Amacuro</option>
+    <option value="Distrito Capital">Distrito Capital</option>
+    <option value="Falcón">Falcón</option>
+    <option value="Guárico">Guárico</option>
+    <option value="Lara">Lara</option>
+    <option value="Mérida">Mérida</option>
+    <option value="Miranda">Miranda</option>
+    <option value="Monagas">Monagas</option>
+    <option value="Nueva Esparta">Nueva Esparta</option>
+    <option value="Portuguesa">Portuguesa</option>
+    <option value="Sucre">Sucre</option>
+    <option value="Táchira">Táchira</option>
+    <option value="Trujillo">Trujillo</option>
+    <option value="Vargas">Vargas</option>
+    <option value="Yaracuy">Yaracuy</option>
+    <option value="Zulia">Zulia</option>
+    <option value="Dependencias Federales">Dependencias Federales</option>
+  </select>
+</div>
+
+<!-- Municipio de Nacimiento -->
+<div class="form-group">
+  <label for="municipio_nacimiento">Municipio de Nacimiento *</label>
+  <select id="municipio_nacimiento" required disabled>
+    <option value="">— Primero seleccione estado —</option>
+  </select>
+</div>
+
+<!-- Ciudad de Nacimiento -->
+<div class="form-group">
+  <label for="ciudad_nacimiento">Ciudad de Nacimiento *</label>
+  <select id="ciudad_nacimiento" required disabled>
+    <option value="">— Primero seleccione municipio —</option>
+  </select>
+</div>
+
+<!-- Parroquia de Nacimiento -->
+<div class="form-group">
+  <label for="parroquia_nacimiento">Parroquia de Nacimiento *</label>
+  <select id="parroquia_nacimiento" required disabled>
+    <option value="">— Primero seleccione ciudad —</option>
+  </select>
+</div>
               <div class="form-group"><label>Estado donde Reside *</label><input type="text" id="estado_reside" required></div>
               <div class="form-group"><label>Municipio donde Reside *</label><input type="text" id="municipio_reside" required></div>
               <div class="form-group"><label>Parroquia donde Reside *</label><input type="text" id="parroquia_reside" required></div>
@@ -897,6 +950,223 @@ if (perfilError || !perfil) {
       el.className = `alert alert-${type}`;
       el.style.display = 'block';
     }
+    // ✅ Datos oficiales: municipios, ciudades y parroquias por estado
+const VENEZUELA_DATA = {
+  "Distrito Capital": {
+    "Libertador": {
+      "Caracas": [
+        "Altagracia", "Antímano", "Candelaria", "Capitolio", "Catedral", "Coche",
+        "El Junquito", "El Paraíso", "El Recreo", "El Valle", "La Candelaria",
+        "La Pastora", "La Vega", "Macarao", "San Agustín", "San Bernardino",
+        "San José", "San Juan", "San Pedro", "Santa Rosalía", "Santa Teresa",
+        "Sucre", "23 de Enero"
+      ]
+    }
+  },
+  "Miranda": {
+    "Baruta": {
+      "Baruta": ["Baruta", "La Trinidad", "Las Minas", "Nuestra Señora del Rosario"],
+      "El Hatillo": ["El Hatillo"]
+    },
+    "Chacao": {
+      "Chacao": ["Chacao"]
+    },
+    "Sucre": {
+      "Petare": ["Petare", "Caucagüito", "La Dolorita", "Leoncio Martínez"],
+      "Guarenas": ["Guarenas", "Araguita"],
+      "Caucagüito": ["Caucagüito"]
+    }
+  },
+  "Zulia": {
+    "Maracaibo": {
+      "Maracaibo": [
+        "Antonio Borjas Romero", "Bolívar", "Cacique Mara", "Carracciolo Parra Pérez",
+        "Cecilio Acosta", "Cristo de Aranza", "Coquivacoa", "Chiquinquirá",
+        "Francisco Eugenio Bustamante", "Idelfonso Vásquez", "Juana de Ávila",
+        "Luis Hurtado Higuera", "Manuel Dagnino", "Olegario Villalobos",
+        "Raúl Leoni", "Santa Lucía", "Venancio Pulgar", "San Isidro"
+      ]
+    },
+    "San Francisco": {
+      "San Francisco": ["Domingo Savio", "El Bajo", "Francisco Ochoa", "José Domingo Rus", "Las Mercedes", "Los Cortijos", "Marcial Hernández", "San Francisco"]
+    }
+  },
+  "Carabobo": {
+    "Valencia": {
+      "Valencia": [
+        "Candelaria", "Catedral", "El Socorro", "Juan José Mora", "Miguel Peña",
+        "Negro Primero", "Rafael Urdaneta", "San Blas", "San José", "Santa Rosa"
+      ]
+    }
+  },
+  "Aragua": {
+    "Girardot": {
+      "Maracay": [
+        "Pedro José Ovalles", "José Casanova Godoy", "Las Delicias", "Madre María de San José",
+        "Choroní", "La Providencia", "Samán de Güere", "Capital Girardot"
+      ]
+    }
+  },
+  "Lara": {
+    "Iribarren": {
+      "Barquisimeto": [
+        "Juan de Villegas", "Buena Vista", "Concepción", "El Toro", "Juan Bautista Rodríguez",
+        "La Flor", "Santa Rosa", "Unión"
+      ]
+    }
+  },
+  "Táchira": {
+    "San Cristóbal": {
+      "San Cristóbal": [
+        "Dr. Antonio Nicolás Briceño", "José María Vargas", "La Concordia",
+        "Pedro María Ureña", "San Juan Bautista", "Torbes"
+      ]
+    }
+  },
+  "Mérida": {
+    "Libertador": {
+      "Mérida": [
+        "Antonio Spinetti Dini", "Arias", "Caracciolo Parra Pérez", "Domingo Peña",
+        "El Llano", "Gonzalo Picón Febres", "Jacinto Plaza", "Juan Rodríguez Suárez",
+        "Lasso de la Vega", "Mariano Picón Salas", "Milla", "Osuna Rodríguez",
+        "Sagrario", "El Valle", "La Otra Banda"
+      ]
+    }
+  },
+  "Trujillo": {
+    "Trujillo": {
+      "Trujillo": ["Andrés Bello", "Boconó", "Motatán", "Pampanito", "Trujillo (capital)"]
+    }
+  },
+  "Yaracuy": {
+    "San Felipe": {
+      "San Felipe": ["San Felipe", "Albarico", "Cocorote", "Independencia"]
+    }
+  },
+  "Falcón": {
+    "Miranda": {
+      "Punto Fijo": ["Judibana", "Norte", "Carirubana"]
+    }
+  },
+  "Guárico": {
+    "José Félix Ribas": {
+      "Tucupido": ["Tucupido"]
+    }
+  },
+  "Portuguesa": {
+    "Guanare": {
+      "Guanare": ["Guanare", "San José de la Montaña", "San Rafael de Onoto"]
+    }
+  },
+  "Barinas": {
+    "Barinas": {
+      "Barinas": ["Barinas", "Alberto Arvelo Torrealba", "Santa Inés"]
+    }
+  },
+  "Apure": {
+    "Páez": {
+      "Guasdualito": ["Guasdualito", "Aramendi"]
+    }
+  },
+  "Bolívar": {
+    "Heróica Ciudad de Guayana": {
+      "Ciudad Guayana": [
+        "Cachamay", "Chirica", "Dalla Costa", "Once de Abril",
+        "Simón Bolívar", "Unare", "Universidad"
+      ]
+    }
+  },
+  "Amazonas": { "Maroa": { "Maroa": ["Maroa"] } },
+  "Delta Amacuro": { "Tucupita": { "Tucupita": ["Tucupita", "San José"] } },
+  "Monagas": { "Maturín": { "Maturín": ["Alto de los Godos", "Boquerón", "La Pica", "San Simón", "El Furrial", "Jusepín", "Las Mercedes", "San Vicente"] } },
+  "Anzoátegui": { "Fernando de Peñalver": { "Puerto La Cruz": ["Puerto La Cruz", "Pozuelos"] } },
+  "Sucre": { "Municipio Cruz Salmerón Acosta": { "Araya": ["Araya", "Chacopata"] } },
+  "Nueva Esparta": { "Mariño": { "Porlamar": ["Porlamar", "San Francisco", "El Valle"] } },
+  "Vargas": { "Vargas": { "La Guaira": ["Macuto", "Naiguatá", "Carlos Soublette", "Maiquetía", "Catia La Mar"] } },
+  "Cojedes": { "Ezequiel Zamora": { "Tinaquillo": ["Tinaquillo"] } },
+  "Dependencias Federales": { "Isla de Aves": { "Isla de Aves": ["Isla de Aves"] } }
+};
+
+// ✅ Llenar municipios al cambiar estado
+document.getElementById('estado_nacimiento').addEventListener('change', function() {
+  const estado = this.value;
+  const munSel = document.getElementById('municipio_nacimiento');
+  const ciuSel = document.getElementById('ciudad_nacimiento');
+  const parSel = document.getElementById('parroquia_nacimiento');
+  munSel.innerHTML = '<option value="">— Seleccione municipio —</option>';
+  ciuSel.innerHTML = '<option value="">— Primero seleccione municipio —</option>';
+  parSel.innerHTML = '<option value="">— Primero seleccione ciudad —</option>';
+  if (!estado) {
+    munSel.disabled = true;
+    ciuSel.disabled = true;
+    parSel.disabled = true;
+    return;
+  }
+  const municipios = VENEZUELA_DATA[estado];
+  if (municipios) {
+    Object.keys(municipios).forEach(mun => {
+      const opt = document.createElement('option');
+      opt.value = mun;
+      opt.textContent = mun;
+      munSel.appendChild(opt);
+    });
+    munSel.disabled = false;
+  } else {
+    munSel.disabled = true;
+  }
+});
+
+// ✅ Llenar ciudades al cambiar municipio
+document.getElementById('municipio_nacimiento').addEventListener('change', function() {
+  const estado = document.getElementById('estado_nacimiento').value;
+  const municipio = this.value;
+  const ciuSel = document.getElementById('ciudad_nacimiento');
+  const parSel = document.getElementById('parroquia_nacimiento');
+  ciuSel.innerHTML = '<option value="">— Seleccione ciudad —</option>';
+  parSel.innerHTML = '<option value="">— Primero seleccione ciudad —</option>';
+  if (!municipio) {
+    ciuSel.disabled = true;
+    parSel.disabled = true;
+    return;
+  }
+  const ciudades = VENEZUELA_DATA[estado]?.[municipio];
+  if (ciudades) {
+    Object.keys(ciudades).forEach(ciu => {
+      const opt = document.createElement('option');
+      opt.value = ciu;
+      opt.textContent = ciu;
+      ciuSel.appendChild(opt);
+    });
+    ciuSel.disabled = false;
+  } else {
+    ciuSel.disabled = true;
+  }
+});
+
+// ✅ Llenar parroquias al cambiar ciudad
+document.getElementById('ciudad_nacimiento').addEventListener('change', function() {
+  const estado = document.getElementById('estado_nacimiento').value;
+  const municipio = document.getElementById('municipio_nacimiento').value;
+  const ciudad = this.value;
+  const parSel = document.getElementById('parroquia_nacimiento');
+  parSel.innerHTML = '<option value="">— Seleccione parroquia —</option>';
+  if (!ciudad) {
+    parSel.disabled = true;
+    return;
+  }
+  const parroquias = VENEZUELA_DATA[estado]?.[municipio]?.[ciudad];
+  if (parroquias) {
+    parroquias.forEach(par => {
+      const opt = document.createElement('option');
+      opt.value = par;
+      opt.textContent = par;
+      parSel.appendChild(opt);
+    });
+    parSel.disabled = false;
+  } else {
+    parSel.disabled = true;
+  }
+});
   </script>
 </body>
 </html>
