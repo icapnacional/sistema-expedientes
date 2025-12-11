@@ -490,29 +490,33 @@ async function buscarPorCedula() {
   msgEl.className = 'alert info';
   msgEl.textContent = '🔍 Buscando...';
   try {
-    // ✅ Buscar en auditoria_personal — solo para nombre inicial
-    const {  audData } = await client
+    // ✅ Buscar en auditoria_personal → para prellenar si es nuevo
+    const { data: audData, error: audError } = await client
       .from('auditoria_personal')
-      .select('apellidos_nombres')
+      .select(`
+        apellidos_nombres, sexo, estado, region, rango, fecha_nacimiento,
+        telefono, correo_electronico, direccion, dependencia, servicio
+      `)
       .eq('cedula', cedula)
       .single();
 
     // ✅ Buscar en pie_de_fuerza
-    const {  pieData } = await client
+    const { data: pieData, error: pieError } = await client
       .from('pie_de_fuerza')
       .select('*')
       .eq('cedula', cedula)
       .single();
 
     document.getElementById('cedula').value = cedula;
-    document.getElementById('nombre_completo').value = (audData?.apellidos_nombres || pieData?.nombre_completo || 'Nuevo');
+    document.getElementById('nombre_completo').value = 
+      (pieData?.nombre_completo || audData?.apellidos_nombres || 'Nuevo');
 
     if (pieData) {
-      // ✅ ✅ ✅ CARGAR TODOS LOS CAMPOS, INCLUIDO PATRIA, BANCARIOS, DESCRIPTIVOS, LABORALES ✅ ✅ ✅
-      limpiarFormulario(false);
+      // ✅ ✅ ✅ CARGAR TODOS LOS DATOS DE PIE_DE_FUERZA (incluye Patria, Bancarios, etc.)
       currentCedula = cedula;
+      limpiarFormulario(false); // sin resetear cédula
 
-      // ✅ Datos personales
+      // ——— DATOS PERSONALES ———
       document.getElementById('cedula').value = pieData.cedula || '';
       document.getElementById('nombre_completo').value = pieData.nombre_completo || '';
       document.getElementById('rif').value = pieData.rif || '';
@@ -531,12 +535,14 @@ async function buscarPorCedula() {
       document.getElementById('direccion_habitacion').value = pieData.direccion_habitacion || '';
       document.getElementById('latitud').value = pieData.latitud || '';
       document.getElementById('longitud').value = pieData.longitud || '';
-      document.getElementById('correo_local').value = pieData.correo_local || '';
-      document.getElementById('correo_dominio').value = pieData.correo_dominio || 'gmail.com';
       document.getElementById('nivel_academico').value = pieData.nivel_academico || '';
       document.getElementById('cantidad_hijos').value = pieData.cantidad_hijos || 0;
 
-      // ✅ ✅ ✅ PATRIA
+      // ——— CORREO ———
+      if (pieData.correo_local) document.getElementById('correo_local').value = pieData.correo_local;
+      if (pieData.correo_dominio) document.getElementById('correo_dominio').value = pieData.correo_dominio;
+
+      // ——— PATRIA ———
       document.getElementById('posee_carnet_patria').value = String(!!pieData.posee_carnet_patria);
       document.getElementById('codigo_patria').value = pieData.codigo_patria || '';
       document.getElementById('serial_patria').value = pieData.serial_patria || '';
@@ -544,12 +550,12 @@ async function buscarPorCedula() {
       document.getElementById('integrante_1x10').value = pieData.integrante_1x10 || '';
       document.getElementById('inscrito_0800mi_hogar').value = String(!!pieData.inscrito_0800mi_hogar);
 
-      // ✅ ✅ ✅ BANCARIOS
+      // ——— BANCARIOS ———
       document.getElementById('entidad_financiera').value = pieData.entidad_financiera || '';
       document.getElementById('tipo_cuenta').value = pieData.tipo_cuenta || '';
       document.getElementById('numero_cuenta').value = pieData.numero_cuenta || '';
 
-      // ✅ ✅ ✅ DESCRIPTIVOS
+      // ——— DESCRIPTIVOS ———
       document.getElementById('estatura').value = pieData.estatura || '';
       document.getElementById('peso').value = pieData.peso || '';
       document.getElementById('contextura').value = pieData.contextura || '';
@@ -565,7 +571,7 @@ async function buscarPorCedula() {
       document.getElementById('cicatrices').value = pieData.cicatrices || '';
       document.getElementById('senas_particulares').value = pieData.senas_particulares || '';
 
-      // ✅ ✅ ✅ LABORALES
+      // ——— LABORALES ———
       document.getElementById('rango').value = pieData.rango || '';
       document.getElementById('providencia_ascenso').value = pieData.providencia_ascenso || '';
       document.getElementById('nivel_jerarquico').value = pieData.nivel_jerarquico || '';
@@ -579,7 +585,14 @@ async function buscarPorCedula() {
       document.getElementById('tiempo_otras').value = pieData.tiempo_otras || '';
       document.getElementById('antiguedad').value = pieData.antiguedad || '';
 
-      // ✅ Listas dinámicas
+      // ——— ELECTORALES ———
+      document.getElementById('inscrito_cne').value = String(!!pieData.inscrito_cne);
+      document.getElementById('centro_votacion').value = pieData.centro_votacion || '';
+      document.getElementById('estado_electoral').value = pieData.estado_electoral || '';
+      document.getElementById('municipio_electoral').value = pieData.municipio_electoral || '';
+      document.getElementById('parroquia_electoral').value = pieData.parroquia_electoral || '';
+
+      // ——— LISTAS DINÁMICAS ———
       renderContactos(pieData.contactos || []);
       renderFormacion(pieData.formacion || []);
       renderDocumentos(pieData.documentos || []);
@@ -588,30 +601,52 @@ async function buscarPorCedula() {
       renderHijos(pieData.hijos || []);
       renderAsegurados(pieData.asegurados || []);
 
-      // ✅ Electorales
-      document.getElementById('inscrito_cne').value = String(!!pieData.inscrito_cne);
-      document.getElementById('centro_votacion').value = pieData.centro_votacion || '';
-      document.getElementById('estado_electoral').value = pieData.estado_electoral || '';
-      document.getElementById('municipio_electoral').value = pieData.municipio_electoral || '';
-      document.getElementById('parroquia_electoral').value = pieData.parroquia_electoral || '';
-
       msgEl.className = 'alert success';
       msgEl.textContent = '✅ Ficha cargada para edición.';
     } else {
-      // ✅ Nuevo registro → solo nombre desde auditoría_personal
+      // ✅ Nuevo registro → prellenar desde auditoria_personal (solo lo básico)
+      currentCedula = null;
       limpiarFormulario(false);
       document.getElementById('cedula').value = cedula;
       document.getElementById('nombre_completo').value = audData?.apellidos_nombres || '';
-      currentCedula = null;
-      msgEl.className = 'alert info';
+      
+      if (audData) {
+        document.getElementById('sexo').value = audData.sexo || '';
+        document.getElementById('estado_reside').value = audData.estado || '';
+        document.getElementById('rango').value = audData.rango || '';
+        document.getElementById('fecha_nacimiento').value = audData.fecha_nacimiento || '';
+        if (audData.fecha_nacimiento) calcularEdad();
+        document.getElementById('direccion_habitacion').value = audData.direccion || '';
+        document.getElementById('dependencia').value = audData.dependencia || '';
+        document.getElementById('servicio').value = audData.servicio || '';
+
+        // ✅ Teléfono (primer contacto)
+        if (audData.telefono && /^04\d{9}$/.test(audData.telefono.trim())) {
+          addContacto();
+          const item = document.querySelector('#contactosList .dynamic-item');
+          if (item) {
+            item.querySelector('[name$=".tipo"]').value = 'Móvil principal';
+            item.querySelector('[name$=".numero"]').value = audData.telefono.trim();
+          }
+        }
+
+        // ✅ Correo
+        if (audData.correo_electronico) {
+          const [local, dom] = audData.correo_electronico.split('@');
+          if (local) document.getElementById('correo_local').value = local;
+          if (dom) document.getElementById('correo_dominio').value = dom.toLowerCase();
+        }
+      }
+
+      msgEl.className = 'alert success';
       msgEl.textContent = audData 
-        ? 'ℹ️ Pre-cargado desde Auditoría. Completa los datos faltantes.'
+        ? '✅ Datos pre-cargados desde Auditoría. Complete el resto.'
         : 'ℹ️ Cédula no encontrada. Ingrese datos manualmente.';
     }
 
     document.getElementById('formContainer').style.display = 'block';
     document.getElementById('nombreFuncionario').textContent = 
-      `📋 ${audData?.apellidos_nombres || pieData?.nombre_completo || `Nuevo funcionario — C.I. ${cedula}`}`;
+      `📋 ${pieData?.nombre_completo || audData?.apellidos_nombres || `Nuevo funcionario — C.I. ${cedula}`}`;
   } catch (err) {
     console.error('Error en buscarPorCedula:', err);
     msgEl.className = 'alert error';
