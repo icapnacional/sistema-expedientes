@@ -630,63 +630,98 @@
       document.getElementById('edad').value = edad;
     }
 
-    // ✅ ✅ ✅ FUNCIÓN ACTUALIZADA: buscar y permitir edición
-    async function buscarPorCedula() {
-      const cedula = document.getElementById('searchCedula').value.trim();
-      const msgEl = document.getElementById('searchMessage');
-      msgEl.style.display = 'block';
-      if (!/^\d{8}$/.test(cedula)) {
-        msgEl.className = 'alert error';
-        msgEl.textContent = '⚠️ Cédula debe tener 8 dígitos.';
-        return;
-      }
-      msgEl.className = 'alert info';
-      msgEl.textContent = '🔍 Buscando...';
-      try {
-        // ✅ Buscar en auditoria_personal — solo apellidos_nombres
-        const { data: audData, error: audError } = await client
-          .from('auditoria_personal')
-          .select('apellidos_nombres')
-          .eq('cedula', cedula)
-          .single();
+async function buscarPorCedula() {
+  const cedula = document.getElementById('searchCedula').value.trim();
+  const msgEl = document.getElementById('searchMessage');
+  msgEl.style.display = 'block';
+  if (!/^\d{8}$/.test(cedula)) {
+    msgEl.className = 'alert error';
+    msgEl.textContent = '⚠️ Cédula debe tener 8 dígitos.';
+    return;
+  }
+  msgEl.className = 'alert info';
+  msgEl.textContent = '🔍 Buscando...';
+  try {
+    // ✅ Buscar en auditoria_personal → solo apellidos_nombres (evita conflictos)
+    const { data: audData, error: audError } = await client
+      .from('auditoria_personal')
+      .select('apellidos_nombres')
+      .eq('cedula', cedula)
+      .single();
 
-        // ✅ Buscar en pie_de_fuerza
-        const { data: pieData, error: pieError } = await client
-          .from('pie_de_fuerza')
-          .select('*')
-          .eq('cedula', cedula)
-          .single();
+    // ✅ Buscar en pie_de_fuerza
+    const { data: pieData, error: pieError } = await client
+      .from('pie_de_fuerza')
+      .select('*')
+      .eq('cedula', cedula)
+      .single();
 
-        document.getElementById('cedula').value = cedula;
-        document.getElementById('nombre_completo').value = (audData?.apellidos_nombres || pieData?.nombre_completo || 'Nuevo');
+    document.getElementById('cedula').value = cedula;
+    document.getElementById('nombre_completo').value = (audData?.apellidos_nombres || pieData?.nombre_completo || 'Nuevo');
 
-        if (pieData) {
-          // ✅ Ya existe → modo edición
-          limpiarFormulario(false);
-          cargarDatosEnFormulario(pieData);
-          currentCedula = cedula;
-          msgEl.className = 'alert success';
-          msgEl.textContent = '✅ Ficha cargada para edición.';
-        } else {
-          // ✅ Nuevo registro → prellenar desde auditoría_personal (si existe)
-          limpiarFormulario(false);
-          document.getElementById('cedula').value = cedula;
-          document.getElementById('nombre_completo').value = audData?.apellidos_nombres || '';
-          currentCedula = null;
-          msgEl.className = 'alert info';
-          msgEl.textContent = audData 
-            ? 'ℹ️ Ficha no existe en Pie de Fuerza. Pre-cargado desde Auditoría.'
-            : 'ℹ️ Cédula no encontrada en Auditoría ni Pie de Fuerza.';
+    if (pieData) {
+      // ✅ Ya existe → modo edición
+      limpiarFormulario(false);
+      // ✅ Cargar datos manualmente (sin usar cargarDatos)
+      [
+        'cedula', 'nombre_completo', 'rif', 'nacionalidad', 'estado_civil', 'sexo',
+        'fecha_nacimiento', 'pais_nacimiento',
+        'estado_nacimiento', 'municipio_nacimiento', 'ciudad_nacimiento',
+        'estado_reside', 'municipio_reside', 'parroquia_reside',
+        'direccion_habitacion', 'correo_local', 'nivel_academico',
+        'rango', 'dependencia', 'servicio'
+      ].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && pieData[id] !== undefined && pieData[id] !== null) {
+          if (el.tagName === 'SELECT') {
+            el.value = pieData[id];
+          } else {
+            el.value = pieData[id];
+          }
         }
-
-        document.getElementById('formContainer').style.display = 'block';
-        document.getElementById('nombreFuncionario').textContent = 
-          `📋 ${audData?.apellidos_nombres || pieData?.nombre_completo || `Nuevo funcionario — C.I. ${cedula}`}`;
-      } catch (err) {
-        msgEl.className = 'alert error';
-        msgEl.textContent = `❌ Error: ${err.message || 'intente nuevamente'}`;
+      });
+      if (pieData.fecha_nacimiento) {
+        document.getElementById('fecha_nacimiento').value = pieData.fecha_nacimiento;
+        calcularEdad();
       }
+      if (pieData.latitud) document.getElementById('latitud').value = pieData.latitud;
+      if (pieData.longitud) document.getElementById('longitud').value = pieData.longitud;
+      if (pieData.cantidad_hijos !== undefined) document.getElementById('cantidad_hijos').value = pieData.cantidad_hijos;
+      if (pieData.correo_dominio) document.getElementById('correo_dominio').value = pieData.correo_dominio;
+      renderContactos(pieData.contactos || []);
+      renderFormacion(pieData.formacion || []);
+      renderDocumentos(pieData.documentos || []);
+      renderAntecedentes(pieData.antecedentes || []);
+      renderAcademicos(pieData.academicos || []);
+      renderHijos(pieData.hijos || []);
+      renderAsegurados(pieData.asegurados || []);
+      document.getElementById('posee_carnet_patria').value = String(!!pieData.posee_carnet_patria);
+      document.getElementById('inscrito_0800mi_hogar').value = String(!!pieData.inscrito_0800mi_hogar);
+      document.getElementById('inscrito_cne').value = String(!!pieData.inscrito_cne);
+
+      currentCedula = cedula;
+      msgEl.className = 'alert success';
+      msgEl.textContent = '✅ Ficha cargada para edición.';
+    } else {
+      // ✅ Nuevo registro → solo nombre desde auditoría_personal
+      limpiarFormulario(false);
+      document.getElementById('cedula').value = cedula;
+      document.getElementById('nombre_completo').value = audData?.apellidos_nombres || '';
+      currentCedula = null;
+      msgEl.className = 'alert info';
+      msgEl.textContent = audData 
+        ? 'ℹ️ Cédula no registrada en Pie de Fuerza. Pre-cargado desde Auditoría.'
+        : 'ℹ️ Nueva ficha. Completa los datos.';
     }
+
+    document.getElementById('formContainer').style.display = 'block';
+    document.getElementById('nombreFuncionario').textContent = 
+      `📋 ${audData?.apellidos_nombres || pieData?.nombre_completo || `Nuevo funcionario — C.I. ${cedula}`}`;
+  } catch (err) {
+    msgEl.className = 'alert error';
+    msgEl.textContent = `❌ Error: ${err.message || 'intente nuevamente'}`;
+  }
+}
 
     // ✅ ✅ ✅ FUNCIÓN NUEVA: cargar datos de pie_de_fuerza → formulario
     function cargarDatosEnFormulario(data) {
