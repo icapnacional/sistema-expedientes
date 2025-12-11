@@ -571,13 +571,46 @@ if (perfilError || !perfil) {
 
     document.getElementById('cedula').value = cedula;
     document.getElementById('nombre_completo').value = (audData?.apellidos_nombres || pieData?.nombre_completo || 'Nuevo');
+if (pieData) {
+  // ✅ Llenar formulario con datos de pie_de_fuerza (igual que ya haces con auditoría)
+  limpiarFormulario(false);
+  document.getElementById('cedula').value = pieData.cedula || '';
+  document.getElementById('nombre_completo').value = pieData.nombre_completo || '';
+  document.getElementById('sexo').value = pieData.sexo || '';
+  document.getElementById('estado_reside').value = pieData.estado_reside || '';
+  document.getElementById('municipio_reside').value = pieData.municipio_reside || '';
+  document.getElementById('parroquia_reside').value = pieData.parroquia_reside || '';
+  document.getElementById('direccion_habitacion').value = pieData.direccion_habitacion || '';
+  document.getElementById('fecha_nacimiento').value = pieData.fecha_nacimiento || '';
+  if (pieData.fecha_nacimiento) calcularEdad();
 
-    if (pieData) {
-      // ✅ Ya existe → cargar desde pie_de_fuerza (preserva lógica actual)
-      cargarDatos(pieData);
-      msgEl.className = 'alert success';
-      msgEl.textContent = '✅ Ficha encontrada en Pie de Fuerza.';
-    } else {
+  // ✅ Teléfono (del primer contacto, si existe)
+  if (Array.isArray(pieData.contactos) && pieData.contactos.length > 0) {
+    const tel = pieData.contactos[0].numero || '';
+    if (/^04\d{9}$/.test(tel)) {
+      addContacto();
+      const item = document.querySelector('#contactosList .dynamic-item');
+      if (item) {
+        item.querySelector('[name$=".tipo"]').value = pieData.contactos[0].tipo || 'Móvil principal';
+        item.querySelector('[name$=".numero"]').value = tel;
+      }
+    }
+  }
+
+  // ✅ Correo
+  if (pieData.correo_local && pieData.correo_dominio) {
+    document.getElementById('correo_local').value = pieData.correo_local;
+    document.getElementById('correo_dominio').value = pieData.correo_dominio;
+  }
+
+  // ✅ Otros campos (dependencia, servicio, etc.)
+  document.getElementById('dependencia').value = pieData.dependencia || '';
+  document.getElementById('servicio').value = pieData.servicio || '';
+  document.getElementById('rango').value = pieData.rango || '';
+
+  msgEl.className = 'alert success';
+  msgEl.textContent = '✅ Ficha cargada desde Pie de Fuerza.';
+} else {
       // ✅ Nuevo → rellenar desde auditoría_personal (solo Datos Personales)
       limpiarFormulario(false);
       document.getElementById('cedula').value = cedula;
