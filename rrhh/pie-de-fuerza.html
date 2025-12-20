@@ -439,7 +439,6 @@
         paisSel.appendChild(opt);
       });
 
-      // Eventos
       document.getElementById('btnBuscar').addEventListener('click', buscarPorCedula);
       document.getElementById('btnGuardar').addEventListener('click', guardarFicha);
       document.getElementById('btnLimpiar').addEventListener('click', () => limpiarFormulario(true));
@@ -452,17 +451,15 @@
       document.getElementById('btnAddHijo').addEventListener('click', addHijo);
       document.getElementById('btnAddAsegurado').addEventListener('click', addAsegurado);
 
-      // Tabs
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
           document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
           btn.classList.add('active');
-          document.getElementById(btn.dataset.tab)?.classList.add('active');
+          document.getElementById(btn.dataset-tab)?.classList.add('active');
         });
       });
 
-      // Inicializar listas
       renderContactos([]);
       renderFormacion([]);
       renderDocumentos([]);
@@ -483,7 +480,7 @@
       document.getElementById('edad').value = edad;
     }
 
-    // ✅ ✅ ✅ CORREGIDO: usa .maybeSingle() → no lanza error si no hay filas
+    // ✅ ✅ ✅ CORREGIDO: ahora CARGA el ÚLTIMO registro y datos de auditoría_personal
     async function buscarPorCedula() {
       const cedula = document.getElementById('searchCedula').value.trim();
       const msgEl = document.getElementById('searchMessage');
@@ -504,30 +501,34 @@
           .from('auditoria_personal')
           .select('apellidos_nombres')
           .eq('cedula', cedula)
-          .maybeSingle(); // ← clave
+          .maybeSingle();
 
-        // ✅ Pie de Fuerza (todo)
+        // ✅ Pie de Fuerza — ÚLTIMA VERSIÓN
         const {  pieData } = await client
           .from('pie_de_fuerza')
           .select('*')
           .eq('cedula', cedula)
-          .order('fecha_actualizacion', { ascending: false })
+          .order('fecha_actualizacion', { ascending: false }) // ← clave: más reciente primero
           .limit(1)
-          .maybeSingle(); // ← clave
+          .maybeSingle(); // ← evita error 404
 
-        // ✅ Siempre asignar y bloquear cédula
+        // ✅ Siempre asignar cédula
         const cedEl = document.getElementById('cedula');
         cedEl.value = cedula;
         cedEl.readOnly = true;
 
         if (pieData) {
-          // ✅ MODO EDICIÓN
+          // ✅ Modo edición — último registro
           currentCedula = cedula;
-          limpiarFormulario(false); // no borrar cédula
+          limpiarFormulario(false); // no borra cédula ni nombre
 
-          // ——— Campos básicos ———
+          // ✅ Asignar AQUÍ, después de limpiar
+          document.getElementById('cedula').value = cedula;
+          document.getElementById('nombre_completo').value = pieData.nombre_completo || audData?.apellidos_nombres || '';
+
+          // Campos planos
           const fields = [
-            'nombre_completo', 'rif', 'nacionalidad', 'estado_civil', 'sexo',
+            'rif', 'nacionalidad', 'estado_civil', 'sexo',
             'fecha_nacimiento', 'pais_nacimiento', 'estado_nacimiento',
             'ciudad_nacimiento', 'municipio_nacimiento', 'estado_reside',
             'municipio_reside', 'parroquia_reside', 'direccion_habitacion',
@@ -552,24 +553,24 @@
             }
           });
 
-          // ——— Booleanos ———
+          // Booleanos
           ['posee_carnet_patria', 'inscrito_0800mi_hogar', 'inscrito_cne'].forEach(f => {
             const el = document.getElementById(f);
             if (el) el.value = String(!!pieData[f]);
           });
 
-          // ——— Correo dominio ———
+          // Correo dominio
           if (pieData.correo_dominio) {
             document.getElementById('correo_dominio').value = pieData.correo_dominio;
           }
 
-          // ——— Fecha → edad ———
+          // Fecha → edad
           if (pieData.fecha_nacimiento) {
             document.getElementById('fecha_nacimiento').value = pieData.fecha_nacimiento;
             calcularEdad();
           }
 
-          // ✅ ✅ ✅ LISTAS DINÁMICAS — cargan correctamente
+          // ✅ Listas dinámicas
           renderContactos(pieData.contactos || []);
           renderFormacion(pieData.formacion || []);
           renderDocumentos(pieData.documentos || []);
@@ -581,15 +582,17 @@
           msgEl.className = 'alert success';
           msgEl.textContent = `✅ Última versión cargada (${new Date(pieData.fecha_actualizacion).toLocaleString()}).`;
         } else {
-          // ✅ NUEVA FICHA
+          // ✅ Nueva ficha — con nombre de auditoría
           currentCedula = null;
           limpiarFormulario(false);
+
           document.getElementById('cedula').value = cedula;
           document.getElementById('nombre_completo').value = audData?.apellidos_nombres || '';
+
           msgEl.className = 'alert info';
           msgEl.textContent = audData 
             ? '✅ Datos pre-cargados. Complete y guarde nueva versión.'
-            : 'ℹ️ Cédula nueva. Rellene los datos.';
+            : 'ℹ️ Cédula nueva. Ingrese datos manualmente.';
         }
 
         document.getElementById('formContainer').style.display = 'block';
@@ -603,11 +606,17 @@
       }
     }
 
+    // ✅ CORREGIDO: ahora preserva cédula y nombre cuando resetCedula = false
     function limpiarFormulario(resetCedula = true) {
-      if (resetCedula) document.getElementById('searchCedula').value = '';
-      currentCedula = null;
-      const ids = [
-        'nombre_completo', 'cedula', 'rif', 'nacionalidad', 'estado_civil', 'sexo',
+      if (resetCedula) {
+        document.getElementById('searchCedula').value = '';
+        currentCedula = null;
+        document.getElementById('cedula').value = '';
+        document.getElementById('nombre_completo').value = '';
+      }
+
+      const fieldsToClear = [
+        'rif', 'nacionalidad', 'estado_civil', 'sexo',
         'fecha_nacimiento', 'edad', 'pais_nacimiento', 'estado_nacimiento', 'ciudad_nacimiento',
         'municipio_nacimiento', 'estado_reside', 'municipio_reside', 'parroquia_reside',
         'direccion_habitacion', 'latitud', 'longitud', 'correo_local', 'nivel_academico',
@@ -620,13 +629,16 @@
         'rango', 'providencia_ascenso', 'nivel_jerarquico', 'fecha_ingreso', 'credencial',
         'dependencia', 'servicio', 'cargo', 'nombramiento', 'tiempo_cnpb', 'tiempo_otras', 'antiguedad'
       ];
-      ids.forEach(id => {
+
+      fieldsToClear.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
           if (el.tagName === 'SELECT') el.selectedIndex = 0;
+          else if (el.type === 'checkbox') el.checked = false;
           else el.value = '';
         }
       });
+
       document.getElementById('correo_dominio').selectedIndex = 0;
       calcularEdad();
       renderContactos([]);
@@ -652,14 +664,15 @@
         showAlert('⚠️ Cédula debe tener 8 dígitos.', 'error');
         return resetBtn();
       }
+
       const numCta = document.getElementById('numero_cuenta').value;
       if (numCta && numCta.length !== 20) {
         showAlert('⚠️ Cuenta debe tener 20 dígitos.', 'error');
         return resetBtn();
       }
 
-      const req = ['nombre_completo', 'sexo', 'fecha_nacimiento', 'estado_reside', 'municipio_reside', 'parroquia_reside', 'direccion_habitacion'];
-      for (const f of req) {
+      const required = ['nombre_completo', 'sexo', 'fecha_nacimiento', 'estado_reside', 'municipio_reside', 'parroquia_reside', 'direccion_habitacion'];
+      for (const f of required) {
         if (!document.getElementById(f).value?.trim()) {
           showAlert(`⚠️ "${f}" es obligatorio.`, 'error');
           return resetBtn();
@@ -754,6 +767,7 @@
       } finally {
         resetBtn();
       }
+
       function resetBtn() {
         isSaving = false;
         btn.disabled = false;
@@ -761,7 +775,7 @@
       }
     }
 
-    // ========== LISTAS DINÁMICAS — FUNCIONAN ==========
+    // ========== LISTAS DINÁMICAS — IMPLEMENTADAS ==========
     function addContacto() {
       const list = document.getElementById('contactosList');
       if (list.children.length >= 5) return showAlert('⚠️ Máx. 5 contactos.', 'error');
@@ -929,7 +943,9 @@
         <div><label>Concatenado</label><input type="text" placeholder="Apellidos, Nombres"></div>
         <div><label>Título Obtenido</label><input type="text" required></div>
         <div><label>Nivel Académico</label>
-          <select><option>Primaria</option><option>Secundaria</option><option>TSU</option><option>Pregrado</option><option>Especialización</option><option>Maestría</option><option>Doctorado</option></select>
+          <select><option>Primaria</option><option>Secundaria</option><option>TSU</option>
+          <option>Pregrado</option><option>Especialización</option><option>Maestría</option>
+          <option>Doctorado</option></select>
         </div>
         <div><label>Institución</label><input type="text" required></div>
         <div><label>Nº Registro</label><input type="text"></div>
