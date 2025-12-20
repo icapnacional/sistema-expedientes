@@ -119,19 +119,15 @@
       text-align: center;
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
       border: 2px solid #eaeaea;
-      cursor: default;
+      cursor: pointer;
       transition: all 0.3s ease;
       height: 100%;
     }
-    .module-card:hover:not([disabled]) {
+    .module-card:hover {
       transform: translateY(-4px);
       box-shadow: 0 8px 20px rgba(114, 47, 55, 0.15);
       border-color: #722F37;
       background-color: #fdf7f7;
-    }
-    .module-card[disabled] {
-      opacity: 0.5;
-      cursor: not-allowed;
     }
     .module-icon {
       font-size: 36px;
@@ -194,10 +190,7 @@
       text-decoration: none;
       font-weight: 600;
     }
-    .breadcrumb span {
-      margin: 0 8px;
-      color: #888;
-    }
+    .breadcrumb span { margin: 0 8px; color: #888; }
     @media (max-width: 768px) {
       .tabs-header { flex-direction: column; }
       .tab-btn { width: 100%; margin-bottom: 8px; }
@@ -274,13 +267,21 @@
         <div id="pie-fuerza" class="tab-content">
           <h2>👥 Pie de Fuerza</h2>
           <div class="module-grid">
-           <div class="module-card" id="btnPieFuerzaListado">
-  <div class="module-icon">📋</div>
-  <div class="module-title">Formulario de Pie de Fuerza</div>
-  <div class="module-desc">Registro y gestión del personal operativo.</div>
-</div>
-            <div class="module-card" id="btnPieFuerzaAsignaciones"><div class="module-icon">📍</div><div class="module-title">Asignaciones</div></div>
-            <div class="module-card" id="btnPieFuerzaMovimientos"><div class="module-icon">🔄</div><div class="module-title">Movimientos</div></div>
+            <div class="module-card" id="btnPieFuerzaListado">
+              <div class="module-icon">📋</div>
+              <div class="module-title">Formulario de Pie de Fuerza</div>
+              <div class="module-desc">Registro y gestión del personal operativo.</div>
+            </div>
+            <div class="module-card" id="btnPieFuerzaAsignaciones">
+              <div class="module-icon">📍</div>
+              <div class="module-title">Asignaciones</div>
+              <div class="module-desc">Gestión de ubicaciones y destinos.</div>
+            </div>
+            <div class="module-card" id="btnPieFuerzaMovimientos">
+              <div class="module-icon">🔄</div>
+              <div class="module-title">Movimientos</div>
+              <div class="module-desc">Traslados, ascensos y bajas.</div>
+            </div>
           </div>
         </div>
         <div id="orden-servicio" class="tab-content">
@@ -329,7 +330,6 @@
     </footer>
   </div>
   <script src="role-permissions.js"></script>
-
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
@@ -342,6 +342,7 @@
       const logoutBtn = document.getElementById('logoutBtn');
 
       try {
+        // ✅ Autenticación
         const { data: { session }, error } = await client.auth.getSession();
         if (error || !session) return window.location.href = '../index.html';
 
@@ -364,23 +365,58 @@
           userRolSpan.innerHTML += ' <span title="Administrador" style="color:#c62828; cursor:help;">ⓘ</span>';
         }
 
-        // ✅ ÚNICA llamada: delegar TODO al sistema externo
+        // ✅ Delegar permisos
         if (typeof initRolePermissions === 'function') {
           initRolePermissions(userRol);
         } else {
-          console.error('❌ role-permissions.js no cargado');
+          console.warn('⚠️ role-permissions.js no cargado. Todos los módulos estarán activos.');
         }
 
+        // ✅ Cerrar sesión
         logoutBtn.onclick = async () => {
           await client.auth.signOut();
           location.href = '../index.html';
         };
 
-        // Cambiar pestañas (UI puro)
-       // ✅ Enlazar botón "Formulario de Pie de Fuerza"
-document.getElementById('btnPieFuerzaListado')?.addEventListener('click', () => {
-  window.location.href = 'pie-de-fuerza/index.html';
-});
+        // ✅ ✅ ✅ CAMBIO DE PESTAÑAS — AHORA FUNCIONA
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            // Desactivar todas
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            // Activar la seleccionada
+            btn.classList.add('active');
+            const tabId = btn.dataset.tab;
+            document.getElementById(tabId)?.classList.add('active');
+          });
+        });
+
+        // ✅ ✅ ✅ ENLACE AL FORMULARIO DE PIE DE FUERZA
+        document.getElementById('btnPieFuerzaListado')?.addEventListener('click', () => {
+          window.location.href = 'pie-de-fuerza/index.html';
+        });
+
+        // ✅ Otros botones (opcional: deshabilitar temporalmente)
+        [
+          'btnPieFuerzaAsignaciones', 'btnPieFuerzaMovimientos',
+          'btnAuditoriaConsulta', 'btnAuditoriaRegistro',
+          'btnAuditoriaModificar', 'btnAuditoriaHistorial',
+          'btnRhObjetivos', 'btnRhDesempeno', 'btnRhCapacitacion',
+          'btnOrdenNueva', 'btnOrdenSeguimiento',
+          'btnReposoSolicitud', 'btnReposoAprobadas',
+          'btnVacacionesPlan', 'btnVacacionesSolicitudes',
+          'btnCambioNueva', 'btnCambioHistorial',
+          'btnDocFormularios', 'btnDocManuales'
+        ].forEach(id => {
+          const btn = document.getElementById(id);
+          if (btn) {
+            btn.addEventListener('click', (e) => {
+              e.preventDefault();
+              alert(`🚧 Módulo "${btn.querySelector('.module-title').textContent}" en desarrollo.`);
+            });
+          }
+        });
+
       } catch (e) {
         console.error('Error:', e);
         location.href = '../index.html';
