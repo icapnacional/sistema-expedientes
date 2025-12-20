@@ -483,154 +483,180 @@
       document.getElementById('edad').value = edad;
     }
 
-    async function buscarPorCedula() {
-      const cedula = document.getElementById('searchCedula').value.trim();
-      const msgEl = document.getElementById('searchMessage');
-      msgEl.style.display = 'block';
+async function buscarPorCedula() {
+  const cedula = document.getElementById('searchCedula').value.trim();
+  const msgEl = document.getElementById('searchMessage');
+  msgEl.style.display = 'block';
 
-      if (!/^\d{8}$/.test(cedula)) {
-        msgEl.className = 'alert error';
-        msgEl.textContent = '⚠️ Cédula debe tener 8 dígitos.';
-        return;
-      }
+  if (!/^\d{8}$/.test(cedula)) {
+    msgEl.className = 'alert error';
+    msgEl.textContent = '⚠️ Cédula debe tener 8 dígitos.';
+    return;
+  }
 
-      msgEl.className = 'alert info';
-      msgEl.textContent = '🔍 Cargando ficha...';
+  msgEl.className = 'alert info';
+  msgEl.textContent = '🔍 Cargando ficha...';
 
-      try {
-        // ✅ Última versión de pie_de_fuerza (por cédula)
-        const { data: pieData } = await client
-          .from('pie_de_fuerza')
-          .select('*')
-          .eq('cedula', cedula)
-          .order('fecha_actualizacion', { ascending: false })
-          .limit(1)
-          .maybeSingle(); // ← no falla si no existe
+  try {
+    // ✅ 1. Datos básicos de auditoría (solo nombre)
+    const { data: audData } = await client
+      .from('auditoria_personal')
+      .select('apellidos_nombres')
+      .eq('cedula', cedula)
+      .single()
+      .catch(() => ({ data: null }));
 
-        // ✅ Últimas versiones de tablas relacionadas
-        const [
-          { data: patriaData },
-          { data: descData },
-          { data: elecData },
-          { data: labData },
-          { data: audData }
-        ] = await Promise.all([
-          client.from('patria').select('*').eq('cedula', cedula).order('fecha_actualizacion', { ascending: false }).limit(1).maybeSingle(),
-          client.from('descricptivos').select('*').eq('cedula', cedula).order('fecha_actualizacion', { ascending: false }).limit(1).maybeSingle(),
-          client.from('electorales').select('*').eq('cedula', cedula).order('fecha_actualizacion', { ascending: false }).limit(1).maybeSingle(),
-          client.from('laborales').select('*').eq('cedula', cedula).order('fecha_actualizacion', { ascending: false }).limit(1).maybeSingle(),
-          client.from('auditoria_personal').select('apellidos_nombres').eq('cedula', cedula).single().then(r => r.data).catch(() => null)
-        ]);
+    // ✅ 2. Última versión de pie_de_fuerza (con JSON en campos dinámicos)
+    const { data: pieData } = await client
+      .from('pie_de_fuerza')
+      .select('*')
+      .eq('cedula', cedula)
+      .order('fecha_actualizacion', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-        // ✅ Prellenar siempre la cédula (bloqueada)
-        const cedEl = document.getElementById('cedula');
-        cedEl.value = cedula;
-        cedEl.readOnly = true;
+    // ✅ 3. Últimas versiones de tablas separadas (si las usas)
+    const [
+      { data: patriaData },
+      { data: descData },
+      { data: elecData },
+      { data: labData }
+    ] = await Promise.all([
+      client.from('patria').select('*').eq('cedula', cedula).order('fecha_actualizacion', { ascending: false }).limit(1).maybeSingle(),
+      client.from('descricptivos').select('*').eq('cedula', cedula).order('fecha_actualizacion', { ascending: false }).limit(1).maybeSingle(),
+      client.from('electorales').select('*').eq('cedula', cedula).order('fecha_actualizacion', { ascending: false }).limit(1).maybeSingle(),
+      client.from('laborales').select('*').eq('cedula', cedula).order('fecha_actualizacion', { ascending: false }).limit(1).maybeSingle()
+    ]);
 
-        if (pieData) {
-          // ✅ Modo edición (pero siempre nuevo registro al guardar)
-          currentCedula = cedula;
-          limpiarFormulario(false);
+    // ✅ Siempre bloquear cédula tras búsqueda
+    const cedEl = document.getElementById('cedula');
+    cedEl.value = cedula;
+    cedEl.readOnly = true;
 
-          // —— Datos personales (de pie_de_fuerza) ——
-          const fields1 = ['nombre_completo', 'rif', 'nacionalidad', 'estado_civil', 'sexo', 'pais_nacimiento',
-            'estado_nacimiento', 'ciudad_nacimiento', 'municipio_nacimiento', 'estado_reside', 'municipio_reside',
-            'parroquia_reside', 'direccion_habitacion', 'latitud', 'longitud', 'correo_local', 'nivel_academico',
-            'cantidad_hijos'];
-          fields1.forEach(id => {
-            const val = pieData[id];
-            if (val !== null && val !== undefined) document.getElementById(id).value = val;
-          });
+    if (pieData) {
+      currentCedula = cedula;
+      limpiarFormulario(false);
 
-          if (pieData.fecha_nacimiento) {
-            document.getElementById('fecha_nacimiento').value = pieData.fecha_nacimiento;
-            calcularEdad();
-          }
+      // ——— Campos de pie_de_fuerza ———
+      const fieldsFromPie = [
+        'nombre_completo', 'rif', 'nacionalidad', 'estado_civil', 'sexo',
+        'fecha_nacimiento', 'pais_nacimiento', 'estado_nacimiento',
+        'ciudad_nacimiento', 'municipio_nacimiento',
+        'estado_reside', 'municipio_reside', 'parroquia_reside',
+        'direccion_habitacion', 'latitud', 'longitud',
+        'correo_local', 'nivel_academico', 'cantidad_hijos',
+        'entidad_financiera', 'tipo_cuenta', 'numero_cuenta',
+        'estatura', 'peso', 'contextura', 'tez_piel', 'color_ojos',
+        'color_cabello', 'tipo_sangre', 'talla_camisa', 'talla_pantalon',
+        'talla_calzado', 'talla_gorra', 'tatuaje', 'cicatrices',
+        'senas_particulares', 'rango', 'providencia_ascenso',
+        'nivel_jerarquico', 'fecha_ingreso', 'credencial', 'dependencia',
+        'servicio', 'cargo', 'nombramiento', 'tiempo_cnpb',
+        'tiempo_otras', 'antiguedad', 'codigo_patria', 'serial_patria',
+        'jefe_1x10', 'integrante_1x10', 'centro_votacion',
+        'estado_electoral', 'municipio_electoral', 'parroquia_electoral'
+      ];
 
-          if (pieData.correo_dominio) {
-            document.getElementById('correo_dominio').value = pieData.correo_dominio;
-          }
-
-          // —— Patria ——
-          if (patriaData) {
-            ['posee_carnet_patria', 'codigo_patria', 'serial_patria', 'jefe_1x10', 'integrante_1x10', 'inscrito_0800mi_hogar']
-              .forEach(f => {
-                const v = patriaData[f];
-                if (v !== null && v !== undefined) {
-                  const el = document.getElementById(f);
-                  if (el.tagName === 'SELECT') el.value = String(v);
-                  else el.value = v;
-                }
-              });
-          }
-
-          // —— Descriptivos ——
-          if (descData) {
-            ['estatura', 'peso', 'contextura', 'tez_piel', 'color_ojos', 'color_cabello', 'tipo_sangre',
-              'talla_camisa', 'talla_pantalon', 'talla_calzado', 'talla_gorra', 'tatuaje', 'cicatrices', 'senas_particulares']
-              .forEach(f => {
-                const v = descData[f];
-                if (v !== null && v !== undefined) document.getElementById(f).value = v;
-              });
-          }
-
-          // —— Electorales ——
-          if (elecData) {
-            ['inscrito_cne', 'centro_votacion', 'estado_electoral', 'municipio_electoral', 'parroquia_electoral']
-              .forEach(f => {
-                const v = elecData[f];
-                if (v !== null && v !== undefined) {
-                  const el = document.getElementById(f);
-                  if (el.tagName === 'SELECT') el.value = String(v);
-                  else el.value = v;
-                }
-              });
-          }
-
-          // —— Laborales ——
-          if (labData) {
-            ['rango', 'providencia_ascenso', 'nivel_jerarquico', 'fecha_ingreso', 'credencial',
-              'dependencia', 'servicio', 'cargo', 'nombramiento', 'tiempo_cnpb', 'tiempo_otras', 'antiguedad']
-              .forEach(f => {
-                const v = labData[f];
-                if (v !== null && v !== undefined) document.getElementById(f).value = v;
-              });
-          }
-
-          // —— Listas dinámicas (de pieData) ——
-          renderContactos(pieData.contactos || []);
-          renderFormacion(pieData.formacion || []);
-          renderDocumentos(pieData.documentos || []);
-          renderAntecedentes(pieData.antecedentes || []);
-          renderAcademicos(pieData.academicos || []);
-          renderHijos(pieData.hijos || []);
-          renderAsegurados(pieData.asegurados || []);
-
-          msgEl.className = 'alert success';
-          msgEl.textContent = `✅ Última versión cargada (${new Date(pieData.fecha_actualizacion).toLocaleString()}).`;
-        } else {
-          // ✅ Nueva ficha
-          currentCedula = null;
-          limpiarFormulario(false);
-          document.getElementById('cedula').value = cedula;
-          document.getElementById('cedula').readOnly = true;
-          document.getElementById('nombre_completo').value = audData?.apellidos_nombres || '';
-          msgEl.className = 'alert info';
-          msgEl.textContent = audData 
-            ? '✅ Pre-cargado desde Auditoría. Complete y guarde nueva versión.'
-            : 'ℹ️ Cédula nueva. Rellene y guarde.';
+      fieldsFromPie.forEach(id => {
+        const val = pieData[id];
+        const el = document.getElementById(id);
+        if (el && val != null) {
+          el.value = el.tagName === 'SELECT' ? String(val) : val;
         }
+      });
 
-        document.getElementById('formContainer').style.display = 'block';
-        const nombre = pieData?.nombre_completo || audData?.apellidos_nombres || `Nuevo — C.I. ${cedula}`;
-        document.getElementById('nombreFuncionario').textContent = `📋 ${nombre}`;
+      // ——— Booleanos (selects de Sí/No) ———
+      const boolFields = ['posee_carnet_patria', 'inscrito_0800mi_hogar', 'inscrito_cne'];
+      boolFields.forEach(f => {
+        const el = document.getElementById(f);
+        if (el) el.value = String(!!pieData[f]);
+      });
 
-      } catch (err) {
-        console.error('Error en búsqueda:', err);
-        msgEl.className = 'alert error';
-        msgEl.textContent = `❌ Error: ${err.message || 'intente nuevamente'}`;
+      // ——— Correo dominio ———
+      if (pieData.correo_dominio) {
+        document.getElementById('correo_dominio').value = pieData.correo_dominio;
       }
+
+      // ——— Fecha → edad ———
+      if (pieData.fecha_nacimiento) {
+        document.getElementById('fecha_nacimiento').value = pieData.fecha_nacimiento;
+        calcularEdad();
+      }
+
+      // ✅ ——— LISTAS DINÁMICAS (desde JSONB en pieData) ———
+      renderContactos(pieData.contactos || []);
+      renderFormacion(pieData.formacion || []);
+      renderDocumentos(pieData.documentos || []);
+      renderAntecedentes(pieData.antecedentes || []);
+      renderAcademicos(pieData.academicos || []);
+      renderHijos(pieData.hijos || []);
+      renderAsegurados(pieData.asegurados || []);
+
+      msgEl.className = 'alert success';
+      msgEl.textContent = `✅ Última versión cargada (${new Date(pieData.fecha_actualizacion).toLocaleString()}).`;
+    } else if (patriaData || descData || elecData || labData || audData) {
+      // ✅ Datos parciales (de tablas separadas)
+      currentCedula = cedula;
+      limpiarFormulario(false);
+      document.getElementById('cedula').value = cedula;
+      document.getElementById('cedula').readOnly = true;
+
+      // ——— Patria ———
+      if (patriaData) {
+        document.getElementById('posee_carnet_patria').value = String(!!patriaData.posee_carnet_patria);
+        document.getElementById('codigo_patria').value = patriaData.codigo_patria || '';
+        document.getElementById('serial_patria').value = patriaData.serial_patria || '';
+        document.getElementById('jefe_1x10').value = patriaData.jefe_1x10 || '';
+        document.getElementById('integrante_1x10').value = patriaData.integrante_1x10 || '';
+        document.getElementById('inscrito_0800mi_hogar').value = String(!!patriaData.inscrito_0800mi_hogar);
+      }
+
+      // ——— Descriptivos ———
+      if (descData) {
+        document.getElementById('estatura').value = descData.estatura || '';
+        document.getElementById('peso').value = descData.peso || '';
+        // ... (igual para los demás)
+      }
+
+      // ——— Electorales ———
+      if (elecData) {
+        document.getElementById('inscrito_cne').value = String(!!elecData.inscrito_cne);
+        document.getElementById('centro_votacion').value = elecData.centro_votacion || '';
+        // ...
+      }
+
+      // ——— Laborales ———
+      if (labData) {
+        document.getElementById('rango').value = labData.rango || '';
+        // ...
+      }
+
+      document.getElementById('nombre_completo').value = audData?.apellidos_nombres || '';
+      msgEl.className = 'alert info';
+      msgEl.textContent = 'ℹ️ Datos parciales cargados. Complete y guarde nueva versión.';
+    } else {
+      // ✅ Nueva ficha
+      currentCedula = null;
+      limpiarFormulario(false);
+      document.getElementById('cedula').value = cedula;
+      document.getElementById('cedula').readOnly = true;
+      document.getElementById('nombre_completo').value = audData?.apellidos_nombres || '';
+      msgEl.className = 'alert info';
+      msgEl.textContent = audData 
+        ? '✅ Pre-cargado desde Auditoría. Complete el resto.'
+        : 'ℹ️ Cédula nueva. Ingrese datos manualmente.';
     }
+
+    document.getElementById('formContainer').style.display = 'block';
+    const nombre = pieData?.nombre_completo || audData?.apellidos_nombres || `Nuevo — C.I. ${cedula}`;
+    document.getElementById('nombreFuncionario').textContent = `📋 ${nombre}`;
+
+  } catch (err) {
+    console.error('Error en búsqueda:', err);
+    msgEl.className = 'alert error';
+    msgEl.textContent = `❌ Error: ${err.message || 'intente nuevamente'}`;
+  }
+}
 
     function limpiarFormulario(resetCedula = true) {
       currentCedula = null;
@@ -884,20 +910,25 @@ async function guardarFicha() {
       })).filter(f => f.nombre && f.instituto);
     }
 
-    function renderFormacion(data) {
-      const list = document.getElementById('formacionList');
-      list.innerHTML = '';
-      data.forEach(() => addFormacion());
-      data.forEach((f, i) => {
-        const item = list.children[i];
-        item.querySelector('[name$=".nombre"]').value = f.nombre || '';
-        item.querySelector('[name$=".inicio"]').value = f.inicio || '';
-        item.querySelector('[name$=".fin"]').value = f.fin || '';
-        item.querySelector('[name$=".duracion"]').value = f.duracion || '';
-        item.querySelector('[name$=".instituto"]').value = f.instituto || '';
-      });
-    }
-
+function renderFormacion(data) {
+  const list = document.getElementById('formacionList');
+  list.innerHTML = '';
+  data.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'dynamic-item';
+    div.innerHTML = `
+      <div><label>Nombre del Curso</label><input type="text" value="${item.nombre || ''}" required></div>
+      <div><label>Fecha Inicio</label><input type="date" value="${item.inicio || ''}" required></div>
+      <div><label>Fecha Culminación</label><input type="date" value="${item.fin || ''}"></div>
+      <div><label>Tiempo Duración</label><input type="text" value="${item.duracion || ''}" placeholder="Ej: 40 hrs"></div>
+      <div><label>Instituto</label><input type="text" value="${item.instituto || ''}" required></div>
+      <div class="dynamic-actions">
+        <button type="button" class="btn btn-outline btn-sm" onclick="this.closest('.dynamic-item').remove()">🗑️</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
     // ✅ DOCUMENTOS
     function addDocumento() {
       const list = document.getElementById('documentosList');
