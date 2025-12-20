@@ -470,129 +470,132 @@
       document.getElementById('edad').value = edad;
     }
 
-    async function buscarPorCedula() {
-      const cedula = document.getElementById('searchCedula').value.trim();
-      const msgEl = document.getElementById('searchMessage');
-      msgEl.style.display = 'block';
+async function buscarPorCedula() {
+  const cedula = document.getElementById('searchCedula').value.trim();
+  const msgEl = document.getElementById('searchMessage');
+  msgEl.style.display = 'block';
 
-      if (!/^\d{8}$/.test(cedula)) {
-        msgEl.className = 'alert error';
-        msgEl.textContent = '⚠️ Cédula debe tener 8 dígitos.';
-        return;
-      }
+  if (!/^\d{8}$/.test(cedula)) {
+    msgEl.className = 'alert error';
+    msgEl.textContent = '⚠️ Cédula debe tener 8 dígitos.';
+    return;
+  }
 
-      msgEl.className = 'alert info';
-      msgEl.textContent = '🔍 Cargando ficha...';
+  msgEl.className = 'alert info';
+  msgEl.textContent = '🔍 Cargando ficha...';
 
-      try {
-        const { data: audData } = await client
-          .from('auditoria_personal')
-          .select('apellidos_nombres')
-          .eq('cedula', cedula)
-          .single()
-          .catch(() => ({ data: null }));
+  try {
+    // ✅ Usar maybeSingle() → NO lanza error si no hay resultados
+    const {  audData } = await client
+      .from('auditoria_personal')
+      .select('apellidos_nombres')
+      .eq('cedula', cedula)
+      .maybeSingle(); // ← clave: sin .catch()
 
-        const { data: pieData } = await client
-          .from('pie_de_fuerza')
-          .select('*')
-          .eq('cedula', cedula)
-          .single();
+    const {  pieData } = await client
+      .from('pie_de_fuerza')
+      .select('*')
+      .eq('cedula', cedula)
+      .order('fecha_actualizacion', { ascending: false })
+      .limit(1)
+      .maybeSingle(); // ← clave: sin .catch()
 
-        if (pieData) {
-          currentCedula = cedula; // ✅ clave para edición
-          document.getElementById('cedula').readOnly = true;
-          document.getElementById('cedula').value = cedula;
-          document.getElementById('nombre_completo').value = pieData.nombre_completo || audData?.apellidos_nombres || '';
+    // ✅ Siempre bloquear cédula tras búsqueda
+    const cedEl = document.getElementById('cedula');
+    cedEl.value = cedula;
+    cedEl.readOnly = true;
 
-          // ✅ Cargar TODOS los campos
-          const fields = [
-            // Personales
-            'nombre_completo', 'rif', 'nacionalidad', 'estado_civil', 'sexo',
-            'fecha_nacimiento', 'pais_nacimiento', 'estado_nacimiento',
-            'ciudad_nacimiento', 'municipio_nacimiento', 'estado_reside',
-            'municipio_reside', 'parroquia_reside', 'direccion_habitacion',
-            'latitud', 'longitud', 'correo_local', 'nivel_academico', 'cantidad_hijos',
-            // Patria
-            'posee_carnet_patria', 'codigo_patria', 'serial_patria', 'jefe_1x10',
-            'integrante_1x10', 'inscrito_0800mi_hogar',
-            // Bancarios
-            'entidad_financiera', 'tipo_cuenta', 'numero_cuenta',
-            // Descriptivos
-            'estatura', 'peso', 'contextura', 'tez_piel', 'color_ojos',
-            'color_cabello', 'tipo_sangre', 'talla_camisa', 'talla_pantalon',
-            'talla_calzado', 'talla_gorra', 'tatuaje', 'cicatrices', 'senas_particulares',
-            // Electorales
-            'inscrito_cne', 'centro_votacion', 'estado_electoral', 'municipio_electoral',
-            'parroquia_electoral',
-            // Laborales
-            'rango', 'providencia_ascenso', 'nivel_jerarquico', 'fecha_ingreso',
-            'credencial', 'dependencia', 'servicio', 'cargo', 'nombramiento',
-            'tiempo_cnpb', 'tiempo_otras', 'antiguedad'
-          ];
+    if (pieData) {
+      currentCedula = cedula;
+      limpiarFormulario(false);
 
-          fields.forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            const val = pieData[id];
-            if (val == null) return;
-            if (el.tagName === 'SELECT') {
-              el.value = String(val);
-            } else {
-              el.value = String(val);
-            }
-          });
+      // === Campos planos ===
+      const fields = [
+        // Personales
+        'nombre_completo', 'rif', 'nacionalidad', 'estado_civil', 'sexo',
+        'fecha_nacimiento', 'pais_nacimiento', 'estado_nacimiento',
+        'ciudad_nacimiento', 'municipio_nacimiento', 'estado_reside',
+        'municipio_reside', 'parroquia_reside', 'direccion_habitacion',
+        'latitud', 'longitud', 'correo_local', 'nivel_academico', 'cantidad_hijos',
+        // Patria
+        'posee_carnet_patria', 'codigo_patria', 'serial_patria', 'jefe_1x10',
+        'integrante_1x10', 'inscrito_0800mi_hogar',
+        // Bancarios
+        'entidad_financiera', 'tipo_cuenta', 'numero_cuenta',
+        // Descriptivos
+        'estatura', 'peso', 'contextura', 'tez_piel', 'color_ojos',
+        'color_cabello', 'tipo_sangre', 'talla_camisa', 'talla_pantalon',
+        'talla_calzado', 'talla_gorra', 'tatuaje', 'cicatrices', 'senas_particulares',
+        // Electorales
+        'inscrito_cne', 'centro_votacion', 'estado_electoral', 'municipio_electoral',
+        'parroquia_electoral',
+        // Laborales
+        'rango', 'providencia_ascenso', 'nivel_jerarquico', 'fecha_ingreso',
+        'credencial', 'dependencia', 'servicio', 'cargo', 'nombramiento',
+        'tiempo_cnpb', 'tiempo_otras', 'antiguedad'
+      ];
 
-          // Booleanos en selects
-          ['posee_carnet_patria', 'inscrito_0800mi_hogar', 'inscrito_cne'].forEach(f => {
-            const el = document.getElementById(f);
-            if (el) el.value = String(!!pieData[f]);
-          });
-
-          // Correo dominio
-          if (pieData.correo_dominio) {
-            document.getElementById('correo_dominio').value = pieData.correo_dominio;
-          }
-
-          // Fecha → edad
-          if (pieData.fecha_nacimiento) {
-            document.getElementById('fecha_nacimiento').value = pieData.fecha_nacimiento;
-            calcularEdad();
-          }
-
-          // ✅ LISTAS DINÁMICAS — ahora SÍ se cargan
-          renderContactos(pieData.contactos || []);
-          renderFormacion(pieData.formacion || []);
-          renderDocumentos(pieData.documentos || []);
-          renderAntecedentes(pieData.antecedentes || []);
-          renderAcademicos(pieData.academicos || []);
-          renderHijos(pieData.hijos || []);
-          renderAsegurados(pieData.asegurados || []);
-
-          msgEl.className = 'alert success';
-          msgEl.textContent = '✅ Ficha cargada para edición.';
+      fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const val = pieData[id];
+        if (val == null) return;
+        if (el.tagName === 'SELECT') {
+          el.value = String(val);
         } else {
-          currentCedula = null;
-          limpiarFormulario(false);
-          document.getElementById('cedula').value = cedula;
-          document.getElementById('cedula').readOnly = true;
-          document.getElementById('nombre_completo').value = audData?.apellidos_nombres || '';
-          msgEl.className = 'alert info';
-          msgEl.textContent = audData 
-            ? '✅ Datos pre-cargados desde Auditoría. Complete y guarde.'
-            : 'ℹ️ Cédula nueva. Ingrese datos.';
+          el.value = String(val);
         }
+      });
 
-        document.getElementById('formContainer').style.display = 'block';
-        document.getElementById('nombreFuncionario').textContent = 
-          `📋 ${pieData?.nombre_completo || audData?.apellidos_nombres || `Nuevo — ${cedula}`}`;
+      // Booleanos en selects (Sí/No)
+      ['posee_carnet_patria', 'inscrito_0800mi_hogar', 'inscrito_cne'].forEach(f => {
+        const el = document.getElementById(f);
+        if (el) el.value = String(!!pieData[f]);
+      });
 
-      } catch (err) {
-        console.error(err);
-        msgEl.className = 'alert error';
-        msgEl.textContent = `❌ ${err.message || 'Error al buscar'}`;
+      // Correo dominio
+      if (pieData.correo_dominio) {
+        document.getElementById('correo_dominio').value = pieData.correo_dominio;
       }
+
+      // Fecha → edad
+      if (pieData.fecha_nacimiento) {
+        document.getElementById('fecha_nacimiento').value = pieData.fecha_nacimiento;
+        calcularEdad();
+      }
+
+      // ✅ LISTAS DINÁMICAS — ahora SÍ se cargan desde JSONB
+      renderContactos(pieData.contactos || []);
+      renderFormacion(pieData.formacion || []);
+      renderDocumentos(pieData.documentos || []);
+      renderAntecedentes(pieData.antecedentes || []);
+      renderAcademicos(pieData.academicos || []);
+      renderHijos(pieData.hijos || []);
+      renderAsegurados(pieData.asegurados || []);
+
+      msgEl.className = 'alert success';
+      msgEl.textContent = `✅ Última versión cargada (${new Date(pieData.fecha_actualizacion).toLocaleString()}).`;
+    } else {
+      currentCedula = null;
+      limpiarFormulario(false);
+      document.getElementById('cedula').value = cedula;
+      document.getElementById('nombre_completo').value = audData?.apellidos_nombres || '';
+      msgEl.className = 'alert info';
+      msgEl.textContent = audData 
+        ? '✅ Datos pre-cargados desde Auditoría. Complete y guarde nueva versión.'
+        : 'ℹ️ Cédula nueva. Rellene los datos.';
     }
 
+    document.getElementById('formContainer').style.display = 'block';
+    const nombre = pieData?.nombre_completo || audData?.apellidos_nombres || `Nuevo — ${cedula}`;
+    document.getElementById('nombreFuncionario').textContent = `📋 ${nombre}`;
+
+  } catch (err) {
+    console.error('Error en búsqueda:', err);
+    msgEl.className = 'alert error';
+    msgEl.textContent = `❌ ${err.message || 'Error al buscar'}`;
+  }
+}
     function limpiarFormulario(resetCedula = true) {
       if (resetCedula) document.getElementById('searchCedula').value = '';
       currentCedula = null;
