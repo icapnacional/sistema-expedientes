@@ -672,116 +672,154 @@
       renderAsegurados([]);
     }
 
-    async function guardarFicha() {
-      const cedula = document.getElementById('cedula').value.trim();
-      if (!/^\d{8}$/.test(cedula)) return showAlert('⚠️ Cédula debe tener 8 dígitos.', 'error');
+let isSaving = false;
 
-      const numCta = document.getElementById('numero_cuenta').value;
-      if (numCta && numCta.length !== 20) return showAlert('⚠️ Nº de cuenta debe tener 20 dígitos.', 'error');
+async function guardarFicha() {
+  if (isSaving) return;
+  isSaving = true;
 
-      const required = ['nombre_completo', 'sexo', 'fecha_nacimiento', 'estado_reside', 'municipio_reside', 'parroquia_reside', 'direccion_habitacion'];
-      for (let f of required) {
-        if (!document.getElementById(f).value.trim()) {
-          return showAlert(`⚠️ El campo "${f}" es obligatorio.`, 'error');
-        }
-      }
+  const btn = document.getElementById('btnGuardar');
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '💾 Guardando...';
 
-      const now = new Date().toISOString();
+  const cedula = document.getElementById('cedula').value.trim();
+  if (!/^\d{8}$/.test(cedula)) {
+    showAlert('⚠️ Cédula inválida: debe tener exactamente 8 dígitos.', 'error');
+    isSaving = false;
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+    return;
+  }
 
-      const data = {
-        fecha_actualizacion: now,
-        cedula,
-        nombre_completo: document.getElementById('nombre_completo').value.trim(),
-        rif: document.getElementById('rif').value.trim(),
-        nacionalidad: document.getElementById('nacionalidad').value.trim() || 'Venezolana',
-        estado_civil: document.getElementById('estado_civil').value,
-        sexo: document.getElementById('sexo').value,
-        fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
-        pais_nacimiento: document.getElementById('pais_nacimiento').value,
-        estado_nacimiento: document.getElementById('estado_nacimiento').value,
-        ciudad_nacimiento: document.getElementById('ciudad_nacimiento').value,
-        municipio_nacimiento: document.getElementById('municipio_nacimiento').value,
-        estado_reside: document.getElementById('estado_reside').value.trim(),
-        municipio_reside: document.getElementById('municipio_reside').value.trim(),
-        parroquia_reside: document.getElementById('parroquia_reside').value.trim(),
-        direccion_habitacion: document.getElementById('direccion_habitacion').value.trim(),
-        latitud: parseFloat(document.getElementById('latitud').value) || null,
-        longitud: parseFloat(document.getElementById('longitud').value) || null,
-        correo_local: document.getElementById('correo_local').value.trim(),
-        correo_dominio: document.getElementById('correo_dominio').value,
-        nivel_academico: document.getElementById('nivel_academico').value,
-        cantidad_hijos: parseInt(document.getElementById('cantidad_hijos').value) || 0,
-        contactos: getContactos(),
-        formacion: getFormacion(),
-        documentos: getDocumentos(),
-        antecedentes: getAntecedentes(),
-        academicos: getAcademicos(),
-        hijos: getHijos(),
-        asegurados: getAsegurados(),
+  const numeroCuenta = document.getElementById('numero_cuenta').value;
+  if (numeroCuenta && numeroCuenta.length !== 20) {
+    showAlert('⚠️ El número de cuenta debe tener exactamente 20 dígitos.', 'error');
+    isSaving = false;
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+    return;
+  }
 
-        // Datos secundarios (para auditoría en una sola tabla, o puedes moverlos)
-        posee_carnet_patria: document.getElementById('posee_carnet_patria').value === 'true',
-        codigo_patria: document.getElementById('codigo_patria').value.trim(),
-        serial_patria: document.getElementById('serial_patria').value.trim(),
-        jefe_1x10: document.getElementById('jefe_1x10').value.trim(),
-        integrante_1x10: document.getElementById('integrante_1x10').value.trim(),
-        inscrito_0800mi_hogar: document.getElementById('inscrito_0800mi_hogar').value === 'true',
-        entidad_financiera: document.getElementById('entidad_financiera').value,
-        tipo_cuenta: document.getElementById('tipo_cuenta').value,
-        numero_cuenta: numCta || null,
-        estatura: parseFloat(document.getElementById('estatura').value) || null,
-        peso: parseFloat(document.getElementById('peso').value) || null,
-        contextura: document.getElementById('contextura').value,
-        tez_piel: document.getElementById('tez_piel').value,
-        color_ojos: document.getElementById('color_ojos').value,
-        color_cabello: document.getElementById('color_cabello').value,
-        tipo_sangre: document.getElementById('tipo_sangre').value,
-        talla_camisa: document.getElementById('talla_camisa').value,
-        talla_pantalon: document.getElementById('talla_pantalon').value,
-        talla_calzado: document.getElementById('talla_calzado').value,
-        talla_gorra: document.getElementById('talla_gorra').value,
-        tatuaje: document.getElementById('tatuaje').value,
-        cicatrices: document.getElementById('cicatrices').value,
-        senas_particulares: document.getElementById('senas_particulares').value,
-        inscrito_cne: document.getElementById('inscrito_cne').value === 'true',
-        centro_votacion: document.getElementById('centro_votacion').value.trim(),
-        estado_electoral: document.getElementById('estado_electoral').value.trim(),
-        municipio_electoral: document.getElementById('municipio_electoral').value.trim(),
-        parroquia_electoral: document.getElementById('parroquia_electoral').value.trim(),
-        rango: document.getElementById('rango').value.trim(),
-        providencia_ascenso: document.getElementById('providencia_ascenso').value.trim(),
-        nivel_jerarquico: document.getElementById('nivel_jerarquico').value.trim(),
-        fecha_ingreso: document.getElementById('fecha_ingreso').value,
-        credencial: document.getElementById('credencial').value.trim(),
-        dependencia: document.getElementById('dependencia').value.trim(),
-        servicio: document.getElementById('servicio').value.trim(),
-        cargo: document.getElementById('cargo').value.trim(),
-        nombramiento: document.getElementById('nombramiento').value.trim(),
-        tiempo_cnpb: document.getElementById('tiempo_cnpb').value.trim(),
-        tiempo_otras: document.getElementById('tiempo_otras').value.trim(),
-        antiguedad: document.getElementById('antiguedad').value.trim()
-      };
-
-      showAlert('💾 Guardando nueva versión...', 'info');
-
-      try {
-        // ✅ SIEMPRE INSERT — historial garantizado
-        const res = await client.from('pie_de_fuerza').insert([data]);
-        if (res.error) throw res.error;
-
-        showAlert('✅ Nueva versión guardada con éxito.', 'success');
-        setTimeout(() => {
-          document.getElementById('searchMessage').style.display = 'none';
-          document.getElementById('cedula').readOnly = true; // reforzar
-        }, 3000);
-
-      } catch (err) {
-        console.error('Error:', err);
-        showAlert(`❌ Error al guardar: ${err.message || 'intente nuevamente'}`, 'error');
-      }
+  const requiredFields = [
+    'nombre_completo', 'sexo', 'fecha_nacimiento',
+    'estado_reside', 'municipio_reside', 'parroquia_reside', 'direccion_habitacion'
+  ];
+  for (const field of requiredFields) {
+    if (!document.getElementById(field)?.value?.trim()) {
+      showAlert(`⚠️ El campo "${field}" es obligatorio.`, 'error');
+      isSaving = false;
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+      return;
     }
+  }
 
-    // ——————— LISTAS DINÁMICAS (implementadas según tus campos) ———————
+  const now = new Date().toISOString();
+  const data = {
+    fecha_actualizacion: now,
+    cedula,
+    nombre_completo: document.getElementById('nombre_completo').value.trim(),
+    rif: document.getElementById('rif').value.trim(),
+    nacionalidad: document.getElementById('nacionalidad').value.trim() || 'Venezolana',
+    estado_civil: document.getElementById('estado_civil').value,
+    sexo: document.getElementById('sexo').value,
+    fecha_nacimiento: document.getElementById('fecha_nacimiento').value || null,
+    pais_nacimiento: document.getElementById('pais_nacimiento').value,
+    estado_nacimiento: document.getElementById('estado_nacimiento').value || null,
+    ciudad_nacimiento: document.getElementById('ciudad_nacimiento').value || null,
+    municipio_nacimiento: document.getElementById('municipio_nacimiento').value || null,
+    estado_reside: document.getElementById('estado_reside').value.trim(),
+    municipio_reside: document.getElementById('municipio_reside').value.trim(),
+    parroquia_reside: document.getElementById('parroquia_reside').value.trim(),
+    direccion_habitacion: document.getElementById('direccion_habitacion').value.trim(),
+    latitud: parseFloat(document.getElementById('latitud').value) || null,
+    longitud: parseFloat(document.getElementById('longitud').value) || null,
+    correo_local: document.getElementById('correo_local').value.trim(),
+    correo_dominio: document.getElementById('correo_dominio').value,
+    nivel_academico: document.getElementById('nivel_academico').value,
+    cantidad_hijos: parseInt(document.getElementById('cantidad_hijos').value) || 0,
+    // Listas dinámicas
+    contactos: getContactos(),
+    formacion: getFormacion(),
+    documentos: getDocumentos(),
+    antecedentes: getAntecedentes(),
+    academicos: getAcademicos(),
+    hijos: getHijos(),
+    asegurados: getAsegurados(),
+    // Patria
+    posee_carnet_patria: document.getElementById('posee_carnet_patria').value === 'true',
+    codigo_patria: document.getElementById('codigo_patria').value.trim(),
+    serial_patria: document.getElementById('serial_patria').value.trim(),
+    jefe_1x10: document.getElementById('jefe_1x10').value.trim(),
+    integrante_1x10: document.getElementById('integrante_1x10').value.trim(),
+    inscrito_0800mi_hogar: document.getElementById('inscrito_0800mi_hogar').value === 'true',
+    // Bancarios
+    entidad_financiera: document.getElementById('entidad_financiera').value,
+    tipo_cuenta: document.getElementById('tipo_cuenta').value,
+    numero_cuenta: numeroCuenta || null,
+    // Descriptivos
+    estatura: parseFloat(document.getElementById('estatura').value) || null,
+    peso: parseFloat(document.getElementById('peso').value) || null,
+    contextura: document.getElementById('contextura').value,
+    tez_piel: document.getElementById('tez_piel').value,
+    color_ojos: document.getElementById('color_ojos').value,
+    color_cabello: document.getElementById('color_cabello').value,
+    tipo_sangre: document.getElementById('tipo_sangre').value,
+    talla_camisa: document.getElementById('talla_camisa').value,
+    talla_pantalon: document.getElementById('talla_pantalon').value,
+    talla_calzado: document.getElementById('talla_calzado').value,
+    talla_gorra: document.getElementById('talla_gorra').value,
+    tatuaje: document.getElementById('tatuaje').value,
+    cicatrices: document.getElementById('cicatrices').value,
+    senas_particulares: document.getElementById('senas_particulares').value,
+    // Electorales
+    inscrito_cne: document.getElementById('inscrito_cne').value === 'true',
+    centro_votacion: document.getElementById('centro_votacion').value.trim(),
+    estado_electoral: document.getElementById('estado_electoral').value.trim(),
+    municipio_electoral: document.getElementById('municipio_electoral').value.trim(),
+    parroquia_electoral: document.getElementById('parroquia_electoral').value.trim(),
+    // Laborales
+    rango: document.getElementById('rango').value.trim(),
+    providencia_ascenso: document.getElementById('providencia_ascenso').value.trim(),
+    nivel_jerarquico: document.getElementById('nivel_jerarquico').value.trim(),
+    fecha_ingreso: document.getElementById('fecha_ingreso').value || null,
+    credencial: document.getElementById('credencial').value.trim(),
+    dependencia: document.getElementById('dependencia').value.trim(),
+    servicio: document.getElementById('servicio').value.trim(),
+    cargo: document.getElementById('cargo').value.trim(),
+    nombramiento: document.getElementById('nombramiento').value.trim(),
+    tiempo_cnpb: document.getElementById('tiempo_cnpb').value.trim(),
+    tiempo_otras: document.getElementById('tiempo_otras').value.trim(),
+    antiguedad: document.getElementById('antiguedad').value.trim()
+  };
+
+  showAlert('💾 Guardando nueva versión...', 'info');
+
+  try {
+    // ✅ SIEMPRE INSERT → historial completo, múltiples versiones por cédula
+    const result = await client.from('pie_de_fuerza').insert([data]);
+    
+    if (result.error) throw result.error;
+
+    // ✅ Éxito: ahora sí establecemos currentCedula para futuras búsquedas/ediciones
+    currentCedula = cedula;
+    document.getElementById('cedula').readOnly = true; // bloquear tras guardar
+
+    showAlert('✅ Nueva versión guardada con éxito.', 'success');
+    setTimeout(() => {
+      document.getElementById('searchMessage').style.display = 'none';
+    }, 3000);
+
+  } catch (err) {
+    console.error('Error al guardar:', err);
+    showAlert(`❌ Error: ${err.message || 'verifique conexión o restricciones en la BD'}`, 'error');
+  } finally {
+    isSaving = false;
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
+}
 
     function addContacto() {
       const list = document.getElementById('contactosList');
