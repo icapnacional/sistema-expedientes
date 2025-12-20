@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🔍 Buscar Funcionario | Pie de Fuerza</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body {
+      background-color: #fafafa;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+    }
+    .breadcrumb {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 12px 20px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: #555;
+    }
+    .breadcrumb a { color: #722F37; font-weight: 600; text-decoration: none; }
+    .breadcrumb span { margin: 0 8px; color: #888; }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header img {
+      width: 80px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+      margin-bottom: 8px;
+    }
+    .header .subtitle {
+      font-size: 16px;
+      color: #722F37;
+      font-weight: 600;
+    }
+    .search-card {
+      background: white;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      border: 1px solid #eee;
+    }
+    .form-group {
+      margin-bottom: 24px;
+    }
+    label {
+      display: block;
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #444;
+    }
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+    .btn {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn:hover {
+      background-color: #5e262d;
+      transform: translateY(-2px);
+    }
+    .alert {
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 500;
+      display: none;
+    }
+    .alert.success { background: #e8f5e9; color: #2e7d32; }
+    .alert.error { background: #ffebee; color: #c62828; }
+    .alert.info { background: #e3f2fd; color: #1565c0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="../index.html">Inicio</a> <span>›</span>
+      <a href="index.html">RRHH</a> <span>›</span>
+      <a href="index.html#pie-fuerza">Pie de Fuerza</a> <span>›</span>
+      <strong>Buscar</strong>
+    </div>
+    <div class="header">
+      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+      <h1>🔍 Buscar Funcionario</h1>
+      <div class="subtitle">• Ingrese la cédula para gestionar la ficha •</div>
+    </div>
+    <div class="search-card">
+      <div class="form-group">
+        <label for="cedula">Cédula de Identidad *</label>
+        <input type="text" id="cedula" inputmode="numeric" maxlength="8" placeholder="Ej: 25653412" autocomplete="off">
+      </div>
+      <button id="btnBuscar" class="btn">🔍 Buscar o Crear Ficha</button>
+      <div id="alertMessage" class="alert"></div>
+    </div>
+    <footer style="text-align:center; padding:20px; color:#666; font-size:14px; margin-top:20px; border-top:1px solid #eee;">
+      <p>© OTIC ZULIA — ICAP Nacional - PNB</p>
+    </footer>
+  </div>
+  <script>
+    // ✅ Configuración Supabase (igual que en tus otros archivos)
+    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('btnBuscar').addEventListener('click', buscarFicha);
+      
+      // Permitir búsqueda con Enter
+      document.getElementById('cedula').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') buscarFicha();
+      });
+    });
+
+    function showAlert(msg, type) {
+      const el = document.getElementById('alertMessage');
+      el.textContent = msg;
+      el.className = `alert ${type}`;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 5000);
+    }
+
+    async function buscarFicha() {
+      const cedula = document.getElementById('cedula').value.trim();
+      
+      // ✅ Validación básica
+      if (!cedula) return showAlert('⚠️ Ingrese la cédula.', 'error');
+      if (!/^\d{8}$/.test(cedula)) return showAlert('⚠️ La cédula debe tener 8 dígitos numéricos.', 'error');
+
+      showAlert('🔍 Verificando...', 'info');
+
+      try {
+        // ✅ Verificar sesión
+        const {  sessionData } = await client.auth.getSession();
+        if (!sessionData?.session) throw new Error('Sesión no válida');
+
+        // ✅ Buscar en auditoria_personal (solo para nombre)
+        const {  audData } = await client
+          .from('auditoria_personal')
+          .select('apellidos_nombres')
+          .eq('cedula', cedula)
+          .maybeSingle();
+
+        // ✅ Buscar en pie_de_fuerza (para saber si existe)
+        const {  pieData } = await client
+          .from('pie_de_fuerza')
+          .select('id')
+          .eq('cedula', cedula)
+          .maybeSingle();
+
+        // ✅ Redirigir SIEMPRE a pie-de-fuerza.html con cédula (nueva o existente)
+        window.location.href = `pie-de-fuerza.html?cedula=${cedula}`;
+
+      } catch (err) {
+        console.error('Error:', err);
+        showAlert(`❌ Error: ${err.message || 'verifique conexión'}`, 'error');
+      }
+    }
+  </script>
+</body>
+</html>
