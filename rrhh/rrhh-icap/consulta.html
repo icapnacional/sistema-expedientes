@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Consulta | RRHH ICAP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #fafafa; padding: 20px; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .breadcrumb { background: #f8f9fa; border-radius: 12px; padding: 12px 20px; margin-bottom: 24px; font-size: 14px; }
+    .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+    .breadcrumb span { margin: 0 8px; color: #888; }
+    .card { background: white; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); padding: 24px; margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; color: #2d2d2d; }
+    input, select { width: 100%; padding: 12px; border: 2px solid #eaeaea; border-radius: 12px; font-size: 16px; }
+    .btn { background: #722F37; color: white; border: none; border-radius: 12px; padding: 14px 28px; font-size: 16px; font-weight: 600; cursor: pointer; }
+    .btn:hover { background: #5e262d; }
+    .results { margin-top: 24px; }
+    .ficha { background: #fdf7f7; border-left: 4px solid #722F37; padding: 20px; border-radius: 0 12px 12px 0; margin-top: 16px; }
+    .ficha-row { display: flex; margin-bottom: 8px; }
+    .ficha-label { width: 200px; font-weight: 600; color: #555; }
+    .ficha-value { flex: 1; }
+    .estatus-activo { background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 20px; font-weight: 600; }
+    .estatus-suspendido { background: #fff3e0; color: #ef6c00; padding: 4px 12px; border-radius: 20px; font-weight: 600; }
+    .estatus-destituido { background: #ffebee; color: #c62828; padding: 4px 12px; border-radius: 20px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="../../index.html">Inicio</a> <span>›</span>
+      <a href="../index.html">RRHH</a> <span>›</span>
+      <strong>Consulta</strong>
+    </div>
+    <div class="card">
+      <h2>🔍 Consulta de Personal | RRHH ICAP</h2>
+      <div class="form-group">
+        <label for="searchInput">🔍 Buscar por Cédula o Nombre</label>
+        <input type="text" id="searchInput" placeholder="Ej: V-12345678 o Juan Pérez">
+      </div>
+      <button class="btn" id="searchBtn">Buscar</button>
+      
+      <div class="results" id="results">
+        <!-- Resultados aquí -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const {  { session } } = await client.auth.getSession();
+        if (!session) return location.href = '../../index.html';
+        const {  perfil } = await client.from('perfiles').select('rol').eq('id', session.user.id).single();
+        const rol = perfil?.rol || 'consultor';
+        if (!['admin', 'moderador', 'consultor'].includes(rol)) {
+          alert('🔒 Acceso denegado');
+          location.href = '../../index.html';
+        }
+
+        document.getElementById('searchBtn').onclick = buscar;
+        document.getElementById('searchInput').onkeypress = (e) => {
+          if (e.key === 'Enter') buscar();
+        };
+
+      } catch (e) {
+        console.error(e);
+        location.href = '../../index.html';
+      }
+    });
+
+    async function buscar() {
+      const query = document.getElementById('searchInput').value.trim();
+      const resultsDiv = document.getElementById('results');
+      if (!query) return;
+
+      try {
+        let response;
+        if (/^\d{7,8}$/.test(query)) {
+          response = await client.from('rrhh_icap').select('*').eq('cedula', query);
+        } else {
+          response = await client.from('rrhh_icap').select('*')
+            .ilike('nombre_apellidos', `%${query}%`);
+        }
+
+        if (response.error) throw response.error;
+        
+        if (response.data.length === 0) {
+          resultsDiv.innerHTML = '<p style="color:#666;">🔍 No se encontraron resultados.</p>';
+          return;
+        }
+
+        const item = response.data[0];
+        const estatusClass = 
+          item.estatus === 'activo' ? 'estatus-activo' :
+          item.estatus === 'suspendido' ? 'estatus-suspendido' :
+          item.estatus === 'destituido' ? 'estatus-destituido' : '';
+
+        resultsDiv.innerHTML = `
+          <h3 style="margin:20px 0 12px;">📋 Resultado</h3>
+          <div class="ficha">
+            <div class="ficha-row"><span class="ficha-label">RANGO:</span> <span class="ficha-value">${item.rango || '—'}</span></div>
+            <div class="ficha-row"><span class="ficha-label">NOMBRE Y APELLIDOS:</span> <span class="ficha-value">${item.nombre_apellidos || '—'}</span></div>
+            <div class="ficha-row"><span class="ficha-label">C.I.:</span> <span class="ficha-value">${item.cedula || '—'}</span></div>
+            <div class="ficha-row"><span class="ficha-label">SEXO:</span> <span class="ficha-value">${item.sexo || '—'}</span></div>
+            <div class="ficha-row"><span class="ficha-label">REGIÓN:</span> <span class="ficha-value">${item.region || '—'}</span></div>
+            <div class="ficha-row"><span class="ficha-label">ESTADO:</span> <span class="ficha-value">${item.estado || '—'}</span></div>
+            <div class="ficha-row"><span class="ficha-label">DIRECCIÓN:</span> <span class="ficha-value">${item.direccion || '—'}</span></div>
+            <div class="ficha-row"><span class="ficha-label">CARGO:</span> <span class="ficha-value">${item.cargo || '—'}</span></div>
+            <div class="ficha-row"><span class="ficha-label">ESTATUS:</span> <span class="ficha-value"><span class="${estatusClass}">${item.estatus || '—'}</span></span></div>
+          </div>
+        `;
+      } catch (e) {
+        console.error(e);
+        resultsDiv.innerHTML = `<p style="color:#c62828;">❌ Error al buscar: ${e.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
