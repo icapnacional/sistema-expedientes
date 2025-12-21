@@ -6,27 +6,139 @@
   <title>Consulta | RRHH ICAP</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #fafafa; padding: 20px; }
-    .container { max-width: 1000px; margin: 0 auto; }
-    .breadcrumb { background: #f8f9fa; border-radius: 12px; padding: 12px 20px; margin-bottom: 24px; font-size: 14px; }
-    .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fafafa;
+      color: #2d2d2d;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header img {
+      width: 80px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #722F37;
+      margin-bottom: 8px;
+    }
+    .breadcrumb {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 12px 20px;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+    .breadcrumb a {
+      color: #722F37;
+      text-decoration: none;
+      font-weight: 600;
+    }
     .breadcrumb span { margin: 0 8px; color: #888; }
-    .card { background: white; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); padding: 24px; margin-bottom: 24px; }
-    .form-group { margin-bottom: 16px; }
-    label { display: block; margin-bottom: 6px; font-weight: 600; color: #2d2d2d; }
-    input, select { width: 100%; padding: 12px; border: 2px solid #eaeaea; border-radius: 12px; font-size: 16px; }
-    .btn { background: #722F37; color: white; border: none; border-radius: 12px; padding: 14px 28px; font-size: 16px; font-weight: 600; cursor: pointer; }
-    .btn:hover { background: #5e262d; }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #eaeaea;
+      border-radius: 12px;
+      font-size: 16px;
+    }
+    .btn {
+      background: #722F37;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background: #5e262d;
+      transform: translateY(-2px);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #722F37;
+      color: #722F37;
+    }
+    .btn-outline:hover {
+      background: #fdf7f7;
+    }
     .results { margin-top: 24px; }
-    .ficha { background: #fdf7f7; border-left: 4px solid #722F37; padding: 20px; border-radius: 0 12px 12px 0; margin-top: 16px; }
-    .ficha-row { display: flex; margin-bottom: 8px; }
-    .ficha-label { width: 200px; font-weight: 600; color: #555; }
-    .ficha-value { flex: 1; }
+    .ficha {
+      background: #fdf7f7;
+      border-left: 4px solid #722F37;
+      padding: 20px;
+      border-radius: 0 12px 12px 0;
+      margin-top: 16px;
+      position: relative;
+    }
+    .ficha h3 {
+      margin-bottom: 16px;
+      color: #722F37;
+      font-size: 18px;
+    }
+    .ficha-row {
+      display: flex;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+    .ficha-label {
+      width: 200px;
+      font-weight: 600;
+      color: #555;
+    }
+    .ficha-value {
+      flex: 1;
+      word-break: break-word;
+    }
     .estatus-activo { background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 20px; font-weight: 600; }
     .estatus-suspendido { background: #fff3e0; color: #ef6c00; padding: 4px 12px; border-radius: 20px; font-weight: 600; }
     .estatus-destituido { background: #ffebee; color: #c62828; padding: 4px 12px; border-radius: 20px; font-weight: 600; }
+    .photo-placeholder {
+      width: 120px;
+      height: 120px;
+      background: #eee;
+      border-radius: 8px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #777;
+    }
+    .actions-bar {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+    }
   </style>
 </head>
 <body>
@@ -36,16 +148,21 @@
       <a href="../index.html">RRHH</a> <span>›</span>
       <strong>Consulta</strong>
     </div>
+    <div class="header">
+      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB">
+      <h1>Relación de Personal de la ICAP Nacional</h1>
+    </div>
     <div class="card">
-      <h2>🔍 Consulta de Personal | RRHH ICAP</h2>
+      <h2>🔍 Consulta de Personal</h2>
       <div class="form-group">
-        <label for="searchInput">🔍 Buscar por Cédula o Nombre</label>
+        <label for="searchInput">Buscar por Cédula o Nombre</label>
         <input type="text" id="searchInput" placeholder="Ej: V-12345678 o Juan Pérez">
       </div>
       <button class="btn" id="searchBtn">Buscar</button>
-      
+      <button class="btn btn-outline" id="clearBtn">Limpiar</button>
+
       <div class="results" id="results">
-        <!-- Resultados aquí -->
+        <!-- Resultado aquí -->
       </div>
     </div>
   </div>
@@ -57,30 +174,44 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const {  { session } } = await client.auth.getSession();
-        if (!session) return location.href = '../../index.html';
-        const {  perfil } = await client.from('perfiles').select('rol').eq('id', session.user.id).single();
-        const rol = perfil?.rol || 'consultor';
-        if (!['admin', 'moderador', 'consultor'].includes(rol)) {
+        const { data: { session } } = await client.auth.getSession();
+        if (!session) return window.location.href = '../../index.html';
+
+        const { data: perfil } = await client
+          .from('perfiles')
+          .select('rol')
+          .eq('id', session.user.id)
+          .single();
+        const userRol = perfil?.rol || 'consultor';
+
+        if (!['admin', 'moderador', 'consultor'].includes(userRol)) {
           alert('🔒 Acceso denegado');
-          location.href = '../../index.html';
+          window.location.href = '../../index.html';
+          return;
         }
 
-        document.getElementById('searchBtn').onclick = buscar;
-        document.getElementById('searchInput').onkeypress = (e) => {
+        document.getElementById('searchBtn').addEventListener('click', buscar);
+        document.getElementById('clearBtn').addEventListener('click', () => {
+          document.getElementById('searchInput').value = '';
+          document.getElementById('results').innerHTML = '';
+        });
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
           if (e.key === 'Enter') buscar();
-        };
+        });
 
       } catch (e) {
         console.error(e);
-        location.href = '../../index.html';
+        window.location.href = '../../index.html';
       }
     });
 
     async function buscar() {
       const query = document.getElementById('searchInput').value.trim();
       const resultsDiv = document.getElementById('results');
-      if (!query) return;
+      if (!query) {
+        resultsDiv.innerHTML = '<p style="color:#666;">🔍 Ingrese un término de búsqueda.</p>';
+        return;
+      }
 
       try {
         let response;
@@ -92,7 +223,6 @@
         }
 
         if (response.error) throw response.error;
-        
         if (response.data.length === 0) {
           resultsDiv.innerHTML = '<p style="color:#666;">🔍 No se encontraron resultados.</p>';
           return;
@@ -105,10 +235,12 @@
           item.estatus === 'destituido' ? 'estatus-destituido' : '';
 
         resultsDiv.innerHTML = `
-          <h3 style="margin:20px 0 12px;">📋 Resultado</h3>
           <div class="ficha">
+            <div style="text-align:center; margin-bottom:20px;">
+              <div class="photo-placeholder">📸 Foto</div>
+              <h3>${item.nombre_apellidos || '—'}</h3>
+            </div>
             <div class="ficha-row"><span class="ficha-label">RANGO:</span> <span class="ficha-value">${item.rango || '—'}</span></div>
-            <div class="ficha-row"><span class="ficha-label">NOMBRE Y APELLIDOS:</span> <span class="ficha-value">${item.nombre_apellidos || '—'}</span></div>
             <div class="ficha-row"><span class="ficha-label">C.I.:</span> <span class="ficha-value">${item.cedula || '—'}</span></div>
             <div class="ficha-row"><span class="ficha-label">SEXO:</span> <span class="ficha-value">${item.sexo || '—'}</span></div>
             <div class="ficha-row"><span class="ficha-label">REGIÓN:</span> <span class="ficha-value">${item.region || '—'}</span></div>
@@ -117,11 +249,32 @@
             <div class="ficha-row"><span class="ficha-label">CARGO:</span> <span class="ficha-value">${item.cargo || '—'}</span></div>
             <div class="ficha-row"><span class="ficha-label">ESTATUS:</span> <span class="ficha-value"><span class="${estatusClass}">${item.estatus || '—'}</span></span></div>
           </div>
+          <div class="actions-bar">
+            <button class="btn" onclick="generarPDF(${item.id})">📄 Exportar PDF</button>
+            <button class="btn btn-outline" onclick="descargarFoto('${item.cedula}')">📷 Descargar Foto</button>
+          </div>
         `;
+
+        // Registrar log de consulta
+        await client.from('logs_consultas').insert([{
+          usuario_id: (await client.auth.getSession()).data.session.user.id,
+          cedula_consultada: item.cedula,
+          modulo: 'rrhh_icap',
+          created_at: new Date().toISOString()
+        }]);
+
       } catch (e) {
         console.error(e);
-        resultsDiv.innerHTML = `<p style="color:#c62828;">❌ Error al buscar: ${e.message}</p>`;
+        resultsDiv.innerHTML = `<p style="color:#c62828;">❌ Error: ${e.message}</p>`;
       }
+    }
+
+    function generarPDF(id) {
+      alert('📄 Función de exportar PDF en desarrollo.\nPuedes integrar jsPDF aquí.');
+    }
+
+    function descargarFoto(cedula) {
+      alert(`📷 Foto no disponible aún.\nSimulación para cédula: ${cedula}`);
     }
   </script>
 </body>
