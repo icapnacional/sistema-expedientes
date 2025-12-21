@@ -33,6 +33,26 @@ const PERMISSIONS = {
     action: () => alert('Módulo en desarrollo'),
     tooltip: '🔒 Solo Administrador'
   },
+  // 🔹 RRHH ICAP — nuevos botones
+'btnRrhhIcapConsulta': {
+  roles: ['admin', 'moderador', 'consultor'],
+  action: () => window.location.href = 'rrhh-icap/consulta.html'
+},
+'btnRrhhIcapRegistro': {
+  roles: ['admin', 'moderador'],
+  action: () => window.location.href = 'rrhh-icap/registro.html',
+  tooltip: '🔒 Solo RRHH autorizado'
+},
+'btnRrhhIcapModificar': {
+  roles: ['admin', 'moderador'],
+  action: () => window.location.href = 'rrhh-icap/modificar.html',
+  tooltip: '🔒 Solo RRHH autorizado'
+},
+'btnRrhhIcapHistorial': {
+  roles: ['admin'],
+  action: () => window.location.href = 'rrhh-icap/historial-logs.html',
+  tooltip: '🔒 Solo Administrador'
+},
   'btnRhObjetivos': { roles: ['admin', 'moderador'], action: () => alert('Módulo en desarrollo'), tooltip: '🔒 Solo RRHH autorizado' },
   'btnRhDesempeno': { roles: ['admin', 'moderador'], action: () => alert('Módulo en desarrollo'), tooltip: '🔒 Solo RRHH autorizado' },
   'btnRhCapacitacion': { roles: ['admin', 'moderador'], action: () => alert('Módulo en desarrollo'), tooltip: '🔒 Solo RRHH autorizado' },
