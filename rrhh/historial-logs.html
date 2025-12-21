@@ -31,6 +31,12 @@
 </head>
 <body>
   <div class="container">
+    <div class="breadcrumb">
+  <a href="../../index.html">Inicio</a> <span>›</span>
+  <a href="../index.html">RRHH</a> <span>›</span>
+  <a href="../index.html">Auditoría Nacional</a> <span>›</span>
+  <strong>Historial</strong>
+</div>
     <div class="header" style="text-align:center; margin-bottom:24px;">
       <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional" />
       <h1>📜 Historial de Actividades — RRHH</h1>
@@ -188,11 +194,11 @@
       .eq('id', session.user.id)
       .single();
     const userRol = String(perfil?.rol || '').trim();
-    if (userRol !== 'admin' && userRol !== '1') {
-      alert('🔒 Acceso denegado: solo el Administrador puede ver el historial.');
-      window.location.href = 'index.html';
-      return;
-    }
+if (userRol !== 'admin') {
+  alert('🔒 Acceso denegado: solo el Administrador puede ver el historial.');
+  window.location.href = '../index.html';
+  return;
+}
     loadLogs();
     document.getElementById('btnFiltrar').addEventListener('click', loadLogs);
     document.getElementById('searchLogs').addEventListener('keypress', e => {
