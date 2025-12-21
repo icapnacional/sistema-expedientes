@@ -19,11 +19,12 @@ const PERMISSIONS = {
     action: () => window.location.href = 'modificar.html',
     tooltip: '🔒 Solo RRHH autorizado'
   },
-  'btnAuditoriaHistorial': {
-    roles: ['admin'],
-    action: () => window.location.href = 'historial-logs.html',
-    tooltip: '🔒 Solo Administrador'
-  },
+ 'btnAuditoriaHistorial': {
+  roles: ['admin'],
+  action: () => window.location.href = 'rrhh/historial-logs.html'  // ← si está en /rrhh/
+  // o
+  // action: () => window.location.href = 'auditoria-nacional/historial-logs.html'  // ← si prefieres modularidad
+}
 
  // 🔹 Pie de Fuerza — ✅ AQUÍ VA LA CORRECCIÓN PRINCIPAL
   'btnPieFuerzaListado': {
