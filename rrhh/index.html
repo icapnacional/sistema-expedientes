@@ -401,18 +401,20 @@
       <p>© OTIC ZULIA — ICAP Nacional - PNB</p>
     </footer>
   </div>
-<script>
-  // ✅ Carga segura de role-permissions.js
-  const script = document.createElement('script');
-  script.src = 'role-permissions.js';
-  script.onerror = () => {
-    console.error('❌ role-permissions.js no cargado o con error de sintaxis. Revisa la consola.');
-    alert('⚠️ Error crítico: role-permissions.js no cargado. Contacta al desarrollador.');
-  };
-  script.onload = () => {
-    console.log('✅ role-permissions.js cargado correctamente');
-  };
-  document.head.appendChild(script);
+<script defer src="role-permissions.js"></script>
+<script defer>
+  // ✅ `defer` garantiza que role-permissions.js se ejecute ANTES que este bloque
+  document.addEventListener('DOMContentLoaded', async () => {
+    // ... tu código de autenticación ...
+
+    // ✅ Ahora initRolePermissions SÍ estará definida
+    if (typeof initRolePermissions === 'function') {
+      initRolePermissions(userRol);
+      console.log('✅ initRolePermissions ejecutada para rol:', userRol);
+    } else {
+      console.warn('⚠️ initRolePermissions aún no está disponible');
+    }
+  });
 </script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
