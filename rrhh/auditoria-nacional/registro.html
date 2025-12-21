@@ -423,10 +423,20 @@
           return window.location.href = '../index.html';
         }
         // ✅ Solo admin/moderador
-        if (perfil.rol !== 'admin' && perfil.rol !== 'moderador') {
-          alert('🔒 Acceso denegado: solo Administradores y Moderadores pueden registrar.');
-          return window.location.href = 'auditoria-nacional.html';
-        }
+       if (perfil.rol !== 'admin' && perfil.rol !== 'moderador') {
+  // ✅ Solo mostrar mensaje y salir sin redirección
+  document.getElementById('registroForm').style.display = 'none';
+  document.querySelector('.card h2').textContent = '🔒 Acceso Restringido';
+  document.querySelector('.card').innerHTML = `
+    <div style="text-align:center; padding:40px; color:#c62828; font-size:18px;">
+      🔒 Solo Administradores y Moderadores pueden registrar personal.<br>
+      <small style="font-size:14px; color:#666; margin-top:12px; display:block;">
+        Ponte en contacto con un administrador si necesitas acceso.
+      </small>
+    </div>
+  `;
+  return;
+}
         document.getElementById('userEmail').textContent = perfil.email;
         document.getElementById('userRol').textContent = 
           perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
