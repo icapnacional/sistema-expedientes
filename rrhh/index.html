@@ -92,6 +92,20 @@
       height: 2px;
       background: white;
     }
+    .tabs-content {
+      min-height: 400px;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
     .module-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -105,17 +119,17 @@
       text-align: center;
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
       border: 2px solid #eaeaea;
-      cursor: pointer;
+      cursor: default;
       transition: all 0.3s ease;
       height: 100%;
     }
-    .module-card:hover {
+    .module-card:hover:not([disabled]) {
       transform: translateY(-4px);
       box-shadow: 0 8px 20px rgba(114, 47, 55, 0.15);
       border-color: #722F37;
       background-color: #fdf7f7;
     }
-    .module-card.disabled {
+    .module-card[disabled] {
       opacity: 0.5;
       cursor: not-allowed;
     }
@@ -180,7 +194,10 @@
       text-decoration: none;
       font-weight: 600;
     }
-    .breadcrumb span { margin: 0 8px; color: #888; }
+    .breadcrumb span {
+      margin: 0 8px;
+      color: #888;
+    }
     @media (max-width: 768px) {
       .tabs-header { flex-direction: column; }
       .tab-btn { width: 100%; margin-bottom: 8px; }
@@ -205,56 +222,174 @@
     </div>
     <div class="tabs-container">
       <div class="tabs-header">
-        <button class="tab-btn active">📊 Dashboard</button>
-        <button class="tab-btn" data-href="auditoria-nacional/index.html">📋 Auditoría Nacional</button>
-        <button class="tab-btn" data-href="rrhh-icap/index.html">👥 RRHH ICAP</button>
-        <button class="tab-btn" data-href="pie-de-fuerza/index.html">👥 Pie de Fuerza</button>
-        <button class="tab-btn" data-href="orden-servicio/index.html">📄 Orden de Servicio</button>
-        <button class="tab-btn" data-href="reposo/index.html">🛏️ Reposo</button>
-        <button class="tab-btn" data-href="vacaciones/index.html">🌴 Vacaciones</button>
-        <button class="tab-btn" data-href="cambio-servicios/index.html">🔄 Cambio de Servicios</button>
-        <button class="tab-btn" data-href="documentos/index.html">📁 Documentos</button>
+        <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+        <button class="tab-btn" data-tab="auditoria">📋 Auditoría Nacional</button>
+        <button class="tab-btn" data-tab="rrhh-icap">👥 RRHH ICAP</button>
+        <button class="tab-btn" data-tab="pie-fuerza">👥 Pie de Fuerza</button>
+        <button class="tab-btn" data-tab="orden-servicio">📄 Orden de Servicio</button>
+        <button class="tab-btn" data-tab="reposo">🛏️ Reposo</button>
+        <button class="tab-btn" data-tab="vacaciones">🌴 Vacaciones</button>
+        <button class="tab-btn" data-tab="cambio-servicios">🔄 Cambio de Servicios</button>
+        <button class="tab-btn" data-tab="documentos">📁 Documentos</button>
       </div>
-      <div class="module-grid">
-        <div class="module-card" id="btnDashboard">
-          <div class="module-icon">📊</div>
-          <div class="module-title">Dashboard</div>
-          <div class="module-desc">Resumen general del módulo.</div>
+      <div class="tabs-content">
+        <!-- ✅ DASHBOARD LIMPIO — solo mensaje de bienvenida -->
+        <div id="dashboard" class="tab-content active">
+          <div style="text-align: center; padding: 60px 20px; max-width: 600px; margin: 0 auto;">
+            <div style="font-size: 48px; margin-bottom: 20px;">👋</div>
+            <h2 style="font-size: 26px; font-weight: 700; color: #2d2d2d; margin-bottom: 16px;">
+              Bienvenido al Módulo de Recursos Humanos
+            </h2>
+            <p style="font-size: 17px; color: #555; line-height: 1.6;">
+              Seleccione una pestaña superior para comenzar:  
+              <strong>Auditoría Nacional</strong>, <strong>Pie de Fuerza</strong>, <strong>RRHH ICAP</strong>, u otra sección.
+            </p>
+            <div style="margin-top: 32px; background: #f8f9fa; border-radius: 12px; padding: 16px; font-size: 14px; color: #666;">
+              📌 <strong>Tip:</strong> Los módulos disponibles dependen de su rol y permisos asignados.
+            </div>
+          </div>
         </div>
-        <div class="module-card" id="btnAuditoria">
-          <div class="module-icon">📋</div>
-          <div class="module-title">Auditoría Nacional</div>
-          <div class="module-desc">Control y seguimiento de personal.</div>
+
+        <!-- 🔹 AUDITORÍA NACIONAL -->
+        <div id="auditoria" class="tab-content">
+          <h2>📋 Auditoría Nacional</h2>
+          <p>Sistema de auditoría para seguimiento y control de personal.</p>
+          <div class="module-grid">
+            <div class="module-card" id="btnAuditoriaConsulta">
+              <div class="module-icon">🔍</div>
+              <div class="module-title">Consulta</div>
+              <div class="module-desc">Consulta pública de personal.</div>
+            </div>
+            <div class="module-card" id="btnAuditoriaRegistro">
+              <div class="module-icon">📝</div>
+              <div class="module-title">Registro</div>
+              <div class="module-desc">Registrar nuevo personal.</div>
+            </div>
+            <div class="module-card" id="btnAuditoriaModificar">
+              <div class="module-icon">✏️</div>
+              <div class="module-title">Modificar</div>
+              <div class="module-desc">Edita datos existentes.</div>
+            </div>
+            <div class="module-card" id="btnAuditoriaHistorial">
+              <div class="module-icon">📜</div>
+              <div class="module-title">Historial</div>
+              <div class="module-desc">Registro de actividades.</div>
+            </div>
+          </div>
         </div>
-        <div class="module-card" id="btnRrhhIcap">
-          <div class="module-icon">🎯</div>
-          <div class="module-title">RRHH ICAP</div>
-          <div class="module-desc">Objetivos y desempeño.</div>
+
+        <!-- 🔹 RRHH ICAP -->
+        <div id="rrhh-icap" class="tab-content">
+          <h2>👥 RRHH ICAP</h2>
+          <div class="module-grid">
+            <div class="module-card" id="btnRhObjetivos">
+              <div class="module-icon">🎯</div>
+              <div class="module-title">Objetivos</div>
+            </div>
+            <div class="module-card" id="btnRhDesempeno">
+              <div class="module-icon">📈</div>
+              <div class="module-title">Desempeño</div>
+            </div>
+            <div class="module-card" id="btnRhCapacitacion">
+              <div class="module-icon">🎓</div>
+              <div class="module-title">Capacitación</div>
+            </div>
+          </div>
         </div>
-        <div class="module-card" id="btnPieFuerzaListado">
-          <div class="module-icon">👥</div>
-          <div class="module-title">Pie de Fuerza</div>
-          <div class="module-desc">Registro y gestión operativa.</div>
+
+        <!-- 🔹 PIE DE FUERZA -->
+        <div id="pie-fuerza" class="tab-content">
+          <h2>👥 Pie de Fuerza</h2>
+          <div class="module-grid">
+            <div class="module-card" id="btnPieFuerzaListado">
+              <div class="module-icon">📋</div>
+              <div class="module-title">Formulario de Pie de Fuerza</div>
+              <div class="module-desc">Registro y gestión del personal operativo.</div>
+            </div>
+            <div class="module-card" id="btnPieFuerzaAsignaciones">
+              <div class="module-icon">📍</div>
+              <div class="module-title">Asignaciones</div>
+            </div>
+            <div class="module-card" id="btnPieFuerzaMovimientos">
+              <div class="module-icon">🔄</div>
+              <div class="module-title">Movimientos</div>
+            </div>
+          </div>
         </div>
-        <div class="module-card" id="btnOrdenServicio">
-          <div class="module-icon">📄</div>
-          <div class="module-title">Orden de Servicio</div>
+
+        <!-- 🔹 ORDEN DE SERVICIO -->
+        <div id="orden-servicio" class="tab-content">
+          <h2>📄 Orden de Servicio</h2>
+          <div class="module-grid">
+            <div class="module-card" id="btnOrdenNueva">
+              <div class="module-icon">➕</div>
+              <div class="module-title">Nueva</div>
+            </div>
+            <div class="module-card" id="btnOrdenSeguimiento">
+              <div class="module-icon">🔍</div>
+              <div class="module-title">Seguimiento</div>
+            </div>
+          </div>
         </div>
-        <div class="module-card" id="btnReposo">
-          <div class="module-icon">🛏️</div>
-          <div class="module-title">Reposo</div>
+
+        <!-- 🔹 REPOSO -->
+        <div id="reposo" class="tab-content">
+          <h2>🛏️ Reposo</h2>
+          <div class="module-grid">
+            <div class="module-card" id="btnReposoSolicitud">
+              <div class="module-icon">📝</div>
+              <div class="module-title">Solicitud</div>
+            </div>
+            <div class="module-card" id="btnReposoAprobadas">
+              <div class="module-icon">✅</div>
+              <div class="module-title">Aprobadas</div>
+            </div>
+          </div>
         </div>
-        <div class="module-card" id="btnVacaciones">
-          <div class="module-icon">🌴</div>
-          <div class="module-title">Vacaciones</div>
+
+        <!-- 🔹 VACACIONES -->
+        <div id="vacaciones" class="tab-content">
+          <h2>🌴 Vacaciones</h2>
+          <div class="module-grid">
+            <div class="module-card" id="btnVacacionesPlan">
+              <div class="module-icon">🏖️</div>
+              <div class="module-title">Planificación</div>
+            </div>
+            <div class="module-card" id="btnVacacionesSolicitudes">
+              <div class="module-icon">📬</div>
+              <div class="module-title">Solicitudes</div>
+            </div>
+          </div>
         </div>
-        <div class="module-card" id="btnCambioServicios">
-          <div class="module-icon">🔄</div>
-          <div class="module-title">Cambio de Servicios</div>
+
+        <!-- 🔹 CAMBIO DE SERVICIOS -->
+        <div id="cambio-servicios" class="tab-content">
+          <h2>🔄 Cambio de Servicios</h2>
+          <div class="module-grid">
+            <div class="module-card" id="btnCambioNueva">
+              <div class="module-icon">🔄</div>
+              <div class="module-title">Solicitud</div>
+            </div>
+            <div class="module-card" id="btnCambioHistorial">
+              <div class="module-icon">📚</div>
+              <div class="module-title">Historial</div>
+            </div>
+          </div>
         </div>
-        <div class="module-card" id="btnDocumentos">
-          <div class="module-icon">📁</div>
-          <div class="module-title">Documentos</div>
+
+        <!-- 🔹 DOCUMENTOS -->
+        <div id="documentos" class="tab-content">
+          <h2>📁 Documentos</h2>
+          <div class="module-grid">
+            <div class="module-card" id="btnDocFormularios">
+              <div class="module-icon">📝</div>
+              <div class="module-title">Formularios</div>
+            </div>
+            <div class="module-card" id="btnDocManuales">
+              <div class="module-icon">📖</div>
+              <div class="module-title">Manuales</div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="actions-bar">
@@ -298,51 +433,51 @@
           userRolSpan.innerHTML += ' <span title="Administrador" style="color:#c62828; cursor:help;">ⓘ</span>';
         }
 
-        // ✅ Aplicar permisos (para los botones tipo "module-card")
+        // ✅ Aplicar permisos a las tarjetas (role-permissions.js controla acceso)
         if (typeof initRolePermissions === 'function') {
           initRolePermissions(userRol);
         } else {
           console.error('❌ role-permissions.js no cargado');
         }
 
-        // ✅ Redirección por pestañas superiores (tipo menú)
-        document.querySelectorAll('.tab-btn[data-href]').forEach(btn => {
+        // 🔁 Cambio de pestañas (solo UI, no carga contenido)
+        document.querySelectorAll('.tab-btn').forEach(btn => {
           btn.addEventListener('click', () => {
-            // Actualizar estilo visual (solo UX)
+            // Actualizar estilo visual
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             btn.classList.add('active');
-            // Redirigir inmediatamente
-            const href = btn.dataset.href;
-            if (href) window.location.href = href;
+            const tabId = btn.dataset.tab;
+            document.getElementById(tabId)?.classList.add('active');
           });
         });
 
-        // ✅ Redirección por tarjetas (módulos)
+        // 🔗 Redirección al hacer clic en tarjetas (modular)
         const mappings = {
-          'btnDashboard': '../index.html#rrhh',
-          'btnAuditoria': 'auditoria-nacional/index.html',
-          'btnRrhhIcap': 'rrhh-icap/index.html',
+          'btnAuditoriaConsulta': 'auditoria-nacional/consulta.html',
+          'btnAuditoriaRegistro': 'auditoria-nacional/registro.html',
+          'btnAuditoriaModificar': 'auditoria-nacional/modificar.html',
+          'btnAuditoriaHistorial': 'auditoria-nacional/historial-logs.html',
           'btnPieFuerzaListado': 'pie-de-fuerza/index.html',
-          'btnOrdenServicio': 'orden-servicio/index.html',
-          'btnReposo': 'reposo/index.html',
-          'btnVacaciones': 'vacaciones/index.html',
-          'btnCambioServicios': 'cambio-servicios/index.html',
-          'btnDocumentos': 'documentos/index.html'
+          'btnRhObjetivos': 'rrhh-icap/objetivos.html',
+          'btnRhDesempeno': 'rrhh-icap/desempeno.html',
+          'btnRhCapacitacion': 'rrhh-icap/capacitacion.html',
+          'btnOrdenNueva': 'orden-servicio/nueva.html',
+          'btnReposoSolicitud': 'reposo/solicitud.html',
+          'btnVacacionesSolicitudes': 'vacaciones/solicitudes.html',
+          'btnCambioNueva': 'cambio-servicios/solicitud.html',
+          'btnDocFormularios': 'documentos/formularios.html'
         };
 
         Object.entries(mappings).forEach(([id, href]) => {
           const card = document.getElementById(id);
-          if (card) {
-            card.onclick = () => {
-              if (href.startsWith('http')) {
+          if (card && !card.hasAttribute('disabled')) {
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', () => {
+              if (!card.hasAttribute('disabled')) {
                 window.location.href = href;
-              } else {
-                // Solo redirigir si el módulo está habilitado (no disabled)
-                if (!card.classList.contains('disabled')) {
-                  window.location.href = href;
-                }
               }
-            };
+            });
           }
         });
 
