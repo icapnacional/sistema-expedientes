@@ -312,17 +312,18 @@
         let query = client
           .from('rrhh_logs')
           .select('*', { count: 'exact' })
-          .in('accion', [
-            'consulta_icap', 'registro_icap', 'edicion_icap',
-            'consulta', 'registro', 'edicion'
-          ])
           .order('created_at', { ascending: false });
 
         if (search) {
           query = query.or(`cedula_afectada.ilike.%${search}%,nombre_afectado.ilike.%${search}%,email.ilike.%${search}%`);
         }
         if (accion) {
-          query = query.ilike('accion', `${accion}%`);
+          // ✅ Acepta 'consulta', 'consulta_icap', etc.
+          if (accion.endsWith('_icap')) {
+            query = query.eq('accion', accion);
+          } else {
+            query = query.ilike('accion', `${accion}%`);
+          }
         }
         if (rol) {
           query = query.eq('rol', rol);
@@ -344,10 +345,6 @@
         const { data, error } = await client
           .from('rrhh_logs')
           .select('created_at,email,rol,accion,cedula_afectada,nombre_afectado,detalles')
-          .in('accion', [
-            'consulta_icap', 'registro_icap', 'edicion_icap',
-            'consulta', 'registro', 'edicion'
-          ])
           .order('created_at', { ascending: false });
         if (error) throw error;
 
@@ -377,12 +374,12 @@
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
-      const { data: { session }, error } = await client.auth.getSession();
+      const {  { session }, error } = await client.auth.getSession();
       if (error || !session) return window.location.href = '../../index.html';
 
-      const { data: perfil } = await client
+      const {  perfil } = await client
         .from('perfiles')
-        .select('rol, email')
+        .select('email, rol')
         .eq('id', session.user.id)
         .single();
 
