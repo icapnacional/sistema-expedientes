@@ -10,10 +10,24 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background: #fafafa; padding: 20px; }
     .container { max-width: 1200px; margin: 0 auto; }
-    .header { text-align: center; margin-bottom: 24px; }
-    .header img { width: 90px; margin-bottom: 16px; }
-    .header h1 { font-size: 24px; font-weight: 700; color: #2d2d2d; }
-    .header .subtitle { font-size: 16px; color: #722F37; font-weight: 600; }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header img {
+      width: 90px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+    }
+    .header .subtitle {
+      font-size: 16px;
+      color: #722F37;
+      font-weight: 600;
+    }
     .breadcrumb {
       background: #f8f9fa;
       border-radius: 12px;
@@ -24,29 +38,105 @@
     }
     .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
     .breadcrumb span { margin: 0 8px; color: #888; }
-    .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); margin-bottom: 24px; }
-    .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-    input, select, button { padding: 10px 16px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; }
-    button { background: #722F37; color: white; cursor: pointer; }
-    button:hover { background: #5e262d; transform: translateY(-1px); }
-    #btnExportar { background: #1976d2; }
-    #btnExportar:hover { background: #1565c0; }
-    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #eee; }
-    th { background: #f8f9fa; font-weight: 600; color: #333; }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+      border: 1px solid #eee;
+    }
+    .filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    input, select, button {
+      padding: 10px 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    button {
+      background: #722F37;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #5e262d;
+      transform: translateY(-1px);
+    }
+    #btnExportar {
+      background: #1976d2;
+    }
+    #btnExportar:hover {
+      background: #1565c0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #333;
+    }
     .rol-admin { color: #c62828; font-weight: 600; }
     .rol-moderador { color: #2e7d32; font-weight: 600; }
     .rol-consultor { color: #1565c0; font-weight: 600; }
-    .accion-consulta_icap { background: #e3f2fd; color: #0d47a1; padding: 4px 8px; border-radius: 4px; }
-    .accion-registro_icap { background: #e8f5e9; color: #1b5e20; padding: 4px 8px; border-radius: 4px; }
-    .accion-edicion_icap { background: #fff8e1; color: #e65100; padding: 4px 8px; border-radius: 4px; }
-    .pagination { display: flex; justify-content: center; gap: 6px; margin-top: 24px; }
-    .page-btn {
-      min-width: 36px; height: 36px; border: 1px solid #ddd; background: white;
-      border-radius: 6px; cursor: pointer; font-weight: 600;
+    .accion-consulta_icap,
+    .accion-consulta {
+      background: #e3f2fd;
+      color: #0d47a1;
+      padding: 4px 8px;
+      border-radius: 4px;
     }
-    .page-btn.active { background: #722F37; color: white; border-color: #722F37; }
-    .page-btn:hover:not(.active) { background: #f5f5f5; }
+    .accion-registro_icap,
+    .accion-registro {
+      background: #e8f5e9;
+      color: #1b5e20;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .accion-edicion_icap,
+    .accion-edicion {
+      background: #fff8e1;
+      color: #e65100;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 24px;
+    }
+    .page-btn {
+      min-width: 36px;
+      height: 36px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .page-btn.active {
+      background: #722F37;
+      color: white;
+      border-color: #722F37;
+    }
+    .page-btn:hover:not(.active) {
+      background: #f5f5f5;
+    }
   </style>
 </head>
 <body>
@@ -70,11 +160,15 @@
           <option value="consulta_icap">Consulta ICAP</option>
           <option value="registro_icap">Registro ICAP</option>
           <option value="edicion_icap">Edición ICAP</option>
+          <option value="consulta">Consulta Auditoría</option>
+          <option value="registro">Registro Auditoría</option>
+          <option value="edicion">Edición Auditoría</option>
         </select>
         <select id="filterRol">
           <option value="">Todos los roles</option>
           <option value="admin">Administrador</option>
           <option value="moderador">Moderador</option>
+          <option value="consultor">Consultor</option>
         </select>
         <button id="btnFiltrar">🔍 Filtrar</button>
         <button id="btnExportar">📥 Exportar CSV</button>
@@ -108,7 +202,7 @@
     let currentPage = 1;
     const perPage = 20;
 
-    // ✅ Modal de detalles (igual que Auditoría)
+    // ✅ Modal de detalles
     function mostrarDetalles(log) {
       let overlay = document.getElementById('logOverlay');
       if (!overlay) {
@@ -136,6 +230,7 @@
       let detallesHTML = '<pre style="margin:0; white-space:pre-wrap; word-break:break-word;">' + 
         (log.detalles ? JSON.stringify(log.detalles, null, 2) : '{}') + 
         '</pre>';
+      
       modal.innerHTML = `
         <div style="background:#722F37; color:white; padding:16px 24px; display:flex; justify-content:space-between; align-items:center;">
           <h2 style="margin:0; font-size:20px;">🔍 Detalles del Registro — RRHH ICAP</h2>
@@ -160,11 +255,10 @@
       `;
       document.getElementById('btnCerrarModal').onclick = () => overlay.style.display = 'none';
       overlay.onclick = (e) => { if (e.target === overlay) overlay.style.display = 'none'; };
-      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') overlay.style.display = 'none'; });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.style.display = 'none'; });
       overlay.style.display = 'flex';
     }
 
-    // ✅ Render logs
     function renderLogs(logs) {
       const tbody = document.getElementById('logsBody');
       if (logs.length === 0) {
@@ -192,36 +286,6 @@
       }).join('');
     }
 
-    // ✅ Cargar logs (solo ICAP)
-    async function loadLogs() {
-      const search = document.getElementById('searchLogs').value.trim();
-      const accion = document.getElementById('filterAccion').value;
-      const rol = document.getElementById('filterRol').value;
-      try {
-        let query = client
-          .from('rrhh_logs')
-          .select('*', { count: 'exact' })
-          .in('accion', ['consulta_icap', 'registro_icap', 'edicion_icap'])
-          .order('created_at', { ascending: false });
-
-        if (search) {
-          query = query.or(`cedula_afectada.ilike.%${search}%,nombre_afectado.ilike.%${search}%,email.ilike.%${search}%`);
-        }
-        if (accion) query = query.eq('accion', accion);
-        if (rol) query = query.eq('rol', rol);
-
-        const from = (currentPage - 1) * perPage;
-        const { data, error, count } = await query.range(from, from + perPage - 1);
-        if (error) throw error;
-        renderLogs(data);
-        renderPagination(Math.ceil(count / perPage));
-      } catch (err) {
-        console.error('❌ Error al cargar logs RRHH ICAP:', err);
-        document.getElementById('logsBody').innerHTML = `<tr><td colspan="7" style="color:#c62828; text-align:center">Error: ${err.message || 'No se pudo cargar el historial'}</td></tr>`;
-      }
-    }
-
-    // ✅ Paginación
     function renderPagination(totalPages) {
       const div = document.getElementById('pagination');
       div.innerHTML = '';
@@ -240,15 +304,53 @@
       addBtn('»', totalPages, false, currentPage === totalPages);
     }
 
-    // ✅ Exportar CSV
+    async function loadLogs() {
+      const search = document.getElementById('searchLogs').value.trim();
+      const accion = document.getElementById('filterAccion').value;
+      const rol = document.getElementById('filterRol').value;
+      try {
+        let query = client
+          .from('rrhh_logs')
+          .select('*', { count: 'exact' })
+          .in('accion', [
+            'consulta_icap', 'registro_icap', 'edicion_icap',
+            'consulta', 'registro', 'edicion'
+          ])
+          .order('created_at', { ascending: false });
+
+        if (search) {
+          query = query.or(`cedula_afectada.ilike.%${search}%,nombre_afectado.ilike.%${search}%,email.ilike.%${search}%`);
+        }
+        if (accion) {
+          query = query.ilike('accion', `${accion}%`);
+        }
+        if (rol) {
+          query = query.eq('rol', rol);
+        }
+
+        const from = (currentPage - 1) * perPage;
+        const { data, error, count } = await query.range(from, from + perPage - 1);
+        if (error) throw error;
+        renderLogs(data);
+        renderPagination(Math.ceil(count / perPage));
+      } catch (err) {
+        console.error('❌ Error:', err);
+        document.getElementById('logsBody').innerHTML = `<tr><td colspan="7" style="color:#c62828; text-align:center">Error: ${err.message || 'No se pudo cargar el historial'}</td></tr>`;
+      }
+    }
+
     document.getElementById('btnExportar').addEventListener('click', async () => {
       try {
         const { data, error } = await client
           .from('rrhh_logs')
           .select('created_at,email,rol,accion,cedula_afectada,nombre_afectado,detalles')
-          .in('accion', ['consulta_icap', 'registro_icap', 'edicion_icap'])
+          .in('accion', [
+            'consulta_icap', 'registro_icap', 'edicion_icap',
+            'consulta', 'registro', 'edicion'
+          ])
           .order('created_at', { ascending: false });
         if (error) throw error;
+
         const headers = ['FechaHora', 'Email', 'Rol', 'Acción', 'Cédula', 'Nombre', 'Detalles'];
         const rows = data.map(r => [
           `"${new Date(r.created_at).toLocaleString('es-VE')}"`,
@@ -274,11 +376,9 @@
       }
     });
 
-    // ✅ Inicialización
     document.addEventListener('DOMContentLoaded', async () => {
-      const sessionResponse = await client.auth.getSession();
-      const session = sessionResponse?.data?.session;
-      if (!session) return window.location.href = '../../index.html';
+      const { data: { session }, error } = await client.auth.getSession();
+      if (error || !session) return window.location.href = '../../index.html';
 
       const { data: perfil } = await client
         .from('perfiles')
