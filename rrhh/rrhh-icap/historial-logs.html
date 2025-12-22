@@ -198,7 +198,7 @@
     let currentPage = 1;
     const perPage = 20;
 
-    // ✅ Modal de detalles
+    // ✅ Modal de detalles (sin eval, sin SyntaxError)
     function mostrarDetalles(log) {
       let overlay = document.getElementById('logOverlay');
       if (!overlay) {
@@ -255,7 +255,7 @@
       overlay.style.display = 'flex';
     }
 
-    // ✅ Render seguro de logs
+    // ✅ Render seguro (sin inline onclick)
     function renderLogs(logs) {
       const tbody = document.getElementById('logsBody');
       if (logs.length === 0) {
@@ -275,7 +275,7 @@
             <td>${fecha}</td>
             <td>${log.email || '—'}</td>
             <td><span class="${rolClass}">${log.rol || '—'}</span></td>
-            <td><span class="${accionClass}">${log.accion || '—'}</span></td>
+            <td><span class="${accionClass}">${log.accion.replace('_icap', '').toUpperCase()}</span></td>
             <td>${log.cedula_afectada || '—'}</td>
             <td>${log.nombre_afectado || '—'}</td>
             <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">${detallesResumen}</td>
@@ -283,16 +283,15 @@
         `;
       }).join('');
 
-      // ✅ Asignar eventos SIN eval, SIN SyntaxError
+      // ✅ Asignar evento de forma segura
       document.querySelectorAll('tr[data-log]').forEach(row => {
         row.addEventListener('click', () => {
           try {
-            const logStr = row.getAttribute('data-log').replace(/&#39;/g, "'");
-            const log = JSON.parse(logStr);
+            const log = JSON.parse(row.getAttribute('data-log').replace(/&#39;/g, "'"));
             mostrarDetalles(log);
           } catch (err) {
             console.error('❌ Error al parsear log:', err);
-            alert('Error al cargar los detalles. Ver consola.');
+            alert('No se pudieron cargar los detalles.');
           }
         });
       });
@@ -343,7 +342,7 @@
         renderLogs(data);
         renderPagination(Math.ceil(count / perPage));
       } catch (err) {
-        console.error('❌ Error al cargar logs:', err);
+        console.error('❌ Error:', err);
         document.getElementById('logsBody').innerHTML = `<tr><td colspan="7" style="color:#c62828; text-align:center">Error: ${err.message || 'No se pudo cargar el historial'}</td></tr>`;
       }
     }
@@ -402,7 +401,7 @@
         if (e.key === 'Enter') loadLogs();
       });
 
-      loadLogs();
+      loadLogs(); // Carga inicial
     });
   </script>
 </body>
