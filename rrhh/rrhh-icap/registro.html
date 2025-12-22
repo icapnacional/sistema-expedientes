@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro de Personal ICAP | RRHH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header img {
+      width: 90px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+    }
+    .header .subtitle {
+      font-size: 16px;
+      color: #722F37;
+      font-weight: 600;
+    }
+    .user-info {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      border: 1px solid #eee;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+      border: 1px solid #eee;
+    }
+    .card h2 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #722F37;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      background: #fdfdfd;
+    }
+    textarea.autoresize {
+      resize: none;
+      overflow: hidden;
+      min-height: 40px;
+      line-height: 1.4;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .btn {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn:hover {
+      background-color: #5e262d;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #722F37;
+      color: #722F37;
+    }
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      margin: 16px 0;
+      display: none;
+    }
+    .alert-success { background: #e8f5e9; color: #2e7d32; }
+    .alert-error { background: #ffebee; color: #c62828; }
+    .breadcrumb {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 12px 20px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: #555;
+    }
+    .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+    .breadcrumb span { margin: 0 8px; color: #888; }
+    /* Foto */
+    .photo-section {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .photo-placeholder {
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      background: #f0f0f0;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+      color: #888;
+      overflow: hidden;
+      border: 2px solid #eee;
+      position: relative;
+    }
+    .photo-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    #photoInput { display: none; }
+    .upload-btn {
+      background: #722F37;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .upload-btn:hover { background: #5e262d; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="../../index.html">Inicio</a> <span>›</span>
+      <a href="../index.html">RRHH</a> <span>›</span>
+      <a href="#rrhh-icap">RRHH ICAP</a> <span>›</span>
+      <strong>Registro</strong>
+    </div>
+    <div class="header">
+      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+      <h1>Inspectable para el Control de la Actuación Policial</h1>
+      <div class="subtitle">• Registro de Personal de la ICAP Nacional •</div>
+    </div>
+    <div class="user-info">
+      <strong>Usuario:</strong> <span id="userEmail">—</span> |
+      <strong>Rol:</strong> <span id="userRol">—</span>
+    </div>
+    <div class="card">
+      <h2>📝 Registro de Personal ICAP</h2>
+      <div id="alertMessage" class="alert"></div>
+      <form id="registroForm">
+        <div class="photo-section">
+          <div class="photo-placeholder" id="photoContainer">🪪</div>
+          <input type="file" id="photoInput" accept="image/*">
+          <button type="button" class="upload-btn" onclick="document.getElementById('photoInput').click()">📷 Subir Foto (opcional)</button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="rango">RANGO *</label>
+            <select id="rango" required>
+              <option value="">— Seleccione —</option>
+              <option value="comisario mayor">Comisario Mayor</option>
+              <option value="inspector jefe">Inspector Jefe</option>
+              <option value="primer inspector">Primer Inspector</option>
+              <option value="inspector">Inspector</option>
+              <option value="oficial jefe">Oficial Jefe</option>
+              <option value="primer oficial">Primer Oficial</option>
+              <option value="oficial">Oficial</option>
+              <option value="agente">Agente</option>
+              <option value="administrativo">Administrativo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="nombre_apellidos">NOMBRE Y APELLIDOS *</label>
+            <textarea id="nombre_apellidos" class="autoresize" rows="1" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="cedula">C.I. *</label>
+            <input type="text" id="cedula" inputmode="numeric" maxlength="8" pattern="\d{8}" required placeholder="Ej: 25653412">
+          </div>
+          <div class="form-group">
+            <label for="sexo">SEXO *</label>
+            <select id="sexo" required>
+              <option value="">—</option>
+              <option value="masculino">Masculino</option>
+              <option value="femenino">Femenino</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="region">REGIÓN *</label>
+            <select id="region" required>
+              <option value="">— Seleccione —</option>
+              <option value="guayana">Guayana</option>
+              <option value="oriental">Oriental</option>
+              <option value="los llanos">Los Llanos</option>
+              <option value="capital">Capital</option>
+              <option value="occidental">Occidental</option>
+              <option value="los andes">Los Andes</option>
+              <option value="insular">Insular</option>
+              <option value="central">Central</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="estado">ESTADO *</label>
+            <input type="text" id="estado" placeholder="Ej: Bolívar" required>
+          </div>
+          <div class="form-group">
+            <label for="direccion">DIRECCIÓN</label>
+            <textarea id="direccion" class="autoresize" rows="1"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="cargo">CARGO</label>
+            <input type="text" id="cargo" placeholder="Ej: Inspector Delegado">
+          </div>
+          <div class="form-group">
+            <label for="estatus">ESTATUS *</label>
+            <select id="estatus" required>
+              <option value="">— Seleccione —</option>
+              <option value="DISPONIBLE">DISPONIBLE</option>
+              <option value="ABANDONO DE CARGO">ABANDONO DE CARGO</option>
+              <option value="REPOSOS MEDICO">REPOSOS MEDICO</option>
+              <option value="PROCESO DE RENUNCIA">PROCESO DE RENUNCIA</option>
+              <option value="VACIONES">VACIONES</option>
+              <option value="BAJA EN PROCESO">BAJA EN PROCESO</option>
+              <option value="SUSPENDIDO">SUSPENDIDO</option>
+              <option value="PRIVADO DE LIBERTAD">PRIVADO DE LIBERTAD</option>
+              <option value="DESTITUIDO">DESTITUIDO</option>
+              <option value="RENUNCIA">RENUNCIA</option>
+              <option value="CONDUCTOR GENERAL">CONDUCTOR GENERAL</option>
+              <option value="PROVIDENCIA">PROVIDENCIA</option>
+            </select>
+          </div>
+        </div>
+        <div style="text-align:right; margin-top:20px;">
+          <button type="button" class="btn btn-outline" onclick="history.back()">← Cancelar</button>
+          <button type="submit" class="btn">✅ Registrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ✅ Autoresize
+    document.querySelectorAll('textarea.autoresize').forEach(el => {
+      const adjust = () => {
+        el.style.height = 'auto';
+        el.style.height = (el.scrollHeight) + 'px';
+      };
+      el.addEventListener('input', adjust);
+      adjust();
+    });
+    
+    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+    const alertDiv = document.getElementById('alertMessage');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const { data: { session }, error } = await client.auth.getSession();
+        if (error || !session) return window.location.href = '../../index.html';
+
+        const { data: perfil } = await client
+          .from('perfiles')
+          .select('email, rol')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
+          alert('🔒 Solo RRHH autorizado puede registrar personal ICAP.');
+          return window.location.href = '../index.html';
+        }
+
+        document.getElementById('userEmail').textContent = perfil.email;
+        document.getElementById('userRol').textContent = 
+          perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
+
+        // Previsualización de foto
+        document.getElementById('photoInput').addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = ev => {
+            const img = new Image();
+            img.src = ev.target.result;
+            img.onload = () => {
+              document.getElementById('photoContainer').innerHTML = '';
+              document.getElementById('photoContainer').appendChild(img);
+            };
+          };
+          reader.readAsDataURL(file);
+        });
+
+      } catch (err) {
+        console.error(err);
+        window.location.href = '../../index.html';
+      }
+    });
+
+    document.getElementById('registroForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showAlert('', '');
+
+      const cedula = document.getElementById('cedula').value.trim();
+      if (!/^\d{8}$/.test(cedula)) {
+        return showAlert('⚠️ Cédula debe tener exactamente 8 dígitos.', 'error');
+      }
+
+      const data = {
+        rango: document.getElementById('rango').value,
+        nombre_apellidos: document.getElementById('nombre_apellidos').value.trim(),
+        cedula: cedula,
+        sexo: document.getElementById('sexo').value,
+        region: document.getElementById('region').value,
+        estado: document.getElementById('estado').value.trim(),
+        direccion: document.getElementById('direccion').value.trim(),
+        cargo: document.getElementById('cargo').value.trim(),
+        estatus: document.getElementById('estatus').value
+      };
+
+      const required = ['rango', 'nombre_apellidos', 'cedula', 'sexo', 'region', 'estado', 'estatus'];
+      for (let f of required) {
+        if (!data[f]) return showAlert(`⚠️ El campo "${f}" es obligatorio.`, 'error');
+      }
+
+      try {
+        const { error } = await client
+          .from('rrhh_icap')
+          .insert([data]);
+        if (error) throw error;
+
+        // ✅ Subir foto (opcional)
+        const photoInput = document.getElementById('photoInput');
+        if (photoInput.files.length > 0) {
+          const file = photoInput.files[0];
+          const ext = file.name.split('.').pop().toLowerCase();
+          const fileName = `foto_${cedula}.${ext}`;
+          const { error: upErr } = await client.storage
+            .from('fotos_funcionarios')
+            .upload(fileName, file, { upsert: true });
+          if (upErr) console.warn('Foto subida con advertencia:', upErr.message);
+        }
+
+        // ✅ Log
+        try {
+          const { data: { session } } = await client.auth.getSession();
+          if (session) {
+            const { data: perfil } = await client
+              .from('perfiles')
+              .select('email, rol')
+              .eq('id', session.user.id)
+              .single();
+            if (perfil) {
+              await client.from('rrhh_logs').insert({
+                user_id: session.user.id,
+                email: perfil.email,
+                rol: perfil.rol,
+                accion: 'registro_icap',
+                cedula_afectada: cedula,
+                nombre_afectado: data.nombre_apellidos,
+                detalles: { modulo: 'rrhh_icap' }
+              });
+            }
+          }
+        } catch (logErr) {
+          console.warn('Log no guardado:', logErr.message);
+        }
+
+        showAlert('✅ Registro exitoso.', 'success');
+        document.getElementById('registroForm').reset();
+        document.getElementById('photoContainer').innerHTML = '🪪';
+        setTimeout(() => window.location.href = '../index.html', 1500);
+
+      } catch (err) {
+        console.error(err);
+        showAlert(`❌ Error: ${err.message || 'Verifique que la cédula no exista'}`, 'error');
+      }
+    });
+
+    function showAlert(msg, type) {
+      alertDiv.textContent = msg;
+      alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+      alertDiv.style.display = msg ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>
