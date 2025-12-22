@@ -160,15 +160,11 @@
           <option value="consulta_icap">Consulta ICAP</option>
           <option value="registro_icap">Registro ICAP</option>
           <option value="edicion_icap">Edición ICAP</option>
-          <option value="consulta">Consulta Auditoría</option>
-          <option value="registro">Registro Auditoría</option>
-          <option value="edicion">Edición Auditoría</option>
         </select>
         <select id="filterRol">
           <option value="">Todos los roles</option>
           <option value="admin">Administrador</option>
           <option value="moderador">Moderador</option>
-          <option value="consultor">Consultor</option>
         </select>
         <button id="btnFiltrar">🔍 Filtrar</button>
         <button id="btnExportar">📥 Exportar CSV</button>
@@ -259,6 +255,7 @@
       overlay.style.display = 'flex';
     }
 
+    // ✅ Render seguro de logs
     function renderLogs(logs) {
       const tbody = document.getElementById('logsBody');
       if (logs.length === 0) {
@@ -273,17 +270,32 @@
           ? (typeof log.detalles === 'string' ? log.detalles : JSON.stringify(log.detalles)).substring(0, 50) + '…' 
           : '—';
         return `
-          <tr style="cursor:pointer; transition:background 0.2s;" onclick="mostrarDetalles(${JSON.stringify(log).replace(/"/g, '&quot;')})">
+          <tr data-log='${JSON.stringify(log).replace(/'/g, "&#39;")}'
+              style="cursor:pointer; transition:background 0.2s;">
             <td>${fecha}</td>
             <td>${log.email || '—'}</td>
             <td><span class="${rolClass}">${log.rol || '—'}</span></td>
-            <td><span class="${accionClass}">${log.accion.replace('_icap', '').toUpperCase()}</span></td>
+            <td><span class="${accionClass}">${log.accion || '—'}</span></td>
             <td>${log.cedula_afectada || '—'}</td>
             <td>${log.nombre_afectado || '—'}</td>
             <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">${detallesResumen}</td>
           </tr>
         `;
       }).join('');
+
+      // ✅ Asignar eventos SIN eval, SIN SyntaxError
+      document.querySelectorAll('tr[data-log]').forEach(row => {
+        row.addEventListener('click', () => {
+          try {
+            const logStr = row.getAttribute('data-log').replace(/&#39;/g, "'");
+            const log = JSON.parse(logStr);
+            mostrarDetalles(log);
+          } catch (err) {
+            console.error('❌ Error al parsear log:', err);
+            alert('Error al cargar los detalles. Ver consola.');
+          }
+        });
+      });
     }
 
     function renderPagination(totalPages) {
@@ -312,18 +324,14 @@
         let query = client
           .from('rrhh_logs')
           .select('*', { count: 'exact' })
+          .in('accion', ['consulta_icap', 'registro_icap', 'edicion_icap'])
           .order('created_at', { ascending: false });
 
         if (search) {
           query = query.or(`cedula_afectada.ilike.%${search}%,nombre_afectado.ilike.%${search}%,email.ilike.%${search}%`);
         }
         if (accion) {
-          // ✅ Acepta 'consulta', 'consulta_icap', etc.
-          if (accion.endsWith('_icap')) {
-            query = query.eq('accion', accion);
-          } else {
-            query = query.ilike('accion', `${accion}%`);
-          }
+          query = query.eq('accion', accion);
         }
         if (rol) {
           query = query.eq('rol', rol);
@@ -335,7 +343,7 @@
         renderLogs(data);
         renderPagination(Math.ceil(count / perPage));
       } catch (err) {
-        console.error('❌ Error:', err);
+        console.error('❌ Error al cargar logs:', err);
         document.getElementById('logsBody').innerHTML = `<tr><td colspan="7" style="color:#c62828; text-align:center">Error: ${err.message || 'No se pudo cargar el historial'}</td></tr>`;
       }
     }
@@ -345,6 +353,7 @@
         const { data, error } = await client
           .from('rrhh_logs')
           .select('created_at,email,rol,accion,cedula_afectada,nombre_afectado,detalles')
+          .in('accion', ['consulta_icap', 'registro_icap', 'edicion_icap'])
           .order('created_at', { ascending: false });
         if (error) throw error;
 
