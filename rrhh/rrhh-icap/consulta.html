@@ -657,25 +657,41 @@
       document.body.removeChild(a);
     }
 
-    async function registrarLogConsulta(cedula = null, nombre = null) {
-      try {
-        const { data: { session } } = await client.auth.getSession();
-        if (!session) return;
-        const { data: perfil } = await client.from('perfiles').select('email, rol').eq('id', session.user.id).single();
-        if (!perfil) return;
-        await client.from('rrhh_logs').insert({
-          user_id: session.user.id,
-          email: perfil.email,
-          rol: perfil.rol,
-          accion: 'consulta_icap',
-          cedula_afectada: cedula,
-          nombre_afectado: nombre,
-          detalles: { modulo: 'rrhh_icap' }
-        });
-      } catch (e) {
-        console.warn('⚠️ Log no registrado');
-      }
+async function registrarLogConsulta(cedula = null, nombre = null) {
+  try {
+    // ✅ Seguro: sin destructuring anidado
+    const sessionRes = await client.auth.getSession();
+    const session = sessionRes?.data?.session;
+    if (!session) {
+      console.warn('⚠️ Log: sin sesión');
+      return;
     }
+
+    const perfilRes = await client
+      .from('perfiles')
+      .select('email, rol')
+      .eq('id', session.user.id)
+      .single();
+    const perfil = perfilRes?.data;
+    if (!perfil) {
+      console.warn('⚠️ Log: perfil no encontrado');
+      return;
+    }
+
+    // ✅ Usa 'consulta' (no 'consulta_icap') para que el historial lo muestre
+    await client.from('rrhh_logs').insert({
+      user_id: session.user.id,
+      email: perfil.email,
+      rol: perfil.rol,
+      accion: 'consulta',         // ← 🔑 CAMBIO CLAVE
+      cedula_afectada: cedula,
+      nombre_afectado: nombre,
+      detalles: { modulo: 'rrhh_icap' }
+    });
+  } catch (err) {
+    console.warn('⚠️ Log no registrado:', err.message);
+  }
+}
   </script>
 </body>
 </html>
