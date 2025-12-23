@@ -198,7 +198,7 @@
     let currentPage = 1;
     const perPage = 20;
 
-    // ✅ Modal de detalles (sin eval, sin SyntaxError)
+    // ✅ Modal de detalles
     function mostrarDetalles(log) {
       let overlay = document.getElementById('logOverlay');
       if (!overlay) {
@@ -255,45 +255,45 @@
       overlay.style.display = 'flex';
     }
 
-    // ✅ Render seguro (sin inline onclick)
+    // ✅ Render 100% seguro (sin SyntaxError)
     function renderLogs(logs) {
       const tbody = document.getElementById('logsBody');
       if (logs.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center">No hay registros.</td></tr>';
         return;
       }
-      tbody.innerHTML = logs.map(log => {
-        const fecha = new Date(log.created_at).toLocaleString('es-VE');
-        const rolClass = `rol-${String(log.rol || 'unknown').toLowerCase()}`;
-        const accionClass = `accion-${String(log.accion || 'unknown').toLowerCase()}`;
-        const detallesResumen = log.detalles 
-          ? (typeof log.detalles === 'string' ? log.detalles : JSON.stringify(log.detalles)).substring(0, 50) + '…' 
-          : '—';
-        return `
-          <tr data-log='${JSON.stringify(log).replace(/'/g, "&#39;")}'
-              style="cursor:pointer; transition:background 0.2s;">
-            <td>${fecha}</td>
-            <td>${log.email || '—'}</td>
-            <td><span class="${rolClass}">${log.rol || '—'}</span></td>
-            <td><span class="${accionClass}">${log.accion.replace('_icap', '').toUpperCase()}</span></td>
-            <td>${log.cedula_afectada || '—'}</td>
-            <td>${log.nombre_afectado || '—'}</td>
-            <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">${detallesResumen}</td>
-          </tr>
-        `;
-      }).join('');
 
-      // ✅ Asignar evento de forma segura
-      document.querySelectorAll('tr[data-log]').forEach(row => {
+      // Limpiar tabla
+      tbody.innerHTML = '';
+
+      // Crear filas dinámicamente
+      logs.forEach(log => {
+        const row = document.createElement('tr');
+        row.style.cursor = 'pointer';
+        row.style.transition = 'background 0.2s';
+        row.innerHTML = `
+          <td>${new Date(log.created_at).toLocaleString('es-VE')}</td>
+          <td>${log.email || '—'}</td>
+          <td><span class="rol-${String(log.rol || 'unknown').toLowerCase()}">${log.rol || '—'}</span></td>
+          <td><span class="accion-${String(log.accion || 'unknown').toLowerCase()}">${log.accion || '—'}</span></td>
+          <td>${log.cedula_afectada || '—'}</td>
+          <td>${log.nombre_afectado || '—'}</td>
+          <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">
+            ${(log.detalles ? JSON.stringify(log.detalles).substring(0,50) + '…' : '—')}
+          </td>
+        `;
+
+        // ✅ Asignar evento SIN eval, SIN JSON en HTML
         row.addEventListener('click', () => {
           try {
-            const log = JSON.parse(row.getAttribute('data-log').replace(/&#39;/g, "'"));
-            mostrarDetalles(log);
+            mostrarDetalles(log); // `log` ya es un objeto JavaScript válido
           } catch (err) {
-            console.error('❌ Error al parsear log:', err);
+            console.error('❌ Error en mostrarDetalles:', err);
             alert('No se pudieron cargar los detalles.');
           }
         });
+
+        tbody.appendChild(row);
       });
     }
 
@@ -301,6 +301,7 @@
       const div = document.getElementById('pagination');
       div.innerHTML = '';
       if (totalPages <= 1) return;
+
       const addBtn = (text, page, active = false, disabled = false) => {
         const btn = document.createElement('button');
         btn.className = 'page-btn' + (active ? ' active' : '') + (disabled ? ' disabled' : '');
@@ -308,6 +309,7 @@
         if (!disabled) btn.onclick = () => { currentPage = page; loadLogs(); };
         div.appendChild(btn);
       };
+
       addBtn('«', 1, false, currentPage === 1);
       for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
         addBtn(i, i, i === currentPage);
@@ -327,7 +329,9 @@
           .order('created_at', { ascending: false });
 
         if (search) {
-          query = query.or(`cedula_afectada.ilike.%${search}%,nombre_afectado.ilike.%${search}%,email.ilike.%${search}%`);
+          query = query.or(
+            `cedula_afectada.ilike.%${search}%,nombre_afectado.ilike.%${search}%,email.ilike.%${search}%`
+          );
         }
         if (accion) {
           query = query.eq('accion', accion);
@@ -342,7 +346,7 @@
         renderLogs(data);
         renderPagination(Math.ceil(count / perPage));
       } catch (err) {
-        console.error('❌ Error:', err);
+        console.error('❌ Error al cargar logs:', err);
         document.getElementById('logsBody').innerHTML = `<tr><td colspan="7" style="color:#c62828; text-align:center">Error: ${err.message || 'No se pudo cargar el historial'}</td></tr>`;
       }
     }
@@ -401,7 +405,7 @@
         if (e.key === 'Enter') loadLogs();
       });
 
-      loadLogs(); // Carga inicial
+      loadLogs();
     });
   </script>
 </body>
