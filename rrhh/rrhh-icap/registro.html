@@ -426,6 +426,33 @@
       alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
       alertDiv.style.display = msg ? 'block' : 'none';
     }
+    async function registrarLogRegistro(cedula, nombre) {
+  try {
+    const sessionRes = await client.auth.getSession();
+    const session = sessionRes?.data?.session;
+    if (!session) return;
+    
+    const perfilRes = await client
+      .from('perfiles')
+      .select('email, rol')
+      .eq('id', session.user.id)
+      .single();
+    const perfil = perfilRes?.data;
+    if (!perfil) return;
+
+    await client.from('rrhh_logs').insert({
+      user_id: session.user.id,
+      email: perfil.email,
+      rol: perfil.rol,
+      accion: 'registro',
+      cedula_afectada: cedula,
+      nombre_afectado: nombre,
+      detalles: { modulo: 'rrhh_icap' }
+    });
+  } catch (err) {
+    console.warn('⚠️ Log de registro no guardado:', err.message);
+  }
+}
   </script>
 </body>
 </html>
