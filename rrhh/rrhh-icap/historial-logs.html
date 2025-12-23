@@ -2,96 +2,46 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Historial RRHH ICAP</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#fafafa;padding:20px}.container{max-width:1200px;margin:0 auto}.header{text-align:center;margin-bottom:24px}.header img{width:90px;margin-bottom:16px}.header h1{font-size:24px;font-weight:700;color:#2d2d2d}.header .subtitle{font-size:16px;color:#722F37;font-weight:600}.breadcrumb{background:#f8f9fa;border-radius:12px;padding:12px 20px;margin-bottom:24px;font-size:14px;color:#555}.breadcrumb a{color:#722F37;text-decoration:none;font-weight:600}.breadcrumb span{margin:0 8px;color:#888}.card{background:white;border-radius:12px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,0.08);margin-bottom:24px;border:1px solid #eee}.filters{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}input,select,button{padding:10px 16px;border:1px solid #ddd;border-radius:8px;font-size:15px}button{background:#722F37;color:white;cursor:pointer}button:hover{background:#5e262d;transform:translateY(-1px)}#btnExportar{background:#1976d2}#btnExportar:hover{background:#1565c0}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{padding:12px 16px;text-align:left;border-bottom:1px solid #eee}th{background:#f8f9fa;font-weight:600;color:#333}.rol-admin{color:#c62828;font-weight:600}.rol-moderador{color:#2e7d32;font-weight:600}.rol-consultor{color:#1565c0;font-weight:600}.accion-consulta_icap,.accion-consulta{background:#e3f2fd;color:#0d47a1;padding:4px 8px;border-radius:4px}.accion-registro_icap,.accion-registro{background:#e8f5e9;color:#1b5e20;padding:4px 8px;border-radius:4px}.accion-edicion_icap,.accion-edicion{background:#fff8e1;color:#e65100;padding:4px 8px;border-radius:4px}.pagination{display:flex;justify-content:center;gap:6px;margin-top:24px}.page-btn{min-width:36px;height:36px;border:1px solid #ddd;background:white;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px}.page-btn.active{background:#722F37;color:white;border-color:#722F37}.page-btn:hover:not(.active){background:#f5f5f5}
-</style>
 </head>
 <body>
-<div class="container">
-<div class="breadcrumb">
-<a href="../../index.html">Inicio</a> <span>›</span>
-<a href="../index.html">RRHH</a> <span>›</span>
-<strong>Historial ICAP</strong>
-</div>
-<div class="header">
-<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP">
 <h1>Inspectable para el Control de la Actuación Policial</h1>
-<div class="subtitle">• Historial RRHH ICAP •</div>
-</div>
-<div class="card">
-<div class="filters">
-<input type="text" id="searchLogs" placeholder="Buscar...">
-<select id="filterAccion">
-<option value="">Todas</option>
-<option value="consulta_icap">Consulta ICAP</option>
-<option value="registro_icap">Registro ICAP</option>
-<option value="edicion_icap">Edición ICAP</option>
-</select>
-<button id="btnFiltrar">🔍</button>
-<button id="btnExportar">📥 CSV</button>
-</div>
-<table>
-<thead>
-<tr>
-<th>Fecha</th><th>Usuario</th><th>Rol</th><th>Acción</th><th>Cédula</th><th>Nombre</th>
-</tr>
-</thead>
-<tbody id="logsBody">
-<tr><td colspan="6" style="text-align:center">Cargando...</td></tr>
-</tbody>
-</table>
-</div>
-</div>
+<h2>Historial de Actividades — RRHH ICAP</h2>
+<div id="status">Cargando...</div>
+<div id="logs"></div>
+
 <script>
 const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
-let currentPage = 1;
-
-async function loadLogs() {
-  try {
-    const { data, error } = await client
-      .from('rrhh_logs')
-      .select('*')
-      .in('accion', ['consulta_icap','registro_icap','edicion_icap'])
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    const tbody = document.getElementById('logsBody');
-    tbody.innerHTML = data.length ? data.map(log => `
-      <tr onclick="mostrar('${log.id}')">
-        <td>${new Date(log.created_at).toLocaleString('es-VE', { hour12: false })}</td>
-        <td>${log.email || '—'}</td>
-        <td>${log.rol || '—'}</td>
-        <td>${log.accion || '—'}</td>
-        <td>${log.cedula_afectada || '—'}</td>
-        <td>${log.nombre_afectado || '—'}</td>
-      </tr>
-    `).join('') : '<tr><td colspan="6" style="text-align:center">No hay registros.</td></tr>';
-  } catch (err) {
-    console.error(err);
-    document.getElementById('logsBody').innerHTML = `<tr><td colspan="6" style="color:red;text-align:center">Error: ${err.message}</td></tr>`;
-  }
-}
-
-function mostrar(id) {
-  alert('Detalles del log ID ' + id + ' (modal simplificado)');
-}
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const {  { session } } = await client.auth.getSession();
-  if (!session) return location.href = '../../index.html';
-  const {  { perfil } } = await client.from('perfiles').select('rol').eq('id', session.user.id).single();
-  if (!perfil || perfil.rol !== 'admin') {
-    alert('🔒 Solo Administrador');
-    location.href = '../index.html';
+  try {
+    const {  { session } } = await client.auth.getSession();
+    if (!session) return location.href = '../../index.html';
+
+    const {  { perfil } } = await client.from('perfiles').select('rol').eq('id', session.user.id).single();
+    if (!perfil || perfil.rol !== 'admin') {
+      document.getElementById('status').textContent = '🔒 Acceso denegado';
+      return;
+    }
+
+    const { data, error } = await client
+      .from('rrhh_logs')
+      .select('id, accion, created_at')
+      .in('accion', ['consulta_icap', 'registro_icap', 'edicion_icap'])
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (error) throw error;
+    document.getElementById('status').textContent = `✅ Logs encontrados: ${data.length}`;
+    document.getElementById('logs').innerHTML = data.map(l => 
+      `<div>[${new Date(l.created_at).toLocaleString()}] ${l.accion}</div>`
+    ).join('');
+  } catch (err) {
+    document.getElementById('status').textContent = `❌ Error: ${err.message}`;
   }
-  document.getElementById('btnFiltrar').onclick = loadLogs;
-  document.getElementById('btnExportar').onclick = () => alert('✅ Exportación simplificada');
-  loadLogs();
 });
 </script>
 </body>
