@@ -91,27 +91,16 @@
     .rol-admin { color: #c62828; font-weight: 600; }
     .rol-moderador { color: #2e7d32; font-weight: 600; }
     .rol-consultor { color: #1565c0; font-weight: 600; }
-    .accion-consulta_icap,
-    .accion-consulta {
-      background: #e3f2fd;
-      color: #0d47a1;
-      padding: 4px 8px;
-      border-radius: 4px;
-    }
-    .accion-registro_icap,
-    .accion-registro {
-      background: #e8f5e9;
-      color: #1b5e20;
-      padding: 4px 8px;
-      border-radius: 4px;
-    }
-    .accion-edicion_icap,
+    .accion-consulta,
+    .accion-registro,
     .accion-edicion {
-      background: #fff8e1;
-      color: #e65100;
       padding: 4px 8px;
       border-radius: 4px;
+      font-weight: 600;
     }
+    .accion-consulta { background: #e3f2fd; color: #0d47a1; }
+    .accion-registro { background: #e8f5e9; color: #1b5e20; }
+    .accion-edicion { background: #fff8e1; color: #e65100; }
     .pagination {
       display: flex;
       justify-content: center;
@@ -152,9 +141,9 @@
         <input type="text" id="searchLogs" placeholder="Buscar por cédula, nombre o email" />
         <select id="filterAccion">
           <option value="">Todas las acciones</option>
-          <option value="consulta_icap">Consulta ICAP</option>
-          <option value="registro_icap">Registro ICAP</option>
-          <option value="edicion_icap">Edición ICAP</option>
+          <option value="consulta">Consulta</option>
+          <option value="registro">Registro</option>
+          <option value="edicion">Edición</option>
         </select>
         <select id="filterRol">
           <option value="">Todos los roles</option>
@@ -193,7 +182,7 @@
     let currentPage = 1;
     const perPage = 20;
 
-    // ✅ Modal de detalles — sin eval, sin JSON.stringify inline
+    // ✅ Modal de detalles
     function mostrarDetalles(log) {
       let overlay = document.getElementById('logOverlay');
       if (!overlay) {
@@ -232,7 +221,7 @@
             <div><strong>📅 Fecha y Hora:</strong><br><span style="color:#2d2d2d;">${fecha}</span></div>
             <div><strong>👤 Usuario:</strong><br><span style="color:#2d2d2d;">${log.email || '—'}</span></div>
             <div><strong>🛡️ Rol:</strong><br><span class="rol-${String(log.rol || 'unknown').toLowerCase()}">${log.rol || '—'}</span></div>
-            <div><strong>🔧 Acción:</strong><br><span class="accion-${String(log.accion || 'unknown').toLowerCase()}">${log.accion || '—'}</span></div>
+            <div><strong>🔧 Acción:</strong><br><span class="accion-${log.accion || 'unknown'}">${log.accion || '—'}</span></div>
             <div><strong>🆔 Cédula afectada:</strong><br><span style="color:#2d2d2d;">${log.cedula_afectada || '—'}</span></div>
             <div><strong>📛 Funcionario:</strong><br><span style="color:#2d2d2d;">${log.nombre_afectado || '—'}</span></div>
           </div>
@@ -250,7 +239,7 @@
       overlay.style.display = 'flex';
     }
 
-    // ✅ Render seguro — sin inline onclick con JSON
+    // ✅ Render seguro
     function renderLogs(logs) {
       const tbody = document.getElementById('logsBody');
       if (logs.length === 0) {
@@ -259,7 +248,6 @@
       }
 
       tbody.innerHTML = '';
-
       logs.forEach(log => {
         const row = document.createElement('tr');
         row.style.cursor = 'pointer';
@@ -268,14 +256,14 @@
           <td>${new Date(log.created_at).toLocaleString('es-VE')}</td>
           <td>${log.email || '—'}</td>
           <td><span class="rol-${String(log.rol || 'unknown').toLowerCase()}">${log.rol || '—'}</span></td>
-          <td><span class="accion-${String(log.accion || 'unknown').toLowerCase()}">${log.accion || '—'}</span></td>
+          <td><span class="accion-${log.accion || 'unknown'}">${log.accion || '—'}</span></td>
           <td>${log.cedula_afectada || '—'}</td>
           <td>${log.nombre_afectado || '—'}</td>
           <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">
             ${log.detalles ? JSON.stringify(log.detalles).substring(0,50) + '…' : '—'}
           </td>
         `;
-        row.addEventListener('click', () => mostrarDetalles(log)); // ✅ Seguro
+        row.addEventListener('click', () => mostrarDetalles(log));
         tbody.appendChild(row);
       });
     }
@@ -300,19 +288,24 @@
       addBtn('»', totalPages, false, currentPage === totalPages);
     }
 
+    // ✅ Carga de logs — ¡con filtro por módulo!
     async function loadLogs() {
       const search = document.getElementById('searchLogs').value.trim();
       const accion = document.getElementById('filterAccion').value;
       const rol = document.getElementById('filterRol').value;
+      
       try {
+        // 🔑 FILTRO POR MÓDULO: solo RRHH ICAP
         let query = client
           .from('rrhh_logs')
           .select('*', { count: 'exact' })
-          .in('accion', ['consulta_icap', 'registro_icap', 'edicion_icap'])
+          .contains('detalles', { modulo: 'rrhh_icap' })  // ✅ CLAVE
           .order('created_at', { ascending: false });
 
         if (search) {
-          query = query.or(`cedula_afectada.ilike.%${search}%,nombre_afectado.ilike.%${search}%,email.ilike.%${search}%`);
+          query = query.or(
+            `cedula_afectada.ilike.%${search}%,nombre_afectado.ilike.%${search}%,email.ilike.%${search}%`
+          );
         }
         if (accion) {
           query = query.eq('accion', accion);
@@ -338,7 +331,7 @@
         const { data, error } = await client
           .from('rrhh_logs')
           .select('created_at,email,rol,accion,cedula_afectada,nombre_afectado,detalles')
-          .in('accion', ['consulta_icap', 'registro_icap', 'edicion_icap'])
+          .contains('detalles', { modulo: 'rrhh_icap' })
           .order('created_at', { ascending: false });
 
         if (error) throw error;
