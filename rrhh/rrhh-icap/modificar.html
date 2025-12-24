@@ -304,22 +304,57 @@
     const alertDiv = document.getElementById('searchMessage');
     let currentCedula = null;
 
-    document.addEventListener('DOMContentLoaded', async () => {
+    // ✅ Función de log — CORREGIDA
+    async function registrarLogEdicion(cedula, nombre) {
       try {
-        const { data: { session }, error } = await client.auth.getSession();
-        if (error || !session) return window.location.href = '../../index.html';
-        const { data: perfil } = await client
+        const sessionRes = await client.auth.getSession();
+        const session = sessionRes?.data?.session;
+        if (!session) return;
+        
+        const perfilRes = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
           .single();
+        const perfil = perfilRes?.data;
+        if (!perfil) return;
+
+        await client.from('rrhh_logs').insert({
+          user_id: session.user.id,
+          email: perfil.email,
+          rol: perfil.rol,
+          accion: 'edicion',                 // ✅ SOLO 'edicion'
+          cedula_afectada: cedula,
+          nombre_afectado: nombre,
+          detalles: { modulo: 'rrhh_icap' } // ✅ clave para historial
+        });
+      } catch (err) {
+        console.warn('⚠️ Log de edición no guardado:', err.message);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const sessionRes = await client.auth.getSession();
+        const session = sessionRes?.data?.session;
+        if (!session) return window.location.href = '../../index.html';
+
+        const perfilRes = await client
+          .from('perfiles')
+          .select('email, rol')
+          .eq('id', session.user.id)
+          .single();
+        const perfil = perfilRes?.data;
+
         if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
           alert('🔒 Solo RRHH autorizado puede modificar.');
           return window.location.href = '../index.html';
         }
+
         document.getElementById('userEmail').textContent = perfil.email;
         document.getElementById('userRol').textContent = 
           perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
+
         document.getElementById('btnBuscar').addEventListener('click', buscarPorCedula);
         document.getElementById('searchCedula').addEventListener('keypress', e => {
           if (e.key === 'Enter') buscarPorCedula();
@@ -374,6 +409,7 @@
     async function actualizarRegistro(e) {
       e.preventDefault();
       if (!currentCedula) return;
+
       const data = {
         rango: document.getElementById('rango').value,
         nombre_apellidos: document.getElementById('nombre_apellidos').value.trim(),
@@ -384,13 +420,18 @@
         cargo: document.getElementById('cargo').value.trim(),
         estatus: document.getElementById('estatus').value
       };
+
       try {
         const { error } = await client
           .from('rrhh_icap')
           .update(data)
           .eq('cedula', currentCedula);
         if (error) throw error;
-        alertDiv.textContent = '✅ Actualizado.';
+
+        // 🔑 ¡LLAMADA AL LOG AQUÍ — CORREGIDA!
+        await registrarLogEdicion(currentCedula, data.nombre_apellidos);
+
+        alertDiv.textContent = '✅ Ficha actualizada.';
         alertDiv.className = 'alert alert-success';
         alertDiv.style.display = 'block';
         setTimeout(() => location.reload(), 1500);
@@ -400,33 +441,6 @@
         alertDiv.style.display = 'block';
       }
     }
-    async function registrarLogEdicion(cedula, nombre) {
-  try {
-    const sessionRes = await client.auth.getSession();
-    const session = sessionRes?.data?.session;
-    if (!session) return;
-    
-    const perfilRes = await client
-      .from('perfiles')
-      .select('email, rol')
-      .eq('id', session.user.id)
-      .single();
-    const perfil = perfilRes?.data;
-    if (!perfil) return;
-
-    await client.from('rrhh_logs').insert({
-      user_id: session.user.id,
-      email: perfil.email,
-      rol: perfil.rol,
-      accion: 'edicion',
-      cedula_afectada: cedula,
-      nombre_afectado: nombre,
-      detalles: { modulo: 'rrhh_icap' }
-    });
-  } catch (err) {
-    console.warn('⚠️ Log de edición no guardado:', err.message);
-  }
-}
   </script>
 </body>
 </html>
