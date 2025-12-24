@@ -53,6 +53,15 @@ const PERMISSIONS = {
   action: () => window.location.href = 'rrhh-icap/historial-logs.html',
   tooltip: '🔒 Solo Administrador'
 },
+  // 🔹 Fichas Disciplinarias — ✅ SIN RESTRICCIONES
+'btnFichasCargar': {
+  roles: ['admin', 'moderador', 'consultor'],
+  action: () => window.location.href = 'fichas/index.html'
+},
+'btnFichasConsulta': {
+  roles: ['admin', 'moderador', 'consultor'],
+  action: () => window.location.href = 'fichas/consulta.html'
+},
   'btnRhObjetivos': { roles: ['admin', 'moderador'], action: () => alert('Módulo en desarrollo'), tooltip: '🔒 Solo RRHH autorizado' },
   'btnRhDesempeno': { roles: ['admin', 'moderador'], action: () => alert('Módulo en desarrollo'), tooltip: '🔒 Solo RRHH autorizado' },
   'btnRhCapacitacion': { roles: ['admin', 'moderador'], action: () => alert('Módulo en desarrollo'), tooltip: '🔒 Solo RRHH autorizado' },
