@@ -216,4 +216,157 @@
           .eq('id', session.user.id)
           .single();
 
-       
+        if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
+          alert('🔒 Solo RRHH autorizado puede gestionar fichas.');
+          return window.location.href = '../index.html';
+        }
+
+        document.getElementById('userEmail').textContent = perfil.email;
+        document.getElementById('userRol').textContent = 
+          perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
+
+        document.getElementById('btnSubirFicha').addEventListener('click', subirFicha);
+        document.getElementById('btnBuscarFicha').addEventListener('click', buscarFicha);
+        document.getElementById('searchCedula').addEventListener('keypress', e => {
+          if (e.key === 'Enter') buscarFicha();
+        });
+      } catch (err) {
+        console.error(err);
+        window.location.href = '../../index.html';
+      }
+    });
+
+    async function subirFicha() {
+      const cedula = document.getElementById('cedula').value.trim();
+      const observaciones = document.getElementById('observaciones').value.trim();
+      const fileInput = document.getElementById('documentoInput');
+      const file = fileInput.files[0];
+
+      if (!/^\d{8}$/.test(cedula)) {
+        return showAlert('⚠️ Cédula debe tener 8 dígitos.', 'error');
+      }
+      if (!file) {
+        return showAlert('⚠️ Debes seleccionar un documento.', 'error');
+      }
+
+      try {
+        // Verificar que el funcionario existe en rrhh_icap
+        const { data: funcionario, error: errFunc } = await client
+          .from('rrhh_icap')
+          .select('nombre_apellidos')
+          .eq('cedula', cedula)
+          .single();
+        if (errFunc) throw new Error('Funcionario no encontrado.');
+
+        // Subir documento a storage
+        const ext = file.name.split('.').pop().toLowerCase();
+        const fileName = `ficha_${cedula}_${Date.now()}.${ext}`;
+        const { error: upErr } = await client.storage
+          .from('fichas_disciplinarias')
+          .upload(fileName, file, { upsert: true });
+        if (upErr) throw upErr;
+
+        // Obtener URL pública
+        const { data: urlData } = await client.storage
+          .from('fichas_disciplinarias')
+          .createSignedUrl(fileName, 3600);
+        const documento_url = urlData?.signedUrl;
+
+        // Registrar en rrhh_fichas
+        const { error: insertErr } = await client.from('rrhh_fichas').insert({
+          cedula: cedula,
+          nombre_apellidos: funcionario.nombre_apellidos,
+          observaciones: observaciones,
+          documento_url: documento_url
+        });
+        if (insertErr) throw insertErr;
+
+        // ✅ Registrar log
+        try {
+          const {  { session } } = await client.auth.getSession();
+          if (session) {
+            const {  perfil } = await client
+              .from('perfiles')
+              .select('email, rol')
+              .eq('id', session.user.id)
+              .single();
+            if (perfil) {
+              await client.from('rrhh_logs').insert({
+                user_id: session.user.id,
+                email: perfil.email,
+                rol: perfil.rol,
+                accion: 'ficha_icap',
+                cedula_afectada: cedula,
+                nombre_afectado: funcionario.nombre_apellidos,
+                detalles: { modulo: 'rrhh_icap', tipo: 'ficha_disciplinaria' }
+              });
+            }
+          }
+        } catch (logErr) {
+          console.warn('Log no registrado:', logErr.message);
+        }
+
+        showAlert('✅ Ficha subida exitosamente.', 'success');
+        document.getElementById('cedula').value = '';
+        document.getElementById('observaciones').value = '';
+        fileInput.value = '';
+        setTimeout(() => location.reload(), 1500);
+
+      } catch (err) {
+        console.error('❌ Error al subir ficha:', err);
+        showAlert(`❌ Error: ${err.message}`, 'error');
+      }
+    }
+
+    async function buscarFicha() {
+      const query = document.getElementById('searchCedula').value.trim();
+      if (!query) {
+        return showAlert('⚠️ Ingresa una cédula para buscar.', 'error');
+      }
+
+      try {
+        const { data, error } = await client
+          .from('rrhh_fichas')
+          .select('*')
+          .ilike('cedula', `%${query}%`)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const resultsDiv = document.getElementById('resultsFicha');
+        if (data.length === 0) {
+          resultsDiv.innerHTML = '<p style="color:#666;">🔍 No se encontraron fichas.</p>';
+          return;
+        }
+
+        resultsDiv.innerHTML = data.map(f => `
+          <div class="ficha">
+            <h3>Ficha Disciplinaria — ${f.cedula}</h3>
+            <div class="ficha-row"><span class="ficha-label">Nombre:</span> <span class="ficha-value">${f.nombre_apellidos || '—'}</span></div>
+            <div class="ficha-row"><span class="ficha-label">Fecha:</span> <span class="ficha-value">${new Date(f.created_at).toLocaleDateString()}</span></div>
+            <div class="ficha-row"><span class="ficha-label">Observaciones:</span> <span class="ficha-value">${f.observaciones || '—'}</span></div>
+            <div class="ficha-row">
+              <span class="ficha-label">Documento:</span>
+              <span class="ficha-value">
+                <a href="${f.documento_url}" target="_blank" class="btn btn-doc" style="display:inline-block;">
+                  📄 Ver Documento
+                </a>
+              </span>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        console.error('❌ Error al buscar ficha:', err);
+        document.getElementById('resultsFicha').innerHTML = `<p style="color:#c62828;">❌ Error: ${err.message}</p>`;
+      }
+    }
+
+    function showAlert(msg, type) {
+      alertDiv.textContent = msg;
+      alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+      alertDiv.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
