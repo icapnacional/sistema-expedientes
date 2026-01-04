@@ -227,6 +227,7 @@
         <button class="tab-btn" data-tab="reposo">🛏️ Reposo</button>
         <button class="tab-btn" data-tab="vacaciones">🌴 Vacaciones</button>
         <button class="tab-btn" data-tab="cambio-servicios">🔄 Cambio de Servicios</button>
+        <button class="tab-btn" data-tab="fichas">📁 Fichas</button>
         <button class="tab-btn" data-tab="documentos">📁 Documentos</button>
       </div>
       <div class="tabs-content">
@@ -239,7 +240,7 @@
             </h2>
             <p style="font-size: 17px; color: #555; line-height: 1.6;">
               Seleccione una pestaña superior para comenzar:  
-              <strong>Auditoría Nacional</strong>, <strong>Pie de Fuerza</strong>, <strong>RRHH ICAP</strong>, u otra sección.
+              <strong>Auditoría Nacional</strong>, <strong>Pie de Fuerza</strong>, <strong>RRHH ICAP</strong>, <strong>Fichas</strong>, u otra sección.
             </p>
             <div style="margin-top: 32px; background: #f8f9fa; border-radius: 12px; padding: 16px; font-size: 14px; color: #666;">
               📌 <strong>Tip:</strong> Los módulos disponibles dependen de su rol y permisos asignados.
@@ -278,18 +279,27 @@
         <!-- 🔹 RRHH ICAP -->
         <div id="rrhh-icap" class="tab-content">
           <h2>👥 RRHH ICAP</h2>
+          <p>Sistema de auditoría para seguimiento y control de personal de la ICAP.</p>
           <div class="module-grid">
-            <div class="module-card" id="btnRhObjetivos">
-              <div class="module-icon">🎯</div>
-              <div class="module-title">Objetivos</div>
+            <div class="module-card" id="btnRrhhIcapConsulta">
+              <div class="module-icon">🔍</div>
+              <div class="module-title">Consulta</div>
+              <div class="module-desc">Consulta de personal ICAP.</div>
             </div>
-            <div class="module-card" id="btnRhDesempeno">
-              <div class="module-icon">📈</div>
-              <div class="module-title">Desempeño</div>
+            <div class="module-card" id="btnRrhhIcapRegistro">
+              <div class="module-icon">📝</div>
+              <div class="module-title">Registro</div>
+              <div class="module-desc">Nuevo registro ICAP.</div>
             </div>
-            <div class="module-card" id="btnRhCapacitacion">
-              <div class="module-icon">🎓</div>
-              <div class="module-title">Capacitación</div>
+            <div class="module-card" id="btnRrhhIcapModificar">
+              <div class="module-icon">✏️</div>
+              <div class="module-title">Modificar</div>
+              <div class="module-desc">Edición de datos ICAP.</div>
+            </div>
+            <div class="module-card" id="btnRrhhIcapHistorial">
+              <div class="module-icon">📜</div>
+              <div class="module-title">Historial</div>
+              <div class="module-desc">Registro de actividades ICAP.</div>
             </div>
           </div>
         </div>
@@ -374,6 +384,24 @@
           </div>
         </div>
 
+        <!-- 🔹 FICHAS -->
+        <div id="fichas" class="tab-content">
+          <h2>📁 Fichas Disciplinarias</h2>
+          <p>Registro y consulta de fichas por investigaciones disciplinarias (memorándum).</p>
+          <div class="module-grid">
+            <div class="module-card" id="btnFichasCargar">
+              <div class="module-icon">📤</div>
+              <div class="module-title">Cargar Ficha</div>
+              <div class="module-desc">Sube memorándum de investigación disciplinaria.</div>
+            </div>
+            <div class="module-card" id="btnFichasConsulta">
+              <div class="module-icon">🔍</div>
+              <div class="module-title">Buscar Ficha</div>
+              <div class="module-desc">Consulta por cédula o nombre.</div>
+            </div>
+          </div>
+        </div>
+
         <!-- 🔹 DOCUMENTOS -->
         <div id="documentos" class="tab-content">
           <h2>📁 Documentos</h2>
@@ -430,35 +458,34 @@
           userRolSpan.innerHTML += ' <span title="Administrador" style="color:#c62828; cursor:help;">ⓘ</span>';
         }
 
-        // ✅ Aplicar permisos SOLO a los botones (no a las pestañas)
+        // ✅ Aplicar permisos
         if (typeof initRolePermissions === 'function') {
           initRolePermissions(userRol);
         } else {
           console.error('❌ role-permissions.js no cargado');
         }
 
-        // ✅ Redirección SOLO desde los botones (no desde pestañas)
+        // ✅ Mappings corregidos — SIN ERROR DE SINTAXIS
         const mappings = {
           'btnAuditoriaConsulta': 'auditoria-nacional/consulta.html',
           'btnAuditoriaRegistro': 'auditoria-nacional/registro.html',
           'btnAuditoriaModificar': 'auditoria-nacional/modificar.html',
           'btnAuditoriaHistorial': 'auditoria-nacional/historial-logs.html',
           'btnPieFuerzaListado': 'pie-de-fuerza/index.html',
-          'btnRhObjetivos': 'rrhh-icap/objetivos.html',
-          'btnRhDesempeno': 'rrhh-icap/desempeno.html',
-          'btnRhCapacitacion': 'rrhh-icap/capacitacion.html',
+          'btnRrhhIcapConsulta': 'rrhh/rrhh-icap/consulta.html',
+          'btnRrhhIcapRegistro': 'rrhh/rrhh-icap/registro.html',
+          'btnRrhhIcapModificar': 'rrhh/rrhh-icap/modificar.html',
+          'btnRrhhIcapHistorial': 'rrhh/rrhh-icap/historial-logs.html',
           'btnOrdenNueva': 'orden-servicio/nueva.html',
           'btnReposoSolicitud': 'reposo/solicitud.html',
           'btnVacacionesSolicitudes': 'vacaciones/solicitudes.html',
           'btnCambioNueva': 'cambio-servicios/solicitud.html',
-          'btnDocFormularios': 'documentos/formularios.html'
+          'btnDocFormularios': 'documentos/formularios.html',
+          'btnFichasCargar': 'fichas/index.html',        // ✅ AGREGADO
+          'btnFichasConsulta': 'fichas/consulta.html'    // ✅ AGREGADO
         };
 
-        // 🔴 ❌ Elimina esta parte si existe (causa conflicto con tooltip):
-        // [
-        //   'btnPieFuerzaAsignaciones', 'btnPieFuerzaMovimientos', ...
-        // ].forEach(id => { ... alert("en desarrollo") ... });
-
+        // ✅ Asignar clicks
         Object.entries(mappings).forEach(([id, href]) => {
           const card = document.getElementById(id);
           if (card && !card.hasAttribute('disabled')) {
@@ -468,7 +495,7 @@
           }
         });
 
-        // ✅ Cambio de pestañas (solo UI)
+        // ✅ Cambio de pestañas
         document.querySelectorAll('.tab-btn').forEach(btn => {
           btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
