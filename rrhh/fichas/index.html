@@ -160,6 +160,7 @@
   </div>
 
   <script>
+    // ✅ Sin doble desestructuración → compatible con todos los navegadores
     const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
@@ -167,14 +168,17 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const {  { session }, error } = await client.auth.getSession();
-        if (error || !session) return window.location.href = '../index.html';
+        // ✅ Desestructuración segura
+        const sessionRes = await client.auth.getSession();
+        const session = sessionRes?.data?.session;
+        if (!session) return window.location.href = '../index.html';
 
-        const {  perfil } = await client
+        const perfilRes = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
           .single();
+        const perfil = perfilRes?.data;
 
         if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
           alert('🔒 Solo RRHH autorizado puede cargar fichas.');
@@ -207,36 +211,36 @@
       }
 
       try {
-        // ✅ Subir documento a storage
+        // ✅ Subir documento
         const ext = file.name.split('.').pop().toLowerCase();
         const fileName = `ficha_${cedula}_${Date.now()}.${ext}`;
         const { error: uploadError } = await client.storage
           .from('fichas_disciplinarias')
           .upload(fileName, file, { upsert: true });
-
         if (uploadError) throw uploadError;
 
         // ✅ Obtener URL firmada
-        const { data: urlData } = await client.storage
+        const {  urlData } = await client.storage
           .from('fichas_disciplinarias')
           .createSignedUrl(fileName, 3600);
         const documento_url = urlData?.signedUrl;
 
-        // ✅ Registrar en tabla nueva: fichas_disciplinarias
+        // ✅ Registrar en tabla
         const { error: insertError } = await client.from('fichas_disciplinarias').insert({
           cedula: cedula,
           documento_url: documento_url,
           observaciones: observaciones,
-          creado_por: (await client.auth.getSession())?.data?.session?.user?.id || 'desconocido'
+          creado_por: sessionRes?.data?.session?.user?.id || 'desconocido'
         });
-
         if (insertError) throw insertError;
 
-        // ✅ Log
+        // ✅ Log seguro
         try {
-          const {  { session } } = await client.auth.getSession();
+          const sessionRes = await client.auth.getSession();
+          const session = sessionRes?.data?.session;
           if (session) {
-            const {  perfil } = await client.from('perfiles').select('email,rol').eq('id', session.user.id).single();
+            const perfilRes = await client.from('perfiles').select('email,rol').eq('id', session.user.id).single();
+            const perfil = perfilRes?.data;
             if (perfil) {
               await client.from('rrhh_logs').insert({
                 user_id: session.user.id,
