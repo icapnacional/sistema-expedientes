@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Fichas Disciplinarias | ICAP</title>
+  <title>Formato Ficha Disciplinaria | ICAP</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -15,7 +17,7 @@
       padding: 20px;
     }
     .container {
-      max-width: 800px;
+      max-width: 1200px;
       margin: 0 auto;
     }
     .header {
@@ -45,13 +47,37 @@
       box-shadow: 0 3px 10px rgba(0,0,0,0.08);
       border: 1px solid #eee;
     }
-    .card {
+    .tabs-container {
+      display: flex;
+      gap: 20px;
+    }
+    .form-section, .preview-section {
       background: white;
       border-radius: 12px;
       padding: 24px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      margin-bottom: 24px;
       border: 1px solid #eee;
+    }
+    .form-section {
+      flex: 1;
+    }
+    .preview-section {
+      flex: 1;
+      position: relative;
+    }
+    .preview-container {
+      max-height: 80vh;
+      overflow: auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 30px;
+      background: white;
+    }
+    .preview-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
     }
     .card h2 {
       font-size: 20px;
@@ -85,6 +111,9 @@
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
     .btn:hover {
       background-color: #5e262d;
@@ -94,6 +123,12 @@
       border: 1px solid #722F37;
       color: #722F37;
     }
+    .btn-pdf {
+      background: #1976d2;
+    }
+    .btn-pdf:hover {
+      background: #1565c0;
+    }
     .alert {
       padding: 12px;
       border-radius: 8px;
@@ -102,174 +137,614 @@
     }
     .alert-success { background: #e8f5e9; color: #2e7d32; }
     .alert-error { background: #ffebee; color: #c62828; }
-    .info-box {
-      background: #fff8e1;
-      border-left: 4px solid #ffb300;
-      padding: 16px;
-      border-radius: 6px;
+    .breadcrumb {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 12px 20px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: #555;
+    }
+    .breadcrumb a {
+      color: #722F37;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .breadcrumb span { margin: 0 8px; color: #888; }
+    
+    /* Formato de la ficha oficial */
+    .ficha-oficial {
+      font-family: 'Times New Roman', Times, serif;
+      line-height: 1.6;
+      padding: 40px;
+      position: relative;
+    }
+    .ficha-oficial::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      height: 2px;
+      background: #000;
+    }
+    .ficha-oficial::after {
+      content: '';
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      height: 2px;
+      background: #000;
+    }
+    .logo-section {
+      text-align: center;
       margin-bottom: 20px;
-      font-size: 15px;
+    }
+    .logo-section img {
+      width: 80px;
+    }
+    .titulo-ficha {
+      text-align: center;
+      font-weight: bold;
+      font-size: 20px;
+      margin: 15px 0;
+      text-transform: uppercase;
+    }
+    .codigo-ficha {
+      text-align: center;
+      font-style: italic;
+      margin-bottom: 30px;
+    }
+    .cuerpo-ficha {
+      margin: 20px 0;
+    }
+    .parrafo-ficha {
+      text-indent: 30px;
+      margin: 15px 0;
+      text-align: justify;
+    }
+    .firma-section {
+      margin-top: 60px;
+      text-align: center;
+    }
+    .firma-line {
+      width: 300px;
+      margin: 0 auto;
+      border-top: 1px solid #000;
+    }
+    .watermark {
+      position: absolute;
+      opacity: 0.1;
+      font-size: 80px;
+      transform: rotate(-45deg);
+      top: 40%;
+      left: 10%;
+      white-space: nowrap;
+      color: #722F37;
+      font-weight: bold;
+    }
+    @media print {
+      .ficha-oficial {
+        padding: 20px;
+      }
+      body {
+        padding: 0;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <div class="breadcrumb">
+      <a href="../index.html">Inicio</a> <span>›</span>
+      <a href="../rrhh-icap/index.html">RRHH ICAP</a> <span>›</span>
+      <a href="index.html">Fichas</a> <span>›</span>
+      <strong>Formato Disciplinario</strong>
+    </div>
     <div class="header">
       <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
       <h1>Inspectable para el Control de la Actuación Policial</h1>
-      <div class="subtitle">• Carga de Fichas Disciplinarias •</div>
+      <div class="subtitle">• Formato de Ficha Disciplinaria •</div>
     </div>
-
     <div class="user-info">
       <strong>Usuario:</strong> <span id="userEmail">—</span> |
       <strong>Rol:</strong> <span id="userRol">—</span>
     </div>
-
-    <div class="card">
-      <h2>📤 Cargar Ficha por Memorándum</h2>
-
-      <div class="info-box">
-        <strong>ℹ️ Nota:</strong> Este es un formato de funcionarios que los servicios operativos presentan en la ICAP por estar incursos en investigaciones disciplinarias (faltas), los cuales envían mediante memorándum. Por favor, cargue el documento oficial adjunto a esta ficha.
-      </div>
-
-      <div id="alertMessage" class="alert"></div>
-
-      <form id="fichaForm">
+    
+    <div class="tabs-container">
+      <div class="form-section">
+        <h2>📝 Llenar Formato</h2>
+        <div id="alertMessage" class="alert"></div>
+        
         <div class="form-group">
-          <label for="cedula">Cédula del Funcionario *</label>
-          <input type="text" id="cedula" inputmode="numeric" maxlength="8" pattern="\d{8}" required placeholder="Ej: 25275015">
+          <label for="searchCedula">Buscar por Cédula</label>
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="searchCedula" placeholder="Ingrese cédula (8 dígitos)" maxlength="8" inputmode="numeric">
+            <button id="btnBuscarCedula" class="btn" style="padding:10px 16px;">🔍 Buscar</button>
+          </div>
         </div>
-
+        
         <div class="form-group">
-          <label for="documentoInput">Memorándum o Documento Adjunto *</label>
-          <input type="file" id="documentoInput" accept=".pdf,.jpg,.jpeg,.png" required>
+          <label for="cedula">Cédula *</label>
+          <input type="text" id="cedula" maxlength="8" inputmode="numeric" required>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="nombre_apellidos">Nombre y Apellidos *</label>
+            <input type="text" id="nombre_apellidos" required>
+          </div>
+          <div class="form-group">
+            <label for="rango">Rango *</label>
+            <select id="rango" required>
+              <option value="">— Seleccione —</option>
+              <option value="Comisario Mayor">Comisario Mayor</option>
+              <option value="Inspector Jefe">Inspector Jefe</option>
+              <option value="Primer Inspector">Primer Inspector</option>
+              <option value="Inspector">Inspector</option>
+              <option value="Oficial Jefe">Oficial Jefe</option>
+              <option value="Primer Oficial">Primer Oficial</option>
+              <option value="Oficial">Oficial</option>
+              <option value="Agente">Agente</option>
+              <option value="Administrativo">Administrativo</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="fecha_investigacion">Fecha de Investigación *</label>
+            <input type="date" id="fecha_investigacion" required>
+          </div>
+          <div class="form-group">
+            <label for="tipo_falta">Tipo de Falta *</label>
+            <select id="tipo_falta" required>
+              <option value="">— Seleccione —</option>
+              <option value="Falta leve">Falta leve</option>
+              <option value="Falta grave">Falta grave</option>
+              <option value="Falta muy grave">Falta muy grave</option>
+              <option value="Conducta indebida">Conducta indebida</option>
+              <option value="Abandono de cargo">Abandono de cargo</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="descripcion_hechos">Descripción de los Hechos *</label>
+          <textarea id="descripcion_hechos" rows="4" required placeholder="Describa detalladamente los hechos que motivan la investigación disciplinaria"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="fundamento_legal">Fundamento Legal</label>
+          <textarea id="fundamento_legal" rows="3" placeholder="Artículos, leyes o reglamentos aplicables"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="recomendaciones">Recomendaciones</label>
+          <textarea id="recomendaciones" rows="3" placeholder="Sanción propuesta o medidas a tomar"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="documento_memorandum">Memorándum Adjunto</label>
+          <input type="file" id="documento_memorandum" accept=".pdf,.jpg,.jpeg,.png">
           <small style="color:#666; display:block; margin-top:4px;">Formatos permitidos: PDF, JPG, PNG</small>
         </div>
-
-        <div class="form-group">
-          <label for="observaciones">Observaciones (opcional)</label>
-          <textarea id="observaciones" rows="3" placeholder="Motivo de la investigación, resumen del memorándum, etc."></textarea>
-        </div>
-
+        
         <div style="text-align:right; margin-top:20px;">
           <button type="button" class="btn btn-outline" onclick="window.history.back()">← Volver</button>
-          <button type="submit" class="btn">📤 Subir Ficha</button>
+          <button id="btnGuardar" class="btn">💾 Guardar Ficha</button>
+          <button id="btnExportarPDF" class="btn btn-pdf">📄 Exportar a PDF</button>
         </div>
-      </form>
+      </div>
+      
+      <div class="preview-section">
+        <h2>🔍 Vista Previa</h2>
+        <div class="preview-container">
+          <div id="fichaPreview" class="ficha-oficial">
+            <div class="watermark">FICHA DISCIPLINARIA</div>
+            <div class="logo-section">
+              <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional">
+            </div>
+            <div class="titulo-ficha">
+              inspectable para el control de la actuación policial
+            </div>
+            <div class="codigo-ficha">
+              <strong>CÓDIGO:</strong> F-DISCI-001
+              <br>
+              <strong>VERSIÓN:</strong> 1.0
+              <br>
+              <strong>FECHA:</strong> <span id="previewFecha">2026-01-04</span>
+            </div>
+            
+            <div class="cuerpo-ficha">
+              <div class="parrafo-ficha">
+                <strong>IDENTIFICACIÓN DEL FUNCIONARIO:</strong>
+                <br>
+                <span id="previewNombre">NOMBRE Y APELLIDOS</span>
+                <br>
+                <strong>C.I.:</strong> <span id="previewCedula">V-12345678</span>
+                <br>
+                <strong>RANGO:</strong> <span id="previewRango">RANGO</span>
+              </div>
+              
+              <div class="parrafo-ficha">
+                <strong>INVESTIGACIÓN DISCIPLINARIA:</strong>
+                <br>
+                <span id="previewTipoFalta">TIPO DE FALTA</span>
+                <br>
+                <strong>FECHA DE INICIO:</strong> <span id="previewFechaInvestigacion">2026-01-04</span>
+              </div>
+              
+              <div class="parrafo-ficha">
+                <strong>HECHOS:</strong>
+                <br>
+                <span id="previewDescripcionHechos">DESCRIPCIÓN DETALLADA DE LOS HECHOS QUE MOTIVAN LA INVESTIGACIÓN DISCIPLINARIA.</span>
+              </div>
+              
+              <div class="parrafo-ficha">
+                <strong>FUNDAMENTO LEGAL:</strong>
+                <br>
+                <span id="previewFundamentoLegal">ARTÍCULOS, LEYES O REGLAMENTOS APLICABLES.</span>
+              </div>
+              
+              <div class="parrafo-ficha">
+                <strong>RECOMENDACIONES:</strong>
+                <br>
+                <span id="previewRecomendaciones">SUGERENCIAS DE MEDIDAS A TOMAR O SANCIONES PROPUESTAS.</span>
+              </div>
+            </div>
+            
+            <div class="firma-section">
+              <div class="firma-line"></div>
+              <div style="margin-top:10px;">
+                <strong>ELABORADO POR:</strong> <span id="previewUsuario">USUARIO</span>
+                <br>
+                <strong>CARGO:</strong> Inspector Delegado
+                <br>
+                <strong>FECHA:</strong> <span id="previewFechaElaboracion">2026-01-04</span>
+              </div>
+            </div>
+            
+            <div style="text-align:center; margin-top:30px; font-size:12px; color:#666;">
+              DOCUMENTO CONFIDENCIAL - SOLO PARA USO INTERNO DE LA ICAP
+              <br>
+              INCLUYE INFORMACIÓN SENSIBLE DE CARÁCTER DISCIPLINARIO
+            </div>
+          </div>
+        </div>
+        
+        <div class="preview-actions">
+          <button id="btnImprimir" class="btn btn-outline" style="flex:1;">🖨️ Imprimir</button>
+          <button id="btnExportarPDF2" class="btn btn-pdf" style="flex:1;">📄 Exportar a PDF</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
-    // ✅ Sin doble desestructuración → compatible con todos los navegadores
+    // ✅ Inicializar Supabase
     const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const alertDiv = document.getElementById('alertMessage');
-
-    document.addEventListener('DOMContentLoaded', async () => {
+    
+    // ✅ Actualizar vista previa en tiempo real
+    function actualizarVistaPrevia() {
+      const fechaActual = new Date().toISOString().split('T')[0];
+      const nombre = document.getElementById('nombre_apellidos').value || 'NOMBRE Y APELLIDOS';
+      const cedula = document.getElementById('cedula').value || 'V-12345678';
+      const rango = document.getElementById('rango').value || 'RANGO';
+      const tipoFalta = document.getElementById('tipo_falta').value || 'TIPO DE FALTA';
+      const fechaInvestigacion = document.getElementById('fecha_investigacion').value || fechaActual;
+      const descripcionHechos = document.getElementById('descripcion_hechos').value || 'DESCRIPCIÓN DETALLADA DE LOS HECHOS QUE MOTIVAN LA INVESTIGACIÓN DISCIPLINARIA.';
+      const fundamentoLegal = document.getElementById('fundamento_legal').value || 'ARTÍCULOS, LEYES O REGLAMENTOS APLICABLES.';
+      const recomendaciones = document.getElementById('recomendaciones').value || 'SUGERENCIAS DE MEDIDAS A TOMAR O SANCIONES PROPUESTAS.';
+      const usuario = document.getElementById('userEmail').textContent || 'USUARIO';
+      
+      document.getElementById('previewFecha').textContent = fechaActual;
+      document.getElementById('previewNombre').textContent = nombre;
+      document.getElementById('previewCedula').textContent = cedula;
+      document.getElementById('previewRango').textContent = rango;
+      document.getElementById('previewTipoFalta').textContent = tipoFalta;
+      document.getElementById('previewFechaInvestigacion').textContent = fechaInvestigacion;
+      document.getElementById('previewDescripcionHechos').textContent = descripcionHechos;
+      document.getElementById('previewFundamentoLegal').textContent = fundamentoLegal;
+      document.getElementById('previewRecomendaciones').textContent = recomendaciones;
+      document.getElementById('previewUsuario').textContent = usuario;
+      document.getElementById('previewFechaElaboracion').textContent = fechaActual;
+    }
+    
+    // ✅ Buscar funcionario por cédula
+    async function buscarFuncionarioPorCedula(cedula) {
       try {
-        // ✅ Desestructuración segura
-        const sessionRes = await client.auth.getSession();
-        const session = sessionRes?.data?.session;
-        if (!session) return window.location.href = '../index.html';
-
-        const perfilRes = await client
-          .from('perfiles')
-          .select('email, rol')
-          .eq('id', session.user.id)
+        const { data, error } = await client
+          .from('rrhh_icap')
+          .select('nombre_apellidos, rango')
+          .eq('cedula', cedula)
           .single();
-        const perfil = perfilRes?.data;
-
-        if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
-          alert('🔒 Solo RRHH autorizado puede cargar fichas.');
-          return window.location.href = '../index.html';
+        
+        if (error) throw error;
+        
+        if (data) {
+          document.getElementById('nombre_apellidos').value = data.nombre_apellidos;
+          document.getElementById('rango').value = data.rango;
+          showAlert('✅ Datos cargados desde RRHH ICAP', 'success');
+          actualizarVistaPrevia();
+        } else {
+          showAlert('⚠️ Funcionario no encontrado en RRHH ICAP', 'error');
         }
-
-        document.getElementById('userEmail').textContent = perfil.email;
-        document.getElementById('userRol').textContent = 
-          perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
       } catch (err) {
-        console.error(err);
-        window.location.href = '../index.html';
+        console.error('Error al buscar funcionario:', err);
+        showAlert(`❌ Error: ${err.message}`, 'error');
       }
-    });
-
-    document.getElementById('fichaForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      showAlert('', '');
-
-      const cedula = document.getElementById('cedula').value.trim();
-      const fileInput = document.getElementById('documentoInput');
-      const file = fileInput.files[0];
-      const observaciones = document.getElementById('observaciones').value.trim();
-
-      if (!/^\d{8}$/.test(cedula)) {
-        return showAlert('⚠️ Cédula debe tener exactamente 8 dígitos.', 'error');
-      }
-      if (!file) {
-        return showAlert('⚠️ Debe adjuntar el memorándum.', 'error');
-      }
-
+    }
+    
+    // ✅ Exportar a PDF
+    async function exportarAPDF() {
       try {
-        // ✅ Subir documento
-        const ext = file.name.split('.').pop().toLowerCase();
-        const fileName = `ficha_${cedula}_${Date.now()}.${ext}`;
-        const { error: uploadError } = await client.storage
-          .from('fichas_disciplinarias')
-          .upload(fileName, file, { upsert: true });
-        if (uploadError) throw uploadError;
-
-        // ✅ Obtener URL firmada
-        const {  urlData } = await client.storage
-          .from('fichas_disciplinarias')
-          .createSignedUrl(fileName, 3600);
-        const documento_url = urlData?.signedUrl;
-
-        // ✅ Registrar en tabla
-        const { error: insertError } = await client.from('fichas_disciplinarias').insert({
-          cedula: cedula,
-          documento_url: documento_url,
-          observaciones: observaciones,
-          creado_por: sessionRes?.data?.session?.user?.id || 'desconocido'
+        // ✅ Ocultar botones durante la exportación
+        const originalBtnText = document.getElementById('btnExportarPDF').innerHTML;
+        document.getElementById('btnExportarPDF').innerHTML = '🚀 Generando PDF...';
+        document.getElementById('btnExportarPDF').disabled = true;
+        
+        // ✅ Crear clon para exportación
+        const fichaElement = document.getElementById('fichaPreview');
+        const clon = fichaElement.cloneNode(true);
+        clon.style.width = '210mm'; // Tamaño A4
+        clon.style.minHeight = '297mm';
+        clon.style.padding = '20mm';
+        clon.style.margin = '0';
+        
+        // ✅ Añadir clon al body temporalmente
+        const exportContainer = document.createElement('div');
+        exportContainer.style.position = 'fixed';
+        exportContainer.style.left = '-9999px';
+        exportContainer.appendChild(clon);
+        document.body.appendChild(exportContainer);
+        
+        // ✅ Capturar como imagen
+        const canvas = await html2canvas(clon, {
+          scale: 2,
+          useCORS: true,
+          logging: false
         });
-        if (insertError) throw insertError;
-
-        // ✅ Log seguro
+        
+        // ✅ Crear PDF
+        const { jsPDF } = window.jspdf;
+        const imgWidth = 210; // mm (A4 width)
+        const pageHeight = 297; // mm (A4 height)
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
+        
+        // ✅ Descargar
+        const nombreArchivo = `ficha_disciplinaria_${document.getElementById('cedula').value || 'sin-cedula'}_${new Date().toISOString().slice(0,10)}.pdf`;
+        pdf.save(nombreArchivo);
+        
+        // ✅ Limpiar
+        document.body.removeChild(exportContainer);
+        document.getElementById('btnExportarPDF').innerHTML = originalBtnText;
+        document.getElementById('btnExportarPDF').disabled = false;
+        
+        // ✅ Registrar log
         try {
-          const sessionRes = await client.auth.getSession();
-          const session = sessionRes?.data?.session;
+          const sessionResponse = await client.auth.getSession();
+          const session = sessionResponse?.data?.session;
           if (session) {
-            const perfilRes = await client.from('perfiles').select('email,rol').eq('id', session.user.id).single();
-            const perfil = perfilRes?.data;
-            if (perfil) {
-              await client.from('rrhh_logs').insert({
-                user_id: session.user.id,
-                email: perfil.email,
-                rol: perfil.rol,
-                accion: 'ficha_cargada',
-                cedula_afectada: cedula,
-                detalles: { modulo: 'fichas_disciplinarias' }
-              });
-            }
+            const { data: perfil } = await client
+              .from('perfiles')
+              .select('email, rol')
+              .eq('id', session.user.id)
+              .single();
+            
+            await client.from('rrhh_logs').insert({
+              user_id: session.user.id,
+              email: perfil.email,
+              rol: perfil.rol,
+              accion: 'ficha_exportada',
+              cedula_afectada: document.getElementById('cedula').value,
+              nombre_afectado: document.getElementById('nombre_apellidos').value,
+              detalles: {
+                modulo: 'fichas_disciplinarias',
+                tipo: 'exportacion_pdf'
+              }
+            });
           }
         } catch (logErr) {
           console.warn('Log no registrado:', logErr.message);
         }
-
-        showAlert('✅ Ficha subida exitosamente.', 'success');
-        document.getElementById('fichaForm').reset();
-        setTimeout(() => window.location.reload(), 1500);
-
+        
+        showAlert('✅ PDF generado exitosamente', 'success');
       } catch (err) {
-        console.error('Error:', err);
-        showAlert(`❌ Error: ${err.message || 'Verifique conexión'}`, 'error');
+        console.error('Error al generar PDF:', err);
+        showAlert(`❌ Error al generar PDF: ${err.message}`, 'error');
+        document.getElementById('btnExportarPDF').innerHTML = '📄 Exportar a PDF';
+        document.getElementById('btnExportarPDF').disabled = false;
+      }
+    }
+    
+    // ✅ Guardar ficha
+    async function guardarFicha() {
+      try {
+        const cedula = document.getElementById('cedula').value.trim();
+        const nombre = document.getElementById('nombre_apellidos').value.trim();
+        const rango = document.getElementById('rango').value;
+        const tipoFalta = document.getElementById('tipo_falta').value;
+        const fechaInvestigacion = document.getElementById('fecha_investigacion').value;
+        const descripcionHechos = document.getElementById('descripcion_hechos').value.trim();
+        
+        // ✅ Validaciones
+        if (!/^\d{8}$/.test(cedula)) {
+          return showAlert('⚠️ Cédula debe tener exactamente 8 dígitos', 'error');
+        }
+        if (!nombre) return showAlert('⚠️ Nombre es obligatorio', 'error');
+        if (!rango) return showAlert('⚠️ Rango es obligatorio', 'error');
+        if (!tipoFalta) return showAlert('⚠️ Tipo de falta es obligatorio', 'error');
+        if (!fechaInvestigacion) return showAlert('⚠️ Fecha de investigación es obligatoria', 'error');
+        if (!descripcionHechos) return showAlert('⚠️ Descripción de hechos es obligatoria', 'error');
+        
+        // ✅ Subir documento adjunto
+        let documentoUrl = null;
+        const fileInput = document.getElementById('documento_memorandum');
+        if (fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          const ext = file.name.split('.').pop().toLowerCase();
+          const fileName = `ficha_${cedula}_${Date.now()}.${ext}`;
+          
+          const { error: uploadError } = await client.storage
+            .from('fichas_disciplinarias')
+            .upload(fileName, file, { upsert: true });
+            
+          if (uploadError) throw uploadError;
+          
+          const { data: urlData } = await client.storage
+            .from('fichas_disciplinarias')
+            .createSignedUrl(fileName, 3600);
+          documentoUrl = urlData?.signedUrl;
+        }
+        
+        // ✅ Obtener usuario
+        const sessionResponse = await client.auth.getSession();
+        const session = sessionResponse?.data?.session;
+        const { data: perfil } = await client
+          .from('perfiles')
+          .select('email')
+          .eq('id', session.user.id)
+          .single();
+        
+        // ✅ Guardar en base de datos
+        const { error } = await client.from('fichas_disciplinarias').insert({
+          cedula: cedula,
+          nombre_apellidos: nombre,
+          rango: rango,
+          tipo_falta: tipoFalta,
+          fecha_investigacion: fechaInvestigacion,
+          descripcion_hechos: descripcionHechos,
+          fundamento_legal: document.getElementById('fundamento_legal').value.trim(),
+          recomendaciones: document.getElementById('recomendaciones').value.trim(),
+          documento_url: documentoUrl,
+          creado_por: perfil.email,
+          creado_en: new Date().toISOString()
+        });
+        
+        if (error) throw error;
+        
+        // ✅ Registrar log
+        await client.from('rrhh_logs').insert({
+          user_id: session.user.id,
+          email: perfil.email,
+          rol: perfil.rol,
+          accion: 'ficha_guardada',
+          cedula_afectada: cedula,
+          nombre_afectado: nombre,
+          detalles: {
+            modulo: 'fichas_disciplinarias',
+            tipo: 'creacion'
+          }
+        });
+        
+        showAlert('✅ Ficha guardada exitosamente', 'success');
+        
+        // ✅ Limpiar formulario después de 2 segundos
+        setTimeout(() => {
+          document.getElementById('cedula').value = '';
+          document.getElementById('nombre_apellidos').value = '';
+          document.getElementById('rango').value = '';
+          document.getElementById('tipo_falta').value = '';
+          document.getElementById('fecha_investigacion').value = '';
+          document.getElementById('descripcion_hechos').value = '';
+          document.getElementById('fundamento_legal').value = '';
+          document.getElementById('recomendaciones').value = '';
+          document.getElementById('documento_memorandum').value = '';
+          actualizarVistaPrevia();
+        }, 2000);
+        
+      } catch (err) {
+        console.error('Error al guardar ficha:', err);
+        showAlert(`❌ Error: ${err.message}`, 'error');
+      }
+    }
+    
+    // ✅ Inicialización
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // ✅ Verificar sesión
+        const sessionResponse = await client.auth.getSession();
+        const session = sessionResponse?.data?.session;
+        if (!session) return window.location.href = '../index.html';
+        
+        // ✅ Obtener perfil
+        const { data: perfil } = await client
+          .from('perfiles')
+          .select('email, rol')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (!perfil) return window.location.href = '../index.html';
+        
+        // ✅ Solo RRHH autorizado
+        if (perfil.rol !== 'admin' && perfil.rol !== 'moderador') {
+          alert('🔒 Solo RRHH autorizado puede crear fichas disciplinarias');
+          return window.location.href = '../index.html';
+        }
+        
+        document.getElementById('userEmail').textContent = perfil.email;
+        document.getElementById('userRol').textContent = 
+          perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
+        
+        // ✅ Establecer fecha actual
+        const fechaActual = new Date().toISOString().split('T')[0];
+        document.getElementById('fecha_investigacion').value = fechaActual;
+        
+        // ✅ Eventos
+        document.getElementById('btnBuscarCedula').addEventListener('click', () => {
+          const cedula = document.getElementById('searchCedula').value.trim();
+          if (/^\d{8}$/.test(cedula)) {
+            buscarFuncionarioPorCedula(cedula);
+          } else {
+            showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
+          }
+        });
+        
+        document.getElementById('searchCedula').addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            document.getElementById('btnBuscarCedula').click();
+          }
+        });
+        
+        document.getElementById('btnGuardar').addEventListener('click', guardarFicha);
+        document.getElementById('btnExportarPDF').addEventListener('click', exportarAPDF);
+        document.getElementById('btnExportarPDF2').addEventListener('click', exportarAPDF);
+        document.getElementById('btnImprimir').addEventListener('click', () => {
+          window.print();
+        });
+        
+        // ✅ Eventos para vista previa en tiempo real
+        document.querySelectorAll('#cedula, #nombre_apellidos, #rango, #tipo_falta, #fecha_investigacion, #descripcion_hechos, #fundamento_legal, #recomendaciones').forEach(el => {
+          el.addEventListener('input', actualizarVistaPrevia);
+        });
+        
+        // ✅ Cargar vista previa inicial
+        actualizarVistaPrevia();
+        
+      } catch (err) {
+        console.error('Error en inicialización:', err);
+        window.location.href = '../index.html';
       }
     });
-
+    
+    // ✅ Función para mostrar alertas
     function showAlert(msg, type) {
       alertDiv.textContent = msg;
       alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
       alertDiv.style.display = 'block';
+      
+      // ✅ Ocultar después de 3 segundos
+      setTimeout(() => {
+        alertDiv.style.display = 'none';
+      }, 3000);
     }
   </script>
 </body>
