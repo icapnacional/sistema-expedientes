@@ -287,6 +287,20 @@
         margin-top: 20px;
       }
     }
+    
+    .form-sections {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    
+    .section-title {
+      font-weight: bold;
+      color: #722F37;
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #f0f0f0;
+    }
   </style>
 </head>
 <body>
@@ -319,58 +333,207 @@
         </div>
       </div>
       
-      <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-        <div class="form-group">
-          <label for="cedula">Cédula *</label>
-          <input type="text" id="cedula" maxlength="8" inputmode="numeric" required>
+      <div class="form-sections">
+        <!-- Sección Datos Personales -->
+        <div>
+          <div class="section-title">👤 Datos Personales</div>
+          
+          <div class="form-group">
+            <label for="nombre_apellidos">Nombres y Apellidos *</label>
+            <input type="text" id="nombre_apellidos" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="cedula">Cédula *</label>
+            <input type="text" id="cedula" maxlength="8" inputmode="numeric" required>
+          </div>
+          
+          <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label for="edad">Edad *</label>
+              <input type="number" id="edad" min="18" max="100" required>
+            </div>
+            <div class="form-group">
+              <label for="fecha_nacimiento">Fecha de Nacimiento *</label>
+              <input type="date" id="fecha_nacimiento" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="telefono_funcionario">Teléfono del Funcionario *</label>
+            <input type="tel" id="telefono_funcionario" placeholder="Ej: 0412-1234567" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="telefono_emergencia">Teléfono de Emergencia *</label>
+            <input type="tel" id="telefono_emergencia" placeholder="Ej: 0414-7654321" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="correo_electronico">Correo Electrónico *</label>
+            <input type="email" id="correo_electronico" placeholder="ejemplo@correo.com" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="nivel_academico">Nivel Académico *</label>
+            <select id="nivel_academico" required>
+              <option value="">— Seleccione —</option>
+              <option value="Primaria">Primaria</option>
+              <option value="Bachiller">Bachiller</option>
+              <option value="Técnico Superior">Técnico Superior</option>
+              <option value="Universitario">Universitario</option>
+              <option value="Especialización">Especialización</option>
+              <option value="Maestría">Maestría</option>
+              <option value="Doctorado">Doctorado</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="nombre_apellidos">Nombre y Apellidos *</label>
-          <input type="text" id="nombre_apellidos" required>
+        
+        <!-- Sección Datos Policiales -->
+        <div>
+          <div class="section-title">👮‍♂️ Datos Policiales</div>
+          
+          <div class="form-group">
+            <label for="fecha_ingreso_cpn">Fecha de Ingreso al CPNB *</label>
+            <input type="date" id="fecha_ingreso_cpn" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="fecha_ultimo_ascenso">Fecha del Último Ascenso</label>
+            <input type="date" id="fecha_ultimo_ascenso">
+          </div>
+          
+          <div class="form-group">
+            <label for="antiguedad">Antigüedad en la Función Policial *</label>
+            <input type="text" id="antiguedad" placeholder="Ej: 5 años 3 meses" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="estado">Estado *</label>
+            <select id="estado" required>
+              <option value="">— Seleccione —</option>
+              <option value="Amazonas">Amazonas</option>
+              <option value="Anzoátegui">Anzoátegui</option>
+              <option value="Apure">Apure</option>
+              <option value="Aragua">Aragua</option>
+              <option value="Barinas">Barinas</option>
+              <option value="Bolívar">Bolívar</option>
+              <option value="Carabobo">Carabobo</option>
+              <option value="Cojedes">Cojedes</option>
+              <option value="Delta Amacuro">Delta Amacuro</option>
+              <option value="Distrito Capital">Distrito Capital</option>
+              <option value="Falcón">Falcón</option>
+              <option value="Guárico">Guárico</option>
+              <option value="Lara">Lara</option>
+              <option value="Mérida">Mérida</option>
+              <option value="Miranda">Miranda</option>
+              <option value="Monagas">Monagas</option>
+              <option value="Nueva Esparta">Nueva Esparta</option>
+              <option value="Portuguesa">Portuguesa</option>
+              <option value="Sucre">Sucre</option>
+              <option value="Táchira">Táchira</option>
+              <option value="Trujillo">Trujillo</option>
+              <option value="Vargas">Vargas</option>
+              <option value="Yaracuy">Yaracuy</option>
+              <option value="Zulia">Zulia</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="servicio">Servicio *</label>
+            <input type="text" id="servicio" placeholder="Ej: CCPE CARICUAO" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="direccion_habitacion">Dirección de Habitación *</label>
+            <textarea id="direccion_habitacion" rows="2" required placeholder="Dirección completa"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="ultimo_cargo">Último Cargo *</label>
+            <input type="text" id="ultimo_cargo" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="rango">Rango *</label>
+            <select id="rango" required>
+              <option value="">— Seleccione —</option>
+              <option value="Comisario Mayor">Comisario Mayor</option>
+              <option value="Inspector Jefe">Inspector Jefe</option>
+              <option value="Primer Inspector">Primer Inspector</option>
+              <option value="Inspector">Inspector</option>
+              <option value="Oficial Jefe">Oficial Jefe</option>
+              <option value="Primer Oficial">Primer Oficial</option>
+              <option value="Oficial">Oficial</option>
+              <option value="Agente">Agente</option>
+              <option value="Administrativo">Administrativo</option>
+            </select>
+          </div>
         </div>
-      </div>
-      
-      <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-        <div class="form-group">
-          <label for="rango">Rango *</label>
-          <select id="rango" required>
-            <option value="">— Seleccione —</option>
-            <option value="Comisario Mayor">Comisario Mayor</option>
-            <option value="Inspector Jefe">Inspector Jefe</option>
-            <option value="Primer Inspector">Primer Inspector</option>
-            <option value="Inspector">Inspector</option>
-            <option value="Oficial Jefe">Oficial Jefe</option>
-            <option value="Primer Oficial">Primer Oficial</option>
-            <option value="Oficial">Oficial</option>
-            <option value="Agente">Agente</option>
-            <option value="Administrativo">Administrativo</option>
-          </select>
+        
+        <!-- Sección Credencial e Investigación -->
+        <div>
+          <div class="section-title">🆔 Credencial</div>
+          
+          <div class="form-group">
+            <label>¿Posee Credencial? *</label>
+            <div style="display: flex; gap: 15px;">
+              <div>
+                <input type="radio" id="credencialSi" name="credencial" value="si" required>
+                <label for="credencialSi">SI</label>
+              </div>
+              <div>
+                <input type="radio" id="credencialNo" name="credencial" value="no" required>
+                <label for="credencialNo">NO</label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group" id="numeroCredencialGroup" style="display: none;">
+            <label for="numero_credencial">Número de Credencial *</label>
+            <input type="text" id="numero_credencial" placeholder="Ej: PNB-12345">
+          </div>
+          
+          <div class="section-title" style="margin-top: 25px;">🔍 Investigación Disciplinaria</div>
+          
+          <div class="form-group">
+            <label for="fecha_investigacion">Fecha de Investigación *</label>
+            <input type="date" id="fecha_investigacion" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="tipo_falta">Tipo de Falta *</label>
+            <select id="tipo_falta" required>
+              <option value="">— Seleccione —</option>
+              <option value="Falta leve">Falta leve</option>
+              <option value="Falta grave">Falta grave</option>
+              <option value="Falta muy grave">Falta muy grave</option>
+              <option value="Conducta indebida">Conducta indebida</option>
+              <option value="Abandono de cargo">Abandono de cargo</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="descripcion_hechos">Descripción de los Hechos *</label>
+            <textarea id="descripcion_hechos" rows="4" required placeholder="Describa detalladamente los hechos que motivan la investigación disciplinaria"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="fundamento_legal">Fundamento Legal</label>
+            <textarea id="fundamento_legal" rows="3" placeholder="Artículos, leyes o reglamentos aplicables"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="recomendaciones">Recomendaciones</label>
+            <textarea id="recomendaciones" rows="3" placeholder="Sanción propuesta o medidas a tomar"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="documento_memorandum">Memorándum Adjunto</label>
+            <input type="file" id="documento_memorandum" accept=".pdf,.jpg,.jpeg,.png">
+            <small style="color:#666; display:block; margin-top:4px;">Formatos permitidos: PDF, JPG, PNG</small>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="fecha_investigacion">Fecha de Investigación *</label>
-          <input type="date" id="fecha_investigacion" required>
-        </div>
-      </div>
-      
-      <div class="form-group">
-        <label for="descripcion_hechos">Descripción de los Hechos *</label>
-        <textarea id="descripcion_hechos" rows="4" required placeholder="Describa detalladamente los hechos que motivan la investigación disciplinaria"></textarea>
-      </div>
-      
-      <div class="form-group">
-        <label for="fundamento_legal">Fundamento Legal</label>
-        <textarea id="fundamento_legal" rows="3" placeholder="Artículos, leyes o reglamentos aplicables"></textarea>
-      </div>
-      
-      <div class="form-group">
-        <label for="recomendaciones">Recomendaciones</label>
-        <textarea id="recomendaciones" rows="3" placeholder="Sanción propuesta o medidas a tomar"></textarea>
-      </div>
-      
-      <div class="form-group">
-        <label for="documento_memorandum">Memorándum Adjunto</label>
-        <input type="file" id="documento_memorandum" accept=".pdf,.jpg,.jpeg,.png">
-        <small style="color:#666; display:block; margin-top:4px;">Formatos permitidos: PDF, JPG, PNG</small>
       </div>
       
       <div style="text-align:right; margin-top:20px;">
@@ -404,7 +567,7 @@
             <div class="dato-fila"><strong>EDAD:</strong> <span id="previewEdad">25 AÑOS</span></div>
             <div class="dato-fila"><strong>FECHA DE NACIMIENTO:</strong> <span id="previewFechaNacimiento">01/01/2000</span></div>
             <div class="dato-fila"><strong>TELÉFONO DEL FUNCIONARIO:</strong> <span id="previewTelefono">0412-1234567</span></div>
-            <div class="dato-fila"><strong>TELEFONO DE EMERGENCIA:</strong> <span id="previewTelefonoEmergencia">N/P</span></div>
+            <div class="dato-fila"><strong>TELEFONO DE EMERGENCIA:</strong> <span id="previewTelefonoEmergencia">0414-7654321</span></div>
             <div class="dato-fila"><strong>CORREO ELECTRÓNICO:</strong> <span id="previewCorreo">correo@ejemplo.com</span></div>
             <div class="dato-fila"><strong>NIVEL ACADÉMICO:</strong> <span id="previewNivelAcademico">BACHILLER</span></div>
             <div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">16/06/2024</span></div>
@@ -421,15 +584,15 @@
             <div class="credencial-title">POSEE CREDENCIAL</div>
             <div class="credencial-options">
               <div class="credencial-option">
-                <input type="radio" id="credencialSi" name="credencial" value="si">
-                <label for="credencialSi">SI</label>
+                <input type="radio" id="previewCredencialSi" name="credencialPreview" value="si" disabled>
+                <label for="previewCredencialSi">SI</label>
               </div>
               <div class="credencial-option">
-                <input type="radio" id="credencialNo" name="credencial" value="no">
-                <label for="credencialNo">NO</label>
+                <input type="radio" id="previewCredencialNo" name="credencialPreview" value="no" disabled checked>
+                <label for="previewCredencialNo">NO</label>
               </div>
             </div>
-            <input type="text" id="credencialInput" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
+            <input type="text" id="previewNumeroCredencial" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
           </div>
           
           <!-- Foto de la cédula -->
@@ -459,66 +622,112 @@
       // ✅ Verificar que el elemento "fichaPreview" exista
       if (!document.getElementById('fichaPreview')) {
         console.warn('⚠️ Elemento "fichaPreview" no encontrado. Reintentando...');
-        setTimeout(actualizarVistaPrevia, 100); // Reintentar después de 100ms
+        setTimeout(actualizarVistaPrevia, 100);
         return;
       }
       
+      // ✅ Obtener valores de los campos
       const nombre = document.getElementById('nombre_apellidos').value || 'NOMBRE Y APELLIDOS';
       const cedula = document.getElementById('cedula').value || 'V-12345678';
+      const edad = document.getElementById('edad').value || '25 AÑOS';
+      const fechaNacimiento = document.getElementById('fecha_nacimiento').value || '01/01/2000';
+      const telefono = document.getElementById('telefono_funcionario').value || '0412-1234567';
+      const telefonoEmergencia = document.getElementById('telefono_emergencia').value || '0414-7654321';
+      const correo = document.getElementById('correo_electronico').value || 'correo@ejemplo.com';
+      const nivelAcademico = document.getElementById('nivel_academico').value || 'BACHILLER';
+      const fechaIngreso = document.getElementById('fecha_ingreso_cpn').value || '16/06/2024';
+      const fechaAscenso = document.getElementById('fecha_ultimo_ascenso').value || 'N/P';
+      const antiguedad = document.getElementById('antiguedad').value || '1 AÑOS Y 5 MESES';
+      const estado = document.getElementById('estado').value || 'DISTRITO CAPITAL';
+      const servicio = document.getElementById('servicio').value || 'CCPE CARICUAO';
+      const direccion = document.getElementById('direccion_habitacion').value || 'DIRECCIÓN COMPLETA';
+      const ultimoCargo = document.getElementById('ultimo_cargo').value || 'AUXILIAR DE BRIGADA';
       const rango = document.getElementById('rango').value || 'RANGO';
       const fechaInvestigacion = document.getElementById('fecha_investigacion').value || '2026-01-04';
+      const tipoFalta = document.getElementById('tipo_falta').value || 'TIPO DE FALTA';
       const descripcionHechos = document.getElementById('descripcion_hechos').value || 'DESCRIPCIÓN DETALLADA DE LOS HECHOS QUE MOTIVAN LA INVESTIGACIÓN DISCIPLINARIA.';
       const fundamentoLegal = document.getElementById('fundamento_legal').value || 'ARTÍCULOS, LEYES O REGLAMENTOS APLICABLES.';
       const recomendaciones = document.getElementById('recomendaciones').value || 'SUGERENCIAS DE MEDIDAS A TOMAR O SANCIONES PROPUESTAS.';
       
-      // ✅ Actualizar elementos de forma segura (verificando que existan)
+      // ✅ Actualizar elementos de forma segura
       const updateElement = (id, value) => {
         const element = document.getElementById(id);
         if (element) {
           element.textContent = value;
-        } else {
-          console.warn(`⚠️ Elemento con ID "${id}" no encontrado`);
         }
       };
       
       updateElement('previewNombre', nombre);
       updateElement('previewCedula', cedula);
+      updateElement('previewEdad', edad);
+      updateElement('previewFechaNacimiento', fechaNacimiento);
+      updateElement('previewTelefono', telefono);
+      updateElement('previewTelefonoEmergencia', telefonoEmergencia);
+      updateElement('previewCorreo', correo);
+      updateElement('previewNivelAcademico', nivelAcademico);
+      updateElement('previewFechaIngreso', fechaIngreso);
+      updateElement('previewFechaAscenso', fechaAscenso);
+      updateElement('previewAntiguedad', antiguedad);
+      updateElement('previewEstado', estado);
+      updateElement('previewServicio', servicio);
+      updateElement('previewDireccion', direccion);
+      updateElement('previewUltimoCargo', ultimoCargo);
       updateElement('previewRango', rango);
       updateElement('previewFechaInvestigacion', fechaInvestigacion);
+      updateElement('previewTipoFalta', tipoFalta);
       updateElement('previewDescripcionHechos', descripcionHechos);
       updateElement('previewFundamentoLegal', fundamentoLegal);
       updateElement('previewRecomendaciones', recomendaciones);
       
-      // ✅ Datos adicionales para la ficha
-      updateElement('previewEdad', '25 AÑOS');
-      updateElement('previewFechaNacimiento', '01/01/2000');
-      updateElement('previewTelefono', '0412-1234567');
-      updateElement('previewTelefonoEmergencia', 'N/P');
-      updateElement('previewCorreo', 'correo@ejemplo.com');
-      updateElement('previewNivelAcademico', 'BACHILLER');
-      updateElement('previewFechaIngreso', '16/06/2024');
-      updateElement('previewFechaAscenso', 'N/P');
-      updateElement('previewAntiguedad', '1 AÑOS Y 5 MESES');
-      updateElement('previewEstado', 'DISTRITO CAPITAL');
-      updateElement('previewServicio', 'CCPE CARICUAO');
-      updateElement('previewDireccion', 'DISTRITO CAPITAL MUNICIPIO LIBERTADOR PARROQUIA CARICUAO URBANIZACION QUESERAS DEL MEDIO BLOQUE 54 PISO 02 APTO 202.');
-      updateElement('previewUltimoCargo', 'AUXILIAR DE BRIGADA');
+      // ✅ Actualizar credencial
+      const credencialSi = document.getElementById('credencialSi').checked;
+      if (credencialSi) {
+        document.getElementById('previewCredencialSi').checked = true;
+        document.getElementById('previewCredencialNo').checked = false;
+        
+        const numeroCredencial = document.getElementById('numero_credencial').value || 'PNB-33311';
+        updateElement('previewNumeroCredencial', numeroCredencial);
+        document.getElementById('previewNumeroCredencial').style.display = 'block';
+      } else {
+        document.getElementById('previewCredencialSi').checked = false;
+        document.getElementById('previewCredencialNo').checked = true;
+        document.getElementById('previewNumeroCredencial').style.display = 'none';
+      }
     }
+    
+    // ✅ Evento para mostrar/ocultar campo de número de credencial
+    document.getElementById('credencialSi').addEventListener('change', function() {
+      document.getElementById('numeroCredencialGroup').style.display = 'block';
+      actualizarVistaPrevia();
+    });
+    
+    document.getElementById('credencialNo').addEventListener('change', function() {
+      document.getElementById('numeroCredencialGroup').style.display = 'none';
+      actualizarVistaPrevia();
+    });
     
     // ✅ Buscar funcionario por cédula
     async function buscarFuncionarioPorCedula(cedula) {
       try {
         const { data, error } = await client
           .from('rrhh_icap')
-          .select('nombre_apellidos, rango')
+          .select('*')
           .eq('cedula', cedula)
           .single();
         
         if (error) throw error;
         
         if (data) {
-          document.getElementById('nombre_apellidos').value = data.nombre_apellidos;
-          document.getElementById('rango').value = data.rango;
+          // ✅ Llenar todos los campos con los datos del funcionario
+          document.getElementById('nombre_apellidos').value = data.nombre_apellidos || '';
+          document.getElementById('cedula').value = data.cedula || '';
+          document.getElementById('rango').value = data.rango || '';
+          document.getElementById('estado').value = data.estado || '';
+          document.getElementById('servicio').value = data.servicio || '';
+          document.getElementById('direccion_habitacion').value = data.direccion || '';
+          document.getElementById('ultimo_cargo').value = data.ultimo_cargo || '';
+          
+          // ✅ Mostrar mensaje de éxito
           showAlert('✅ Datos cargados desde RRHH ICAP', 'success');
           actualizarVistaPrevia();
         } else {
@@ -561,14 +770,14 @@
           scale: 3,
           useCORS: true,
           logging: false,
-          width: 960,  // 25.4cm @ 96dpi
-          height: 720   // 19.05cm @ 96dpi
+          width: 960,
+          height: 720
         });
         
         // ✅ Crear PDF
         const { jsPDF } = window.jspdf;
-        const imgWidth = 210; // mm (A4 width)
-        const pageHeight = 297; // mm (A4 height)
+        const imgWidth = 210;
+        const pageHeight = 297;
         const imgHeight = canvas.height * imgWidth / canvas.width;
         
         const pdf = new jsPDF('p', 'mm', 'a4');
@@ -582,34 +791,6 @@
         document.body.removeChild(exportContainer);
         document.getElementById('btnExportarPDF').innerHTML = originalBtnText;
         document.getElementById('btnExportarPDF').disabled = false;
-        
-        // ✅ Registrar log
-        try {
-          const sessionResponse = await client.auth.getSession();
-          const session = sessionResponse?.data?.session;
-          if (session) {
-            const { data: perfil } = await client
-              .from('perfiles')
-              .select('email, rol')
-              .eq('id', session.user.id)
-              .single();
-            
-            await client.from('rrhh_logs').insert({
-              user_id: session.user.id,
-              email: perfil.email,
-              rol: perfil.rol,
-              accion: 'ficha_exportada',
-              cedula_afectada: document.getElementById('cedula').value,
-              nombre_afectado: document.getElementById('nombre_apellidos').value,
-              detalles: {
-                modulo: 'fichas_disciplinarias',
-                tipo: 'exportacion_pdf'
-              }
-            });
-          }
-        } catch (logErr) {
-          console.warn('Log no registrado:', logErr.message);
-        }
         
         showAlert('✅ PDF generado exitosamente', 'success');
       } catch (err) {
@@ -625,80 +806,57 @@
       try {
         const cedula = document.getElementById('cedula').value.trim();
         const nombre = document.getElementById('nombre_apellidos').value.trim();
-        const rango = document.getElementById('rango').value;
-        const tipoFalta = document.getElementById('tipo_falta').value;
-        const fechaInvestigacion = document.getElementById('fecha_investigacion').value;
-        const descripcionHechos = document.getElementById('descripcion_hechos').value.trim();
         
-        // ✅ Validaciones
-        if (!/^\d{8}$/.test(cedula)) {
+        // ✅ Validaciones básicas
+        if (!cedula || !/^\d{8}$/.test(cedula)) {
           return showAlert('⚠️ Cédula debe tener exactamente 8 dígitos', 'error');
         }
         if (!nombre) return showAlert('⚠️ Nombre es obligatorio', 'error');
-        if (!rango) return showAlert('⚠️ Rango es obligatorio', 'error');
-        if (!tipoFalta) return showAlert('⚠️ Tipo de falta es obligatorio', 'error');
-        if (!fechaInvestigacion) return showAlert('⚠️ Fecha de investigación es obligatoria', 'error');
-        if (!descripcionHechos) return showAlert('⚠️ Descripción de hechos es obligatoria', 'error');
         
-        // ✅ Subir documento adjunto
-        let documentoUrl = null;
-        const fileInput = document.getElementById('documento_memorandum');
-        if (fileInput.files.length > 0) {
-          const file = fileInput.files[0];
-          const ext = file.name.split('.').pop().toLowerCase();
-          const fileName = `ficha_${cedula}_${Date.now()}.${ext}`;
-          
-          const { error: uploadError } = await client.storage
-            .from('fichas_disciplinarias')
-            .upload(fileName, file, { upsert: true });
-            
-          if (uploadError) throw uploadError;
-          
-          const { data: urlData } = await client.storage
-            .from('fichas_disciplinarias')
-            .createSignedUrl(fileName, 3600);
-          documentoUrl = urlData?.signedUrl;
-        }
-        
-        // ✅ Obtener usuario
+        // ✅ Obtener sesión
         const sessionResponse = await client.auth.getSession();
         const session = sessionResponse?.data?.session;
-        const { data: perfil } = await client
+        if (!session) throw new Error('Sesión no encontrada');
+        
+        // ✅ Obtener perfil
+        const {  perfil } = await client
           .from('perfiles')
           .select('email')
           .eq('id', session.user.id)
           .single();
         
-        // ✅ Guardar en base de datos
-        const { error } = await client.from('fichas_disciplinarias').insert({
+        // ✅ Preparar datos para guardar
+        const fichaData = {
           cedula: cedula,
           nombre_apellidos: nombre,
-          rango: rango,
-          tipo_falta: tipoFalta,
-          fecha_investigacion: fechaInvestigacion,
-          descripcion_hechos: descripcionHechos,
-          fundamento_legal: document.getElementById('fundamento_legal').value.trim(),
-          recomendaciones: document.getElementById('recomendaciones').value.trim(),
-          documento_url: documentoUrl,
+          edad: document.getElementById('edad').value.trim(),
+          fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
+          telefono_funcionario: document.getElementById('telefono_funcionario').value.trim(),
+          telefono_emergencia: document.getElementById('telefono_emergencia').value.trim(),
+          correo_electronico: document.getElementById('correo_electronico').value.trim(),
+          nivel_academico: document.getElementById('nivel_academico').value,
+          fecha_ingreso_cpn: document.getElementById('fecha_ingreso_cpn').value,
+          fecha_ultimo_ascenso: document.getElementById('fecha_ultimo_ascenso').value || null,
+          antiguedad: document.getElementById('antiguedad').value.trim(),
+          estado: document.getElementById('estado').value,
+          servicio: document.getElementById('servicio').value.trim(),
+          direccion_habitacion: document.getElementById('direccion_habitacion').value.trim(),
+          ultimo_cargo: document.getElementById('ultimo_cargo').value.trim(),
+          rango: document.getElementById('rango').value,
+          posee_credencial: document.getElementById('credencialSi').checked,
+          numero_credencial: document.getElementById('credencialSi').checked ? document.getElementById('numero_credencial').value.trim() : null,
+          fecha_investigacion: document.getElementById('fecha_investigacion').value,
+          tipo_falta: document.getElementById('tipo_falta').value,
+          descripcion_hechos: document.getElementById('descripcion_hechos').value.trim(),
+          fundamento_legal: document.getElementById('fundamento_legal').value.trim() || null,
+          recomendaciones: document.getElementById('recomendaciones').value.trim() || null,
           creado_por: perfil.email,
           creado_en: new Date().toISOString()
-        });
+        };
         
+        // ✅ Guardar en base de datos
+        const { error } = await client.from('fichas_disciplinarias').insert(fichaData);
         if (error) throw error;
-        
-        // ✅ Registrar log
-        await client.from('rrhh_logs').insert({
-          user_id: session.user.id,
-          email: perfil.email,
-          rol: perfil.rol,
-          accion: 'ficha_guardada',
-          cedula_afectada: cedula,
-          nombre_afectado: nombre,
-          detalles: {
-            modulo: 'fichas_disciplinarias',
-            tipo: 'creacion'
-          }
-        });
         
         showAlert('✅ Ficha guardada exitosamente', 'success');
         
@@ -706,9 +864,24 @@
         setTimeout(() => {
           document.getElementById('cedula').value = '';
           document.getElementById('nombre_apellidos').value = '';
+          document.getElementById('edad').value = '';
+          document.getElementById('fecha_nacimiento').value = '';
+          document.getElementById('telefono_funcionario').value = '';
+          document.getElementById('telefono_emergencia').value = '';
+          document.getElementById('correo_electronico').value = '';
+          document.getElementById('nivel_academico').value = '';
+          document.getElementById('fecha_ingreso_cpn').value = '';
+          document.getElementById('fecha_ultimo_ascenso').value = '';
+          document.getElementById('antiguedad').value = '';
+          document.getElementById('estado').value = '';
+          document.getElementById('servicio').value = '';
+          document.getElementById('direccion_habitacion').value = '';
+          document.getElementById('ultimo_cargo').value = '';
           document.getElementById('rango').value = '';
-          document.getElementById('tipo_falta').value = '';
+          document.getElementById('credencialNo').checked = true;
+          document.getElementById('numeroCredencialGroup').style.display = 'none';
           document.getElementById('fecha_investigacion').value = '';
+          document.getElementById('tipo_falta').value = '';
           document.getElementById('descripcion_hechos').value = '';
           document.getElementById('fundamento_legal').value = '';
           document.getElementById('recomendaciones').value = '';
@@ -722,7 +895,7 @@
       }
     }
     
-    // ✅ Inicialización (sin restricciones de roles)
+    // ✅ Inicialización
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         console.log('✅ DOM cargado. Iniciando autenticación...');
@@ -740,13 +913,13 @@
         }
         
         // ✅ Obtener perfil
-        const { data: perfil } = await client
+        const { data: perfil, error: perfilError } = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
           .single();
         
-        if (!perfil) {
+        if (perfilError || !perfil) {
           console.error('❌ Perfil no encontrado');
           showAlert('⚠️ Tu perfil no está registrado. Contacta a Administración.', 'error');
           setTimeout(() => {
@@ -761,7 +934,7 @@
           perfil.rol === 'admin' ? 'Administrador' : 
           perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
         
-        // ✅ Establecer fecha actual
+        // ✅ Establecer fecha actual para investigación
         const fechaActual = new Date().toISOString().split('T')[0];
         document.getElementById('fecha_investigacion').value = fechaActual;
         
@@ -789,23 +962,12 @@
         });
         
         // ✅ Eventos para vista previa en tiempo real
-        document.querySelectorAll('#cedula, #nombre_apellidos, #rango, #fecha_investigacion, #descripcion_hechos, #fundamento_legal, #recomendaciones').forEach(el => {
+        document.querySelectorAll('input, select, textarea, [type="radio"]').forEach(el => {
           el.addEventListener('input', actualizarVistaPrevia);
         });
         
-        // ✅ Credencial
-        document.getElementById('credencialSi').addEventListener('change', () => {
-          document.getElementById('credencialInput').style.display = 'block';
-        });
-        document.getElementById('credencialNo').addEventListener('change', () => {
-          document.getElementById('credencialInput').style.display = 'none';
-        });
-        
-        // ✅ Esperar un momento para que el DOM esté completamente listo
-        setTimeout(() => {
-          console.log('✅ Iniciando actualización de vista previa...');
-          actualizarVistaPrevia();
-        }, 100);
+        // ✅ Cargar vista previa inicial con un pequeño retraso
+        setTimeout(actualizarVistaPrevia, 100);
         
       } catch (err) {
         console.error('🔥 Error crítico en inicialización:', err);
@@ -822,7 +984,6 @@
       alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
       alertDiv.style.display = 'block';
       
-      // ✅ Ocultar después de 3 segundos
       setTimeout(() => {
         alertDiv.style.display = 'none';
       }, 3000);
