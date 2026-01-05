@@ -127,7 +127,6 @@ input, textarea, select {
   font-weight: 600;
 }
 .breadcrumb span { margin: 0 8px; color: #888; }
-
 /* ===== FICHA OFICIAL — DISEÑO PARA IMPRESIÓN ===== */
 .preview-container {
   border: 1px solid #ddd;
@@ -145,44 +144,33 @@ input, textarea, select {
   box-sizing: border-box;
   border: 1px solid #000;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  /* ⚠️ Tamaño exacto: 25.4 cm × 19.05 cm (A4 landscape) */
   width: 25.4cm;
   height: 19.05cm;
   padding: 1.5cm;
 }
-
-/* ——— LOGOS ——— */
+/* ——— LOGOS ——— ✅ AJUSTADOS A 1.5cm + CENTRADOS + ANTI-DISTORSIÓN */
 .logo-izquierda,
 .logo-derecha {
   position: absolute;
-  top: 0.5cm;
-  left: 0.5cm; /* solo para izquierda */
-  right: 0.5cm; /* solo para derecha */
-  width: 1.8cm;
-  height: 1.8cm;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5cm;
+  height: 1.5cm;
   z-index: 10;
-  object-fit: contain;    /* ⬅️ Esto asegura que la imagen se ajuste al contenedor sin distorsión */
-  object-position: center; /* ⬅️ Centra la imagen dentro del contenedor */
+  object-fit: contain;
+  object-position: center;
+  background: white;
+  border: none;
 }
-
-@media screen {
-  .logo-izquierda, .logo-derecha {
-    position: absolute !important;
-    top: 8px !important;
-    width: 40px !important;   /* 👈 más pequeño en pantalla */
-    height: 40px !important;
-    object-fit: contain !important;
-    object-position: center !important;
-  }
-}
-
-/* ——— FOTO FUNCIONARIO (35×45 mm) ——— */
+.logo-izquierda { left: 0.4cm; }
+.logo-derecha { right: 0.4cm; }
+/* ——— FOTO FUNCIONARIO ——— */
 .foto-funcionario {
   position: absolute;
   top: 3.5cm;
   right: 0.5cm;
-  width: 35mm;    /* ✅ 35 mm */
-  height: 45mm;   /* ✅ 45 mm */
+  width: 35mm;
+  height: 45mm;
   border: 1px solid #000;
   background: #fff;
   overflow: hidden;
@@ -192,14 +180,13 @@ input, textarea, select {
   height: 100%;
   object-fit: cover;
 }
-
-/* ——— FOTO CÉDULA (8.5×5.5 cm) ——— */
+/* ——— FOTO CÉDULA ——— */
 .foto-cedula {
   position: absolute;
   bottom: 1cm;
   right: 1cm;
-  width: 8.5cm;   /* ✅ 8.5 cm (corregido) */
-  height: 5.5cm;  /* ✅ 5.5 cm (corregido) */
+  width: 8.5cm;
+  height: 5.5cm;
   border: 1px solid #000;
   background: #fff;
   overflow: hidden;
@@ -209,13 +196,12 @@ input, textarea, select {
   height: 100%;
   object-fit: contain;
 }
-
 /* ——— DATOS PERSONALES ——— */
 .datos-personales {
   position: absolute;
   top: 3.5cm;
   left: 0.5cm;
-  right: 8.5cm; /* espacio para foto + margen */
+  right: 8.5cm;
   bottom: 1cm;
   overflow: hidden;
 }
@@ -229,7 +215,6 @@ input, textarea, select {
   margin-bottom: 4px;
   font-size: 10pt;
 }
-
 /* ——— CREDENCIAL ——— */
 .credencial-section {
   position: absolute;
@@ -254,7 +239,6 @@ input, textarea, select {
   margin-top: 5px;
   font-size: 9pt;
 }
-
 /* ——— MARCA DE AGUA ——— */
 .watermark {
   position: absolute;
@@ -267,7 +251,6 @@ input, textarea, select {
   color: #722F37;
   font-weight: bold;
 }
-
 /* ——— IMPRESIÓN ——— */
 @media print {
   @page {
@@ -284,7 +267,6 @@ input, textarea, select {
     height: 19.05cm;
   }
 }
-
 /* ——— VISTA EN PANTALLA ——— */
 @media screen {
   .ficha-oficial {
@@ -296,29 +278,37 @@ input, textarea, select {
     border: 1px solid #ddd;
   }
 
-  /* ✅ Logos mantienen posición ABSOLUTA incluso en pantalla */
-  .logo-izquierda, .logo-derecha {
+  /* ✅ Logos pequeños, centrados y sin distorsión */
+  .logo-izquierda,
+  .logo-derecha {
     position: absolute !important;
-    top: 10px !important;
-    width: 60px !important;
-    height: 60px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 36px !important;
+    height: 36px !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    background: white !important;
   }
 
-  /* Fotos ajustadas para vista web */
-  .foto-funcionario, .foto-cedula {
+  .logo-izquierda { left: 8px !important; }
+  .logo-derecha { right: 8px !important; }
+
+  /* Fotos en modo pantalla */
+  .foto-funcionario,
+  .foto-cedula {
     position: relative !important;
     width: auto !important;
     height: auto !important;
-    max-width: 120px;
+    max-width: 100px;
     margin-bottom: 10px;
     float: right;
     clear: both;
   }
 
-  /* Datos fluyen bajo logos y fotos */
   .datos-personales {
     position: static;
-    padding-top: 80px; /* espacio para logos */
+    padding-top: 60px; /* ajustado para espacio reducido de logos */
     margin-top: 10px;
   }
 
@@ -328,7 +318,6 @@ input, textarea, select {
     clear: both;
   }
 }
-
 /* ——— DISEÑO FORMULARIO ——— */
 .form-grid {
   display: grid;
@@ -357,7 +346,6 @@ input, textarea, select {
   .form-row { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
 }
-
 .header-container {
   text-align: center;
   margin-bottom: 20px;
@@ -401,7 +389,7 @@ input, textarea, select {
   </div>
 
   <div class="header">
-    <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+    <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedentes/main/Logo.png" alt="ICAP Nacional - PNB" />
     <h1>Inspectable para el Control de la Actuación Policial</h1>
     <div class="subtitle">• Formato de Datos Personales •</div>
   </div>
@@ -583,9 +571,9 @@ input, textarea, select {
       <div id="fichaPreview" class="ficha-oficial">
         <div class="watermark">FICHA DE DATOS PERSONALES</div>
 
-        <!-- ✅ LOGOS FIJOS — ahora funcionan en todo momento -->
-        <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/mp.png" alt="ICAP Nacional - PNB" />
-        <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedentes/main/pnb.png" class="logo-derecha" alt="PNB">
+        <!-- ✅ LOGOS PEQUEÑOS Y CENTRADOS -->
+        <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedentes/main/Logo.png" class="logo-izquierda" alt="ICAP Nacional">
+        <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedentes/main/pnb-logo.png" class="logo-derecha" alt="PNB">
 
         <!-- Encabezado -->
         <div class="header-container">
@@ -638,7 +626,7 @@ input, textarea, select {
           <input type="text" id="previewNumeroCredencial" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
         </div>
 
-        <!-- ✅ Foto cédula: ahora 8.5×5.5 cm -->
+        <!-- Foto cédula -->
         <div class="foto-cedula" id="previewFotoCedula">
           <img id="previewCedulaFoto" style="display:none;">
           <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">FOTO DE CÉDULA</div>
@@ -791,8 +779,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       rolSpan.style.color = '#c62828';
       rolSpan.title = 'Administrador';
       rolSpan.style.cursor = 'help';
-      // Opcional: añadir ícono 🔴
-      // rolSpan.innerHTML += ' <span style="color:red">●</span>';
     } else {
       document.getElementById('rolLabel').style.display = 'inline';
     }
