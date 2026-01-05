@@ -454,8 +454,15 @@
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const alertDiv = document.getElementById('alertMessage');
     
-    // ✅ Actualizar vista previa en tiempo real
+    // ✅ Función segura para actualizar vista previa
     function actualizarVistaPrevia() {
+      // ✅ Verificar que el elemento "fichaPreview" exista
+      if (!document.getElementById('fichaPreview')) {
+        console.warn('⚠️ Elemento "fichaPreview" no encontrado. Reintentando...');
+        setTimeout(actualizarVistaPrevia, 100); // Reintentar después de 100ms
+        return;
+      }
+      
       const nombre = document.getElementById('nombre_apellidos').value || 'NOMBRE Y APELLIDOS';
       const cedula = document.getElementById('cedula').value || 'V-12345678';
       const rango = document.getElementById('rango').value || 'RANGO';
@@ -464,28 +471,38 @@
       const fundamentoLegal = document.getElementById('fundamento_legal').value || 'ARTÍCULOS, LEYES O REGLAMENTOS APLICABLES.';
       const recomendaciones = document.getElementById('recomendaciones').value || 'SUGERENCIAS DE MEDIDAS A TOMAR O SANCIONES PROPUESTAS.';
       
-      document.getElementById('previewNombre').textContent = nombre;
-      document.getElementById('previewCedula').textContent = cedula;
-      document.getElementById('previewRango').textContent = rango;
-      document.getElementById('previewFechaInvestigacion').textContent = fechaInvestigacion;
-      document.getElementById('previewDescripcionHechos').textContent = descripcionHechos;
-      document.getElementById('previewFundamentoLegal').textContent = fundamentoLegal;
-      document.getElementById('previewRecomendaciones').textContent = recomendaciones;
+      // ✅ Actualizar elementos de forma segura (verificando que existan)
+      const updateElement = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.textContent = value;
+        } else {
+          console.warn(`⚠️ Elemento con ID "${id}" no encontrado`);
+        }
+      };
+      
+      updateElement('previewNombre', nombre);
+      updateElement('previewCedula', cedula);
+      updateElement('previewRango', rango);
+      updateElement('previewFechaInvestigacion', fechaInvestigacion);
+      updateElement('previewDescripcionHechos', descripcionHechos);
+      updateElement('previewFundamentoLegal', fundamentoLegal);
+      updateElement('previewRecomendaciones', recomendaciones);
       
       // ✅ Datos adicionales para la ficha
-      document.getElementById('previewEdad').textContent = '25 AÑOS';
-      document.getElementById('previewFechaNacimiento').textContent = '01/01/2000';
-      document.getElementById('previewTelefono').textContent = '0412-1234567';
-      document.getElementById('previewTelefonoEmergencia').textContent = 'N/P';
-      document.getElementById('previewCorreo').textContent = 'correo@ejemplo.com';
-      document.getElementById('previewNivelAcademico').textContent = 'BACHILLER';
-      document.getElementById('previewFechaIngreso').textContent = '16/06/2024';
-      document.getElementById('previewFechaAscenso').textContent = 'N/P';
-      document.getElementById('previewAntiguedad').textContent = '1 AÑOS Y 5 MESES';
-      document.getElementById('previewEstado').textContent = 'DISTRITO CAPITAL';
-      document.getElementById('previewServicio').textContent = 'CCPE CARICUAO';
-      document.getElementById('previewDireccion').textContent = 'DISTRITO CAPITAL MUNICIPIO LIBERTADOR PARROQUIA CARICUAO URBANIZACION QUESERAS DEL MEDIO BLOQUE 54 PISO 02 APTO 202.';
-      document.getElementById('previewUltimoCargo').textContent = 'AUXILIAR DE BRIGADA';
+      updateElement('previewEdad', '25 AÑOS');
+      updateElement('previewFechaNacimiento', '01/01/2000');
+      updateElement('previewTelefono', '0412-1234567');
+      updateElement('previewTelefonoEmergencia', 'N/P');
+      updateElement('previewCorreo', 'correo@ejemplo.com');
+      updateElement('previewNivelAcademico', 'BACHILLER');
+      updateElement('previewFechaIngreso', '16/06/2024');
+      updateElement('previewFechaAscenso', 'N/P');
+      updateElement('previewAntiguedad', '1 AÑOS Y 5 MESES');
+      updateElement('previewEstado', 'DISTRITO CAPITAL');
+      updateElement('previewServicio', 'CCPE CARICUAO');
+      updateElement('previewDireccion', 'DISTRITO CAPITAL MUNICIPIO LIBERTADOR PARROQUIA CARICUAO URBANIZACION QUESERAS DEL MEDIO BLOQUE 54 PISO 02 APTO 202.');
+      updateElement('previewUltimoCargo', 'AUXILIAR DE BRIGADA');
     }
     
     // ✅ Buscar funcionario por cédula
@@ -708,6 +725,8 @@
     // ✅ Inicialización (sin restricciones de roles)
     document.addEventListener('DOMContentLoaded', async () => {
       try {
+        console.log('✅ DOM cargado. Iniciando autenticación...');
+        
         // ✅ Verificar sesión
         const sessionResponse = await client.auth.getSession();
         const session = sessionResponse?.data?.session;
@@ -770,7 +789,7 @@
         });
         
         // ✅ Eventos para vista previa en tiempo real
-        document.querySelectorAll('#cedula, #nombre_apellidos, #rango, #tipo_falta, #fecha_investigacion, #descripcion_hechos, #fundamento_legal, #recomendaciones').forEach(el => {
+        document.querySelectorAll('#cedula, #nombre_apellidos, #rango, #fecha_investigacion, #descripcion_hechos, #fundamento_legal, #recomendaciones').forEach(el => {
           el.addEventListener('input', actualizarVistaPrevia);
         });
         
@@ -782,11 +801,14 @@
           document.getElementById('credencialInput').style.display = 'none';
         });
         
-        // ✅ Cargar vista previa inicial
-        actualizarVistaPrevia();
+        // ✅ Esperar un momento para que el DOM esté completamente listo
+        setTimeout(() => {
+          console.log('✅ Iniciando actualización de vista previa...');
+          actualizarVistaPrevia();
+        }, 100);
         
       } catch (err) {
-        console.error('Error en inicialización:', err);
+        console.error('🔥 Error crítico en inicialización:', err);
         showAlert(`❌ Error crítico: ${err.message}`, 'error');
         setTimeout(() => {
           window.location.href = '../index.html';
