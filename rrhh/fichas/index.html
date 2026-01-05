@@ -152,31 +152,27 @@ input, textarea, select {
 }
 
 /* ——— LOGOS ——— */
-.logo-izquierda, .logo-derecha {
+.logo-izquierda,
+.logo-derecha {
   position: absolute;
   top: 0.5cm;
-  width: 1.8cm;   /* 👈 reducido de 2.5cm */
-  height: 1.8cm;  /* 👈 */
+  left: 0.5cm; /* solo para izquierda */
+  right: 0.5cm; /* solo para derecha */
+  width: 1.8cm;
+  height: 1.8cm;
   z-index: 10;
+  object-fit: contain;    /* ⬅️ Esto asegura que la imagen se ajuste al contenedor sin distorsión */
+  object-position: center; /* ⬅️ Centra la imagen dentro del contenedor */
 }
-.logo-izquierda { left: 0.5cm; }
-.logo-derecha { right: 0.5cm; }
 
-/* ——— VISTA EN PANTALLA ——— */
 @media screen {
-  /* ✅ Logos más pequeños en modo pantalla */
   .logo-izquierda, .logo-derecha {
     position: absolute !important;
     top: 8px !important;
-    width: 50px !important;   /* 👈 de 60px → 50px */
-    height: 50px !important;  /* 👈 */
-  }
-
-  /* Ajuste: dejar más espacio arriba para que no choquen con el borde */
-  .datos-personales {
-    position: static;
-    padding-top: 70px; /* reducido de 80px → 70px */
-    margin-top: 10px;
+    width: 40px !important;   /* 👈 más pequeño en pantalla */
+    height: 40px !important;
+    object-fit: contain !important;
+    object-position: center !important;
   }
 }
 
