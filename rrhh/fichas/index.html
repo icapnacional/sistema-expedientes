@@ -148,22 +148,33 @@ input, textarea, select {
   height: 19.05cm;
   padding: 1.5cm;
 }
-/* ——— LOGOS ——— ✅ AJUSTADOS A 1.5cm + CENTRADOS + ANTI-DISTORSIÓN */
+/* ——— LOGOS ——— ✅ SIN FONDO BLANCO + MÁS GRANDES */
 .logo-izquierda,
 .logo-derecha {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1.5cm;
-  height: 1.5cm;
+  top: 0.5cm;
+  width: 2.2cm;   /* 👈 aumentado de 1.5cm → 2.2cm */
+  height: 2.2cm;  /* 👈 */
   z-index: 10;
   object-fit: contain;
   object-position: center;
-  background: white;
-  border: none;
+  /* ⚠️ Eliminado: background: white; */
 }
-.logo-izquierda { left: 0.4cm; }
-.logo-derecha { right: 0.4cm; }
+.logo-izquierda { left: 0.5cm; }
+.logo-derecha { right: 0.5cm; }
+
+/* ——— VISTA EN PANTALLA ——— */
+@media screen {
+  .logo-izquierda, .logo-derecha {
+    position: absolute !important;
+    top: 8px !important;
+    width: 60px !important;   /* 👈 aumentado de 50px → 60px */
+    height: 60px !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    /* ⚠️ Eliminado: background: white; */
+  }
+}
 /* ——— FOTO FUNCIONARIO ——— */
 .foto-funcionario {
   position: absolute;
