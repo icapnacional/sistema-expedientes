@@ -637,7 +637,7 @@
             
           if (uploadError) throw uploadError;
           
-          const {  urlData } = await client.storage
+          const { data: urlData } = await client.storage
             .from('fichas_disciplinarias')
             .createSignedUrl(fileName, 3600);
           documentoUrl = urlData?.signedUrl;
@@ -646,7 +646,7 @@
         // ✅ Obtener usuario
         const sessionResponse = await client.auth.getSession();
         const session = sessionResponse?.data?.session;
-        const {  perfil } = await client
+        const { data: perfil } = await client
           .from('perfiles')
           .select('email')
           .eq('id', session.user.id)
@@ -705,32 +705,42 @@
       }
     }
     
-    // ✅ Inicialización
+    // ✅ Inicialización (sin restricciones de roles)
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         // ✅ Verificar sesión
         const sessionResponse = await client.auth.getSession();
         const session = sessionResponse?.data?.session;
-        if (!session) return window.location.href = '../index.html';
+        if (!session) {
+          console.error('❌ No hay sesión activa');
+          showAlert('⚠️ Debes iniciar sesión para acceder a esta página', 'error');
+          setTimeout(() => {
+            window.location.href = '../index.html';
+          }, 2000);
+          return;
+        }
         
         // ✅ Obtener perfil
-        const {  perfil } = await client
+        const { data: perfil } = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
           .single();
         
-        if (!perfil) return window.location.href = '../index.html';
-        
-        // ✅ Solo RRHH autorizado
-        if (perfil.rol !== 'admin' && perfil.rol !== 'moderador') {
-          alert('🔒 Solo RRHH autorizado puede crear fichas disciplinarias');
-          return window.location.href = '../index.html';
+        if (!perfil) {
+          console.error('❌ Perfil no encontrado');
+          showAlert('⚠️ Tu perfil no está registrado. Contacta a Administración.', 'error');
+          setTimeout(() => {
+            window.location.href = '../index.html';
+          }, 2000);
+          return;
         }
         
+        // ✅ Mostrar información del usuario
         document.getElementById('userEmail').textContent = perfil.email;
         document.getElementById('userRol').textContent = 
-          perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
+          perfil.rol === 'admin' ? 'Administrador' : 
+          perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
         
         // ✅ Establecer fecha actual
         const fechaActual = new Date().toISOString().split('T')[0];
@@ -777,7 +787,10 @@
         
       } catch (err) {
         console.error('Error en inicialización:', err);
-        window.location.href = '../index.html';
+        showAlert(`❌ Error crítico: ${err.message}`, 'error');
+        setTimeout(() => {
+          window.location.href = '../index.html';
+        }, 2000);
       }
     });
     
