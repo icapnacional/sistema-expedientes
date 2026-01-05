@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ficha de Datos Personales | ICAP</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter  :wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2  "></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js  "></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js  "></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -164,11 +164,10 @@
       height: 2.5cm;
     }
     
-    /* Foto del funcionario - esquina superior derecha, 35x45mm */
     .foto-funcionario {
       position: absolute;
-      top: 0.8cm;
-      right: 0.8cm;
+      top: 3.5cm;
+      right: 0.5cm;
       width: 35mm;
       height: 45mm;
       border: 1px solid #000;
@@ -176,13 +175,12 @@
       overflow: hidden;
     }
     
-    /* Foto de la cédula - esquina inferior derecha, 8.5x5.5cm */
     .foto-cedula {
       position: absolute;
-      bottom: 0.8cm;
-      right: 0.8cm;
-      width: 8.5cm;
-      height: 5.5cm;
+      bottom: 1cm;
+      right: 1cm;
+      width: 5.5cm;
+      height: 3.5cm;
       border: 1px solid #000;
       background: #fff;
       overflow: hidden;
@@ -192,7 +190,7 @@
       position: absolute;
       top: 3.5cm;
       left: 0.5cm;
-      right: 5.5cm;
+      right: 7cm;
       bottom: 1cm;
       overflow: hidden;
     }
@@ -212,7 +210,7 @@
     .credencial-section {
       position: absolute;
       top: 8.5cm;
-      right: 5.5cm;
+      right: 4cm;
       width: 4.5cm;
       height: 2cm;
       font-size: 10pt;
@@ -355,6 +353,28 @@
       margin-top: 5px;
       color: #333;
     }
+    
+    .cuerpo-ficha {
+      margin: 20px 0;
+    }
+    
+    .parrafo-ficha {
+      text-indent: 30px;
+      margin: 15px 0;
+      text-align: justify;
+      font-size: 10pt;
+    }
+    
+    .firma-section {
+      margin-top: 60px;
+      text-align: center;
+    }
+    
+    .firma-line {
+      width: 300px;
+      margin: 0 auto;
+      border-top: 1px solid #000;
+    }
   </style>
 </head>
 <body>
@@ -366,7 +386,7 @@
       <strong>Formato de Datos</strong>
     </div>
     <div class="header">
-      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedentes/main/Logo.png" alt="ICAP Nacional - PNB" />
+      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedentes/main/Logo.png  " alt="ICAP Nacional - PNB" />
       <h1>Inspectable para el Control de la Actuación Policial</h1>
       <div class="subtitle">• Formato de Datos Personales •</div>
     </div>
@@ -558,10 +578,9 @@
           <div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px; background: #f9f9f9;">
             <div style="font-size: 48px; color: #722F37; margin-bottom: 10px;">👤</div>
             <p style="margin-bottom: 10px; color: #666;">Arrastre o haga clic para subir foto</p>
-            <p style="margin-bottom: 10px; color: #666; font-size: 12px;">Dimensiones: 35x45 mm</p>
             <input type="file" id="fotoFuncionario" accept="image/*" style="display: none;">
             <button type="button" class="btn btn-outline" onclick="document.getElementById('fotoFuncionario').click()" style="width: 100%;">
-              📤 Subir Foto (35x45 mm)
+              📤 Subir Foto
             </button>
           </div>
           
@@ -570,10 +589,9 @@
           <div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px; background: #f9f9f9;">
             <div style="font-size: 48px; color: #722F37; margin-bottom: 10px;">🆔</div>
             <p style="margin-bottom: 10px; color: #666;">Arrastre o haga clic para subir cédula</p>
-            <p style="margin-bottom: 10px; color: #666; font-size: 12px;">Dimensiones: 8.5x5.5 cm</p>
             <input type="file" id="fotoCedula" accept="image/*" style="display: none;">
             <button type="button" class="btn btn-outline" onclick="document.getElementById('fotoCedula').click()" style="width: 100%;">
-              📤 Subir Cédula (8.5x5.5 cm)
+              📤 Subir Cédula
             </button>
           </div>
         </div>
@@ -593,8 +611,8 @@
           <div class="watermark">FICHA DE DATOS PERSONALES</div>
           
           <!-- Logos en esquinas superiores -->
-          <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedentes/main/Logo.png" class="logo-izquierda" alt="ICAP Nacional">
-          <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedentes/main/pnb-logo.png" class="logo-derecha" alt="PNB">
+          <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedentes/main/Logo.png  " class="logo-izquierda" alt="ICAP Nacional">
+          <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedentes/main/pnb-logo.png  " class="logo-derecha" alt="PNB">
           
           <!-- Encabezado -->
           <div class="header-container">
@@ -606,11 +624,11 @@
             </div>
           </div>
           
-          <!-- Foto del funcionario (esquina superior derecha, 35x45mm) -->
+          <!-- Foto del funcionario (lado derecho, 35x45mm) -->
           <div class="foto-funcionario" id="previewFotoFuncionario">
             <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
-            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:10px; text-align:center; padding:3px;">
-              FOTO FUNCIONARIO<br>35 x 45 mm
+            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">
+              FOTO 35x45mm
             </div>
           </div>
           
@@ -650,11 +668,11 @@
             <input type="text" id="previewNumeroCredencial" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
           </div>
           
-          <!-- Foto de la cédula (esquina inferior derecha, 8.5x5.5cm) -->
+          <!-- Foto de la cédula (esquina inferior derecha) -->
           <div class="foto-cedula" id="previewFotoCedula">
             <img id="previewCedulaFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
-            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px; text-align:center; padding:3px;">
-              FOTO CÉDULA<br>8.5 x 5.5 cm
+            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">
+              FOTO DE CÉDULA
             </div>
           </div>
           
@@ -675,8 +693,8 @@
   </div>
 
   <script>
-    // ✅ Inicializar Supabase (sin espacios en URLs)
-    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+    // ✅ Inicializar Supabase
+    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co  ';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const alertDiv = document.getElementById('alertMessage');
@@ -769,7 +787,7 @@
         }
         
         // ✅ Obtener perfil
-        const {  perfil } = await client
+        const { data: perfil } = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
