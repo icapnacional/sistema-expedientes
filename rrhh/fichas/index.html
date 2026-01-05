@@ -166,8 +166,8 @@
     
     .foto-funcionario {
       position: absolute;
-      top: 3.5cm;
-      right: 0.5cm;
+      top: 0.8cm;
+      right: 0.8cm;
       width: 35mm;
       height: 45mm;
       border: 1px solid #000;
@@ -177,10 +177,10 @@
     
     .foto-cedula {
       position: absolute;
-      bottom: 1cm;
-      right: 1cm;
-      width: 5.5cm;
-      height: 3.5cm;
+      bottom: 0.8cm;
+      right: 0.8cm;
+      width: 8.5cm;
+      height: 5.5cm;
       border: 1px solid #000;
       background: #fff;
       overflow: hidden;
@@ -190,7 +190,7 @@
       position: absolute;
       top: 3.5cm;
       left: 0.5cm;
-      right: 7cm;
+      right: 5cm;
       bottom: 1cm;
       overflow: hidden;
     }
@@ -578,9 +578,10 @@
           <div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px; background: #f9f9f9;">
             <div style="font-size: 48px; color: #722F37; margin-bottom: 10px;">👤</div>
             <p style="margin-bottom: 10px; color: #666;">Arrastre o haga clic para subir foto</p>
+            <p style="margin-bottom: 10px; color: #666; font-size: 12px;">Dimensiones: 35x45 mm</p>
             <input type="file" id="fotoFuncionario" accept="image/*" style="display: none;">
             <button type="button" class="btn btn-outline" onclick="document.getElementById('fotoFuncionario').click()" style="width: 100%;">
-              📤 Subir Foto
+              📤 Subir Foto (35x45 mm)
             </button>
           </div>
           
@@ -589,9 +590,10 @@
           <div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px; background: #f9f9f9;">
             <div style="font-size: 48px; color: #722F37; margin-bottom: 10px;">🆔</div>
             <p style="margin-bottom: 10px; color: #666;">Arrastre o haga clic para subir cédula</p>
+            <p style="margin-bottom: 10px; color: #666; font-size: 12px;">Dimensiones: 8.5x5.5 cm</p>
             <input type="file" id="fotoCedula" accept="image/*" style="display: none;">
             <button type="button" class="btn btn-outline" onclick="document.getElementById('fotoCedula').click()" style="width: 100%;">
-              📤 Subir Cédula
+              📤 Subir Cédula (8.5x5.5 cm)
             </button>
           </div>
         </div>
@@ -624,11 +626,11 @@
             </div>
           </div>
           
-          <!-- Foto del funcionario (lado derecho, 35x45mm) -->
+          <!-- Foto del funcionario (esquina superior derecha, 35x45mm) -->
           <div class="foto-funcionario" id="previewFotoFuncionario">
             <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
-            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">
-              FOTO 35x45mm
+            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:10px; text-align:center; padding:5px;">
+              FOTO FUNCIONARIO<br>35 x 45 mm
             </div>
           </div>
           
@@ -668,11 +670,11 @@
             <input type="text" id="previewNumeroCredencial" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
           </div>
           
-          <!-- Foto de la cédula (esquina inferior derecha) -->
+          <!-- Foto de la cédula (esquina inferior derecha, 8.5x5.5cm) -->
           <div class="foto-cedula" id="previewFotoCedula">
             <img id="previewCedulaFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
-            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">
-              FOTO DE CÉDULA
+            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px; text-align:center; padding:5px;">
+              FOTO CÉDULA<br>8.5 x 5.5 cm
             </div>
           </div>
           
@@ -787,7 +789,7 @@
         }
         
         // ✅ Obtener perfil
-        const { data: perfil } = await client
+        const {  perfil } = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
