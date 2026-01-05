@@ -132,17 +132,20 @@
     .preview-container {
       border: 1px solid #ddd;
       border-radius: 8px;
-      padding: 30px;
+      padding: 20px;
       background: white;
       margin: 20px 0;
+      min-height: 800px;
     }
     .ficha-oficial {
       font-family: 'Times New Roman', Times, serif;
       line-height: 1.4;
       padding: 1.5cm;
       position: relative;
-      background: #e6f0f7;
+      background: white;
       box-sizing: border-box;
+      border: 1px solid #000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     
     .logo-izquierda {
@@ -195,6 +198,7 @@
     .titulo-datos {
       font-weight: bold;
       margin-bottom: 8px;
+      font-size: 12pt;
     }
     
     .dato-fila {
@@ -225,11 +229,12 @@
       display: block;
       width: 100%;
       margin-top: 5px;
+      font-size: 9pt;
     }
     
     .watermark {
       position: absolute;
-      opacity: 0.1;
+      opacity: 0.05;
       font-size: 80px;
       transform: rotate(-45deg);
       top: 50%;
@@ -268,6 +273,7 @@
         box-shadow: 0 0 20px rgba(0,0,0,0.1);
         background: white;
         padding: 20px;
+        border: 1px solid #ddd;
       }
       .logo-izquierda, .logo-derecha, .foto-funcionario, .foto-cedula {
         position: relative;
@@ -288,18 +294,41 @@
       }
     }
     
-    .form-sections {
+    /* Diseño optimizado del formulario */
+    .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 20px;
+    }
+    
+    .form-column {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
     }
     
     .section-title {
       font-weight: bold;
       color: #722F37;
       margin-bottom: 12px;
-      padding-bottom: 6px;
+      padding-bottom: 4px;
       border-bottom: 2px solid #f0f0f0;
+      font-size: 16px;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -322,56 +351,41 @@
     </div>
     
     <div class="form-section">
-      <h2>📝 Llenar Datos Personales</h2>
+      <h2>📝 Datos Personales del Funcionario</h2>
       <div id="alertMessage" class="alert"></div>
       
       <div class="form-group">
         <label for="searchCedula">Buscar por Cédula</label>
-        <div style="display:flex; gap:10px;">
-          <input type="text" id="searchCedula" placeholder="Ingrese cédula (8 dígitos)" maxlength="8" inputmode="numeric">
-          <button id="btnBuscarCedula" class="btn" style="padding:10px 16px;">🔍 Buscar</button>
+        <div style="display:flex; gap:10px; flex-wrap: wrap;">
+          <input type="text" id="searchCedula" placeholder="Ingrese cédula (8 dígitos)" maxlength="8" inputmode="numeric" style="flex:1; min-width: 200px;">
+          <button id="btnBuscarCedula" class="btn" style="padding:10px 16px; white-space: nowrap;">🔍 Buscar</button>
         </div>
       </div>
       
-      <div class="form-sections">
-        <!-- Sección Datos Personales -->
-        <div>
-          <div class="section-title">👤 Datos Personales</div>
-          
-          <div class="form-group">
-            <label for="nombre_apellidos">Nombres y Apellidos *</label>
-            <input type="text" id="nombre_apellidos" required>
-          </div>
+      <div class="form-grid">
+        <!-- Columna 1: Datos personales básicos -->
+        <div class="form-column">
+          <div class="section-title">👤 Información Básica</div>
           
           <div class="form-group">
             <label for="cedula">Cédula *</label>
-            <input type="text" id="cedula" maxlength="8" inputmode="numeric" required>
+            <input type="text" id="cedula" maxlength="8" inputmode="numeric" required placeholder="Ej: 25275015">
           </div>
           
-          <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label for="nombre_apellidos">Nombres y Apellidos *</label>
+            <input type="text" id="nombre_apellidos" required placeholder="Ej: GARCIA PEREZ, JUAN CARLOS">
+          </div>
+          
+          <div class="form-row">
             <div class="form-group">
               <label for="edad">Edad *</label>
-              <input type="number" id="edad" min="18" max="100" required>
+              <input type="number" id="edad" min="18" max="100" required placeholder="Ej: 35">
             </div>
             <div class="form-group">
               <label for="fecha_nacimiento">Fecha de Nacimiento *</label>
               <input type="date" id="fecha_nacimiento" required>
             </div>
-          </div>
-          
-          <div class="form-group">
-            <label for="telefono_funcionario">Teléfono del Funcionario *</label>
-            <input type="tel" id="telefono_funcionario" placeholder="Ej: 0412-1234567" required>
-          </div>
-          
-          <div class="form-group">
-            <label for="telefono_emergencia">Teléfono de Emergencia *</label>
-            <input type="tel" id="telefono_emergencia" placeholder="Ej: 0414-7654321" required>
-          </div>
-          
-          <div class="form-group">
-            <label for="correo_electronico">Correo Electrónico *</label>
-            <input type="email" id="correo_electronico" placeholder="ejemplo@correo.com" required>
           </div>
           
           <div class="form-group">
@@ -387,26 +401,67 @@
               <option value="Doctorado">Doctorado</option>
             </select>
           </div>
+          
+          <div class="section-title" style="margin-top: 20px;">📞 Contacto</div>
+          
+          <div class="form-group">
+            <label for="telefono_funcionario">Teléfono del Funcionario *</label>
+            <input type="tel" id="telefono_funcionario" placeholder="Ej: 0412-1234567" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="telefono_emergencia">Teléfono de Emergencia *</label>
+            <input type="tel" id="telefono_emergencia" placeholder="Ej: 0414-7654321" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="correo_electronico">Correo Electrónico *</label>
+            <input type="email" id="correo_electronico" placeholder="ejemplo@correo.com" required>
+          </div>
         </div>
         
-        <!-- Sección Datos Policiales -->
-        <div>
+        <!-- Columna 2: Datos policiacos -->
+        <div class="form-column">
           <div class="section-title">👮‍♂️ Datos Policiales</div>
           
           <div class="form-group">
-            <label for="fecha_ingreso_cpn">Fecha de Ingreso al CPNB *</label>
-            <input type="date" id="fecha_ingreso_cpn" required>
+            <label for="rango">Rango *</label>
+            <select id="rango" required>
+              <option value="">— Seleccione —</option>
+              <option value="Comisario Mayor">Comisario Mayor</option>
+              <option value="Inspector Jefe">Inspector Jefe</option>
+              <option value="Primer Inspector">Primer Inspector</option>
+              <option value="Inspector">Inspector</option>
+              <option value="Oficial Jefe">Oficial Jefe</option>
+              <option value="Primer Oficial">Primer Oficial</option>
+              <option value="Oficial">Oficial</option>
+              <option value="Agente">Agente</option>
+              <option value="Administrativo">Administrativo</option>
+            </select>
           </div>
           
           <div class="form-group">
-            <label for="fecha_ultimo_ascenso">Fecha del Último Ascenso</label>
-            <input type="date" id="fecha_ultimo_ascenso">
+            <label for="ultimo_cargo">Último Cargo *</label>
+            <input type="text" id="ultimo_cargo" placeholder="Ej: JEFE DE SECCIÓN" required>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fecha_ingreso_cpn">Fecha de Ingreso *</label>
+              <input type="date" id="fecha_ingreso_cpn" required>
+            </div>
+            <div class="form-group">
+              <label for="fecha_ultimo_ascenso">Último Ascenso</label>
+              <input type="date" id="fecha_ultimo_ascenso">
+            </div>
           </div>
           
           <div class="form-group">
-            <label for="antiguedad">Antigüedad en la Función Policial *</label>
+            <label for="antiguedad">Antigüedad *</label>
             <input type="text" id="antiguedad" placeholder="Ej: 5 años 3 meses" required>
           </div>
+          
+          <div class="section-title" style="margin-top: 20px;">📍 Ubicación</div>
           
           <div class="form-group">
             <label for="estado">Estado *</label>
@@ -440,7 +495,7 @@
           </div>
           
           <div class="form-group">
-            <label for="servicio">Servicio *</label>
+            <label for="servicio">Servicio/Unidad *</label>
             <input type="text" id="servicio" placeholder="Ej: CCPE CARICUAO" required>
           </div>
           
@@ -448,31 +503,10 @@
             <label for="direccion_habitacion">Dirección de Habitación *</label>
             <textarea id="direccion_habitacion" rows="2" required placeholder="Dirección completa"></textarea>
           </div>
-          
-          <div class="form-group">
-            <label for="ultimo_cargo">Último Cargo *</label>
-            <input type="text" id="ultimo_cargo" required>
-          </div>
-          
-          <div class="form-group">
-            <label for="rango">Rango *</label>
-            <select id="rango" required>
-              <option value="">— Seleccione —</option>
-              <option value="Comisario Mayor">Comisario Mayor</option>
-              <option value="Inspector Jefe">Inspector Jefe</option>
-              <option value="Primer Inspector">Primer Inspector</option>
-              <option value="Inspector">Inspector</option>
-              <option value="Oficial Jefe">Oficial Jefe</option>
-              <option value="Primer Oficial">Primer Oficial</option>
-              <option value="Oficial">Oficial</option>
-              <option value="Agente">Agente</option>
-              <option value="Administrativo">Administrativo</option>
-            </select>
-          </div>
         </div>
         
-        <!-- Sección Credencial -->
-        <div>
+        <!-- Columna 3: Credencial y foto -->
+        <div class="form-column">
           <div class="section-title">🆔 Credencial</div>
           
           <div class="form-group">
@@ -483,7 +517,7 @@
                 <label for="credencialSi">SI</label>
               </div>
               <div>
-                <input type="radio" id="credencialNo" name="credencial" value="no" required>
+                <input type="radio" id="credencialNo" name="credencial" value="no" required checked>
                 <label for="credencialNo">NO</label>
               </div>
             </div>
@@ -492,6 +526,28 @@
           <div class="form-group" id="numeroCredencialGroup" style="display: none;">
             <label for="numero_credencial">Número de Credencial *</label>
             <input type="text" id="numero_credencial" placeholder="Ej: PNB-12345">
+          </div>
+          
+          <div class="section-title" style="margin-top: 20px;">📸 Foto del Funcionario</div>
+          
+          <div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px; background: #f9f9f9;">
+            <div style="font-size: 48px; color: #722F37; margin-bottom: 10px;">👤</div>
+            <p style="margin-bottom: 10px; color: #666;">Arrastre o haga clic para subir foto</p>
+            <input type="file" id="fotoFuncionario" accept="image/*" style="display: none;">
+            <button type="button" class="btn btn-outline" onclick="document.getElementById('fotoFuncionario').click()" style="width: 100%;">
+              📤 Subir Foto
+            </button>
+          </div>
+          
+          <div class="section-title" style="margin-top: 20px;">📄 Foto de Cédula</div>
+          
+          <div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px; background: #f9f9f9;">
+            <div style="font-size: 48px; color: #722F37; margin-bottom: 10px;">🆔</div>
+            <p style="margin-bottom: 10px; color: #666;">Arrastre o haga clic para subir cédula</p>
+            <input type="file" id="fotoCedula" accept="image/*" style="display: none;">
+            <button type="button" class="btn btn-outline" onclick="document.getElementById('fotoCedula').click()" style="width: 100%;">
+              📤 Subir Cédula
+            </button>
           </div>
         </div>
       </div>
@@ -504,7 +560,7 @@
     </div>
     
     <div class="preview-section">
-      <h2>🔍 Vista Previa</h2>
+      <h2>🔍 Vista Previa en Tiempo Real</h2>
       <div class="preview-container">
         <div id="fichaPreview" class="ficha-oficial">
           <div class="watermark">FICHA DE DATOS PERSONALES</div>
@@ -516,27 +572,29 @@
           <!-- Foto del funcionario -->
           <div class="foto-funcionario" id="previewFotoFuncionario">
             <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
-            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666;">FOTO</div>
+            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">
+              FOTO DEL FUNCIONARIO
+            </div>
           </div>
           
           <!-- Datos personales -->
           <div class="datos-personales">
             <div class="titulo-datos">DATOS PERSONALES:</div>
-            <div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">NOMBRE Y APELLIDOS</span></div>
-            <div class="dato-fila"><strong>CÉDULA:</strong> <span id="previewCedula">V-12345678</span></div>
-            <div class="dato-fila"><strong>EDAD:</strong> <span id="previewEdad">25 AÑOS</span></div>
-            <div class="dato-fila"><strong>FECHA DE NACIMIENTO:</strong> <span id="previewFechaNacimiento">01/01/2000</span></div>
-            <div class="dato-fila"><strong>TELÉFONO DEL FUNCIONARIO:</strong> <span id="previewTelefono">0412-1234567</span></div>
-            <div class="dato-fila"><strong>TELEFONO DE EMERGENCIA:</strong> <span id="previewTelefonoEmergencia">0414-7654321</span></div>
-            <div class="dato-fila"><strong>CORREO ELECTRÓNICO:</strong> <span id="previewCorreo">correo@ejemplo.com</span></div>
-            <div class="dato-fila"><strong>NIVEL ACADÉMICO:</strong> <span id="previewNivelAcademico">BACHILLER</span></div>
-            <div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">16/06/2024</span></div>
-            <div class="dato-fila"><strong>FECHA DEL ULTIMO ASCENSO:</strong> <span id="previewFechaAscenso">N/P</span></div>
-            <div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">1 AÑOS Y 5 MESES</span></div>
-            <div class="dato-fila"><strong>ESTADO:</strong> <span id="previewEstado">DISTRITO CAPITAL</span></div>
-            <div class="dato-fila"><strong>SERVICIO:</strong> <span id="previewServicio">CCPE CARICUAO</span></div>
-            <div class="dato-fila"><strong>DIRECCION DE HABITACION:</strong> <span id="previewDireccion">DISTRITO CAPITAL MUNICIPIO LIBERTADOR PARROQUIA CARICUAO URBANIZACION QUESERAS DEL MEDIO BLOQUE 54 PISO 02 APTO 202.</span></div>
-            <div class="dato-fila"><strong>ULTIMO CARGO:</strong> <span id="previewUltimoCargo">AUXILIAR DE BRIGADA</span></div>
+            <div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">SIN DATOS</span></div>
+            <div class="dato-fila"><strong>CÉDULA:</strong> <span id="previewCedula">00000000</span></div>
+            <div class="dato-fila"><strong>EDAD:</strong> <span id="previewEdad">00 AÑOS</span></div>
+            <div class="dato-fila"><strong>FECHA DE NACIMIENTO:</strong> <span id="previewFechaNacimiento">01/01/1990</span></div>
+            <div class="dato-fila"><strong>TELÉFONO DEL FUNCIONARIO:</strong> <span id="previewTelefono">SIN DATOS</span></div>
+            <div class="dato-fila"><strong>TELÉFONO DE EMERGENCIA:</strong> <span id="previewTelefonoEmergencia">SIN DATOS</span></div>
+            <div class="dato-fila"><strong>CORREO ELECTRÓNICO:</strong> <span id="previewCorreo">SIN DATOS</span></div>
+            <div class="dato-fila"><strong>NIVEL ACADÉMICO:</strong> <span id="previewNivelAcademico">SIN DATOS</span></div>
+            <div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">01/01/2020</span></div>
+            <div class="dato-fila"><strong>FECHA DEL ULTIMO ASCENSO:</strong> <span id="previewFechaAscenso">SIN DATOS</span></div>
+            <div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">00 AÑOS 00 MESES</span></div>
+            <div class="dato-fila"><strong>ESTADO:</strong> <span id="previewEstado">SIN DATOS</span></div>
+            <div class="dato-fila"><strong>SERVICIO:</strong> <span id="previewServicio">SIN DATOS</span></div>
+            <div class="dato-fila"><strong>DIRECCION DE HABITACION:</strong> <span id="previewDireccion">SIN DATOS</span></div>
+            <div class="dato-fila"><strong>ULTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
           </div>
           
           <!-- Credencial -->
@@ -558,12 +616,14 @@
           <!-- Foto de la cédula -->
           <div class="foto-cedula" id="previewFotoCedula">
             <img id="previewCedulaFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
-            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666;">FOTO CÉDULA</div>
+            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">
+              FOTO DE CÉDULA
+            </div>
           </div>
         </div>
       </div>
       
-      <div class="preview-actions">
+      <div class="preview-actions" style="display: flex; gap: 12px;">
         <button id="btnImprimir" class="btn btn-outline" style="flex:1;">🖨️ Imprimir</button>
         <button id="btnExportarPDF2" class="btn btn-pdf" style="flex:1;">📄 Exportar a PDF</button>
       </div>
@@ -577,69 +637,53 @@
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const alertDiv = document.getElementById('alertMessage');
     
-    // ✅ Función segura para actualizar vista previa
+    // ✅ Función para actualizar vista previa en tiempo real
     function actualizarVistaPrevia() {
-      // ✅ Verificar que el elemento "fichaPreview" exista
-      if (!document.getElementById('fichaPreview')) {
-        console.warn('⚠️ Elemento "fichaPreview" no encontrado. Reintentando...');
-        setTimeout(actualizarVistaPrevia, 100);
-        return;
-      }
-      
       // ✅ Obtener valores de los campos
-      const nombre = document.getElementById('nombre_apellidos').value || 'NOMBRE Y APELLIDOS';
-      const cedula = document.getElementById('cedula').value || 'V-12345678';
-      const edad = document.getElementById('edad').value || '25 AÑOS';
-      const fechaNacimiento = document.getElementById('fecha_nacimiento').value || '01/01/2000';
-      const telefono = document.getElementById('telefono_funcionario').value || '0412-1234567';
-      const telefonoEmergencia = document.getElementById('telefono_emergencia').value || '0414-7654321';
-      const correo = document.getElementById('correo_electronico').value || 'correo@ejemplo.com';
-      const nivelAcademico = document.getElementById('nivel_academico').value || 'BACHILLER';
-      const fechaIngreso = document.getElementById('fecha_ingreso_cpn').value || '16/06/2024';
-      const fechaAscenso = document.getElementById('fecha_ultimo_ascenso').value || 'N/P';
-      const antiguedad = document.getElementById('antiguedad').value || '1 AÑOS Y 5 MESES';
-      const estado = document.getElementById('estado').value || 'DISTRITO CAPITAL';
-      const servicio = document.getElementById('servicio').value || 'CCPE CARICUAO';
-      const direccion = document.getElementById('direccion_habitacion').value || 'DIRECCIÓN COMPLETA';
-      const ultimoCargo = document.getElementById('ultimo_cargo').value || 'AUXILIAR DE BRIGADA';
-      const rango = document.getElementById('rango').value || 'RANGO';
-      const numeroCredencial = document.getElementById('numero_credencial')?.value || 'PNB-33311';
+      const nombre = document.getElementById('nombre_apellidos').value || 'SIN DATOS';
+      const cedula = document.getElementById('cedula').value || '00000000';
+      const edad = document.getElementById('edad').value || '00 AÑOS';
+      const fechaNacimiento = document.getElementById('fecha_nacimiento').value ? new Date(document.getElementById('fecha_nacimiento').value).toLocaleDateString('es-VE') : '01/01/1990';
+      const telefono = document.getElementById('telefono_funcionario').value || 'SIN DATOS';
+      const telefonoEmergencia = document.getElementById('telefono_emergencia').value || 'SIN DATOS';
+      const correo = document.getElementById('correo_electronico').value || 'SIN DATOS';
+      const nivelAcademico = document.getElementById('nivel_academico').value || 'SIN DATOS';
+      const fechaIngreso = document.getElementById('fecha_ingreso_cpn').value ? new Date(document.getElementById('fecha_ingreso_cpn').value).toLocaleDateString('es-VE') : '01/01/2020';
+      const fechaAscenso = document.getElementById('fecha_ultimo_ascenso').value ? new Date(document.getElementById('fecha_ultimo_ascenso').value).toLocaleDateString('es-VE') : 'SIN DATOS';
+      const antiguedad = document.getElementById('antiguedad').value || '00 AÑOS 00 MESES';
+      const estado = document.getElementById('estado').value || 'SIN DATOS';
+      const servicio = document.getElementById('servicio').value || 'SIN DATOS';
+      const direccion = document.getElementById('direccion_habitacion').value || 'SIN DATOS';
+      const ultimoCargo = document.getElementById('ultimo_cargo').value || 'SIN DATOS';
+      const rango = document.getElementById('rango').value || 'SIN DATOS';
       
-      // ✅ Actualizar elementos de forma segura
-      const updateElement = (id, value) => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.textContent = value;
-        }
-      };
-      
-      updateElement('previewNombre', nombre);
-      updateElement('previewCedula', cedula);
-      updateElement('previewEdad', edad);
-      updateElement('previewFechaNacimiento', fechaNacimiento);
-      updateElement('previewTelefono', telefono);
-      updateElement('previewTelefonoEmergencia', telefonoEmergencia);
-      updateElement('previewCorreo', correo);
-      updateElement('previewNivelAcademico', nivelAcademico);
-      updateElement('previewFechaIngreso', fechaIngreso);
-      updateElement('previewFechaAscenso', fechaAscenso);
-      updateElement('previewAntiguedad', antiguedad);
-      updateElement('previewEstado', estado);
-      updateElement('previewServicio', servicio);
-      updateElement('previewDireccion', direccion);
-      updateElement('previewUltimoCargo', ultimoCargo);
-      updateElement('previewRango', rango);
+      // ✅ Actualizar elementos
+      document.getElementById('previewNombre').textContent = nombre;
+      document.getElementById('previewCedula').textContent = cedula;
+      document.getElementById('previewEdad').textContent = edad;
+      document.getElementById('previewFechaNacimiento').textContent = fechaNacimiento;
+      document.getElementById('previewTelefono').textContent = telefono;
+      document.getElementById('previewTelefonoEmergencia').textContent = telefonoEmergencia;
+      document.getElementById('previewCorreo').textContent = correo;
+      document.getElementById('previewNivelAcademico').textContent = nivelAcademico;
+      document.getElementById('previewFechaIngreso').textContent = fechaIngreso;
+      document.getElementById('previewFechaAscenso').textContent = fechaAscenso;
+      document.getElementById('previewAntiguedad').textContent = antiguedad;
+      document.getElementById('previewEstado').textContent = estado;
+      document.getElementById('previewServicio').textContent = servicio;
+      document.getElementById('previewDireccion').textContent = direccion;
+      document.getElementById('previewUltimoCargo').textContent = ultimoCargo;
       
       // ✅ Actualizar credencial
       const credencialSi = document.getElementById('credencialSi').checked;
+      document.getElementById('previewCredencialSi').checked = credencialSi;
+      document.getElementById('previewCredencialNo').checked = !credencialSi;
+      
       if (credencialSi) {
-        document.getElementById('previewCredencialSi').checked = true;
-        document.getElementById('previewCredencialNo').checked = false;
-        updateElement('previewNumeroCredencial', numeroCredencial);
+        const numeroCredencial = document.getElementById('numero_credencial').value || 'PNB-33311';
+        document.getElementById('previewNumeroCredencial').textContent = numeroCredencial;
         document.getElementById('previewNumeroCredencial').style.display = 'block';
       } else {
-        document.getElementById('previewCredencialSi').checked = false;
-        document.getElementById('previewCredencialNo').checked = true;
         document.getElementById('previewNumeroCredencial').style.display = 'none';
       }
     }
@@ -655,187 +699,13 @@
       actualizarVistaPrevia();
     });
     
-    // ✅ Buscar funcionario por cédula
-    async function buscarFuncionarioPorCedula(cedula) {
-      try {
-        const { data, error } = await client
-          .from('rrhh_icap')
-          .select('*')
-          .eq('cedula', cedula)
-          .single();
-        
-        if (error) throw error;
-        
-        if (data) {
-          // ✅ Llenar todos los campos con los datos del funcionario
-          document.getElementById('nombre_apellidos').value = data.nombre_apellidos || '';
-          document.getElementById('cedula').value = data.cedula || '';
-          document.getElementById('estado').value = data.estado || '';
-          document.getElementById('servicio').value = data.servicio || '';
-          document.getElementById('direccion_habitacion').value = data.direccion || '';
-          document.getElementById('ultimo_cargo').value = data.ultimo_cargo || '';
-          document.getElementById('rango').value = data.rango || '';
-          
-          // ✅ Mostrar mensaje de éxito
-          showAlert('✅ Datos cargados desde RRHH ICAP', 'success');
-          actualizarVistaPrevia();
-        } else {
-          showAlert('⚠️ Funcionario no encontrado en RRHH ICAP', 'error');
-        }
-      } catch (err) {
-        console.error('Error al buscar funcionario:', err);
-        showAlert(`❌ Error: ${err.message}`, 'error');
-      }
-    }
-    
-    // ✅ Exportar a PDF
-    async function exportarAPDF() {
-      try {
-        // ✅ Ocultar botones durante la exportación
-        const originalBtnText = document.getElementById('btnExportarPDF').innerHTML;
-        document.getElementById('btnExportarPDF').innerHTML = '🚀 Generando PDF...';
-        document.getElementById('btnExportarPDF').disabled = true;
-        
-        // ✅ Crear clon para exportación
-        const fichaElement = document.getElementById('fichaPreview');
-        const clon = fichaElement.cloneNode(true);
-        clon.style.width = '25.4cm';
-        clon.style.height = '19.05cm';
-        clon.style.padding = '1.5cm';
-        clon.style.margin = '0';
-        
-        // ✅ Añadir clon al body temporalmente
-        const exportContainer = document.createElement('div');
-        exportContainer.style.position = 'fixed';
-        exportContainer.style.left = '-9999px';
-        exportContainer.style.top = '0';
-        exportContainer.style.width = '25.4cm';
-        exportContainer.style.height = '19.05cm';
-        exportContainer.appendChild(clon);
-        document.body.appendChild(exportContainer);
-        
-        // ✅ Capturar como imagen
-        const canvas = await html2canvas(clon, {
-          scale: 3,
-          useCORS: true,
-          logging: false,
-          width: 960,
-          height: 720
-        });
-        
-        // ✅ Crear PDF
-        const { jsPDF } = window.jspdf;
-        const imgWidth = 210;
-        const pageHeight = 297;
-        const imgHeight = canvas.height * imgWidth / canvas.width;
-        
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
-        
-        // ✅ Descargar
-        const nombreArchivo = `ficha_datos_${document.getElementById('cedula').value || 'sin-cedula'}_${new Date().toISOString().slice(0,10)}.pdf`;
-        pdf.save(nombreArchivo);
-        
-        // ✅ Limpiar
-        document.body.removeChild(exportContainer);
-        document.getElementById('btnExportarPDF').innerHTML = originalBtnText;
-        document.getElementById('btnExportarPDF').disabled = false;
-        
-        showAlert('✅ PDF generado exitosamente', 'success');
-      } catch (err) {
-        console.error('Error al generar PDF:', err);
-        showAlert(`❌ Error al generar PDF: ${err.message}`, 'error');
-        document.getElementById('btnExportarPDF').innerHTML = '📄 Exportar a PDF';
-        document.getElementById('btnExportarPDF').disabled = false;
-      }
-    }
-    
-    // ✅ Guardar ficha
-    async function guardarFicha() {
-      try {
-        const cedula = document.getElementById('cedula').value.trim();
-        const nombre = document.getElementById('nombre_apellidos').value.trim();
-        
-        // ✅ Validaciones básicas
-        if (!cedula || !/^\d{8}$/.test(cedula)) {
-          return showAlert('⚠️ Cédula debe tener exactamente 8 dígitos', 'error');
-        }
-        if (!nombre) return showAlert('⚠️ Nombre es obligatorio', 'error');
-        
-        // ✅ Obtener sesión
-        const sessionResponse = await client.auth.getSession();
-        const session = sessionResponse?.data?.session;
-        if (!session) throw new Error('Sesión no encontrada');
-        
-        // ✅ Obtener perfil
-        const { data: perfil, error: perfilError } = await client
-          .from('perfiles')
-          .select('email')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (perfilError || !perfil) {
-          throw new Error('Perfil no encontrado');
-        }
-        
-        // ✅ Preparar datos para guardar
-        const fichaData = {
-          cedula: cedula,
-          nombre_apellidos: nombre,
-          edad: document.getElementById('edad').value.trim(),
-          fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
-          telefono_funcionario: document.getElementById('telefono_funcionario').value.trim(),
-          telefono_emergencia: document.getElementById('telefono_emergencia').value.trim(),
-          correo_electronico: document.getElementById('correo_electronico').value.trim(),
-          nivel_academico: document.getElementById('nivel_academico').value,
-          fecha_ingreso_cpn: document.getElementById('fecha_ingreso_cpn').value,
-          fecha_ultimo_ascenso: document.getElementById('fecha_ultimo_ascenso').value || null,
-          antiguedad: document.getElementById('antiguedad').value.trim(),
-          estado: document.getElementById('estado').value,
-          servicio: document.getElementById('servicio').value.trim(),
-          direccion_habitacion: document.getElementById('direccion_habitacion').value.trim(),
-          ultimo_cargo: document.getElementById('ultimo_cargo').value.trim(),
-          rango: document.getElementById('rango').value,
-          posee_credencial: document.getElementById('credencialSi').checked,
-          numero_credencial: document.getElementById('credencialSi').checked ? document.getElementById('numero_credencial').value.trim() : null,
-          creado_por: perfil.email,
-          creado_en: new Date().toISOString()
-        };
-        
-        // ✅ Guardar en base de datos
-        const { error } = await client.from('fichas_datos').insert(fichaData);
-        if (error) throw error;
-        
-        showAlert('✅ Ficha guardada exitosamente', 'success');
-        
-        // ✅ Limpiar formulario después de 2 segundos
-        setTimeout(() => {
-          document.getElementById('cedula').value = '';
-          document.getElementById('nombre_apellidos').value = '';
-          document.getElementById('edad').value = '';
-          document.getElementById('fecha_nacimiento').value = '';
-          document.getElementById('telefono_funcionario').value = '';
-          document.getElementById('telefono_emergencia').value = '';
-          document.getElementById('correo_electronico').value = '';
-          document.getElementById('nivel_academico').value = '';
-          document.getElementById('fecha_ingreso_cpn').value = '';
-          document.getElementById('fecha_ultimo_ascenso').value = '';
-          document.getElementById('antiguedad').value = '';
-          document.getElementById('estado').value = '';
-          document.getElementById('servicio').value = '';
-          document.getElementById('direccion_habitacion').value = '';
-          document.getElementById('ultimo_cargo').value = '';
-          document.getElementById('rango').value = '';
-          document.getElementById('credencialNo').checked = true;
-          document.getElementById('numeroCredencialGroup').style.display = 'none';
-          actualizarVistaPrevia();
-        }, 2000);
-        
-      } catch (err) {
-        console.error('Error al guardar ficha:', err);
-        showAlert(`❌ Error: ${err.message}`, 'error');
-      }
-    }
+    // ✅ Eventos para actualizar vista previa en tiempo real
+    document.querySelectorAll('input, select, textarea').forEach(element => {
+      element.addEventListener('input', actualizarVistaPrevia);
+    });
+    document.querySelectorAll('[type="radio"]').forEach(element => {
+      element.addEventListener('change', actualizarVistaPrevia);
+    });
     
     // ✅ Inicialización
     document.addEventListener('DOMContentLoaded', async () => {
@@ -855,13 +725,13 @@
         }
         
         // ✅ Obtener perfil
-        const { data: perfil, error: perfilError } = await client
+        const { data: perfil } = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
           .single();
         
-        if (perfilError || !perfil) {
+        if (!perfil) {
           console.error('❌ Perfil no encontrado');
           showAlert('⚠️ Tu perfil no está registrado. Contacta a Administración.', 'error');
           setTimeout(() => {
@@ -876,36 +746,8 @@
           perfil.rol === 'admin' ? 'Administrador' : 
           perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
         
-        // ✅ Eventos
-        document.getElementById('btnBuscarCedula').addEventListener('click', () => {
-          const cedula = document.getElementById('searchCedula').value.trim();
-          if (/^\d{8}$/.test(cedula)) {
-            buscarFuncionarioPorCedula(cedula);
-          } else {
-            showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
-          }
-        });
-        
-        document.getElementById('searchCedula').addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            document.getElementById('btnBuscarCedula').click();
-          }
-        });
-        
-        document.getElementById('btnGuardar').addEventListener('click', guardarFicha);
-        document.getElementById('btnExportarPDF').addEventListener('click', exportarAPDF);
-        document.getElementById('btnExportarPDF2').addEventListener('click', exportarAPDF);
-        document.getElementById('btnImprimir').addEventListener('click', () => {
-          window.print();
-        });
-        
-        // ✅ Eventos para vista previa en tiempo real
-        document.querySelectorAll('input, select, textarea, [type="radio"]').forEach(el => {
-          el.addEventListener('input', actualizarVistaPrevia);
-        });
-        
-        // ✅ Cargar vista previa inicial con un pequeño retraso
-        setTimeout(actualizarVistaPrevia, 100);
+        // ✅ Cargar vista previa inicial
+        actualizarVistaPrevia();
         
       } catch (err) {
         console.error('🔥 Error crítico en inicialización:', err);
