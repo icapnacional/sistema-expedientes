@@ -469,11 +469,14 @@
   </div>
 
   <script>
-    // ✅ Inicializar Supabase
+    // ✅ URLs LIMPIAS (sin espacios)
     const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const alertDiv = document.getElementById('alertMessage');
+    
+    // ✅ Depuración inicial
+    console.log('✅ Librerías cargadas. Cliente Supabase:', client);
     
     // ✅ Actualizar vista previa en tiempo real
     function actualizarVistaPrevia() {
@@ -726,14 +729,30 @@
       }
     }
     
-    // ✅ Inicialización
+    // ✅ Inicialización (con depuración)
     document.addEventListener('DOMContentLoaded', async () => {
       try {
+        console.log('✅ DOM listo. Iniciando autenticación...');
+        
         // ✅ Verificar sesión
         const sessionResponse = await client.auth.getSession();
         const session = sessionResponse?.data?.session;
-        if (!session) return window.location.href = '../index.html';
+        const error = sessionResponse?.error;
         
+        console.log('🔍 Sesión obtenida:', { session, error });
+        
+        if (error) {
+          console.error('❌ Error de sesión:', error.message);
+          alert(`Error de autenticación: ${error.message}`);
+          return window.location.href = '../index.html';
+        }
+        
+        if (!session) {
+          console.warn('⚠️ Sesión no disponible. Redirigiendo...');
+          alert('⚠️ Debes iniciar sesión primero.');
+          return window.location.href = '../index.html';
+        }
+
         // ✅ Obtener perfil
         const {  perfil } = await client
           .from('perfiles')
@@ -741,10 +760,15 @@
           .eq('id', session.user.id)
           .single();
         
-        if (!perfil) return window.location.href = '../index.html';
+        if (!perfil) {
+          console.error('❌ Perfil no encontrado');
+          alert('⚠️ Tu perfil no está registrado. Contacta a Administración.');
+          return window.location.href = '../index.html';
+        }
         
         // ✅ Solo RRHH autorizado
         if (perfil.rol !== 'admin' && perfil.rol !== 'moderador') {
+          console.warn('❌ Acceso denegado: rol no autorizado');
           alert('🔒 Solo RRHH autorizado puede crear fichas disciplinarias');
           return window.location.href = '../index.html';
         }
@@ -787,9 +811,11 @@
         
         // ✅ Cargar vista previa inicial
         actualizarVistaPrevia();
+        console.log('✅ Inicialización completada');
         
       } catch (err) {
-        console.error('Error en inicialización:', err);
+        console.error('🔥 Error crítico:', err);
+        alert(`Error del sistema: ${err.message}`);
         window.location.href = '../index.html';
       }
     });
