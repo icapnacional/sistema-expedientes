@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Formato Ficha Disciplinaria | ICAP</title>
+  <title>Ficha de Datos Personales | ICAP</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -309,12 +309,12 @@
       <a href="../index.html">Inicio</a> <span>›</span>
       <a href="../rrhh-icap/index.html">RRHH ICAP</a> <span>›</span>
       <a href="index.html">Fichas</a> <span>›</span>
-      <strong>Formato Disciplinario</strong>
+      <strong>Formato de Datos</strong>
     </div>
     <div class="header">
       <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
       <h1>Inspectable para el Control de la Actuación Policial</h1>
-      <div class="subtitle">• Formato de Ficha Disciplinaria •</div>
+      <div class="subtitle">• Formato de Datos Personales •</div>
     </div>
     <div class="user-info">
       <strong>Usuario:</strong> <span id="userEmail">—</span> |
@@ -322,7 +322,7 @@
     </div>
     
     <div class="form-section">
-      <h2>📝 Llenar Formato</h2>
+      <h2>📝 Llenar Datos Personales</h2>
       <div id="alertMessage" class="alert"></div>
       
       <div class="form-group">
@@ -471,7 +471,7 @@
           </div>
         </div>
         
-        <!-- Sección Credencial e Investigación -->
+        <!-- Sección Credencial -->
         <div>
           <div class="section-title">🆔 Credencial</div>
           
@@ -493,46 +493,6 @@
             <label for="numero_credencial">Número de Credencial *</label>
             <input type="text" id="numero_credencial" placeholder="Ej: PNB-12345">
           </div>
-          
-          <div class="section-title" style="margin-top: 25px;">🔍 Investigación Disciplinaria</div>
-          
-          <div class="form-group">
-            <label for="fecha_investigacion">Fecha de Investigación *</label>
-            <input type="date" id="fecha_investigacion" required>
-          </div>
-          
-          <div class="form-group">
-            <label for="tipo_falta">Tipo de Falta *</label>
-            <select id="tipo_falta" required>
-              <option value="">— Seleccione —</option>
-              <option value="Falta leve">Falta leve</option>
-              <option value="Falta grave">Falta grave</option>
-              <option value="Falta muy grave">Falta muy grave</option>
-              <option value="Conducta indebida">Conducta indebida</option>
-              <option value="Abandono de cargo">Abandono de cargo</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label for="descripcion_hechos">Descripción de los Hechos *</label>
-            <textarea id="descripcion_hechos" rows="4" required placeholder="Describa detalladamente los hechos que motivan la investigación disciplinaria"></textarea>
-          </div>
-          
-          <div class="form-group">
-            <label for="fundamento_legal">Fundamento Legal</label>
-            <textarea id="fundamento_legal" rows="3" placeholder="Artículos, leyes o reglamentos aplicables"></textarea>
-          </div>
-          
-          <div class="form-group">
-            <label for="recomendaciones">Recomendaciones</label>
-            <textarea id="recomendaciones" rows="3" placeholder="Sanción propuesta o medidas a tomar"></textarea>
-          </div>
-          
-          <div class="form-group">
-            <label for="documento_memorandum">Memorándum Adjunto</label>
-            <input type="file" id="documento_memorandum" accept=".pdf,.jpg,.jpeg,.png">
-            <small style="color:#666; display:block; margin-top:4px;">Formatos permitidos: PDF, JPG, PNG</small>
-          </div>
         </div>
       </div>
       
@@ -547,7 +507,7 @@
       <h2>🔍 Vista Previa</h2>
       <div class="preview-container">
         <div id="fichaPreview" class="ficha-oficial">
-          <div class="watermark">FICHA DISCIPLINARIA</div>
+          <div class="watermark">FICHA DE DATOS PERSONALES</div>
           
           <!-- Logos -->
           <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" class="logo-izquierda" alt="ICAP Nacional">
@@ -643,11 +603,7 @@
       const direccion = document.getElementById('direccion_habitacion').value || 'DIRECCIÓN COMPLETA';
       const ultimoCargo = document.getElementById('ultimo_cargo').value || 'AUXILIAR DE BRIGADA';
       const rango = document.getElementById('rango').value || 'RANGO';
-      const fechaInvestigacion = document.getElementById('fecha_investigacion').value || '2026-01-04';
-      const tipoFalta = document.getElementById('tipo_falta').value || 'TIPO DE FALTA';
-      const descripcionHechos = document.getElementById('descripcion_hechos').value || 'DESCRIPCIÓN DETALLADA DE LOS HECHOS QUE MOTIVAN LA INVESTIGACIÓN DISCIPLINARIA.';
-      const fundamentoLegal = document.getElementById('fundamento_legal').value || 'ARTÍCULOS, LEYES O REGLAMENTOS APLICABLES.';
-      const recomendaciones = document.getElementById('recomendaciones').value || 'SUGERENCIAS DE MEDIDAS A TOMAR O SANCIONES PROPUESTAS.';
+      const numeroCredencial = document.getElementById('numero_credencial')?.value || 'PNB-33311';
       
       // ✅ Actualizar elementos de forma segura
       const updateElement = (id, value) => {
@@ -673,19 +629,12 @@
       updateElement('previewDireccion', direccion);
       updateElement('previewUltimoCargo', ultimoCargo);
       updateElement('previewRango', rango);
-      updateElement('previewFechaInvestigacion', fechaInvestigacion);
-      updateElement('previewTipoFalta', tipoFalta);
-      updateElement('previewDescripcionHechos', descripcionHechos);
-      updateElement('previewFundamentoLegal', fundamentoLegal);
-      updateElement('previewRecomendaciones', recomendaciones);
       
       // ✅ Actualizar credencial
       const credencialSi = document.getElementById('credencialSi').checked;
       if (credencialSi) {
         document.getElementById('previewCredencialSi').checked = true;
         document.getElementById('previewCredencialNo').checked = false;
-        
-        const numeroCredencial = document.getElementById('numero_credencial').value || 'PNB-33311';
         updateElement('previewNumeroCredencial', numeroCredencial);
         document.getElementById('previewNumeroCredencial').style.display = 'block';
       } else {
@@ -721,11 +670,11 @@
           // ✅ Llenar todos los campos con los datos del funcionario
           document.getElementById('nombre_apellidos').value = data.nombre_apellidos || '';
           document.getElementById('cedula').value = data.cedula || '';
-          document.getElementById('rango').value = data.rango || '';
           document.getElementById('estado').value = data.estado || '';
           document.getElementById('servicio').value = data.servicio || '';
           document.getElementById('direccion_habitacion').value = data.direccion || '';
           document.getElementById('ultimo_cargo').value = data.ultimo_cargo || '';
+          document.getElementById('rango').value = data.rango || '';
           
           // ✅ Mostrar mensaje de éxito
           showAlert('✅ Datos cargados desde RRHH ICAP', 'success');
@@ -784,7 +733,7 @@
         pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
         
         // ✅ Descargar
-        const nombreArchivo = `ficha_disciplinaria_${document.getElementById('cedula').value || 'sin-cedula'}_${new Date().toISOString().slice(0,10)}.pdf`;
+        const nombreArchivo = `ficha_datos_${document.getElementById('cedula').value || 'sin-cedula'}_${new Date().toISOString().slice(0,10)}.pdf`;
         pdf.save(nombreArchivo);
         
         // ✅ Limpiar
@@ -819,11 +768,15 @@
         if (!session) throw new Error('Sesión no encontrada');
         
         // ✅ Obtener perfil
-        const {  perfil } = await client
+        const { data: perfil, error: perfilError } = await client
           .from('perfiles')
           .select('email')
           .eq('id', session.user.id)
           .single();
+        
+        if (perfilError || !perfil) {
+          throw new Error('Perfil no encontrado');
+        }
         
         // ✅ Preparar datos para guardar
         const fichaData = {
@@ -845,17 +798,12 @@
           rango: document.getElementById('rango').value,
           posee_credencial: document.getElementById('credencialSi').checked,
           numero_credencial: document.getElementById('credencialSi').checked ? document.getElementById('numero_credencial').value.trim() : null,
-          fecha_investigacion: document.getElementById('fecha_investigacion').value,
-          tipo_falta: document.getElementById('tipo_falta').value,
-          descripcion_hechos: document.getElementById('descripcion_hechos').value.trim(),
-          fundamento_legal: document.getElementById('fundamento_legal').value.trim() || null,
-          recomendaciones: document.getElementById('recomendaciones').value.trim() || null,
           creado_por: perfil.email,
           creado_en: new Date().toISOString()
         };
         
         // ✅ Guardar en base de datos
-        const { error } = await client.from('fichas_disciplinarias').insert(fichaData);
+        const { error } = await client.from('fichas_datos').insert(fichaData);
         if (error) throw error;
         
         showAlert('✅ Ficha guardada exitosamente', 'success');
@@ -880,12 +828,6 @@
           document.getElementById('rango').value = '';
           document.getElementById('credencialNo').checked = true;
           document.getElementById('numeroCredencialGroup').style.display = 'none';
-          document.getElementById('fecha_investigacion').value = '';
-          document.getElementById('tipo_falta').value = '';
-          document.getElementById('descripcion_hechos').value = '';
-          document.getElementById('fundamento_legal').value = '';
-          document.getElementById('recomendaciones').value = '';
-          document.getElementById('documento_memorandum').value = '';
           actualizarVistaPrevia();
         }, 2000);
         
@@ -933,10 +875,6 @@
         document.getElementById('userRol').textContent = 
           perfil.rol === 'admin' ? 'Administrador' : 
           perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
-        
-        // ✅ Establecer fecha actual para investigación
-        const fechaActual = new Date().toISOString().split('T')[0];
-        document.getElementById('fecha_investigacion').value = fechaActual;
         
         // ✅ Eventos
         document.getElementById('btnBuscarCedula').addEventListener('click', () => {
