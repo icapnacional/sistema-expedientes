@@ -150,46 +150,44 @@ input, textarea, select {
   padding: 1.5cm;
 }
 
-/* ——— LOGOS ——— */
+/* ——— HEADER CON LOGOS AL LADO DEL TÍTULO ——— */
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #000;
+  padding: 10px 0;
+  margin-bottom: 15px;
+}
+
 .logo-izquierda {
-  position: absolute;
-  top: 50%;
-  left: 0.4cm;
-  transform: translateY(-50%);
-  width: 3.5cm;   /* 👈 más ancho (banner horizontal) */
-  height: 1.8cm;  /* 👈 altura reducida para proporción */
+  width: 3.5cm;
+  height: 1.4cm;
   object-fit: contain;
   object-position: left center;
-  z-index: 10;
 }
 .logo-derecha {
-  position: absolute;
-  top: 50%;
-  right: 0.4cm;
-  transform: translateY(-50%);
-  width: 2.2cm;   /* 👈 cuadrado estándar */
+  width: 2.2cm;
   height: 2.2cm;
   object-fit: contain;
   object-position: center;
-  z-index: 10;
-}
 }
 
 .titulo-ficha {
   font-weight: bold;
   font-size: 16pt;
-  margin: 0 1cm; /* espacio entre logos y título */
   color: #000;
   text-align: center;
   flex-grow: 1;
+  margin: 0 1cm;
 }
 
 .codigo-ficha {
   font-style: italic;
   font-size: 10pt;
   color: #333;
-  margin-top: 5px;
   text-align: center;
+  margin-top: 5px;
 }
 
 /* ——— FOTO FUNCIONARIO ——— */
@@ -301,83 +299,59 @@ input, textarea, select {
   }
 }
 
+/* ——— VISTA EN PANTALLA ——— */
 @media screen {
-  .logo-izquierda {
-    position: absolute !important;
-    top: 50% !important;
-    left: 8px !important;
-    transform: translateY(-50%) !important;
-    width: 140px !important;   /* ≈ 3.5cm */
-    height: 72px !important;   /* ≈ 1.8cm */
-    object-fit: contain !important;
-    object-position: left center !important;
-  }
-  .logo-derecha {
-    position: absolute !important;
-    top: 50% !important;
-    right: 8px !important;
-    transform: translateY(-50%) !important;
-    width: 88px !important;    /* ≈ 2.2cm */
-    height: 88px !important;
-    object-fit: contain !important;
-    object-position: center !important;
+  .ficha-oficial {
+    width: 100%;
+    height: auto;
+    min-height: 750px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border: 1px solid #ddd;
   }
 
-  /* Asegurar espacio arriba para logos */
-  .datos-personales {
-    position: static;
-    padding-top: 90px; /* ajustado para altura de logos */
-    margin-top: 10px;
-  }
-}
-  /* Header con logos a los lados del título */
   .header-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 0;
-    margin-bottom: 10px;
+    padding: 8px 0;
+    margin-bottom: 15px;
     border-bottom: 2px solid #000;
   }
 
-  .logo-izquierda,
+  .logo-izquierda {
+    width: 140px !important;
+    height: 56px !important;
+    object-fit: contain !important;
+    object-position: left center !important;
+  }
   .logo-derecha {
-    width: 120px !important;   /* 👈 aumentado a 80px */
-    height: 120px !important;
+    width: 88px !important;
+    height: 88px !important;
     object-fit: contain !important;
     object-position: center !important;
   }
 
   .titulo-ficha {
     font-size: 16pt;
-    margin: 0 10px;
-    flex-grow: 1;
-    text-align: center;
+    margin: 0 0.8cm;
   }
 
-  .codigo-ficha {
-    font-size: 10pt;
-    text-align: center;
-    margin-top: 5px;
+  .datos-personales {
+    position: static;
+    padding-top: 110px;
+    margin-top: 10px;
   }
 
-  /* Fotos ajustadas para vista web */
   .foto-funcionario,
   .foto-cedula {
     position: relative !important;
     width: auto !important;
     height: auto !important;
     max-width: 120px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     float: right;
     clear: both;
-  }
-
-  /* Datos fluyen bajo logos y fotos */
-  .datos-personales {
-    position: static;
-    padding-top: 100px; /* espacio para header + logos */
-    margin-top: 10px;
   }
 
   .credencial-section {
@@ -622,7 +596,7 @@ input, textarea, select {
       <div id="fichaPreview" class="ficha-oficial">
         <div class="watermark">FICHA DE DATOS PERSONALES</div>
 
-        <!-- Header con logos a los lados del título -->
+        <!-- ✅ LOGOS A LOS LADOS DEL TÍTULO -->
         <div class="header-container">
           <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/mp.png" class="logo-izquierda" alt="ICAP Nacional">
           <div>
@@ -726,7 +700,6 @@ function actualizarVistaPrevia() {
   const direccion = getVal('direccion_habitacion');
   const ultimoCargo = getVal('ultimo_cargo');
 
-  // Actualizar preview
   document.getElementById('previewNombre').textContent = nombre;
   document.getElementById('previewCedula').textContent = cedula;
   document.getElementById('previewEdad').textContent = edad;
@@ -743,7 +716,6 @@ function actualizarVistaPrevia() {
   document.getElementById('previewDireccion').textContent = direccion;
   document.getElementById('previewUltimoCargo').textContent = ultimoCargo;
 
-  // Credencial
   const esSi = getChecked('credencialSi');
   document.getElementById('previewCredencialSi').checked = esSi;
   document.getElementById('previewCredencialNo').checked = !esSi;
@@ -823,7 +795,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
     document.getElementById('userRol').textContent = rolText;
 
-    // ✅ Ocultar "Rol:" y agregar tooltip rojo para Administrador
     if (perfil.rol === 'admin') {
       document.getElementById('rolLabel').style.display = 'none';
       const rolSpan = document.getElementById('userRol');
