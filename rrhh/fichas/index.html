@@ -150,22 +150,29 @@ input, textarea, select {
   padding: 1.5cm;
 }
 
-/* ——— HEADER CON LOGOS A LOS LADOS DEL TÍTULO ——— */
-.header-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 2px solid #000;
-  padding: 10px 0;
-  margin-bottom: 10px;
+/* ——— LOGOS ——— */
+.logo-izquierda {
+  position: absolute;
+  top: 50%;
+  left: 0.4cm;
+  transform: translateY(-50%);
+  width: 3.5cm;   /* 👈 más ancho (banner horizontal) */
+  height: 1.8cm;  /* 👈 altura reducida para proporción */
+  object-fit: contain;
+  object-position: left center;
+  z-index: 10;
 }
-.logo-izquierda,
 .logo-derecha {
-  width: 10.0cm;   /* 👈 aumentado a 3.0cm */
-  height: 10.0cm;  /* 👈 */
+  position: absolute;
+  top: 50%;
+  right: 0.4cm;
+  transform: translateY(-50%);
+  width: 2.2cm;   /* 👈 cuadrado estándar */
+  height: 2.2cm;
   object-fit: contain;
   object-position: center;
-
+  z-index: 10;
+}
 }
 
 .titulo-ficha {
@@ -294,17 +301,35 @@ input, textarea, select {
   }
 }
 
-/* ——— VISTA EN PANTALLA ——— */
 @media screen {
-  .ficha-oficial {
-    width: 100%;
-    height: auto;
-    min-height: 700px;
-    padding: 20px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    border: 1px solid #ddd;
+  .logo-izquierda {
+    position: absolute !important;
+    top: 50% !important;
+    left: 8px !important;
+    transform: translateY(-50%) !important;
+    width: 140px !important;   /* ≈ 3.5cm */
+    height: 72px !important;   /* ≈ 1.8cm */
+    object-fit: contain !important;
+    object-position: left center !important;
+  }
+  .logo-derecha {
+    position: absolute !important;
+    top: 50% !important;
+    right: 8px !important;
+    transform: translateY(-50%) !important;
+    width: 88px !important;    /* ≈ 2.2cm */
+    height: 88px !important;
+    object-fit: contain !important;
+    object-position: center !important;
   }
 
+  /* Asegurar espacio arriba para logos */
+  .datos-personales {
+    position: static;
+    padding-top: 90px; /* ajustado para altura de logos */
+    margin-top: 10px;
+  }
+}
   /* Header con logos a los lados del título */
   .header-container {
     display: flex;
