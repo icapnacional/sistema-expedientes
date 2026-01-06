@@ -1,33 +1,759 @@
-/* ——— FOTO FUNCIONARIO ——— más grande */
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ficha de Datos Personales | ICAP</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+background-color: #fafafa;
+font-family: 'Inter', sans-serif;
+color: #2d2d2d;
+padding: 20px;
+}
+.container {
+max-width: 1200px;
+margin: 0 auto;
+}
+.header {
+text-align: center;
+margin-bottom: 24px;
+}
+.header img {
+width: 90px;
+margin-bottom: 16px;
+}
+.header h1 {
+font-size: 24px;
+font-weight: 700;
+color: #2d2d2d;
+}
+.header .subtitle {
+font-size: 16px;
+color: #722F37;
+font-weight: 600;
+margin-top: 8px;
+}
+.user-info {
+background: white;
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 24px;
+box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+border: 1px solid #eee;
+}
+.form-section, .preview-section {
+background: white;
+border-radius: 12px;
+padding: 24px;
+box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+border: 1px solid #eee;
+margin-bottom: 24px;
+}
+.card h2 {
+font-size: 20px;
+margin-bottom: 20px;
+color: #722F37;
+}
+.form-group {
+margin-bottom: 16px;
+}
+label {
+display: block;
+margin-bottom: 6px;
+font-size: 14px;
+font-weight: 600;
+color: #333;
+}
+input, textarea, select {
+width: 100%;
+padding: 10px 12px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 15px;
+background: #fdfdfd;
+}
+.btn {
+background-color: #722F37;
+color: white;
+border: none;
+border-radius: 10px;
+padding: 12px 24px;
+font-size: 16px;
+font-weight: 600;
+cursor: pointer;
+display: inline-flex;
+align-items: center;
+gap: 8px;
+}
+.btn:hover {
+background-color: #5e262d;
+}
+.btn-outline {
+background: transparent;
+border: 1px solid #722F37;
+color: #722F37;
+}
+.btn-pdf {
+background: #1976d2;
+}
+.btn-pdf:hover {
+background: #1565c0;
+}
+.alert {
+padding: 12px;
+border-radius: 8px;
+margin: 16px 0;
+display: none;
+}
+.alert-success { background: #e8f5e9; color: #2e7d32; }
+.alert-error { background: #ffebee; color: #c62828; }
+.breadcrumb {
+background: #f8f9fa;
+border-radius: 12px;
+padding: 12px 20px;
+margin-bottom: 24px;
+font-size: 14px;
+color: #555;
+}
+.breadcrumb a {
+color: #722F37;
+text-decoration: none;
+font-weight: 600;
+}
+.breadcrumb span { margin: 0 8px; color: #888; }
+/* Formato de la ficha oficial */
+.preview-container {
+border: 1px solid #ddd;
+border-radius: 8px;
+padding: 20px;
+background: white;
+margin: 20px 0;
+min-height: 800px;
+}
+.ficha-oficial {
+font-family: 'Times New Roman', Times, serif;
+line-height: 1.4;
+padding: 1.5cm;
+position: relative;
+background: #e6f0f7;
+box-sizing: border-box;
+border: 1px solid #000;
+box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.logo-izquierda {
+position: absolute;
+top: 0.5cm;
+left: 0.5cm;
+width: 2.5cm;
+height: 2.5cm;
+}
+.logo-derecha {
+position: absolute;
+top: 0.5cm;
+right: 0.5cm;
+width: 2.5cm;
+height: 2.5cm;
+}
+
+/* ✅ AJUSTES SOLICITADOS: fotos más grandes y cédula más arriba */
 .foto-funcionario {
   position: absolute;
   top: 3.5cm;
   right: 0.5cm;
-  width: 45mm;    /* ↑ de 35mm */
-  height: 55mm;   /* ↑ de 45mm */
+  width: 45mm;    /* ↑ más grande */
+  height: 55mm;   /* ↑ más grande */
   border: 1px solid #000;
   background: #fff;
   overflow: hidden;
 }
-
-/* ——— FOTO CÉDULA ——— más grande y más arriba */
 .foto-cedula {
   position: absolute;
-  bottom: 4.2cm;  /* ↑ subida desde 1cm */
+  bottom: 4.2cm;  /* ↑ más arriba */
   right: 1cm;
-  width: 8.5cm;   /* ↑ de 5.5cm */
-  height: 5.5cm;  /* ↑ de 3.5cm */
+  width: 8.5cm;   /* ↑ más grande */
+  height: 5.5cm;  /* ↑ más grande */
   border: 1px solid #000;
   background: #fff;
   overflow: hidden;
 }
 
-/* ——— DATOS PERSONALES ——— ajuste para espacio */
+/* Ajuste para evitar superposición */
 .datos-personales {
   position: absolute;
   top: 3.5cm;
   left: 0.5cm;
-  right: 9.5cm;   /* ← reducido para dejar espacio a foto más grande */
-  bottom: 4.5cm;  /* ↑ subida para dejar espacio a cédula */
+  right: 9.5cm;   /* ← más espacio para foto grande */
+  bottom: 4.5cm;  /* ↑ más espacio para cédula arriba */
   overflow: hidden;
 }
+
+.titulo-datos {
+font-weight: bold;
+margin-bottom: 8px;
+font-size: 12pt;
+color: #000;
+}
+.dato-fila {
+margin-bottom: 4px;
+font-size: 10pt;
+}
+.credencial-section {
+position: absolute;
+top: 8.5cm;
+right: 4cm;
+width: 4.5cm;
+height: 2cm;
+font-size: 10pt;
+}
+.credencial-title {
+font-weight: bold;
+margin-bottom: 5px;
+color: #000;
+}
+.credencial-option {
+display: inline-block;
+margin-right: 10px;
+}
+.credencial-input {
+display: block;
+width: 100%;
+margin-top: 5px;
+font-size: 9pt;
+}
+.watermark {
+position: absolute;
+opacity: 0.05;
+font-size: 80px;
+transform: rotate(-45deg);
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%) rotate(-45deg);
+white-space: nowrap;
+color: #722F37;
+font-weight: bold;
+}
+@media print {
+@page {
+size: 25.4cm 19.05cm;
+margin: 0;
+}
+body * {
+visibility: hidden;
+}
+#fichaPreview, #fichaPreview * {
+visibility: visible;
+}
+#fichaPreview {
+position: absolute;
+left: 0;
+top: 0;
+width: 25.4cm;
+height: 19.05cm;
+}
+}
+@media screen {
+.ficha-oficial {
+width: 100%;
+height: auto;
+min-height: 750px;
+box-shadow: 0 0 20px rgba(0,0,0,0.1);
+background: #e6f0f7;
+padding: 20px;
+border: 1px solid #ddd;
+}
+.logo-izquierda, .logo-derecha, .foto-funcionario, .foto-cedula {
+position: relative;
+width: 100%;
+height: auto;
+max-height: 140px; /* ↑ más alto en pantalla */
+margin-bottom: 15px;
+}
+.datos-personales {
+position: static;
+height: auto;
+}
+.credencial-section {
+position: static;
+width: 100%;
+height: auto;
+margin-top: 20px;
+}
+}
+/* Diseño optimizado del formulario */
+.form-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+gap: 20px;
+}
+.form-column {
+display: flex;
+flex-direction: column;
+gap: 15px;
+}
+.section-title {
+font-weight: bold;
+color: #722F37;
+margin-bottom: 12px;
+padding-bottom: 4px;
+border-bottom: 2px solid #f0f0f0;
+font-size: 16px;
+}
+.form-row {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 15px;
+}
+@media (max-width: 768px) {
+.form-row {
+grid-template-columns: 1fr;
+}
+.form-grid {
+grid-template-columns: 1fr;
+}
+}
+.header-container {
+text-align: center;
+margin-bottom: 20px;
+border-bottom: 2px solid #000;
+padding-bottom: 10px;
+}
+.titulo-ficha {
+font-weight: bold;
+font-size: 16pt;
+margin: 5px 0;
+color: #000;
+}
+.codigo-ficha {
+font-style: italic;
+font-size: 10pt;
+margin-top: 5px;
+color: #333;
+}
+.cuerpo-ficha {
+margin: 20px 0;
+}
+.parrafo-ficha {
+text-indent: 30px;
+margin: 15px 0;
+text-align: justify;
+font-size: 10pt;
+}
+.firma-section {
+margin-top: 60px;
+text-align: center;
+}
+.firma-line {
+width: 300px;
+margin: 0 auto;
+border-top: 1px solid #000;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="breadcrumb">
+<a href="../index.html">Inicio</a> <span>›</span>
+<a href="../rrhh-icap/index.html">RRHH ICAP</a> <span>›</span>
+<a href="index.html">Fichas</a> <span>›</span>
+<strong>Formato de Datos</strong>
+</div>
+<div class="header">
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedentes/main/Logo.png" alt="ICAP Nacional - PNB" />
+<h1>Inspectable para el Control de la Actuación Policial</h1>
+<div class="subtitle">• Formato de Datos Personales •</div>
+</div>
+<div class="user-info">
+<strong>Usuario:</strong> <span id="userEmail">—</span> |
+<strong>Rol:</strong> <span id="userRol">—</span>
+</div>
+<div class="form-section">
+<h2>📝 Datos Personales del Funcionario</h2>
+<div id="alertMessage" class="alert"></div>
+<div class="form-group">
+<label for="searchCedula">Buscar por Cédula</label>
+<div style="display:flex; gap:10px; flex-wrap: wrap;">
+<input type="text" id="searchCedula" placeholder="Ingrese cédula (8 dígitos)" maxlength="8" inputmode="numeric" style="flex:1; min-width: 200px;">
+<button id="btnBuscarCedula" class="btn" style="padding:10px 16px; white-space: nowrap;">🔍 Buscar</button>
+</div>
+</div>
+<div class="form-grid">
+<!-- Columna 1: Datos personales básicos -->
+<div class="form-column">
+<div class="section-title">👤 Información Básica</div>
+<div class="form-group">
+<label for="cedula">Cédula *</label>
+<input type="text" id="cedula" maxlength="8" inputmode="numeric" required placeholder="Ej: 25275015">
+</div>
+<div class="form-group">
+<label for="nombre_apellidos">Nombres y Apellidos *</label>
+<input type="text" id="nombre_apellidos" required placeholder="Ej: GARCIA PEREZ, JUAN CARLOS">
+</div>
+<div class="form-row">
+<div class="form-group">
+<label for="edad">Edad *</label>
+<input type="number" id="edad" min="18" max="100" required placeholder="Ej: 35">
+</div>
+<div class="form-group">
+<label for="fecha_nacimiento">Fecha de Nacimiento *</label>
+<input type="date" id="fecha_nacimiento" required>
+</div>
+</div>
+<div class="form-group">
+<label for="nivel_academico">Nivel Académico *</label>
+<select id="nivel_academico" required>
+<option value="">— Seleccione —</option>
+<option value="Primaria">Primaria</option>
+<option value="Bachiller">Bachiller</option>
+<option value="Técnico Superior">Técnico Superior</option>
+<option value="Universitario">Universitario</option>
+<option value="Especialización">Especialización</option>
+<option value="Maestría">Maestría</option>
+<option value="Doctorado">Doctorado</option>
+</select>
+</div>
+<div class="section-title" style="margin-top: 20px;">📞 Contacto</div>
+<div class="form-group">
+<label for="telefono_funcionario">Teléfono del Funcionario *</label>
+<input type="tel" id="telefono_funcionario" placeholder="Ej: 0412-1234567" required>
+</div>
+<div class="form-group">
+<label for="telefono_emergencia">Teléfono de Emergencia *</label>
+<input type="tel" id="telefono_emergencia" placeholder="Ej: 0414-7654321" required>
+</div>
+<div class="form-group">
+<label for="correo_electronico">Correo Electrónico *</label>
+<input type="email" id="correo_electronico" placeholder="ejemplo@correo.com" required>
+</div>
+</div>
+<!-- Columna 2: Datos policiacos -->
+<div class="form-column">
+<div class="section-title">👮‍♂️ Datos Policiales</div>
+<div class="form-group">
+<label for="rango">Rango *</label>
+<select id="rango" required>
+<option value="">— Seleccione —</option>
+<option value="Comisario Mayor">Comisario Mayor</option>
+<option value="Inspector Jefe">Inspector Jefe</option>
+<option value="Primer Inspector">Primer Inspector</option>
+<option value="Inspector">Inspector</option>
+<option value="Oficial Jefe">Oficial Jefe</option>
+<option value="Primer Oficial">Primer Oficial</option>
+<option value="Oficial">Oficial</option>
+<option value="Agente">Agente</option>
+<option value="Administrativo">Administrativo</option>
+</select>
+</div>
+<div class="form-group">
+<label for="ultimo_cargo">Último Cargo *</label>
+<input type="text" id="ultimo_cargo" placeholder="Ej: JEFE DE SECCIÓN" required>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label for="fecha_ingreso_cpn">Fecha de Ingreso *</label>
+<input type="date" id="fecha_ingreso_cpn" required>
+</div>
+<div class="form-group">
+<label for="fecha_ultimo_ascenso">Último Ascenso</label>
+<input type="date" id="fecha_ultimo_ascenso">
+</div>
+</div>
+<div class="form-group">
+<label for="antiguedad">Antigüedad *</label>
+<input type="text" id="antiguedad" placeholder="Ej: 5 años 3 meses" required>
+</div>
+<div class="section-title" style="margin-top: 20px;">📍 Ubicación</div>
+<div class="form-group">
+<label for="estado">Estado *</label>
+<select id="estado" required>
+<option value="">— Seleccione —</option>
+<option value="Amazonas">Amazonas</option>
+<option value="Anzoátegui">Anzoátegui</option>
+<option value="Apure">Apure</option>
+<option value="Aragua">Aragua</option>
+<option value="Barinas">Barinas</option>
+<option value="Bolívar">Bolívar</option>
+<option value="Carabobo">Carabobo</option>
+<option value="Cojedes">Cojedes</option>
+<option value="Delta Amacuro">Delta Amacuro</option>
+<option value="Distrito Capital">Distrito Capital</option>
+<option value="Falcón">Falcón</option>
+<option value="Guárico">Guárico</option>
+<option value="Lara">Lara</option>
+<option value="Mérida">Mérida</option>
+<option value="Miranda">Miranda</option>
+<option value="Monagas">Monagas</option>
+<option value="Nueva Esparta">Nueva Esparta</option>
+<option value="Portuguesa">Portuguesa</option>
+<option value="Sucre">Sucre</option>
+<option value="Táchira">Táchira</option>
+<option value="Trujillo">Trujillo</option>
+<option value="Vargas">Vargas</option>
+<option value="Yaracuy">Yaracuy</option>
+<option value="Zulia">Zulia</option>
+</select>
+</div>
+<div class="form-group">
+<label for="servicio">Servicio/Unidad *</label>
+<input type="text" id="servicio" placeholder="Ej: CCPE CARICUAO" required>
+</div>
+<div class="form-group">
+<label for="direccion_habitacion">Dirección de Habitación *</label>
+<textarea id="direccion_habitacion" rows="2" required placeholder="Dirección completa"></textarea>
+</div>
+</div>
+<!-- Columna 3: Credencial y foto -->
+<div class="form-column">
+<div class="section-title">🆔 Credencial</div>
+<div class="form-group">
+<label>¿Posee Credencial? *</label>
+<div style="display: flex; gap: 15px;">
+<div>
+<input type="radio" id="credencialSi" name="credencial" value="si" required>
+<label for="credencialSi">SI</label>
+</div>
+<div>
+<input type="radio" id="credencialNo" name="credencial" value="no" required checked>
+<label for="credencialNo">NO</label>
+</div>
+</div>
+</div>
+<div class="form-group" id="numeroCredencialGroup" style="display: none;">
+<label for="numero_credencial">Número de Credencial *</label>
+<input type="text" id="numero_credencial" placeholder="Ej: PNB-12345">
+</div>
+<div class="section-title" style="margin-top: 20px;">📸 Foto del Funcionario</div>
+<div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px; background: #f9f9f9;">
+<div style="font-size: 48px; color: #722F37; margin-bottom: 10px;">👤</div>
+<p style="margin-bottom: 10px; color: #666;">Arrastre o haga clic para subir foto</p>
+<input type="file" id="fotoFuncionario" accept="image/*" style="display: none;">
+<button type="button" class="btn btn-outline" onclick="document.getElementById('fotoFuncionario').click()" style="width: 100%;">
+📤 Subir Foto
+</button>
+</div>
+<div class="section-title" style="margin-top: 20px;">📄 Foto de Cédula</div>
+<div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px; background: #f9f9f9;">
+<div style="font-size: 48px; color: #722F37; margin-bottom: 10px;">🆔</div>
+<p style="margin-bottom: 10px; color: #666;">Arrastre o haga clic para subir cédula</p>
+<input type="file" id="fotoCedula" accept="image/*" style="display: none;">
+<button type="button" class="btn btn-outline" onclick="document.getElementById('fotoCedula').click()" style="width: 100%;">
+📤 Subir Cédula
+</button>
+</div>
+</div>
+</div>
+<div style="text-align:right; margin-top:20px;">
+<button type="button" class="btn btn-outline" onclick="window.history.back()">← Volver</button>
+<button id="btnGuardar" class="btn">💾 Guardar Ficha</button>
+<button id="btnExportarPDF" class="btn btn-pdf">📄 Exportar a PDF</button>
+</div>
+</div>
+<div class="preview-section">
+<h2>🔍 Vista Previa en Tiempo Real</h2>
+<div class="preview-container">
+<div id="fichaPreview" class="ficha-oficial">
+<div class="watermark">FICHA DE DATOS PERSONALES</div>
+<!-- Logos en esquinas superiores -->
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedentes/main/Logo.png" class="logo-izquierda" alt="ICAP Nacional">
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedentes/main/pnb-logo.png" class="logo-derecha" alt="PNB">
+<!-- Encabezado -->
+<div class="header-container">
+<div class="titulo-ficha">FICHA DE DATOS PERSONALES</div>
+<div class="codigo-ficha">
+<strong>CÓDIGO:</strong> F-DATOS-001
+<br>
+<strong>VERSIÓN:</strong> 1.0
+</div>
+</div>
+<!-- ✅ Foto del funcionario: más grande -->
+<div class="foto-funcionario" id="previewFotoFuncionario">
+<img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
+<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">
+FOTO 45x55mm
+</div>
+</div>
+<!-- Datos personales -->
+<div class="datos-personales">
+<div class="titulo-datos">DATOS PERSONALES:</div>
+<div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">SIN DATOS</span></div>
+<div class="dato-fila"><strong>CÉDULA:</strong> <span id="previewCedula">00000000</span></div>
+<div class="dato-fila"><strong>EDAD:</strong> <span id="previewEdad">00 AÑOS</span></div>
+<div class="dato-fila"><strong>FECHA DE NACIMIENTO:</strong> <span id="previewFechaNacimiento">01/01/1990</span></div>
+<div class="dato-fila"><strong>TELÉFONO DEL FUNCIONARIO:</strong> <span id="previewTelefono">SIN DATOS</span></div>
+<div class="dato-fila"><strong>TELÉFONO DE EMERGENCIA:</strong> <span id="previewTelefonoEmergencia">SIN DATOS</span></div>
+<div class="dato-fila"><strong>CORREO ELECTRÓNICO:</strong> <span id="previewCorreo">SIN DATOS</span></div>
+<div class="dato-fila"><strong>NIVEL ACADÉMICO:</strong> <span id="previewNivelAcademico">SIN DATOS</span></div>
+<div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">01/01/2020</span></div>
+<div class="dato-fila"><strong>FECHA DEL ULTIMO ASCENSO:</strong> <span id="previewFechaAscenso">SIN DATOS</span></div>
+<div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">00 AÑOS 00 MESES</span></div>
+<div class="dato-fila"><strong>ESTADO:</strong> <span id="previewEstado">SIN DATOS</span></div>
+<div class="dato-fila"><strong>SERVICIO:</strong> <span id="previewServicio">SIN DATOS</span></div>
+<div class="dato-fila"><strong>DIRECCION DE HABITACION:</strong> <span id="previewDireccion">SIN DATOS</span></div>
+<div class="dato-fila"><strong>ULTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
+</div>
+<!-- Credencial -->
+<div class="credencial-section">
+<div class="credencial-title">POSEE CREDENCIAL</div>
+<div class="credencial-options">
+<div class="credencial-option">
+<input type="radio" id="previewCredencialSi" name="credencialPreview" value="si" disabled>
+<label for="previewCredencialSi">SI</label>
+</div>
+<div class="credencial-option">
+<input type="radio" id="previewCredencialNo" name="credencialPreview" value="no" disabled checked>
+<label for="previewCredencialNo">NO</label>
+</div>
+</div>
+<input type="text" id="previewNumeroCredencial" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
+</div>
+<!-- ✅ Foto de la cédula: más grande y más arriba -->
+<div class="foto-cedula" id="previewFotoCedula">
+<img id="previewCedulaFoto" style="width:100%; height:100%; object-fit:contain; display:none;">
+<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">
+FOTO DE CÉDULA (8.5×5.5 cm)
+</div>
+</div>
+<!-- Pie de página -->
+<div style="position: absolute; bottom: 0.5cm; left: 0.5cm; right: 0.5cm; text-align: center; font-size: 8pt; color: #333;">
+<strong>Inspectable para el Control de la Actuación Policial - ICAP Nacional</strong>
+<br>
+Documento confidencial - Uso exclusivo institucional
+</div>
+</div>
+</div>
+<div class="preview-actions" style="display: flex; gap: 12px;">
+<button id="btnImprimir" class="btn btn-outline" style="flex:1;">🖨️ Imprimir</button>
+<button id="btnExportarPDF2" class="btn btn-pdf" style="flex:1;">📄 Exportar a PDF</button>
+</div>
+</div>
+</div>
+<script>
+// ✅ Inicializar Supabase
+const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+const alertDiv = document.getElementById('alertMessage');
+// ✅ Función para actualizar vista previa en tiempo real
+function actualizarVistaPrevia() {
+// ✅ Obtener valores de los campos
+const nombre = document.getElementById('nombre_apellidos').value || 'SIN DATOS';
+const cedula = document.getElementById('cedula').value || '00000000';
+const edad = document.getElementById('edad').value || '00 AÑOS';
+const fechaNacimiento = document.getElementById('fecha_nacimiento').value ? new Date(document.getElementById('fecha_nacimiento').value).toLocaleDateString('es-VE') : '01/01/1990';
+const telefono = document.getElementById('telefono_funcionario').value || 'SIN DATOS';
+const telefonoEmergencia = document.getElementById('telefono_emergencia').value || 'SIN DATOS';
+const correo = document.getElementById('correo_electronico').value || 'SIN DATOS';
+const nivelAcademico = document.getElementById('nivel_academico').value || 'SIN DATOS';
+const fechaIngreso = document.getElementById('fecha_ingreso_cpn').value ? new Date(document.getElementById('fecha_ingreso_cpn').value).toLocaleDateString('es-VE') : '01/01/2020';
+const fechaAscenso = document.getElementById('fecha_ultimo_ascenso').value ? new Date(document.getElementById('fecha_ultimo_ascenso').value).toLocaleDateString('es-VE') : 'SIN DATOS';
+const antiguedad = document.getElementById('antiguedad').value || '00 AÑOS 00 MESES';
+const estado = document.getElementById('estado').value || 'SIN DATOS';
+const servicio = document.getElementById('servicio').value || 'SIN DATOS';
+const direccion = document.getElementById('direccion_habitacion').value || 'SIN DATOS';
+const ultimoCargo = document.getElementById('ultimo_cargo').value || 'SIN DATOS';
+const rango = document.getElementById('rango').value || 'SIN DATOS';
+// ✅ Actualizar elementos
+document.getElementById('previewNombre').textContent = nombre;
+document.getElementById('previewCedula').textContent = cedula;
+document.getElementById('previewEdad').textContent = edad;
+document.getElementById('previewFechaNacimiento').textContent = fechaNacimiento;
+document.getElementById('previewTelefono').textContent = telefono;
+document.getElementById('previewTelefonoEmergencia').textContent = telefonoEmergencia;
+document.getElementById('previewCorreo').textContent = correo;
+document.getElementById('previewNivelAcademico').textContent = nivelAcademico;
+document.getElementById('previewFechaIngreso').textContent = fechaIngreso;
+document.getElementById('previewFechaAscenso').textContent = fechaAscenso;
+document.getElementById('previewAntiguedad').textContent = antiguedad;
+document.getElementById('previewEstado').textContent = estado;
+document.getElementById('previewServicio').textContent = servicio;
+document.getElementById('previewDireccion').textContent = direccion;
+document.getElementById('previewUltimoCargo').textContent = ultimoCargo;
+// ✅ Actualizar credencial
+const credencialSi = document.getElementById('credencialSi').checked;
+document.getElementById('previewCredencialSi').checked = credencialSi;
+document.getElementById('previewCredencialNo').checked = !credencialSi;
+if (credencialSi) {
+const numeroCredencial = document.getElementById('numero_credencial').value || 'PNB-33311';
+document.getElementById('previewNumeroCredencial').textContent = numeroCredencial;
+document.getElementById('previewNumeroCredencial').style.display = 'block';
+} else {
+document.getElementById('previewNumeroCredencial').style.display = 'none';
+}
+}
+// ✅ Evento para mostrar/ocultar campo de número de credencial
+document.getElementById('credencialSi').addEventListener('change', function() {
+document.getElementById('numeroCredencialGroup').style.display = 'block';
+actualizarVistaPrevia();
+});
+document.getElementById('credencialNo').addEventListener('change', function() {
+document.getElementById('numeroCredencialGroup').style.display = 'none';
+actualizarVistaPrevia();
+});
+// ✅ Eventos para actualizar vista previa en tiempo real
+document.querySelectorAll('input, select, textarea').forEach(element => {
+element.addEventListener('input', actualizarVistaPrevia);
+});
+document.querySelectorAll('[type="radio"]').forEach(element => {
+element.addEventListener('change', actualizarVistaPrevia);
+});
+// ✅ Inicialización
+document.addEventListener('DOMContentLoaded', async () => {
+try {
+console.log('✅ DOM cargado. Iniciando autenticación...');
+// ✅ Verificar sesión
+const sessionResponse = await client.auth.getSession();
+const session = sessionResponse?.data?.session;
+if (!session) {
+console.error('❌ No hay sesión activa');
+showAlert('⚠️ Debes iniciar sesión para acceder a esta página', 'error');
+setTimeout(() => {
+window.location.href = '../index.html';
+}, 2000);
+return;
+}
+// ✅ Obtener perfil
+const { data: perfil } = await client
+.from('perfiles')
+.select('email, rol')
+.eq('id', session.user.id)
+.single();
+if (!perfil) {
+console.error('❌ Perfil no encontrado');
+showAlert('⚠️ Tu perfil no está registrado. Contacta a Administración.', 'error');
+setTimeout(() => {
+window.location.href = '../index.html';
+}, 2000);
+return;
+}
+// ✅ Mostrar información del usuario
+document.getElementById('userEmail').textContent = perfil.email;
+document.getElementById('userRol').textContent =
+perfil.rol === 'admin' ? 'Administrador' :
+perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
+// ✅ Cargar vista previa inicial
+actualizarVistaPrevia();
+} catch (err) {
+console.error('🔥 Error crítico en inicialización:', err);
+showAlert(`❌ Error crítico: ${err.message}`, 'error');
+setTimeout(() => {
+window.location.href = '../index.html';
+}, 2000);
+}
+});
+// ✅ Función para mostrar alertas
+function showAlert(msg, type) {
+alertDiv.textContent = msg;
+alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+alertDiv.style.display = 'block';
+setTimeout(() => {
+alertDiv.style.display = 'none';
+}, 3000);
+}
+</script>
+</body>
+</html>
