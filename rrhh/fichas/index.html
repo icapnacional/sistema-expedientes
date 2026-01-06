@@ -937,6 +937,118 @@ function exportarPDF() {
     pdf.save(`ficha_${document.getElementById('cedula').value || 'sin-cedula'}.pdf`);
   });
 }
+  // 🔍 Buscar por cédula en auditoria_personal y llenar formulario + vista previa
+document.getElementById('btnBuscarCedula').addEventListener('click', async () => {
+  const searchCedula = document.getElementById('searchCedula').value.trim();
+  if (!searchCedula || searchCedula.length !== 8) {
+    showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
+    return;
+  }
+
+  try {
+    // 1. Buscar en auditoria_personal
+    const { data: auditoriaData, error: auditoriaError } = await client
+      .from('auditoria_personal')
+      .select('*')
+      .eq('cedula', searchCedula)
+      .single();
+
+    if (auditoriaError || !auditoriaData) {
+      showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`, 'error');
+      return;
+    }
+
+    // 2. Llenar el formulario con los datos encontrados
+    const mapeoCampos = {
+      cedula: 'cedula',
+      nombre_apellidos: 'apellidos_nombres',
+      edad: 'edad_funcionario',
+      fecha_nacimiento: 'fecha_nacimiento',
+      telefono_funcionario: 'telefono',
+      telefono_emergencia: 'telefono', // ⚠️ auditoria_personal no tiene este campo → podrías dejarlo vacío o usar el mismo
+      correo_electronico: 'correo_electronico',
+      nivel_academico: /* auditoria_personal no tiene este campo → dejar como está o usar 'grado_instruccion' si existe */,
+      fecha_ingreso_cpn: 'fecha_ingreso',
+      fecha_ultimo_ascenso: /* no existe directamente → se puede calcular o dejar vacío */,
+      antiguedad: 'antiguedad', // si existe en tu tabla; si no, podrías calcularlo
+      estado: 'estado',
+      servicio: 'servicio',
+      direccion_habitacion: 'direccion',
+      ultimo_cargo: 'ultimo_cargo',
+      rango: 'rango'
+    };
+
+    // Asignar valores (con fallback a '' si no existe el campo)
+    for (const [formId, dbField] of Object.entries(mapeoCampos)) {
+      const input = document.getElementById(formId);
+      if (input) {
+        const val = auditoriaData[dbField] ?? '';
+        if (input.type === 'date') {
+          // Convertir fechas (asumiendo formato 'YYYY-MM-DD')
+          input.value = val ? new Date(val).toISOString().split('T')[0] : '';
+        } else if (input.type === 'number') {
+          input.value = val ? parseInt(val) : '';
+        } else {
+          input.value = val;
+        }
+      }
+    }
+
+    // Campos especiales: credencial (SI/NO)
+    const poseeCredencial = auditoriaData.posee_credencial?.toLowerCase() === 'si';
+    document.getElementById('credencialSi').checked = poseeCredencial;
+    document.getElementById('credencialNo').checked = !poseeCredencial;
+    document.getElementById('numeroCredencialGroup').style.display = poseeCredencial ? 'block' : 'none';
+    if (poseeCredencial && auditoriaData.numero_credencial) {
+      document.getElementById('numero_credencial').value = auditoriaData.numero_credencial;
+    }
+
+    // 3. Actualizar vista previa
+    actualizarVistaPrevia();
+
+    // 4. ✅ Intentar cargar fotos desde Supabase Storage
+    const { data: publicUrlFoto } = client.storage
+      .from('fichas')
+      .getPublicUrl(`foto-${searchCedula}.jpg`);
+    const { data: publicUrlCedula } = client.storage
+      .from('fichas')
+      .getPublicUrl(`cedula-${searchCedula}.jpg`);
+
+    // Previsualizar foto del funcionario
+    const imgPreviewFoto = document.getElementById('previewFoto');
+    fetch(publicUrlFoto.publicUrl)
+      .then(res => res.ok ? res.blob() : null)
+      .then(blob => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          imgPreviewFoto.src = url;
+          imgPreviewFoto.style.display = 'block';
+          document.querySelector('#previewFotoFuncionario div').style.display = 'none';
+        }
+      })
+      .catch(() => {});
+
+    // Previsualizar foto de cédula
+    const imgPreviewCedula = document.getElementById('previewCedulaFoto');
+    fetch(publicUrlCedula.publicUrl)
+      .then(res => res.ok ? res.blob() : null)
+      .then(blob => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          imgPreviewCedula.src = url;
+          imgPreviewCedula.style.display = 'block';
+          document.querySelector('#previewFotoCedula div').style.display = 'none';
+        }
+      })
+      .catch(() => {});
+
+    showAlert(`✅ Datos cargados para cédula ${searchCedula}`, 'success');
+
+  } catch (err) {
+    console.error('Error al buscar cédula:', err);
+    showAlert(`❌ Error al buscar: ${err.message}`, 'error');
+  }
+});
 </script>
 </body>
 </html>
