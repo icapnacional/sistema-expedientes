@@ -190,13 +190,13 @@ input, textarea, select {
   margin-top: 5px;
 }
 
-/* ——— FOTO FUNCIONARIO ——— */
+/* ——— FOTO FUNCIONARIO AJUSTADA ✅ ——— */
 .foto-funcionario {
   position: absolute;
-  top: 3.5cm;
-  right: 0.5cm;
-  width: 35mm;
-  height: 45mm;
+  top: 2.8cm;      /* ↑ subida desde 3.5cm */
+  right: 2.5cm;    /* ← más al centro (antes 0.5cm) */
+  width: 45mm;     /* ↑ más ancha (antes 35mm) */
+  height: 55mm;    /* ↑ más alta (antes 45mm) */
   border: 1px solid #000;
   background: #fff;
   overflow: hidden;
@@ -207,13 +207,13 @@ input, textarea, select {
   object-fit: cover;
 }
 
-/* ——— FOTO CÉDULA ——— */
+/* ——— FOTO CÉDULA AJUSTADA ✅ ——— */
 .foto-cedula {
   position: absolute;
-  bottom: 1cm;
-  right: 1cm;
-  width: 8.5cm;
-  height: 5.5cm;
+  bottom: 4.2cm;   /* ↑ mucho más arriba (antes 1cm) */
+  right: 1.2cm;    /* ligero ajuste */
+  width: 9.5cm;    /* ↑ más ancha */
+  height: 6.2cm;   /* ↑ más alta */
   border: 1px solid #000;
   background: #fff;
   overflow: hidden;
@@ -224,13 +224,13 @@ input, textarea, select {
   object-fit: contain;
 }
 
-/* ——— DATOS PERSONALES ——— */
+/* ——— DATOS PERSONALES AJUSTADOS ✅ ——— */
 .datos-personales {
   position: absolute;
-  top: 3.5cm;
+  top: 3.2cm;       /* ↑ subida ligera */
   left: 0.5cm;
-  right: 8.5cm;
-  bottom: 1cm;
+  right: 10.2cm;    /* ← ampliado para no chocar con foto funcionario */
+  bottom: 4.5cm;    /* ↑ subida para dejar espacio a cédula */
   overflow: hidden;
 }
 .titulo-datos {
@@ -304,7 +304,7 @@ input, textarea, select {
   .ficha-oficial {
     width: 100%;
     height: auto;
-    min-height: 750px;
+    min-height: 780px;
     padding: 20px;
     box-shadow: 0 0 20px rgba(0,0,0,0.1);
     border: 1px solid #ddd;
@@ -320,8 +320,8 @@ input, textarea, select {
   }
 
   .logo-izquierda {
-    width: 180px !important;
-    height: 70px !important;
+    width: 140px !important;
+    height: 56px !important;
     object-fit: contain !important;
     object-position: left center !important;
   }
@@ -337,21 +337,30 @@ input, textarea, select {
     margin: 0 0.8cm;
   }
 
-  .datos-personales {
-    position: static;
-    padding-top: 110px;
-    margin-top: 10px;
+  /* Fotos más grandes y mejor posicionadas en pantalla */
+  .foto-funcionario {
+    position: relative !important;
+    width: 140px !important;
+    height: 170px !important;   /* 45×55 mm ≈ 140×170 px */
+    margin: 10px auto;
+    float: none;
+    clear: both;
+    border: 1px solid #000;
   }
-
-  .foto-funcionario,
   .foto-cedula {
     position: relative !important;
-    width: auto !important;
-    height: auto !important;
-    max-width: 120px;
-    margin-bottom: 12px;
-    float: right;
+    width: 220px !important;
+    height: 145px !important;   /* 9.5×6.2 cm ≈ 360×235 px → reducido para pantalla */
+    margin: 15px auto;
+    float: none;
     clear: both;
+    border: 1px solid #000;
+  }
+
+  .datos-personales {
+    position: static !important;
+    padding-top: 110px;
+    margin-top: 10px;
   }
 
   .credencial-section {
@@ -596,7 +605,7 @@ input, textarea, select {
       <div id="fichaPreview" class="ficha-oficial">
         <div class="watermark">FICHA DE DATOS PERSONALES</div>
 
-        <!-- ✅ LOGOS A LOS LADOS DEL TÍTULO -->
+        <!-- ✅ LOGOS + TÍTULO ALINEADOS -->
         <div class="header-container">
           <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/mp.png" class="logo-izquierda" alt="ICAP Nacional">
           <div>
@@ -609,10 +618,10 @@ input, textarea, select {
           <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
         </div>
 
-        <!-- Foto funcionario -->
+        <!-- ✅ FOTO FUNCIONARIO AJUSTADA -->
         <div class="foto-funcionario" id="previewFotoFuncionario">
           <img id="previewFoto" style="display:none;">
-          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">FOTO 35x45mm</div>
+          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">FOTO 45×55mm</div>
         </div>
 
         <!-- Datos -->
@@ -651,10 +660,10 @@ input, textarea, select {
           <input type="text" id="previewNumeroCredencial" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
         </div>
 
-        <!-- Foto cédula -->
+        <!-- ✅ FOTO CÉDULA AJUSTADA -->
         <div class="foto-cedula" id="previewFotoCedula">
           <img id="previewCedulaFoto" style="display:none;">
-          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">FOTO DE CÉDULA</div>
+          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">FOTO DE CÉDULA (9.5×6.2 cm)</div>
         </div>
 
         <!-- Pie -->
