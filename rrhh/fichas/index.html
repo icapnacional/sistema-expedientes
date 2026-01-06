@@ -195,8 +195,8 @@ input, textarea, select {
     position: absolute;
     top: 3.5cm;
     right: 0.5cm;
-    width: 40mm; /* Aumentado de 35mm a 40mm */
-    height: 50mm; /* Aumentado de 45mm a 50mm */
+    width: 35mm;
+    height: 45mm;
     border: 1px solid #000;
     background: #fff;
     overflow: hidden;
@@ -210,10 +210,10 @@ input, textarea, select {
 /* ——— FOTO CÉDULA ——— */
 .foto-cedula {
     position: absolute;
-    top: 12cm; /* Subido de 1cm a 12cm para que no sobrepase el recuadro inferior */
+    bottom: 1cm;
     right: 1cm;
-    width: 9cm; /* Aumentado de 8.5cm a 9cm */
-    height: 6cm; /* Aumentado de 5.5cm a 6cm */
+    width: 8.5cm;
+    height: 5.5cm;
     border: 1px solid #000;
     background: #fff;
     overflow: hidden;
@@ -222,6 +222,111 @@ input, textarea, select {
     width: 100%;
     height: 100%;
     object-fit: contain;
+}
+
+/* ——— AJUSTES PARA LA VISTA EN PANTALLA ——— */
+@media screen {
+    .ficha-oficial {
+        width: 100%;
+        height: auto;
+        min-height: 750px;
+        padding: 20px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        border: 1px solid #ddd;
+    }
+    .header-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #000;
+    }
+    .logo-izquierda {
+        width: 180px !important;
+        height: 70px !important;
+        object-fit: contain !important;
+        object-position: left center !important;
+    }
+    .logo-derecha {
+        width: 88px !important;
+        height: 88px !important;
+        object-fit: contain !important;
+        object-position: center !important;
+    }
+    .titulo-ficha {
+        font-size: 16pt;
+        margin: 0 0.8cm;
+    }
+    .datos-personales {
+        position: static;
+        padding-top: 110px;
+        margin-top: 10px;
+    }
+    .foto-funcionario,
+    .foto-cedula {
+        position: relative !important;
+        width: auto !important;
+        height: auto !important;
+        max-width: 120px;
+        margin-bottom: 12px;
+        float: right;
+        clear: both;
+    }
+    .credencial-section {
+        position: static;
+        margin-top: 20px;
+        clear: both;
+    }
+
+    /* ===== CAMBIOS SOLICITADOS AQUÍ ===== */
+    /* Aumentar tamaño de la foto del funcionario en vista de pantalla */
+    .foto-funcionario {
+        max-width: 180px !important; /* Aumentado de 120px a 180px */
+        max-height: 225px !important; /* Proporcional a 180px (relación 4:5) */
+    }
+
+    /* Aumentar tamaño y subir la foto de la cédula en vista de pantalla */
+    .foto-cedula {
+        max-width: 250px !important; /* Aumentado de 120px a 250px */
+        max-height: 170px !important; /* Proporcional a 250px (relación 5:3.4) */
+        position: relative !important;
+        float: right;
+        clear: both;
+        margin-top: -100px; /* Sube la foto para que no quede tan abajo */
+    }
+}
+
+/* ——— IMPRESIÓN ——— */
+@media print {
+    @page {
+        size: 25.4cm 19.05cm;
+        margin: 0;
+    }
+    body * { visibility: hidden; }
+    #fichaPreview, #fichaPreview * { visibility: visible; }
+    #fichaPreview {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 25.4cm;
+        height: 19.05cm;
+    }
+
+    /* ===== CAMBIOS SOLICITADOS AQUÍ ===== */
+    /* Aumentar tamaño de la foto del funcionario para impresión */
+    .foto-funcionario {
+        width: 40mm !important; /* Aumentado de 35mm a 40mm */
+        height: 50mm !important; /* Aumentado de 45mm a 50mm */
+    }
+
+    /* Aumentar tamaño y subir la foto de la cédula para impresión */
+    .foto-cedula {
+        width: 9cm !important; /* Aumentado de 8.5cm a 9cm */
+        height: 6cm !important; /* Aumentado de 5.5cm a 6cm */
+        bottom: auto !important; /* Elimina el posicionamiento desde abajo */
+        top: 12cm !important; /* Posiciona la foto más arriba, a 12cm desde la parte superior */
+    }
 }
 /* ——— DATOS PERSONALES ——— */
 .datos-personales {
