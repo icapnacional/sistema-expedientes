@@ -187,13 +187,13 @@ input, textarea, select {
   margin-top: 5px;
 }
 
-/* ——— FOTO FUNCIONARIO ——— (AJUSTADA: 7.5cm × 9.5cm) */
+/* ——— FOTO FUNCIONARIO ——— (AJUSTADA: 3.0cm × 4.0cm) */
 .foto-funcionario {
   position: absolute;
-  top: 3.2cm;
-  right: 1.2cm;
-  width: 7.5cm;
-  height: 9.5cm;
+  top: 3.5cm;
+  right: 0.8cm;
+  width: 3.0cm;
+  height: 4.0cm;
   border: 1px solid #000;
   background: #fff;
   overflow: hidden;
@@ -204,13 +204,13 @@ input, textarea, select {
   object-fit: cover;
 }
 
-/* ——— FOTO CÉDULA ——— (AJUSTADA: 8.5cm × 5.5cm) */
+/* ——— FOTO CÉDULA ——— (AJUSTADA: 7.0cm × 4.5cm) */
 .foto-cedula {
   position: absolute;
-  top: 13.0cm;
-  right: 1.2cm;
-  width: 8.5cm;
-  height: 5.5cm;
+  top: 9.8cm;
+  right: 0.8cm;
+  width: 7.0cm;
+  height: 4.5cm;
   border: 1px solid #000;
   background: #fff;
   overflow: hidden;
@@ -226,7 +226,7 @@ input, textarea, select {
   position: absolute;
   top: 3.5cm;
   left: 0.5cm;
-  right: 10.2cm; /* ← ajustado para dejar espacio a las fotos */
+  right: 8.3cm; /* ← ajustado al nuevo ancho total de fotos + margen */
   bottom: 1cm;
   overflow: hidden;
 }
@@ -244,7 +244,7 @@ input, textarea, select {
 /* ——— CREDENCIAL ——— */
 .credencial-section {
   position: absolute;
-  top: 8.5cm;
+  top: 7.5cm;
   right: 4cm;
   width: 4.5cm;
   height: 2cm;
@@ -346,7 +346,7 @@ input, textarea, select {
     width: auto !important;
     height: auto !important;
     max-width: 100%;
-    max-height: 180px;
+    max-height: 120px;
     margin-bottom: 16px;
     float: right;
     clear: both;
@@ -607,10 +607,10 @@ input, textarea, select {
           <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
         </div>
 
-        <!-- Foto funcionario (7.5×9.5 cm) -->
+        <!-- Foto funcionario (3.0×4.0 cm) -->
         <div class="foto-funcionario" id="previewFotoFuncionario">
           <img id="previewFoto" style="display:none;">
-          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">FOTO 75×95 mm</div>
+          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">FOTO 30×40 mm</div>
         </div>
 
         <!-- Datos personales -->
@@ -649,10 +649,10 @@ input, textarea, select {
           <input type="text" id="previewNumeroCredencial" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
         </div>
 
-        <!-- Foto cédula (8.5×5.5 cm) -->
+        <!-- Foto cédula (7.0×4.5 cm) -->
         <div class="foto-cedula" id="previewFotoCedula">
           <img id="previewCedulaFoto" style="display:none;">
-          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">FOTO CÉDULA 85×55 mm</div>
+          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">FOTO CÉDULA 70×45 mm</div>
         </div>
 
         <!-- Pie -->
@@ -773,13 +773,13 @@ input, textarea, select {
     // ✅ Inicialización
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const { data: { session } } = await client.auth.getSession();
+        const {  { session } } = await client.auth.getSession();
         if (!session) {
           showAlert('⚠️ Debes iniciar sesión', 'error');
           setTimeout(() => window.location.href = '../index.html', 2000);
           return;
         }
-        const { data: perfil } = await client
+        const {  perfil } = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
