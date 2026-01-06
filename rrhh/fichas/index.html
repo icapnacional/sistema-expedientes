@@ -159,6 +159,7 @@ input, textarea, select {
   padding: 10px 0;
   margin-bottom: 15px;
 }
+
 .logo-izquierda {
   width: 3.5cm;
   height: 1.4cm;
@@ -171,6 +172,7 @@ input, textarea, select {
   object-fit: contain;
   object-position: center;
 }
+
 .titulo-ficha {
   font-weight: bold;
   font-size: 16pt;
@@ -179,6 +181,7 @@ input, textarea, select {
   flex-grow: 1;
   margin: 0 1cm;
 }
+
 .codigo-ficha {
   font-style: italic;
   font-size: 10pt;
@@ -187,13 +190,13 @@ input, textarea, select {
   margin-top: 5px;
 }
 
-/* ——— FOTO FUNCIONARIO ——— (AJUSTADA: 2.5cm × 3.0cm) */
+/* ——— FOTO FUNCIONARIO ——— */
 .foto-funcionario {
   position: absolute;
-  top: 4.0cm;
-  right: 1.0cm;
-  width: 2.5cm;
-  height: 3.0cm;
+  top: 3.5cm;
+  right: 0.5cm;
+  width: 35mm;
+  height: 45mm;
   border: 1px solid #000;
   background: #fff;
   overflow: hidden;
@@ -204,13 +207,13 @@ input, textarea, select {
   object-fit: cover;
 }
 
-/* ——— FOTO CÉDULA ——— (AJUSTADA: 6.0cm × 3.5cm) */
+/* ——— FOTO CÉDULA ——— */
 .foto-cedula {
   position: absolute;
-  top: 9.5cm;
-  right: 1.0cm;
-  width: 6.0cm;
-  height: 3.5cm;
+  bottom: 1cm;
+  right: 1cm;
+  width: 8.5cm;
+  height: 5.5cm;
   border: 1px solid #000;
   background: #fff;
   overflow: hidden;
@@ -226,7 +229,7 @@ input, textarea, select {
   position: absolute;
   top: 3.5cm;
   left: 0.5cm;
-  right: 7.5cm; /* ← ajustado al nuevo ancho total de fotos + margen */
+  right: 8.5cm;
   bottom: 1cm;
   overflow: hidden;
 }
@@ -244,7 +247,7 @@ input, textarea, select {
 /* ——— CREDENCIAL ——— */
 .credencial-section {
   position: absolute;
-  top: 7.5cm;
+  top: 8.5cm;
   right: 4cm;
   width: 4.5cm;
   height: 2cm;
@@ -345,9 +348,8 @@ input, textarea, select {
     position: relative !important;
     width: auto !important;
     height: auto !important;
-    max-width: 100%;
-    max-height: 100px;
-    margin-bottom: 16px;
+    max-width: 120px;
+    margin-bottom: 12px;
     float: right;
     clear: both;
   }
@@ -607,13 +609,13 @@ input, textarea, select {
           <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
         </div>
 
-        <!-- Foto funcionario (2.5×3.0 cm) -->
+        <!-- Foto funcionario -->
         <div class="foto-funcionario" id="previewFotoFuncionario">
           <img id="previewFoto" style="display:none;">
-          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">FOTO 25×30 mm</div>
+          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">FOTO 35x45mm</div>
         </div>
 
-        <!-- Datos personales -->
+        <!-- Datos -->
         <div class="datos-personales">
           <div class="titulo-datos">DATOS PERSONALES:</div>
           <div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">SIN DATOS</span></div>
@@ -649,10 +651,10 @@ input, textarea, select {
           <input type="text" id="previewNumeroCredencial" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
         </div>
 
-        <!-- Foto cédula (6.0×3.5 cm) -->
+        <!-- Foto cédula -->
         <div class="foto-cedula" id="previewFotoCedula">
           <img id="previewCedulaFoto" style="display:none;">
-          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">FOTO CÉDULA 60×35 mm</div>
+          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">FOTO DE CÉDULA</div>
         </div>
 
         <!-- Pie -->
@@ -668,169 +670,169 @@ input, textarea, select {
       <button id="btnExportarPDF2" class="btn btn-pdf" style="flex:1;">📄 Exportar a PDF</button>
     </div>
   </div>
+</div>
 
-  <script>
-  // 🔒 Supabase
-  const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
-  const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
-  const alertDiv = document.getElementById('alertMessage');
+<script>
+// 🔒 Supabase
+const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+const alertDiv = document.getElementById('alertMessage');
 
-  // 🎯 Actualizar vista previa
-  function actualizarVistaPrevia() {
-    const getVal = id => document.getElementById(id)?.value || 'SIN DATOS';
-    const getChecked = id => document.getElementById(id)?.checked;
+// 🎯 Actualizar vista previa
+function actualizarVistaPrevia() {
+  const getVal = id => document.getElementById(id)?.value || 'SIN DATOS';
+  const getChecked = id => document.getElementById(id)?.checked;
 
-    const nombre = getVal('nombre_apellidos');
-    const cedula = (getVal('cedula') || '00000000').padStart(8, '0');
-    const edad = getVal('edad') ? getVal('edad') + ' AÑOS' : '00 AÑOS';
-    const fechaNacimiento = getVal('fecha_nacimiento') ? new Date(getVal('fecha_nacimiento')).toLocaleDateString('es-VE') : '01/01/1990';
-    const telefono = getVal('telefono_funcionario');
-    const telefonoEmergencia = getVal('telefono_emergencia');
-    const correo = getVal('correo_electronico');
-    const nivelAcademico = getVal('nivel_academico');
-    const fechaIngreso = getVal('fecha_ingreso_cpn') ? new Date(getVal('fecha_ingreso_cpn')).toLocaleDateString('es-VE') : '01/01/2020';
-    const fechaAscenso = getVal('fecha_ultimo_ascenso') ? new Date(getVal('fecha_ultimo_ascenso')).toLocaleDateString('es-VE') : 'SIN DATOS';
-    const antiguedad = getVal('antiguedad');
-    const estado = getVal('estado');
-    const servicio = getVal('servicio');
-    const direccion = getVal('direccion_habitacion');
-    const ultimoCargo = getVal('ultimo_cargo');
+  const nombre = getVal('nombre_apellidos');
+  const cedula = (getVal('cedula') || '00000000').padStart(8, '0');
+  const edad = getVal('edad') ? getVal('edad') + ' AÑOS' : '00 AÑOS';
+  const fechaNacimiento = getVal('fecha_nacimiento') ? new Date(getVal('fecha_nacimiento')).toLocaleDateString('es-VE') : '01/01/1990';
+  const telefono = getVal('telefono_funcionario');
+  const telefonoEmergencia = getVal('telefono_emergencia');
+  const correo = getVal('correo_electronico');
+  const nivelAcademico = getVal('nivel_academico');
+  const fechaIngreso = getVal('fecha_ingreso_cpn') ? new Date(getVal('fecha_ingreso_cpn')).toLocaleDateString('es-VE') : '01/01/2020';
+  const fechaAscenso = getVal('fecha_ultimo_ascenso') ? new Date(getVal('fecha_ultimo_ascenso')).toLocaleDateString('es-VE') : 'SIN DATOS';
+  const antiguedad = getVal('antiguedad');
+  const estado = getVal('estado');
+  const servicio = getVal('servicio');
+  const direccion = getVal('direccion_habitacion');
+  const ultimoCargo = getVal('ultimo_cargo');
 
-    document.getElementById('previewNombre').textContent = nombre;
-    document.getElementById('previewCedula').textContent = cedula;
-    document.getElementById('previewEdad').textContent = edad;
-    document.getElementById('previewFechaNacimiento').textContent = fechaNacimiento;
-    document.getElementById('previewTelefono').textContent = telefono;
-    document.getElementById('previewTelefonoEmergencia').textContent = telefonoEmergencia;
-    document.getElementById('previewCorreo').textContent = correo;
-    document.getElementById('previewNivelAcademico').textContent = nivelAcademico;
-    document.getElementById('previewFechaIngreso').textContent = fechaIngreso;
-    document.getElementById('previewFechaAscenso').textContent = fechaAscenso;
-    document.getElementById('previewAntiguedad').textContent = antiguedad;
-    document.getElementById('previewEstado').textContent = estado;
-    document.getElementById('previewServicio').textContent = servicio;
-    document.getElementById('previewDireccion').textContent = direccion;
-    document.getElementById('previewUltimoCargo').textContent = ultimoCargo;
+  document.getElementById('previewNombre').textContent = nombre;
+  document.getElementById('previewCedula').textContent = cedula;
+  document.getElementById('previewEdad').textContent = edad;
+  document.getElementById('previewFechaNacimiento').textContent = fechaNacimiento;
+  document.getElementById('previewTelefono').textContent = telefono;
+  document.getElementById('previewTelefonoEmergencia').textContent = telefonoEmergencia;
+  document.getElementById('previewCorreo').textContent = correo;
+  document.getElementById('previewNivelAcademico').textContent = nivelAcademico;
+  document.getElementById('previewFechaIngreso').textContent = fechaIngreso;
+  document.getElementById('previewFechaAscenso').textContent = fechaAscenso;
+  document.getElementById('previewAntiguedad').textContent = antiguedad;
+  document.getElementById('previewEstado').textContent = estado;
+  document.getElementById('previewServicio').textContent = servicio;
+  document.getElementById('previewDireccion').textContent = direccion;
+  document.getElementById('previewUltimoCargo').textContent = ultimoCargo;
 
-    const esSi = getChecked('credencialSi');
-    document.getElementById('previewCredencialSi').checked = esSi;
-    document.getElementById('previewCredencialNo').checked = !esSi;
-    if (esSi) {
-      const num = getVal('numero_credencial') || 'PNB-33311';
-      document.getElementById('previewNumeroCredencial').textContent = num;
-      document.getElementById('previewNumeroCredencial').style.display = 'block';
+  const esSi = getChecked('credencialSi');
+  document.getElementById('previewCredencialSi').checked = esSi;
+  document.getElementById('previewCredencialNo').checked = !esSi;
+  if (esSi) {
+    const num = getVal('numero_credencial') || 'PNB-33311';
+    document.getElementById('previewNumeroCredencial').textContent = num;
+    document.getElementById('previewNumeroCredencial').style.display = 'block';
+  } else {
+    document.getElementById('previewNumeroCredencial').style.display = 'none';
+  }
+}
+
+// 📷 Previsualizar fotos
+document.getElementById('fotoFuncionario').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = document.getElementById('previewFoto');
+      img.src = reader.result;
+      img.style.display = 'block';
+      document.querySelector('#previewFotoFuncionario div').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+document.getElementById('fotoCedula').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = document.getElementById('previewCedulaFoto');
+      img.src = reader.result;
+      img.style.display = 'block';
+      document.querySelector('#previewFotoCedula div').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+// 🎛️ Toggle credencial
+document.getElementById('credencialSi').addEventListener('change', () => {
+  document.getElementById('numeroCredencialGroup').style.display = 'block';
+  actualizarVistaPrevia();
+});
+document.getElementById('credencialNo').addEventListener('change', () => {
+  document.getElementById('numeroCredencialGroup').style.display = 'none';
+  actualizarVistaPrevia();
+});
+
+// 🔄 Actualizar en tiempo real
+['input', 'select', 'textarea'].forEach(tag =>
+  document.querySelectorAll(tag).forEach(el => el.addEventListener('input', actualizarVistaPrevia))
+);
+document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListener('change', actualizarVistaPrevia));
+
+// ✅ Inicialización
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const { data: { session } } = await client.auth.getSession();
+    if (!session) {
+      showAlert('⚠️ Debes iniciar sesión', 'error');
+      setTimeout(() => window.location.href = '../index.html', 2000);
+      return;
+    }
+
+    const { data: perfil } = await client
+      .from('perfiles')
+      .select('email, rol')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!perfil) throw new Error('Perfil no encontrado');
+
+    document.getElementById('userEmail').textContent = perfil.email;
+    const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
+    document.getElementById('userRol').textContent = rolText;
+
+    if (perfil.rol === 'admin') {
+      document.getElementById('rolLabel').style.display = 'none';
+      const rolSpan = document.getElementById('userRol');
+      rolSpan.style.color = '#c62828';
+      rolSpan.title = 'Administrador';
+      rolSpan.style.cursor = 'help';
     } else {
-      document.getElementById('previewNumeroCredencial').style.display = 'none';
+      document.getElementById('rolLabel').style.display = 'inline';
     }
-  }
 
-  // 📷 Previsualizar fotos
-  document.getElementById('fotoFuncionario').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const img = document.getElementById('previewFoto');
-        img.src = reader.result;
-        img.style.display = 'block';
-        document.querySelector('#previewFotoFuncionario div').style.display = 'none';
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-
-  document.getElementById('fotoCedula').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const img = document.getElementById('previewCedulaFoto');
-        img.src = reader.result;
-        img.style.display = 'block';
-        document.querySelector('#previewFotoCedula div').style.display = 'none';
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-
-  // 🎛️ Toggle credencial
-  document.getElementById('credencialSi').addEventListener('change', () => {
-    document.getElementById('numeroCredencialGroup').style.display = 'block';
     actualizarVistaPrevia();
-  });
-  document.getElementById('credencialNo').addEventListener('change', () => {
-    document.getElementById('numeroCredencialGroup').style.display = 'none';
-    actualizarVistaPrevia();
-  });
-
-  // 🔄 Actualizar en tiempo real
-  ['input', 'select', 'textarea'].forEach(tag =>
-    document.querySelectorAll(tag).forEach(el => el.addEventListener('input', actualizarVistaPrevia))
-  );
-  document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListener('change', actualizarVistaPrevia));
-
-  // ✅ Inicialización
-  document.addEventListener('DOMContentLoaded', async () => {
-    try {
-      const { data } = await client.auth.getSession();
-      const session = data.session;
-      if (!session) {
-        showAlert('⚠️ Debes iniciar sesión', 'error');
-        setTimeout(() => window.location.href = '../index.html', 2000);
-        return;
-      }
-      const { data: perfilData, error } = await client
-        .from('perfiles')
-        .select('email, rol')
-        .eq('id', session.user.id)
-        .single();
-      if (error) throw error;
-      if (!perfilData) throw new Error('Perfil no encontrado');
-      const perfil = perfilData;
-
-      document.getElementById('userEmail').textContent = perfil.email;
-      const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
-      document.getElementById('userRol').textContent = rolText;
-
-      if (perfil.rol === 'admin') {
-        document.getElementById('rolLabel').style.display = 'none';
-        const rolSpan = document.getElementById('userRol');
-        rolSpan.style.color = '#c62828';
-        rolSpan.title = 'Administrador';
-        rolSpan.style.cursor = 'help';
-      } else {
-        document.getElementById('rolLabel').style.display = 'inline';
-      }
-
-      actualizarVistaPrevia();
-    } catch (err) {
-      console.error('Error:', err);
-      showAlert(`❌ ${err.message}`, 'error');
-    }
-  });
-
-  function showAlert(msg, type) {
-    alertDiv.textContent = msg;
-    alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
-    alertDiv.style.display = 'block';
-    setTimeout(() => alertDiv.style.display = 'none', 3000);
+  } catch (err) {
+    console.error('Error:', err);
+    showAlert(`❌ ${err.message}`, 'error');
   }
+});
 
-  // PDF e imprimir
-  document.getElementById('btnExportarPDF').onclick = exportarPDF;
-  document.getElementById('btnExportarPDF2').onclick = exportarPDF;
-  document.getElementById('btnImprimir').onclick = () => window.print();
+function showAlert(msg, type) {
+  alertDiv.textContent = msg;
+  alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+  alertDiv.style.display = 'block';
+  setTimeout(() => alertDiv.style.display = 'none', 3000);
+}
 
-  function exportarPDF() {
-    const ficha = document.getElementById('fichaPreview');
-    html2canvas(ficha, { scale: 2 }).then(canvas => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
-      pdf.addImage(imgData, 'PNG', 0, 0, 25.4, 19.05);
-      pdf.save(`ficha_${document.getElementById('cedula').value || 'sin-cedula'}.pdf`);
-    });
-  }
+// PDF e imprimir
+document.getElementById('btnExportarPDF').onclick = exportarPDF;
+document.getElementById('btnExportarPDF2').onclick = exportarPDF;
+document.getElementById('btnImprimir').onclick = () => window.print();
+
+function exportarPDF() {
+  const ficha = document.getElementById('fichaPreview');
+  html2canvas(ficha, { scale: 2 }).then(canvas => {
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
+    pdf.addImage(imgData, 'PNG', 0, 0, 25.4, 19.05);
+    pdf.save(`ficha_${document.getElementById('cedula').value || 'sin-cedula'}.pdf`);
+  });
+}
 </script>
 </body>
 </html>
