@@ -127,6 +127,7 @@ input, textarea, select {
   font-weight: 600;
 }
 .breadcrumb span { margin: 0 8px; color: #888; }
+
 /* ===== FICHA OFICIAL — DISEÑO PARA IMPRESIÓN ===== */
 .preview-container {
   border: 1px solid #ddd;
@@ -148,33 +149,43 @@ input, textarea, select {
   height: 19.05cm;
   padding: 1.5cm;
 }
-/* ——— LOGOS ——— ✅ SIN FONDO BLANCO + MÁS GRANDES */
+
+/* ——— HEADER CON LOGOS A LOS LADOS DEL TÍTULO ——— */
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #000;
+  padding: 10px 0;
+  margin-bottom: 10px;
+}
+
 .logo-izquierda,
 .logo-derecha {
-  position: absolute;
-  top: 0.5cm;
-  width: 2.2cm;   /* 👈 aumentado de 1.5cm → 2.2cm */
-  height: 2.2cm;  /* 👈 */
-  z-index: 10;
+  width: 3.0cm;   /* 👈 aumentado a 3.0cm */
+  height: 3.0cm;  /* 👈 */
   object-fit: contain;
   object-position: center;
-  /* ⚠️ Eliminado: background: white; */
+  /* ⚠️ Sin fondo blanco */
 }
-.logo-izquierda { left: 0.5cm; }
-.logo-derecha { right: 0.5cm; }
 
-/* ——— VISTA EN PANTALLA ——— */
-@media screen {
-  .logo-izquierda, .logo-derecha {
-    position: absolute !important;
-    top: 8px !important;
-    width: 60px !important;   /* 👈 aumentado de 50px → 60px */
-    height: 60px !important;
-    object-fit: contain !important;
-    object-position: center !important;
-    /* ⚠️ Eliminado: background: white; */
-  }
+.titulo-ficha {
+  font-weight: bold;
+  font-size: 16pt;
+  margin: 0 1cm; /* espacio entre logos y título */
+  color: #000;
+  text-align: center;
+  flex-grow: 1;
 }
+
+.codigo-ficha {
+  font-style: italic;
+  font-size: 10pt;
+  color: #333;
+  margin-top: 5px;
+  text-align: center;
+}
+
 /* ——— FOTO FUNCIONARIO ——— */
 .foto-funcionario {
   position: absolute;
@@ -191,6 +202,7 @@ input, textarea, select {
   height: 100%;
   object-fit: cover;
 }
+
 /* ——— FOTO CÉDULA ——— */
 .foto-cedula {
   position: absolute;
@@ -207,6 +219,7 @@ input, textarea, select {
   height: 100%;
   object-fit: contain;
 }
+
 /* ——— DATOS PERSONALES ——— */
 .datos-personales {
   position: absolute;
@@ -226,6 +239,7 @@ input, textarea, select {
   margin-bottom: 4px;
   font-size: 10pt;
 }
+
 /* ——— CREDENCIAL ——— */
 .credencial-section {
   position: absolute;
@@ -250,6 +264,7 @@ input, textarea, select {
   margin-top: 5px;
   font-size: 9pt;
 }
+
 /* ——— MARCA DE AGUA ——— */
 .watermark {
   position: absolute;
@@ -262,6 +277,7 @@ input, textarea, select {
   color: #722F37;
   font-weight: bold;
 }
+
 /* ——— IMPRESIÓN ——— */
 @media print {
   @page {
@@ -278,6 +294,7 @@ input, textarea, select {
     height: 19.05cm;
   }
 }
+
 /* ——— VISTA EN PANTALLA ——— */
 @media screen {
   .ficha-oficial {
@@ -289,37 +306,53 @@ input, textarea, select {
     border: 1px solid #ddd;
   }
 
-  /* ✅ Logos pequeños, centrados y sin distorsión */
-  .logo-izquierda,
-  .logo-derecha {
-    position: absolute !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    width: 36px !important;
-    height: 36px !important;
-    object-fit: contain !important;
-    object-position: center !important;
-    background: white !important;
+  /* Header con logos a los lados del título */
+  .header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #000;
   }
 
-  .logo-izquierda { left: 8px !important; }
-  .logo-derecha { right: 8px !important; }
+  .logo-izquierda,
+  .logo-derecha {
+    width: 80px !important;   /* 👈 aumentado a 80px */
+    height: 80px !important;
+    object-fit: contain !important;
+    object-position: center !important;
+  }
 
-  /* Fotos en modo pantalla */
+  .titulo-ficha {
+    font-size: 16pt;
+    margin: 0 10px;
+    flex-grow: 1;
+    text-align: center;
+  }
+
+  .codigo-ficha {
+    font-size: 10pt;
+    text-align: center;
+    margin-top: 5px;
+  }
+
+  /* Fotos ajustadas para vista web */
   .foto-funcionario,
   .foto-cedula {
     position: relative !important;
     width: auto !important;
     height: auto !important;
-    max-width: 100px;
+    max-width: 120px;
     margin-bottom: 10px;
     float: right;
     clear: both;
   }
 
+  /* Datos fluyen bajo logos y fotos */
   .datos-personales {
     position: static;
-    padding-top: 60px; /* ajustado para espacio reducido de logos */
+    padding-top: 100px; /* espacio para header + logos */
     margin-top: 10px;
   }
 
@@ -329,6 +362,7 @@ input, textarea, select {
     clear: both;
   }
 }
+
 /* ——— DISEÑO FORMULARIO ——— */
 .form-grid {
   display: grid;
@@ -356,24 +390,6 @@ input, textarea, select {
 @media (max-width: 768px) {
   .form-row { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
-}
-.header-container {
-  text-align: center;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #000;
-  padding-bottom: 10px;
-}
-.titulo-ficha {
-  font-weight: bold;
-  font-size: 16pt;
-  margin: 5px 0;
-  color: #000;
-}
-.codigo-ficha {
-  font-style: italic;
-  font-size: 10pt;
-  margin-top: 5px;
-  color: #333;
 }
 .cuerpo-ficha { margin: 20px 0; }
 .parrafo-ficha {
@@ -582,17 +598,17 @@ input, textarea, select {
       <div id="fichaPreview" class="ficha-oficial">
         <div class="watermark">FICHA DE DATOS PERSONALES</div>
 
-        <!-- ✅ LOGOS PEQUEÑOS Y CENTRADOS -->
-        <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/mp.png" class="logo-izquierda" alt="ICAP Nacional">
-        <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
-
-        <!-- Encabezado -->
+        <!-- Header con logos a los lados del título -->
         <div class="header-container">
-          <div class="titulo-ficha">FICHA DE DATOS PERSONALES</div>
-          <div class="codigo-ficha">
-            <strong>CÓDIGO:</strong> F-DATOS-001<br>
-            <strong>VERSIÓN:</strong> 1.0
+          <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" class="logo-izquierda" alt="ICAP Nacional">
+          <div>
+            <div class="titulo-ficha">FICHA DE DATOS PERSONALES</div>
+            <div class="codigo-ficha">
+              <strong>CÓDIGO:</strong> F-DATOS-001<br>
+              <strong>VERSIÓN:</strong> 1.0
+            </div>
           </div>
+          <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb-logo.png" class="logo-derecha" alt="PNB">
         </div>
 
         <!-- Foto funcionario -->
