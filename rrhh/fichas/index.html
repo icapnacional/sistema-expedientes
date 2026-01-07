@@ -906,29 +906,37 @@ function exportarPDF() {
   });
 }
 
-// ✅ BÚSQUEDA POR CÉDULA — con soporte para <select> (estado, rango, etc.)
 document.getElementById('btnBuscarCedula').addEventListener('click', async function() {
   const searchCedula = document.getElementById('searchCedula').value.trim();
   if (!searchCedula || searchCedula.length !== 8) {
-    showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
-    return;
+    return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
   }
 
   try {
-    const response = await client
+    // 🔍 Primero: ¿ya existe una *ficha* con esta cédula?
+    const { data: fichaExistente, error: fichaError } = await client
+      .from('fichas')
+      .select('id')
+      .eq('cedula', searchCedula)
+      .single();
+
+    if (!fichaError) {
+      // ✅ Ya existe ficha → bloquear y salir
+      return showAlert(`⚠️ Ya existe una ficha registrada para la cédula ${searchCedula}. No se permite duplicar.`, 'error');
+    }
+
+    // ❌ No hay ficha → ahora sí buscar en auditoría_personal
+    const { data: auditoriaData, error: auditoriaError } = await client
       .from('auditoria_personal')
       .select('*')
       .eq('cedula', searchCedula)
       .single();
 
-    if (response.error) {
-      showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`, 'error');
-      return;
+    if (auditoriaError) {
+      return showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`, 'error');
     }
 
-    const auditoriaData = response.data;
-
-    // ✅ Mapeo — ahora con soporte para <select>
+    // ✅ Cargar datos desde auditoría_personal (solo si NO hay ficha)
     const mapeo = {
       cedula: 'cedula',
       nombre_apellidos: 'apellidos_nombres',
@@ -950,32 +958,26 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
 
     for (const [inputId, dbField] of Object.entries(mapeo)) {
       const el = document.getElementById(inputId);
-      if (el) {
-        let val = auditoriaData[dbField] ?? '';
-
-        if (el.type === 'date' && val) {
-          el.value = val.split('T')[0];
-        } else if (el.type === 'number') {
-          el.value = val ? String(val) : '';
-        } else if (el.tagName === 'SELECT') {
-          // ✅ Selección inteligente para <select>
-          const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-          const targetVal = normalize(val);
-          let found = false;
-          for (const opt of el.options) {
-            if (
-              normalize(opt.value) === targetVal ||
-              normalize(opt.textContent) === targetVal
-            ) {
-              el.value = opt.value;
-              found = true;
-              break;
-            }
+      if (!el) continue;
+      let val = auditoriaData[dbField] ?? '';
+      if (el.type === 'date' && val) {
+        el.value = val.split('T')[0];
+      } else if (el.type === 'number') {
+        el.value = val ? String(val) : '';
+      } else if (el.tagName === 'SELECT') {
+        const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+        const targetVal = normalize(val);
+        let found = false;
+        for (const opt of el.options) {
+          if (normalize(opt.value) === targetVal || normalize(opt.textContent) === targetVal) {
+            el.value = opt.value;
+            found = true;
+            break;
           }
-          if (!found) el.value = '';
-        } else {
-          el.value = val;
         }
+        if (!found) el.value = '';
+      } else {
+        el.value = val;
       }
     }
 
@@ -988,24 +990,19 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
       document.getElementById('numero_credencial').value = auditoriaData.numero_credencial;
     }
 
-    // ✅ Actualizar estado en cabecera de ficha (FICHA N° línea)
-    const estadoRaw = (auditoriaData.estado || '').trim();
-    document.getElementById('previewEstadoUsuario').textContent = 
-      estadoRaw || '—';
+    // ✅ Estado en cabecera
+    document.getElementById('previewEstadoUsuario').textContent = auditoriaData.estado?.trim() || '—';
 
-    // ✅ Actualizar vista previa
-    actualizarVistaPrevia();
-
-    // ✅ Cargar fotos
+    // ✅ Fotos (solo si no hay ficha — ya validado)
     const bucket = client.storage.from('fichas');
     const fotoUrl = bucket.getPublicUrl(`foto-${searchCedula}.jpg`).data.publicUrl;
     const cedulaUrl = bucket.getPublicUrl(`cedula-${searchCedula}.jpg`).data.publicUrl;
 
     const loadImg = (url, imgEl, placeholderEl) => {
       fetch(url, { method: 'HEAD' })
-        .then(res => res.ok ? imgEl.src = url : null)
-        .then(() => {
-          if (imgEl.src) {
+        .then(res => {
+          if (res.ok) {
+            imgEl.src = url;
             imgEl.style.display = 'block';
             if (placeholderEl) placeholderEl.style.display = 'none';
           }
@@ -1016,7 +1013,8 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
     loadImg(fotoUrl, document.getElementById('previewFoto'), document.querySelector('#previewFotoFuncionario div'));
     loadImg(cedulaUrl, document.getElementById('previewCedulaFoto'), document.querySelector('#previewFotoCedula div'));
 
-    showAlert(`✅ Datos cargados para cédula ${searchCedula}`, 'success');
+    actualizarVistaPrevia();
+    showAlert(`✅ Datos cargados desde auditoría para cédula ${searchCedula}`, 'success');
 
   } catch (err) {
     console.error('Error al buscar cédula:', err);
