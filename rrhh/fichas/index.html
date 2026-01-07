@@ -805,25 +805,26 @@ document.getElementById('credencialNo').addEventListener('change', () => {
 );
 document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListener('change', actualizarVistaPrevia));
 
-// ✅ Inicialización — CORREGIDO (sin error de sintaxis)
+// ✅ INICIALIZACIÓN — CORREGIDA (sin errores de sintaxis)
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    // ✅ Corrección: destructuración válida
-    const {  } = await client.auth.getSession();
-    const session = data?.session;
-
+    // ✅ CORRECCIÓN PRINCIPAL: uso correcto de getSession()
+    const {  session, error } = await client.auth.getSession();
+    
+    if (error) throw error;
     if (!session) {
       showAlert('⚠️ Debes iniciar sesión', 'error');
       setTimeout(() => window.location.href = '../index.html', 2000);
       return;
     }
 
-    const { data: perfilData } = await client
+    const { data: perfilData, error: perfilError } = await client
       .from('perfiles')
       .select('email, rol')
       .eq('id', session.user.id)
       .single();
 
+    if (perfilError) throw perfilError;
     if (!perfilData) throw new Error('Perfil no encontrado');
 
     document.getElementById('userEmail').textContent = perfilData.email;
@@ -850,6 +851,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     showAlert(`❌ ${err.message || 'Error desconocido'}`, 'error');
   }
 });
+
 function showAlert(msg, type) {
   alertDiv.textContent = msg;
   alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
@@ -860,11 +862,10 @@ function showAlert(msg, type) {
 // ✅ IMPRIMIR
 document.getElementById('btnImprimir').onclick = () => window.print();
 
-// ✅ PDF — CORREGIDO PARA MOSTRAR LOGOS Y FOTOS
+// ✅ PDF — CORREGIDO PARA LOGOS Y FOTOS
 function exportarPDF() {
   const ficha = document.getElementById('fichaPreview');
 
-  // ✅ Asegurar que las imágenes dinámicas estén disponibles para html2canvas
   const previewFoto = document.getElementById('previewFoto');
   const previewCedulaFoto = document.getElementById('previewCedulaFoto');
 
@@ -903,7 +904,6 @@ function exportarPDF() {
     tempCedula.removeAttribute('src');
   }
 
-  // ✅ Esperar a que todas las imágenes se carguen
   function waitForImages(element) {
     const images = element.querySelectorAll('img');
     return Promise.all(
@@ -911,7 +911,7 @@ function exportarPDF() {
         if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
         return new Promise((resolve, reject) => {
           img.onload = resolve;
-          img.onerror = () => resolve(); // No fallar si una imagen falla
+          img.onerror = () => resolve();
         });
       })
     );
@@ -933,7 +933,6 @@ function exportarPDF() {
       pdf.addImage(imgData, 'JPEG', 0, 0, 25.4, 19.05);
       pdf.save(`ficha_${document.getElementById('cedula').value || 'sin-cedula'}.pdf`);
 
-      // Limpiar
       if (tempFoto) tempFoto.remove();
       if (tempCedula) tempCedula.remove();
     })
@@ -949,7 +948,7 @@ function exportarPDF() {
 document.getElementById('btnExportarPDF').onclick = exportarPDF;
 document.getElementById('btnExportarPDF2').onclick = exportarPDF;
 
-// ✅ BÚSQUEDA POR CÉDULA — con selección inteligente para <select>
+// ✅ BÚSQUEDA POR CÉDULA
 document.getElementById('btnBuscarCedula').addEventListener('click', async function() {
   const searchCedula = document.getElementById('searchCedula').value.trim();
   if (!searchCedula || searchCedula.length !== 8) {
