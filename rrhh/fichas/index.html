@@ -11,561 +11,638 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-  background-color: #fafafa;
-  font-family: 'Inter', sans-serif;
-  color: #2d2d2d;
-  padding: 20px;
+background-color: #fafafa;
+font-family: 'Inter', sans-serif;
+color: #2d2d2d;
+padding: 20px;
 }
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
+max-width: 1200px;
+margin: 0 auto;
 }
 .header {
-  text-align: center;
-  margin-bottom: 24px;
+text-align: center;
+margin-bottom: 24px;
 }
 .header img {
-  width: 90px;
-  margin-bottom: 16px;
+width: 90px;
+margin-bottom: 16px;
 }
 .header h1 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #2d2d2d;
+font-size: 24px;
+font-weight: 700;
+color: #2d2d2d;
 }
 .header .subtitle {
-  font-size: 16px;
-  color: #722F37;
-  font-weight: 600;
-  margin-top: 8px;
+font-size: 16px;
+color: #722F37;
+font-weight: 600;
+margin-top: 8px;
 }
 .user-info {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 24px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-  border: 1px solid #eee;
+background: white;
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 24px;
+box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+border: 1px solid #eee;
 }
 .form-section, .preview-section {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-  border: 1px solid #eee;
-  margin-bottom: 24px;
+background: white;
+border-radius: 12px;
+padding: 24px;
+box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+border: 1px solid #eee;
+margin-bottom: 24px;
 }
 .card h2 {
-  font-size: 20px;
-  margin-bottom: 20px;
-  color: #722F37;
+font-size: 20px;
+margin-bottom: 20px;
+color: #722F37;
 }
 .form-group {
-  margin-bottom: 16px;
+margin-bottom: 16px;
 }
 label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
+display: block;
+margin-bottom: 6px;
+font-size: 14px;
+font-weight: 600;
+color: #333;
 }
 input, textarea, select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 15px;
-  background: #fdfdfd;
+width: 100%;
+padding: 10px 12px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 15px;
+background: #fdfdfd;
 }
 .btn {
-  background-color: #722F37;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+background-color: #722F37;
+color: white;
+border: none;
+border-radius: 10px;
+padding: 12px 24px;
+font-size: 16px;
+font-weight: 600;
+cursor: pointer;
+display: inline-flex;
+align-items: center;
+gap: 8px;
 }
-.btn:hover { background-color: #5e262d; }
+.btn:hover {
+background-color: #5e262d;
+}
 .btn-outline {
-  background: transparent;
-  border: 1px solid #722F37;
-  color: #722F37;
+background: transparent;
+border: 1px solid #722F37;
+color: #722F37;
 }
 .btn-pdf {
-  background: #1976d2;
+background: #1976d2;
 }
 .btn-pdf:hover {
-  background: #1565c0;
+background: #1565c0;
 }
 .alert {
-  padding: 12px;
-  border-radius: 8px;
-  margin: 16px 0;
-  display: none;
+padding: 12px;
+border-radius: 8px;
+margin: 16px 0;
+display: none;
 }
 .alert-success { background: #e8f5e9; color: #2e7d32; }
 .alert-error { background: #ffebee; color: #c62828; }
 .breadcrumb {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 12px 20px;
-  margin-bottom: 24px;
-  font-size: 14px;
-  color: #555;
+background: #f8f9fa;
+border-radius: 12px;
+padding: 12px 20px;
+margin-bottom: 24px;
+font-size: 14px;
+color: #555;
 }
 .breadcrumb a {
-  color: #722F37;
-  text-decoration: none;
-  font-weight: 600;
+color: #722F37;
+text-decoration: none;
+font-weight: 600;
 }
 .breadcrumb span { margin: 0 8px; color: #888; }
-
 /* ===== FICHA OFICIAL — DISEÑO PARA IMPRESIÓN ===== */
 .preview-container {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 20px;
-  background: white;
-  margin: 20px 0;
-  min-height: 800px;
+border: 1px solid #ddd;
+border-radius: 8px;
+padding: 20px;
+background: white;
+margin: 20px 0;
+min-height: 800px;
 }
 .ficha-oficial {
-  font-family: 'Times New Roman', Times, serif;
-  line-height: 1.4;
-  position: relative;
-  background: #e6f0f7;
-  box-sizing: border-box;
-  border: 1px solid #000;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  width: 25.4cm;
-  height: 19.05cm;
-  padding: 1.5cm;
+font-family: 'Times New Roman', Times, serif;
+line-height: 1.4;
+position: relative;
+background: #e6f0f7;
+box-sizing: border-box;
+border: 1px solid #000;
+box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+width: 25.4cm;
+height: 19.05cm;
+padding: 1.5cm;
 }
 .header-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 2px solid #000;
-  padding: 10px 0;
-  margin-bottom: 15px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+border-bottom: 2px solid #000;
+padding: 10px 0;
+margin-bottom: 15px;
 }
 .logo-izquierda {
-  width: 3.5cm;
-  height: 1.4cm;
-  object-fit: contain;
-  object-position: left center;
+width: 3.5cm;
+height: 1.4cm;
+object-fit: contain;
+object-position: left center;
 }
 .logo-derecha {
-  width: 2.2cm;
-  height: 2.2cm;
-  object-fit: contain;
-  object-position: center;
+width: 2.2cm;
+height: 2.2cm;
+object-fit: contain;
+object-position: center;
 }
 .titulo-ficha {
-  font-weight: bold;
-  font-size: 16pt;
-  color: #000;
-  text-align: center;
-  flex-grow: 1;
-  margin: 0 1cm;
+font-weight: bold;
+font-size: 16pt;
+color: #000;
+text-align: center;
+flex-grow: 1;
+margin: 0 1cm;
 }
 .foto-funcionario {
-  position: absolute;
-  top: 3.5cm;
-  right: 0.5cm;
-  width: 35mm;
-  height: 45mm;
-  border: 1px solid #000;
-  background: #fff;
-  overflow: hidden;
+position: absolute;
+top: 3.5cm;
+right: 0.5cm;
+width: 35mm;
+height: 45mm;
+border: 1px solid #000;
+background: #fff;
+overflow: hidden;
 }
 .foto-funcionario img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+width: 100%;
+height: 100%;
+object-fit: cover;
 }
 .foto-cedula {
-  position: absolute;
-  bottom: 1cm;
-  right: 1cm;
-  width: 8.5cm;
-  height: 5.5cm;
-  border: 1px solid #000;
-  background: #fff;
-  overflow: hidden;
+position: absolute;
+bottom: 1cm;
+right: 1cm;
+width: 8.5cm;
+height: 5.5cm;
+border: 1px solid #000;
+background: #fff;
+overflow: hidden;
 }
 .foto-cedula img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+width: 100%;
+height: 100%;
+object-fit: contain;
 }
 .datos-personales {
-  position: absolute;
-  top: 3.5cm;
-  left: 0.5cm;
-  right: 8.5cm;
-  bottom: 1cm;
-  overflow: hidden;
+position: absolute;
+top: 3.5cm;
+left: 0.5cm;
+right: 8.5cm;
+bottom: 1cm;
+overflow: hidden;
 }
 .titulo-datos {
-  font-weight: bold;
-  margin-bottom: 8px;
-  font-size: 12pt;
-  color: #000;
+font-weight: bold;
+margin-bottom: 8px;
+font-size: 12pt;
+color: #000;
 }
 .dato-fila {
-  margin-bottom: 4px;
-  font-size: 10pt;
+margin-bottom: 4px;
+font-size: 10pt;
 }
 .credencial-section {
-  position: absolute;
-  top: 8.5cm;
-  right: 4cm;
-  width: 4.5cm;
-  height: 2cm;
-  font-size: 10pt;
+position: absolute;
+top: 8.5cm;
+right: 4cm;
+width: 4.5cm;
+height: 2cm;
+font-size: 10pt;
 }
 .credencial-title {
-  font-weight: bold;
-  margin-bottom: 5px;
-  color: #000;
+font-weight: bold;
+margin-bottom: 5px;
+color: #000;
 }
 .credencial-option {
-  display: inline-block;
-  margin-right: 10px;
+display: inline-block;
+margin-right: 10px;
 }
 .credencial-input {
-  display: block;
-  width: 100%;
-  margin-top: 5px;
-  font-size: 9pt;
+display: block;
+width: 100%;
+margin-top: 5px;
+font-size: 9pt;
 }
 .watermark {
-  position: absolute;
-  opacity: 0.05;
-  font-size: 80px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-45deg);
-  white-space: nowrap;
-  color: #722F37;
-  font-weight: bold;
+position: absolute;
+opacity: 0.05;
+font-size: 80px;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%) rotate(-45deg);
+white-space: nowrap;
+color: #722F37;
+font-weight: bold;
 }
-
 @media print {
-  @page { size: 25.4cm 19.05cm; margin: 0; }
-  body * { visibility: hidden; }
-  #fichaPreview, #fichaPreview * { visibility: visible; }
-  #fichaPreview {
-    position: absolute;
-    left: 0; top: 0;
-    width: 25.4cm; height: 19.05cm;
-  }
-  .foto-funcionario { width: 40mm !important; height: 50mm !important; }
-  .foto-cedula { width: 9cm !important; height: 6cm !important; bottom: auto !important; top: 12cm !important; }
+@page {
+size: 25.4cm 19.05cm;
+margin: 0;
 }
-
+body * { visibility: hidden; }
+#fichaPreview, #fichaPreview * { visibility: visible; }
+#fichaPreview {
+position: absolute;
+left: 0;
+top: 0;
+width: 25.4cm;
+height: 19.05cm;
+}
+.foto-funcionario {
+width: 40mm !important;
+height: 50mm !important;
+}
+.foto-cedula {
+width: 9cm !important;
+height: 6cm !important;
+bottom: auto !important;
+top: 12cm !important;
+}
+}
 @media screen {
-  .ficha-oficial {
-    width: 100%;
-    height: auto;
-    min-height: 750px;
-    padding: 20px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    border: 1px solid #ddd;
-  }
-  .logo-izquierda { width: 180px !important; height: 70px !important; }
-  .logo-derecha { width: 88px !important; height: 88px !important; }
-  .datos-personales { position: static; padding-top: 110px; margin-top: 10px; }
-  .foto-funcionario, .foto-cedula {
-    position: relative !important;
-    float: right;
-    clear: both;
-    margin-bottom: 12px;
-  }
-  .foto-funcionario { max-width: 180px !important; max-height: 225px !important; }
-  .foto-cedula { max-width: 250px !important; max-height: 170px !important; margin-top: -150px !important; }
-  .credencial-section { position: static; margin-top: 20px; clear: both; }
+.ficha-oficial {
+width: 100%;
+height: auto;
+min-height: 750px;
+padding: 20px;
+box-shadow: 0 0 20px rgba(0,0,0,0.1);
+border: 1px solid #ddd;
+}
+.header-container {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 8px 0;
+margin-bottom: 15px;
+border-bottom: 2px solid #000;
+}
+.logo-izquierda {
+width: 180px !important;
+height: 70px !important;
+object-fit: contain !important;
+object-position: left center !important;
+}
+.logo-derecha {
+width: 88px !important;
+height: 88px !important;
+object-fit: contain !important;
+object-position: center !important;
+}
+.titulo-ficha {
+font-size: 16pt;
+margin: 0 0.8cm;
+}
+.datos-personales {
+position: static;
+padding-top: 110px;
+margin-top: 10px;
+}
+.foto-funcionario,
+.foto-cedula {
+position: relative !important;
+width: auto !important;
+height: auto !important;
+max-width: 120px;
+margin-bottom: 12px;
+float: right;
+clear: both;
+}
+.credencial-section {
+position: static;
+margin-top: 20px;
+clear: both;
+}
+.foto-funcionario {
+max-width: 180px !important;
+max-height: 225px !important;
+}
+.foto-cedula {
+max-width: 250px !important;
+max-height: 170px !important;
+margin-top: -150px !important;
+}
+}
+.form-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+gap: 20px;
+}
+.form-column {
+display: flex;
+flex-direction: column;
+gap: 15px;
+}
+.section-title {
+font-weight: bold;
+color: #722F37;
+margin-bottom: 12px;
+padding-bottom: 4px;
+border-bottom: 2px solid #f0f0f0;
+font-size: 16px;
+}
+.form-row {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 15px;
+}
+@media (max-width: 768px) {
+.form-row { grid-template-columns: 1fr; }
+.form-grid { grid-template-columns: 1fr; }
+}
+.cuerpo-ficha { margin: 20px 0; }
+.parrafo-ficha {
+text-indent: 30px;
+margin: 15px 0;
+text-align: justify;
+font-size: 10pt;
+}
+.firma-section { margin-top: 60px; text-align: center; }
+.firma-line {
+width: 300px;
+margin: 0 auto;
+border-top: 1px solid #000;
 }
 </style>
 </head>
 <body>
 <div class="container">
-  <div class="breadcrumb">
-    <a href="../index.html">Inicio</a> <span>›</span>
-    <a href="index.html">Fichas</a> <span>›</span>
-    <strong>Formato de Datos</strong>
-  </div>
-  <div class="header">
-    <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
-    <h1>Inspectable para el Control de la Actuación Policial</h1>
-    <div class="subtitle">• Formato de Datos Personales •</div>
-  </div>
-  <div class="user-info">
-    <strong>Usuario:</strong> <span id="userEmail">—</span> |
-    <strong id="rolLabel">Rol:</strong> <span id="userRol">—</span>
-  </div>
-  <div class="form-section">
-    <h2>📝 Datos Personales del Funcionario</h2>
-    <div id="alertMessage" class="alert"></div>
-    <div class="form-group">
-      <label for="searchCedula">Buscar por Cédula</label>
-      <div style="display:flex; gap:10px; flex-wrap: wrap;">
-        <input type="text" id="searchCedula" placeholder="Ingrese cédula (8 dígitos)" maxlength="8" inputmode="numeric" style="flex:1; min-width: 200px;">
-        <button id="btnBuscarCedula" class="btn" style="padding:10px 16px; white-space: nowrap;">🔍 Buscar</button>
-      </div>
-    </div>
-    <div class="form-grid">
-      <!-- Columna 1: Básicos -->
-      <div class="form-column">
-        <div class="section-title">👤 Información Básica</div>
-        <div class="form-group">
-          <label for="cedula">Cédula *</label>
-          <input type="text" id="cedula" maxlength="8" inputmode="numeric" placeholder="Ej: 25275015">
-        </div>
-        <div class="form-group">
-          <label for="nombre_apellidos">Nombres y Apellidos *</label>
-          <input type="text" id="nombre_apellidos" placeholder="Ej: GARCIA PEREZ, JUAN CARLOS">
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="edad">Edad *</label>
-            <input type="number" id="edad" min="18" max="100" placeholder="Ej: 35">
-          </div>
-          <div class="form-group">
-            <label for="fecha_nacimiento">Fecha de Nacimiento *</label>
-            <input type="date" id="fecha_nacimiento">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="nivel_academico">Nivel Académico *</label>
-          <select id="nivel_academico">
-            <option value="">— Seleccione —</option>
-            <option value="Primaria">Primaria</option>
-            <option value="Bachiller">Bachiller</option>
-            <option value="Técnico Superior">Técnico Superior</option>
-            <option value="Universitario">Universitario</option>
-            <option value="Especialización">Especialización</option>
-            <option value="Maestría">Maestría</option>
-            <option value="Doctorado">Doctorado</option>
-          </select>
-        </div>
-        <div class="section-title" style="margin-top: 20px;">📞 Contacto</div>
-        <div class="form-group">
-          <label for="telefono_funcionario">Teléfono del Funcionario *</label>
-          <input type="tel" id="telefono_funcionario" placeholder="Ej: 0412-1234567">
-        </div>
-        <div class="form-group">
-          <label for="telefono_emergencia">Teléfono de Emergencia *</label>
-          <input type="tel" id="telefono_emergencia" placeholder="Ej: 0414-7654321">
-        </div>
-        <div class="form-group">
-          <label for="correo_electronico">Correo Electrónico *</label>
-          <input type="email" id="correo_electronico" placeholder="ejemplo@correo.com">
-        </div>
-      </div>
-
-      <!-- Columna 2: Policiales -->
-      <div class="form-column">
-        <div class="section-title">👮‍♂️ Datos Policiales</div>
-        <div class="form-group">
-          <label for="rango">Rango *</label>
-          <select id="rango">
-            <option value="">— Seleccione —</option>
-            <option value="Comisario Superior">Comisario Superior</option>
-            <option value="Comisario Mayor">Comisario Mayor</option>
-            <option value="Comisario General">Comisario General</option>
-            <option value="Comisario Jefe">Comisario Jefe</option>
-            <option value="Primer Comisario">Primer Comisario</option>
-            <option value="Comisario">Comisario</option>
-            <option value="Inspector Jefe">Inspector Jefe</option>
-            <option value="Primer Inspector">Primer Inspector</option>
-            <option value="Inspector">Inspector</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="ultimo_cargo">Último Cargo *</label>
-          <input type="text" id="ultimo_cargo" placeholder="Ej: JEFE DE SECCIÓN">
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="fecha_ingreso_cpn">Fecha de Ingreso *</label>
-            <input type="date" id="fecha_ingreso_cpn">
-          </div>
-          <div class="form-group">
-            <label for="fecha_ultimo_ascenso">Último Ascenso</label>
-            <input type="date" id="fecha_ultimo_ascenso">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="antiguedad">Antigüedad *</label>
-          <input type="text" id="antiguedad" placeholder="Ej: 5 años 3 meses">
-        </div>
-        <div class="section-title" style="margin-top: 20px;">📍 Ubicación</div>
-        <div class="form-group">
-          <label for="estado">Estado *</label>
-          <select id="estado">
-            <option value="">— Seleccione —</option>
-            <option value="Distrito Capital">Distrito Capital</option>
-            <option value="Amazonas">Amazonas</option>
-            <option value="Anzoátegui">Anzoátegui</option>
-            <option value="Apure">Apure</option>
-            <option value="Aragua">Aragua</option>
-            <option value="Barinas">Barinas</option>
-            <option value="Bolívar">Bolívar</option>
-            <option value="Carabobo">Carabobo</option>
-            <option value="Cojedes">Cojedes</option>
-            <option value="Delta Amacuro">Delta Amacuro</option>
-            <option value="Falcón">Falcón</option>
-            <option value="Guárico">Guárico</option>
-            <option value="Lara">Lara</option>
-            <option value="Mérida">Mérida</option>
-            <option value="Miranda">Miranda</option>
-            <option value="Monagas">Monagas</option>
-            <option value="Nueva Esparta">Nueva Esparta</option>
-            <option value="Portuguesa">Portuguesa</option>
-            <option value="Sucre">Sucre</option>
-            <option value="Táchira">Táchira</option>
-            <option value="Trujillo">Trujillo</option>
-            <option value="Vargas">Vargas</option>
-            <option value="Yaracuy">Yaracuy</option>
-            <option value="Zulia">Zulia</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="servicio">Servicio/Unidad *</label>
-          <input type="text" id="servicio" placeholder="Ej: CCPE CARICUAO">
-        </div>
-        <div class="form-group">
-          <label for="direccion_habitacion">Dirección de Habitación *</label>
-          <textarea id="direccion_habitacion" rows="2" placeholder="Dirección completa"></textarea>
-        </div>
-      </div>
-
-      <!-- Columna 3: Credencial y fotos -->
-      <div class="form-column">
-        <div class="section-title">🆔 Credencial</div>
-        <div class="form-group">
-          <label>¿Posee Credencial? *</label>
-          <div style="display: flex; gap: 15px;">
-            <div><input type="radio" id="credencialSi" name="credencial" value="si"><label for="credencialSi">SI</label></div>
-            <div><input type="radio" id="credencialNo" name="credencial" value="no" checked><label for="credencialNo">NO</label></div>
-          </div>
-        </div>
-        <div class="form-group" id="numeroCredencialGroup" style="display: none;">
-          <label for="numero_credencial">Número de Credencial *</label>
-          <input type="text" id="numero_credencial" placeholder="Ej: PNB-12345">
-        </div>
-        <div class="section-title" style="margin-top: 20px;">📸 Foto del Funcionario</div>
-        <div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px; background: #f9f9f9;">
-          <div style="font-size: 48px; color: #722F37; margin-bottom: 10px;">👤</div>
-          <p style="margin-bottom: 10px; color: #666;">Arrastre o haga clic para subir foto</p>
-          <input type="file" id="fotoFuncionario" accept="image/*" style="display: none;">
-          <button type="button" class="btn btn-outline" onclick="document.getElementById('fotoFuncionario').click()" style="width: 100%;">📤 Subir Foto</button>
-        </div>
-        <div class="section-title" style="margin-top: 20px;">📄 Foto de Cédula</div>
-        <div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px; background: #f9f9f9;">
-          <div style="font-size: 48px; color: #722F37; margin-bottom: 10px;">🆔</div>
-          <p style="margin-bottom: 10px; color: #666;">Arrastre o haga clic para subir cédula</p>
-          <input type="file" id="fotoCedula" accept="image/*" style="display: none;">
-          <button type="button" class="btn btn-outline" onclick="document.getElementById('fotoCedula').click()" style="width: 100%;">📤 Subir Cédula</button>
-        </div>
-      </div>
-    </div>
-    <div style="text-align:right; margin-top:20px;">
-      <button type="button" class="btn btn-outline" onclick="window.history.back()">← Volver</button>
-      <button id="btnGuardar" class="btn">💾 Guardar Ficha</button>
-      <button id="btnExportarPDF" class="btn btn-pdf">📄 Exportar a PDF</button>
-    </div>
-  </div>
-
-  <!-- Vista Previa -->
-  <div class="preview-section">
-    <h2>🔍 Vista Previa en Tiempo Real</h2>
-    <div class="preview-container">
-      <div id="fichaPreview" class="ficha-oficial">
-        <div class="watermark">FICHA DE DATOS PERSONALES</div>
-        <!-- ✅ Logos en base64 -->
-        <div class="header-container">
-          <img src="data:image/png;base64,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" class="logo-izquierda" alt="ICAP Nacional">
-          <div>
-            <div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
-            <div style="font-size: 10pt; color: #333; text-align: center; margin-top: 4px; line-height: 1.3;">
-              <div><strong>FICHA N°:</strong> 1 – <span id="previewFechaFicha">06/01/2026</span> – ICAP</div>
-              <div><strong>ESTADO:</strong> <span id="previewEstadoUsuario">—</span></div>
-            </div>
-          </div>
-          <img src="data:image/png;base64,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" class="logo-derecha" alt="PNB">
-        </div>
-
-        <!-- Foto funcionario -->
-        <div class="foto-funcionario" id="previewFotoFuncionario">
-          <img id="previewFoto" style="display:none;" />
-          <div id="previewFotoPlaceholder" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">FOTO 35x45mm</div>
-        </div>
-
-        <!-- Datos -->
-        <div class="datos-personales">
-          <div class="titulo-datos">DATOS PERSONALES:</div>
-          <div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">SIN DATOS</span></div>
-          <div class="dato-fila"><strong>CÉDULA:</strong> <span id="previewCedula">00000000</span></div>
-          <div class="dato-fila"><strong>EDAD:</strong> <span id="previewEdad">00 AÑOS</span></div>
-          <div class="dato-fila"><strong>FECHA DE NACIMIENTO:</strong> <span id="previewFechaNacimiento">01/01/1990</span></div>
-          <div class="dato-fila"><strong>TELÉFONO DEL FUNCIONARIO:</strong> <span id="previewTelefono">SIN DATOS</span></div>
-          <div class="dato-fila"><strong>TELÉFONO DE EMERGENCIA:</strong> <span id="previewTelefonoEmergencia">SIN DATOS</span></div>
-          <div class="dato-fila"><strong>CORREO ELECTRÓNICO:</strong> <span id="previewCorreo">SIN DATOS</span></div>
-          <div class="dato-fila"><strong>NIVEL ACADÉMICO:</strong> <span id="previewNivelAcademico">SIN DATOS</span></div>
-          <div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">01/01/2020</span></div>
-          <div class="dato-fila"><strong>FECHA DEL ULTIMO ASCENSO:</strong> <span id="previewFechaAscenso">SIN DATOS</span></div>
-          <div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">00 AÑOS 00 MESES</span></div>
-          <div class="dato-fila"><strong>ESTADO:</strong> <span id="previewEstado">SIN DATOS</span></div>
-          <div class="dato-fila"><strong>SERVICIO:</strong> <span id="previewServicio">SIN DATOS</span></div>
-          <div class="dato-fila"><strong>DIRECCION DE HABITACION:</strong> <span id="previewDireccion">SIN DATOS</span></div>
-          <div class="dato-fila"><strong>ULTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
-        </div>
-
-        <!-- Credencial -->
-        <div class="credencial-section">
-          <div class="credencial-title">POSEE CREDENCIAL</div>
-          <div class="credencial-options">
-            <div class="credencial-option">
-              <input type="radio" id="previewCredencialSi" name="credencialPreview" value="si" disabled>
-              <label for="previewCredencialSi">SI</label>
-            </div>
-            <div class="credencial-option">
-              <input type="radio" id="previewCredencialNo" name="credencialPreview" value="no" disabled checked>
-              <label for="previewCredencialNo">NO</label>
-            </div>
-          </div>
-          <input type="text" id="previewNumeroCredencial" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
-        </div>
-
-        <!-- Foto cédula -->
-        <div class="foto-cedula" id="previewFotoCedula">
-          <img id="previewCedulaFoto" style="display:none;" />
-          <div id="previewCedulaPlaceholder" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">FOTO DE CÉDULA</div>
-        </div>
-
-        <!-- Pie -->
-        <div style="position: absolute; bottom: 0.5cm; left: 0.5cm; right: 0.5cm; text-align: center; font-size: 8pt; color: #333;">
-          <strong>Inspectable para el Control de la Actuación Policial - ICAP Nacional</strong><br>
-          Documento confidencial - Uso exclusivo institucional
-        </div>
-      </div>
-    </div>
-    <div class="preview-actions" style="display: flex; gap: 12px; margin-top:16px;">
-      <button id="btnImprimir" class="btn btn-outline" style="flex:1;">🖨️ Imprimir</button>
-      <button id="btnExportarPDF2" class="btn btn-pdf" style="flex:1;">📄 Exportar a PDF</button>
-    </div>
-  </div>
+<div class="breadcrumb">
+<a href="../index.html">Inicio</a> <span>›</span>
+<a href="index.html">Fichas</a> <span>›</span>
+<strong>Formato de Datos</strong>
+</div>
+<div class="header">
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+<h1>Inspectable para el Control de la Actuación Policial</h1>
+<div class="subtitle">• Formato de Datos Personales •</div>
+</div>
+<div class="user-info">
+<strong>Usuario:</strong> <span id="userEmail">—</span> |
+<strong id="rolLabel">Rol:</strong> <span id="userRol">—</span>
+</div>
+<div class="form-section">
+<h2>📝 Datos Personales del Funcionario</h2>
+<div id="alertMessage" class="alert"></div>
+<div class="form-group">
+<label for="searchCedula">Buscar por Cédula</label>
+<div style="display:flex; gap:10px; flex-wrap: wrap;">
+<input type="text" id="searchCedula" placeholder="Ingrese cédula (8 dígitos)" maxlength="8" inputmode="numeric" style="flex:1; min-width: 200px;">
+<button id="btnBuscarCedula" class="btn" style="padding:10px 16px; white-space: nowrap;">🔍 Buscar</button>
+</div>
+</div>
+<div class="form-grid">
+<div class="form-column">
+<div class="section-title">👤 Información Básica</div>
+<div class="form-group">
+<label for="cedula">Cédula *</label>
+<input type="text" id="cedula" maxlength="8" inputmode="numeric" placeholder="Ej: 25275015">
+</div>
+<div class="form-group">
+<label for="nombre_apellidos">Nombres y Apellidos *</label>
+<input type="text" id="nombre_apellidos" placeholder="Ej: GARCIA PEREZ, JUAN CARLOS">
+</div>
+<div class="form-row">
+<div class="form-group">
+<label for="edad">Edad *</label>
+<input type="number" id="edad" min="18" max="100" placeholder="Ej: 35">
+</div>
+<div class="form-group">
+<label for="fecha_nacimiento">Fecha de Nacimiento *</label>
+<input type="date" id="fecha_nacimiento">
+</div>
+</div>
+<div class="form-group">
+<label for="nivel_academico">Nivel Académico *</label>
+<select id="nivel_academico">
+<option value="">— Seleccione —</option>
+<option value="Primaria">Primaria</option>
+<option value="Bachiller">Bachiller</option>
+<option value="Técnico Superior">Técnico Superior</option>
+<option value="Universitario">Universitario</option>
+<option value="Especialización">Especialización</option>
+<option value="Maestría">Maestría</option>
+<option value="Doctorado">Doctorado</option>
+</select>
+</div>
+<div class="section-title" style="margin-top: 20px;">📞 Contacto</div>
+<div class="form-group">
+<label for="telefono_funcionario">Teléfono del Funcionario *</label>
+<input type="tel" id="telefono_funcionario" placeholder="Ej: 0412-1234567">
+</div>
+<div class="form-group">
+<label for="telefono_emergencia">Teléfono de Emergencia *</label>
+<input type="tel" id="telefono_emergencia" placeholder="Ej: 0414-7654321">
+</div>
+<div class="form-group">
+<label for="correo_electronico">Correo Electrónico *</label>
+<input type="email" id="correo_electronico" placeholder="ejemplo@correo.com">
+</div>
+</div>
+<div class="form-column">
+<div class="section-title">👮‍♂️ Datos Policiales</div>
+<div class="form-group">
+<label for="rango">Rango *</label>
+<select id="rango">
+<option value="">— Seleccione —</option>
+<option value="Comisario Superior">Comisario Superior</option>
+<option value="Comisario Mayor">Comisario Mayor</option>
+<option value="Comisario General">Comisario General</option>
+<option value="Comisario Jefe">Comisario Jefe</option>
+<option value="Primer Comisario">Primer Comisario</option>
+<option value="Comisario">Comisario</option>
+<option value="Inspector Jefe">Inspector Jefe</option>
+<option value="Primer Inspector">Primer Inspector</option>
+<option value="Inspector">Inspector</option>
+</select>
+</div>
+<div class="form-group">
+<label for="ultimo_cargo">Último Cargo *</label>
+<input type="text" id="ultimo_cargo" placeholder="Ej: JEFE DE SECCIÓN">
+</div>
+<div class="form-row">
+<div class="form-group">
+<label for="fecha_ingreso_cpn">Fecha de Ingreso *</label>
+<input type="date" id="fecha_ingreso_cpn">
+</div>
+<div class="form-group">
+<label for="fecha_ultimo_ascenso">Último Ascenso</label>
+<input type="date" id="fecha_ultimo_ascenso">
+</div>
+</div>
+<div class="form-group">
+<label for="antiguedad">Antigüedad *</label>
+<input type="text" id="antiguedad" placeholder="Ej: 5 años 3 meses">
+</div>
+<div class="section-title" style="margin-top: 20px;">📍 Ubicación</div>
+<div class="form-group">
+<label for="estado">Estado *</label>
+<select id="estado">
+<option value="">— Seleccione —</option>
+<option value="Distrito Capital">Distrito Capital</option>
+<option value="Amazonas">Amazonas</option>
+<option value="Anzoátegui">Anzoátegui</option>
+<option value="Apure">Apure</option>
+<option value="Aragua">Aragua</option>
+<option value="Barinas">Barinas</option>
+<option value="Bolívar">Bolívar</option>
+<option value="Carabobo">Carabobo</option>
+<option value="Cojedes">Cojedes</option>
+<option value="Delta Amacuro">Delta Amacuro</option>
+<option value="Falcón">Falcón</option>
+<option value="Guárico">Guárico</option>
+<option value="Lara">Lara</option>
+<option value="Mérida">Mérida</option>
+<option value="Miranda">Miranda</option>
+<option value="Monagas">Monagas</option>
+<option value="Nueva Esparta">Nueva Esparta</option>
+<option value="Portuguesa">Portuguesa</option>
+<option value="Sucre">Sucre</option>
+<option value="Táchira">Táchira</option>
+<option value="Trujillo">Trujillo</option>
+<option value="Vargas">Vargas</option>
+<option value="Yaracuy">Yaracuy</option>
+<option value="Zulia">Zulia</option>
+</select>
+</div>
+<div class="form-group">
+<label for="servicio">Servicio/Unidad *</label>
+<input type="text" id="servicio" placeholder="Ej: CCPE CARICUAO">
+</div>
+<div class="form-group">
+<label for="direccion_habitacion">Dirección de Habitación *</label>
+<textarea id="direccion_habitacion" rows="2" placeholder="Dirección completa"></textarea>
+</div>
+</div>
+<div class="form-column">
+<div class="section-title">🆔 Credencial</div>
+<div class="form-group">
+<label>¿Posee Credencial? *</label>
+<div style="display: flex; gap: 15px;">
+<div><input type="radio" id="credencialSi" name="credencial" value="si"><label for="credencialSi">SI</label></div>
+<div><input type="radio" id="credencialNo" name="credencial" value="no" checked><label for="credencialNo">NO</label></div>
+</div>
+</div>
+<div class="form-group" id="numeroCredencialGroup" style="display: none;">
+<label for="numero_credencial">Número de Credencial *</label>
+<input type="text" id="numero_credencial" placeholder="Ej: PNB-12345">
+</div>
+<div class="section-title" style="margin-top: 20px;">📸 Foto del Funcionario</div>
+<div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px; background: #f9f9f9;">
+<div style="font-size: 48px; color: #722F37; margin-bottom: 10px;">👤</div>
+<p style="margin-bottom: 10px; color: #666;">Arrastre o haga clic para subir foto</p>
+<input type="file" id="fotoFuncionario" accept="image/*" style="display: none;">
+<button type="button" class="btn btn-outline" onclick="document.getElementById('fotoFuncionario').click()" style="width: 100%;">📤 Subir Foto</button>
+</div>
+<div class="section-title" style="margin-top: 20px;">📄 Foto de Cédula</div>
+<div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 8px; background: #f9f9f9;">
+<div style="font-size: 48px; color: #722F37; margin-bottom: 10px;">🆔</div>
+<p style="margin-bottom: 10px; color: #666;">Arrastre o haga clic para subir cédula</p>
+<input type="file" id="fotoCedula" accept="image/*" style="display: none;">
+<button type="button" class="btn btn-outline" onclick="document.getElementById('fotoCedula').click()" style="width: 100%;">📤 Subir Cédula</button>
+</div>
+</div>
+</div>
+<div style="text-align:right; margin-top:20px;">
+<button type="button" class="btn btn-outline" onclick="window.history.back()">← Volver</button>
+<button id="btnGuardar" class="btn">💾 Guardar Ficha</button>
+<button id="btnExportarPDF" class="btn btn-pdf">📄 Exportar a PDF</button>
+</div>
+</div>
+<div class="preview-section">
+<h2>🔍 Vista Previa en Tiempo Real</h2>
+<div class="preview-container">
+<div id="fichaPreview" class="ficha-oficial">
+<div class="watermark">FICHA DE DATOS PERSONALES</div>
+<div class="header-container">
+<!-- ✅ LOGOS EN BASE64 — ya no fallan en PDF -->
+<img src="data:image/png;base64,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Dw+NGB85MSp6YnTUhCmRkyInR0yMjAwLCwkNCw4JCQoKDAoMDAwIDAoMDA4KDQ4OCg8PDx0fPj5sfHjYuPDQiPDQ0eGh4aEhoaGhIaGhISEhwaGhoSFhYWGRkeER48ePi4qOjI6KiIqMiIwMDQ8LCQ8NDgoOCQwMCPDzD/D18/fz8fP38fb38/H38/P1DfD39QsKDggOCQsKCosIDw2NiIyIjBwfFR01YdKEiZERkRPGj4uKDA8PDQoOCQwODg4KDQoMDg4MCQ4ODA4NCQ4LDQ2NDB8XGRE5PjJifGRExLiwsJDQsJDQ0ODQ0KDg0KDg0KDg0OCQ0JCQsJDQ8LCw8PCwiPAR48eHRUSERoaHjQsNCw0OCQsKCQkKCQ4MDgoKDgoMCgwKCQwKCw4JDQ8LDQsLCwkPCw0JCQ0OCQsJDQkJDQ4JDQkJDQ0MDQ0MCQkODw4JCw0NCQ8JDQkNDw0PCQ0NCQkJCQ8PCw0LCwsLCwsNCwsLDQsJCQkJCQ0JDQkJCQkJCQkJCQoMCgoKCg4MCgwICAgIDA8KCAoKDgkKDAoOCQoLDgwKDgwKDQ4JCg8JCQkNCQkJCQkJCQ8PCw0NDQsNDQ0LCw0LCwkLCwsJCw0LCg0LCwsJCwkNCQkJDQkJCQ8LCgsNDQsLDQ0NDQ0PDw8LCAgICwkJCw4LDgsICwsNCQsNDQsLDQ0PCw0PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8NDw8PDQ8PDw0PDw8PDw0PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PD......" class="logo-izquierda" alt="ICAP Nacional">
+<div>
+<div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
+<div style="font-size: 10pt; color: #333; text-align: center; margin-top: 4px; line-height: 1.3;">
+<div><strong>FICHA N°:</strong> 1 – <span id="previewFechaFicha">06/01/2026</span> – ICAP</div>
+<div><strong>ESTADO:</strong> <span id="previewEstadoUsuario">—</span></div>
+</div>
+</div>
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUh......" class="logo-derecha" alt="PNB">
+</div>
+<div class="foto-funcionario" id="previewFotoFuncionario">
+<img id="previewFoto" style="display:none;">
+<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">FOTO 35x45mm</div>
+</div>
+<div class="datos-personales">
+<div class="titulo-datos">DATOS PERSONALES:</div>
+<div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">SIN DATOS</span></div>
+<div class="dato-fila"><strong>CÉDULA:</strong> <span id="previewCedula">00000000</span></div>
+<div class="dato-fila"><strong>EDAD:</strong> <span id="previewEdad">00 AÑOS</span></div>
+<div class="dato-fila"><strong>FECHA DE NACIMIENTO:</strong> <span id="previewFechaNacimiento">01/01/1990</span></div>
+<div class="dato-fila"><strong>TELÉFONO DEL FUNCIONARIO:</strong> <span id="previewTelefono">SIN DATOS</span></div>
+<div class="dato-fila"><strong>TELÉFONO DE EMERGENCIA:</strong> <span id="previewTelefonoEmergencia">SIN DATOS</span></div>
+<div class="dato-fila"><strong>CORREO ELECTRÓNICO:</strong> <span id="previewCorreo">SIN DATOS</span></div>
+<div class="dato-fila"><strong>NIVEL ACADÉMICO:</strong> <span id="previewNivelAcademico">SIN DATOS</span></div>
+<div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">01/01/2020</span></div>
+<div class="dato-fila"><strong>FECHA DEL ULTIMO ASCENSO:</strong> <span id="previewFechaAscenso">SIN DATOS</span></div>
+<div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">00 AÑOS 00 MESES</span></div>
+<div class="dato-fila"><strong>ESTADO:</strong> <span id="previewEstado">SIN DATOS</span></div>
+<div class="dato-fila"><strong>SERVICIO:</strong> <span id="previewServicio">SIN DATOS</span></div>
+<div class="dato-fila"><strong>DIRECCION DE HABITACION:</strong> <span id="previewDireccion">SIN DATOS</span></div>
+<div class="dato-fila"><strong>ULTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
+</div>
+<div class="credencial-section">
+<div class="credencial-title">POSEE CREDENCIAL</div>
+<div class="credencial-options">
+<div class="credencial-option">
+<input type="radio" id="previewCredencialSi" name="credencialPreview" value="si" disabled>
+<label for="previewCredencialSi">SI</label>
+</div>
+<div class="credencial-option">
+<input type="radio" id="previewCredencialNo" name="credencialPreview" value="no" disabled checked>
+<label for="previewCredencialNo">NO</label>
+</div>
+</div>
+<input type="text" id="previewNumeroCredencial" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
+</div>
+<div class="foto-cedula" id="previewFotoCedula">
+<img id="previewCedulaFoto" style="display:none;">
+<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">FOTO DE CÉDULA</div>
+</div>
+<div style="position: absolute; bottom: 0.5cm; left: 0.5cm; right: 0.5cm; text-align: center; font-size: 8pt; color: #333;">
+<strong>Inspectable para el Control de la Actuación Policial - ICAP Nacional</strong><br>
+Documento confidencial - Uso exclusivo institucional
+</div>
+</div>
+</div>
+<div class="preview-actions" style="display: flex; gap: 12px; margin-top:16px;">
+<button id="btnImprimir" class="btn btn-outline" style="flex:1;">🖨️ Imprimir</button>
+<button id="btnExportarPDF2" class="btn btn-pdf" style="flex:1;">📄 Exportar a PDF</button>
+</div>
+</div>
 </div>
 <script>
+// 🔒 Supabase
 const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
@@ -611,7 +688,7 @@ function actualizarVistaPrevia() {
   document.getElementById('previewCredencialNo').checked = !esSi;
   if (esSi) {
     const num = getVal('numero_credencial') || 'PNB-33311';
-    document.getElementById('previewNumeroCredencial').value = num;
+    document.getElementById('previewNumeroCredencial').textContent = num;
     document.getElementById('previewNumeroCredencial').style.display = 'block';
   } else {
     document.getElementById('previewNumeroCredencial').style.display = 'none';
@@ -626,12 +703,11 @@ document.getElementById('fotoFuncionario').addEventListener('change', function(e
       const img = document.getElementById('previewFoto');
       img.src = reader.result;
       img.style.display = 'block';
-      document.getElementById('previewFotoPlaceholder').style.display = 'none';
+      document.querySelector('#previewFotoFuncionario div').style.display = 'none';
     };
     reader.readAsDataURL(file);
   }
 });
-
 document.getElementById('fotoCedula').addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (file) {
@@ -640,7 +716,7 @@ document.getElementById('fotoCedula').addEventListener('change', function(e) {
       const img = document.getElementById('previewCedulaFoto');
       img.src = reader.result;
       img.style.display = 'block';
-      document.getElementById('previewCedulaPlaceholder').style.display = 'none';
+      document.querySelector('#previewFotoCedula div').style.display = 'none';
     };
     reader.readAsDataURL(file);
   }
@@ -674,7 +750,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       .eq('id', session.user.id)
       .single();
     if (!perfil) throw new Error('Perfil no encontrado');
-    
+
     document.getElementById('userEmail').textContent = perfil.email;
     const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
     document.getElementById('userRol').textContent = rolText;
@@ -692,7 +768,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     actualizarVistaPrevia();
   } catch (err) {
     console.error('Error al cargar sesión:', err);
-    showAlert(`❌ ${err.message || 'Error desconocido'}`, 'error');
+    showAlert(`❌ ${err.message}`, 'error');
   }
 });
 
@@ -703,65 +779,39 @@ function showAlert(msg, type) {
   setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
 
-// ✅ Corrección principal: exportarPDF mejorado
+// ✅ Corrección definitiva para exportar PDF
 function exportarPDF() {
   const ficha = document.getElementById('fichaPreview');
-
-  // Guardar estilos temporales y forzar visibilidad/dimensiones
-  const backupStyles = [];
-
-  const forceVisible = (el) => {
-    if (!el || el.style.visibility === 'hidden') return;
-    backupStyles.push({
-      el,
-      display: el.style.display,
-      visibility: el.style.visibility,
-      width: el.style.width,
-      height: el.style.height
-    });
-    el.style.display = 'block';
-    el.style.visibility = 'visible';
-    if (el.tagName === 'IMG') {
-      el.style.width = el.offsetWidth + 'px';
-      el.style.height = el.offsetHeight + 'px';
-    }
-  };
-
-  // Asegurar visibilidad de imágenes
-  const imgElements = [
-    document.querySelector('.logo-izquierda'),
-    document.querySelector('.logo-derecha'),
-    document.getElementById('previewFoto'),
-    document.getElementById('previewCedulaFoto')
-  ];
-  imgElements.forEach(forceVisible);
+  // Forzar visibilidad de imágenes durante el render
+  const imgs = Array.from(ficha.querySelectorAll('img'));
+  const originalStyles = imgs.map(img => ({
+    el: img,
+    display: img.style.display,
+    visibility: img.style.visibility
+  }));
+  imgs.forEach(img => {
+    img.style.display = 'block';
+    img.style.visibility = 'visible';
+  });
 
   html2canvas(ficha, {
     scale: 2,
     useCORS: true,
     allowTaint: true,
-    logging: true,
-    ignoreElements: (el) => el.tagName === 'SCRIPT' || el.style.display === 'none',
-    letterRendering: true
+    logging: false
   }).then(canvas => {
     // Restaurar estilos
-    backupStyles.forEach(({ el, display, visibility, width, height }) => {
-      el.style.display = display;
-      el.style.visibility = visibility;
-      if (el.tagName === 'IMG') {
-        el.style.width = width;
-        el.style.height = height;
-      }
+    originalStyles.forEach(s => {
+      s.el.style.display = s.display;
+      s.el.style.visibility = s.visibility;
     });
-
     const imgData = canvas.toDataURL('image/jpeg', 0.95);
     const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
     pdf.addImage(imgData, 'JPEG', 0, 0, 25.4, 19.05);
     pdf.save(`ficha_${document.getElementById('cedula').value || 'sin-cedula'}.pdf`);
-
   }).catch(err => {
-    console.error('Error exportando PDF:', err);
-    showAlert('❌ Error al generar el PDF. Ver consola.', 'error');
+    console.error('Error PDF:', err);
+    showAlert('❌ Error al generar PDF', 'error');
   });
 }
 
@@ -769,6 +819,7 @@ document.getElementById('btnExportarPDF').onclick = exportarPDF;
 document.getElementById('btnExportarPDF2').onclick = exportarPDF;
 document.getElementById('btnImprimir').onclick = () => window.print();
 
+// ✅ Búsqueda por cédula (sin cambios)
 document.getElementById('btnBuscarCedula').addEventListener('click', async function() {
   const searchCedula = document.getElementById('searchCedula').value.trim();
   if (!searchCedula || searchCedula.length !== 8) {
@@ -776,60 +827,35 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
     return;
   }
   try {
-    const response = await client
-      .from('auditoria_personal')
-      .select('*')
-      .eq('cedula', searchCedula)
-      .single();
+    const response = await client.from('auditoria_personal').select('*').eq('cedula', searchCedula).single();
     if (response.error) {
       showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`, 'error');
       return;
     }
     const auditoriaData = response.data;
     const mapeo = {
-      cedula: 'cedula',
-      nombre_apellidos: 'apellidos_nombres',
-      edad: 'edad_funcionario',
-      fecha_nacimiento: 'fecha_nacimiento',
-      telefono_funcionario: 'telefono',
-      telefono_emergencia: 'telefono_emergencia',
-      correo_electronico: 'correo_electronico',
-      nivel_academico: 'nivel_academico',
-      fecha_ingreso_cpn: 'fecha_ingreso_cpn',
-      fecha_ultimo_ascenso: 'fecha_ultimo_ascenso',
-      antiguedad: 'antiguedad',
-      estado: 'estado',
-      servicio: 'servicio',
-      direccion_habitacion: 'direccion',
-      ultimo_cargo: 'ultimo_cargo',
-      rango: 'rango'
+      cedula: 'cedula', nombre_apellidos: 'apellidos_nombres', edad: 'edad_funcionario',
+      fecha_nacimiento: 'fecha_nacimiento', telefono_funcionario: 'telefono',
+      telefono_emergencia: 'telefono_emergencia', correo_electronico: 'correo_electronico',
+      nivel_academico: 'nivel_academico', fecha_ingreso_cpn: 'fecha_ingreso_cpn',
+      fecha_ultimo_ascenso: 'fecha_ultimo_ascenso', antiguedad: 'antiguedad',
+      estado: 'estado', servicio: 'servicio', direccion_habitacion: 'direccion',
+      ultimo_cargo: 'ultimo_cargo', rango: 'rango'
     };
     for (const [inputId, dbField] of Object.entries(mapeo)) {
       const el = document.getElementById(inputId);
       if (el) {
         let val = auditoriaData[dbField] ?? '';
-        if (el.type === 'date' && val) {
-          el.value = val.split('T')[0];
-        } else if (el.type === 'number') {
-          el.value = val ? String(val) : '';
-        } else if (el.tagName === 'SELECT') {
+        if (el.type === 'date' && val) el.value = val.split('T')[0];
+        else if (el.type === 'number') el.value = val ? String(val) : '';
+        else if (el.tagName === 'SELECT') {
           const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
           const targetVal = normalize(val);
-          let found = false;
-          for (const opt of el.options) {
-            if (normalize(opt.value) === targetVal || normalize(opt.textContent) === targetVal) {
-              el.value = opt.value;
-              found = true;
-              break;
-            }
-          }
-          if (!found) el.value = '';
-        } else {
-          el.value = val;
-        }
+          let opt = [...el.options].find(o => normalize(o.value) === targetVal || normalize(o.textContent) === targetVal);
+          el.value = opt ? opt.value : '';
+        } else el.value = val;
       }
     }
-
     const posee = (auditoriaData.posee_credencial || '').toLowerCase() === 'si';
     document.getElementById('credencialSi').checked = posee;
     document.getElementById('credencialNo').checked = !posee;
@@ -842,29 +868,23 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
     document.getElementById('previewEstadoUsuario').textContent = estadoRaw || '—';
     actualizarVistaPrevia();
 
-    // Fotos desde Supabase Storage
     const bucket = client.storage.from('fichas');
     const fotoUrl = bucket.getPublicUrl(`foto-${searchCedula}.jpg`).data.publicUrl;
     const cedulaUrl = bucket.getPublicUrl(`cedula-${searchCedula}.jpg`).data.publicUrl;
-
-    const loadImg = (url, imgEl, placeholderEl) => {
-      fetch(url, { method: 'HEAD' })
-        .then(res => {
-          if (res.ok) {
-            imgEl.src = url;
-            imgEl.style.display = 'block';
-            if (placeholderEl) placeholderEl.style.display = 'none';
-          }
-        })
-        .catch(() => {});
+    const loadImg = (url, imgEl, placeholder) => {
+      fetch(url, {method:'HEAD'}).then(res => {
+        if (res.ok) {
+          imgEl.src = url;
+          imgEl.style.display = 'block';
+          if (placeholder) placeholder.style.display = 'none';
+        }
+      }).catch(()=>{});
     };
-
-    loadImg(fotoUrl, document.getElementById('previewFoto'), document.getElementById('previewFotoPlaceholder'));
-    loadImg(cedulaUrl, document.getElementById('previewCedulaFoto'), document.getElementById('previewCedulaPlaceholder'));
+    loadImg(fotoUrl, document.getElementById('previewFoto'), document.querySelector('#previewFotoFuncionario div'));
+    loadImg(cedulaUrl, document.getElementById('previewCedulaFoto'), document.querySelector('#previewFotoCedula div'));
     showAlert(`✅ Datos cargados para cédula ${searchCedula}`, 'success');
-
   } catch (err) {
-    console.error('Error al buscar cédula:', err);
+    console.error('Error búsqueda:', err);
     showAlert(`❌ Error: ${err.message}`, 'error');
   }
 });
