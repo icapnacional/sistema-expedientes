@@ -423,6 +423,7 @@ input, textarea, select {
 <div class="container">
   <div class="breadcrumb">
     <a href="../index.html">Inicio</a> <span>›</span>
+    <a href="../rrhh-icap/index.html">RRHH ICAP</a> <span>›</span>
     <a href="index.html">Fichas</a> <span>›</span>
     <strong>Formato de Datos</strong>
   </div>
@@ -539,7 +540,7 @@ input, textarea, select {
         </div>
 
         <div class="section-title" style="margin-top: 20px;">📍 Ubicación</div>
-        <!-- ✅ LISTA COMPLETA DE LOS 24 ESTADOS -->
+        <!-- ✅ 24 estados de Venezuela -->
         <div class="form-group">
           <label for="estado">Estado *</label>
           <select id="estado">
@@ -627,12 +628,11 @@ input, textarea, select {
       <div id="fichaPreview" class="ficha-oficial">
         <div class="watermark">FICHA DE DATOS PERSONALES</div>
 
-        <!-- ✅ LOGOS A LOS LADOS DEL TÍTULO -->
+        <!-- ✅ LOGOS SIN ESPACIOS -->
         <div class="header-container">
           <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/mp.png" class="logo-izquierda" alt="ICAP Nacional">
           <div>
             <div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
-            <!-- ✅ NUEVO FORMATO -->
             <div style="font-size: 10pt; color: #333; text-align: center; margin-top: 4px; line-height: 1.3;">
               <div><strong>FICHA N°:</strong> 1 – <span id="previewFechaFicha">06/01/2026</span> – ICAP</div>
               <div><strong>ESTADO:</strong> <span id="previewEstadoUsuario">—</span></div>
@@ -805,10 +805,10 @@ document.getElementById('credencialNo').addEventListener('change', () => {
 );
 document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListener('change', actualizarVistaPrevia));
 
-// ✅ Inicialización (sin 'estado' en perfiles)
+// ✅ Inicialización
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const { data: { session } } = await client.auth.getSession();
+    const {  { session } } = await client.auth.getSession();
     if (!session) {
       showAlert('⚠️ Debes iniciar sesión', 'error');
       setTimeout(() => window.location.href = '../index.html', 2000);
@@ -827,7 +827,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
     document.getElementById('userRol').textContent = rolText;
 
-    // ✅ Inicializar estado en ficha como "—"
     document.getElementById('previewEstadoUsuario').textContent = '—';
 
     if (perfil.rol === 'admin') {
@@ -840,7 +839,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('rolLabel').style.display = 'inline';
     }
 
-    // ✅ Fecha fija
     document.getElementById('previewFechaFicha').textContent = '06/01/2026';
 
     actualizarVistaPrevia();
@@ -857,22 +855,99 @@ function showAlert(msg, type) {
   setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
 
-// PDF e imprimir
-document.getElementById('btnExportarPDF').onclick = exportarPDF;
-document.getElementById('btnExportarPDF2').onclick = exportarPDF;
+// ✅ IMPRIMIR
 document.getElementById('btnImprimir').onclick = () => window.print();
 
+// ✅ PDF — CORREGIDO PARA MOSTRAR LOGOS Y FOTOS
 function exportarPDF() {
   const ficha = document.getElementById('fichaPreview');
-  html2canvas(ficha, { scale: 2 }).then(canvas => {
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
-    pdf.addImage(imgData, 'PNG', 0, 0, 25.4, 19.05);
-    pdf.save(`ficha_${document.getElementById('cedula').value || 'sin-cedula'}.pdf`);
-  });
+
+  // ✅ Asegurar que las imágenes dinámicas estén disponibles para html2canvas
+  const previewFoto = document.getElementById('previewFoto');
+  const previewCedulaFoto = document.getElementById('previewCedulaFoto');
+
+  let tempFoto = ficha.querySelector('#tempFoto');
+  let tempCedula = ficha.querySelector('#tempCedula');
+  if (!tempFoto) {
+    tempFoto = document.createElement('img');
+    tempFoto.id = 'tempFoto';
+    tempFoto.style.position = 'absolute';
+    tempFoto.style.top = '0';
+    tempFoto.style.left = '-9999px';
+    tempFoto.style.width = '1px';
+    tempFoto.style.height = '1px';
+    ficha.appendChild(tempFoto);
+  }
+  if (!tempCedula) {
+    tempCedula = document.createElement('img');
+    tempCedula.id = 'tempCedula';
+    tempCedula.style.position = 'absolute';
+    tempCedula.style.top = '0';
+    tempCedula.style.left = '-9999px';
+    tempCedula.style.width = '1px';
+    tempCedula.style.height = '1px';
+    ficha.appendChild(tempCedula);
+  }
+
+  if (previewFoto.src && previewFoto.style.display !== 'none') {
+    tempFoto.src = previewFoto.src;
+  } else {
+    tempFoto.removeAttribute('src');
+  }
+
+  if (previewCedulaFoto.src && previewCedulaFoto.style.display !== 'none') {
+    tempCedula.src = previewCedulaFoto.src;
+  } else {
+    tempCedula.removeAttribute('src');
+  }
+
+  // ✅ Esperar a que todas las imágenes se carguen
+  function waitForImages(element) {
+    const images = element.querySelectorAll('img');
+    return Promise.all(
+      Array.from(images).map(img => {
+        if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
+        return new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = () => resolve(); // No fallar si una imagen falla
+        });
+      })
+    );
+  }
+
+  waitForImages(ficha)
+    .then(() => {
+      return html2canvas(ficha, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: null
+      });
+    })
+    .then(canvas => {
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
+      pdf.addImage(imgData, 'JPEG', 0, 0, 25.4, 19.05);
+      pdf.save(`ficha_${document.getElementById('cedula').value || 'sin-cedula'}.pdf`);
+
+      // Limpiar
+      if (tempFoto) tempFoto.remove();
+      if (tempCedula) tempCedula.remove();
+    })
+    .catch(err => {
+      console.error('Error al generar PDF:', err);
+      showAlert('❌ Error al generar PDF', 'error');
+      if (tempFoto) tempFoto.remove();
+      if (tempCedula) tempCedula.remove();
+    });
 }
 
-// ✅ BÚSQUEDA POR CÉDULA — con soporte para <select> (estado, rango, etc.)
+// ✅ Botones de exportación
+document.getElementById('btnExportarPDF').onclick = exportarPDF;
+document.getElementById('btnExportarPDF2').onclick = exportarPDF;
+
+// ✅ BÚSQUEDA POR CÉDULA — con selección inteligente para <select>
 document.getElementById('btnBuscarCedula').addEventListener('click', async function() {
   const searchCedula = document.getElementById('searchCedula').value.trim();
   if (!searchCedula || searchCedula.length !== 8) {
@@ -894,7 +969,6 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
 
     const auditoriaData = response.data;
 
-    // ✅ Mapeo — ahora con soporte para <select>
     const mapeo = {
       cedula: 'cedula',
       nombre_apellidos: 'apellidos_nombres',
@@ -924,15 +998,11 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
         } else if (el.type === 'number') {
           el.value = val ? String(val) : '';
         } else if (el.tagName === 'SELECT') {
-          // ✅ Selección inteligente para <select>
           const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
           const targetVal = normalize(val);
           let found = false;
           for (const opt of el.options) {
-            if (
-              normalize(opt.value) === targetVal ||
-              normalize(opt.textContent) === targetVal
-            ) {
+            if (normalize(opt.value) === targetVal || normalize(opt.textContent) === targetVal) {
               el.value = opt.value;
               found = true;
               break;
@@ -945,7 +1015,7 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
       }
     }
 
-    // ✅ Credencial
+    // Credencial
     const posee = (auditoriaData.posee_credencial || '').toLowerCase() === 'si';
     document.getElementById('credencialSi').checked = posee;
     document.getElementById('credencialNo').checked = !posee;
@@ -954,15 +1024,13 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
       document.getElementById('numero_credencial').value = auditoriaData.numero_credencial;
     }
 
-    // ✅ Actualizar estado en cabecera de ficha (FICHA N° línea)
+    // Estado en cabecera
     const estadoRaw = (auditoriaData.estado || '').trim();
-    document.getElementById('previewEstadoUsuario').textContent = 
-      estadoRaw || '—';
+    document.getElementById('previewEstadoUsuario').textContent = estadoRaw || '—';
 
-    // ✅ Actualizar vista previa
     actualizarVistaPrevia();
 
-    // ✅ Cargar fotos
+    // Cargar fotos desde Supabase Storage
     const bucket = client.storage.from('fichas');
     const fotoUrl = bucket.getPublicUrl(`foto-${searchCedula}.jpg`).data.publicUrl;
     const cedulaUrl = bucket.getPublicUrl(`cedula-${searchCedula}.jpg`).data.publicUrl;
