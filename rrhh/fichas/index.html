@@ -1023,17 +1023,58 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
     showAlert(`❌ Error: ${err.message}`, 'error');
   }
 });
-  // ✅ Guardar ficha completa (datos + fotos)
-async function guardarFicha() {
-  showAlert('💾 Guardando ficha...', 'success');
+ async function guardarFicha() {
+  showAlert('🔍 Verificando cédula...', 'success');
   const cedula = document.getElementById('cedula').value.trim();
   if (!cedula || cedula.length !== 8) {
-    document.getElementById('previewNumeroFicha').textContent = data.numero_ficha;
     return showAlert('⚠️ Cédula inválida (debe tener 8 dígitos)', 'error');
   }
 
   try {
-    // 1. Recolectar datos del formulario
+    // 🔍 Primero: ¿Ya existe una ficha con esta cédula?
+    const { data: fichaExistente, error: checkError } = await client
+      .from('fichas')
+      .select('id, numero_ficha, fecha_creacion')
+      .eq('cedula', cedula)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = "no rows"
+      throw checkError;
+    }
+
+    if (fichaExistente) {
+      // ✅ Ya existe → bloquear guardado y mostrar opción de modificación
+      const fecha = new Date(fichaExistente.fecha_creacion).toLocaleDateString('es-VE');
+      showAlert(`⚠️ Ya existe una ficha para esta cédula (${cedula})\nN°: ${fichaExistente.numero_ficha} – ${fecha}`, 'error');
+      
+      // Habilitar botón "Modificar Ficha" (lo creamos ahora si no existe)
+      let btnModificar = document.getElementById('btnModificarFicha');
+      if (!btnModificar) {
+        const btnGuardar = document.getElementById('btnGuardar');
+        btnModificar = document.createElement('button');
+        btnModificar.id = 'btnModificarFicha';
+        btnModificar.className = 'btn';
+        btnModificar.style.backgroundColor = '#1976d2';
+        btnModificar.innerHTML = '✏️ Modificar Ficha';
+        btnModificar.onclick = () => {
+          // → Aquí más adelante implementarás cargar y actualizar
+          showAlert('⚠️ Función de modificación aún en desarrollo. Próximamente disponible.', 'error');
+        };
+        btnGuardar.insertAdjacentElement('beforebegin', btnModificar);
+        btnGuardar.style.display = 'none'; // ocultamos "Guardar" temporalmente
+      } else {
+        btnModificar.style.display = 'inline-block';
+        document.getElementById('btnGuardar').style.display = 'none';
+      }
+      return;
+    }
+
+    // ✅ No existe → continuar con el guardado
+    showAlert('💾 Guardando ficha...', 'success');
+
+    // === COPIA AQUÍ TU CÓDIGO ACTUAL DE RECOLECCIÓN + VALIDACIÓN + UPLOAD + INSERT ===
+    // (Todo desde "const datos = {" hasta antes del "showAlert(`✅ Ficha guardada...")")
+
     const datos = {
       cedula: cedula,
       nombre_apellidos: document.getElementById('nombre_apellidos').value.trim(),
@@ -1055,7 +1096,6 @@ async function guardarFicha() {
       numero_credencial: document.getElementById('numero_credencial').value.trim() || null
     };
 
-    // Validar campos obligatorios
     const obligatorios = ['nombre_apellidos', 'edad', 'fecha_nacimiento', 'nivel_academico', 'telefono_funcionario', 'telefono_emergencia', 'correo_electronico', 'rango', 'ultimo_cargo', 'fecha_ingreso_cpn', 'antiguedad', 'estado', 'servicio', 'direccion_habitacion'];
     for (const campo of obligatorios) {
       if (!datos[campo]) {
@@ -1063,10 +1103,8 @@ async function guardarFicha() {
       }
     }
 
-    // 2. Subir fotos (si existen)
     const storage = client.storage.from('fichas');
     let fotoUrl = null, cedulaUrl = null;
-
     const uploadFile = async (fileInput, path) => {
       if (!fileInput.files?.[0]) return null;
       const file = fileInput.files[0];
@@ -1078,7 +1116,6 @@ async function guardarFicha() {
     fotoUrl = await uploadFile(document.getElementById('fotoFuncionario'), `foto-${cedula}.jpg`);
     cedulaUrl = await uploadFile(document.getElementById('fotoCedula'), `cedula-${cedula}.jpg`);
 
-    // 3. Insertar en tabla `fichas`
     const { data, error } = await client
       .from('fichas')
       .insert([{
@@ -1093,19 +1130,15 @@ async function guardarFicha() {
 
     if (error) throw error;
 
-    // 4. Actualizar título con número de ficha y fecha
+    // ✅ Éxito → actualizar UI
     const fecha = new Date(data.fecha_creacion).toLocaleDateString('es-VE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
+      day: '2-digit', month: '2-digit', year: 'numeric'
     });
     document.getElementById('previewFechaFicha').textContent = fecha;
     document.getElementById('previewEstadoUsuario').textContent = datos.estado || '—';
-    
-    // ✅ Aquí actualizamos el número en el título
-    const tituloFicha = document.querySelector('.header-container .titulo-ficha');
-    if (tituloFicha) {
-      const padre = tituloFicha.parentElement;
+
+    const padre = document.querySelector('.header-container > div:nth-child(2)');
+    if (padre) {
       const nuevoTitulo = `
         <div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
         <div style="font-size: 10pt; color: #333; text-align: center; margin-top: 4px; line-height: 1.3;">
@@ -1113,13 +1146,17 @@ async function guardarFicha() {
           <div><strong>ESTADO:</strong> ${datos.estado || '—'}</div>
         </div>
       `;
-      padre.innerHTML = padre.innerHTML.replace(
-        /<div class="titulo-ficha">[\s\S]*?<\/div>\s*<div style="[^"]*">[\s\S]*?<\/div>/,
-        nuevoTitulo
-      );
+      padre.innerHTML = nuevoTitulo;
     }
 
-    // 5. Log (opcional)
+    // ✅ Ocultar botón "Modificar" si estaba visible, mostrar "Guardar" de nuevo
+    const btnModificar = document.getElementById('btnModificarFicha');
+    if (btnModificar) {
+      btnModificar.style.display = 'none';
+      document.getElementById('btnGuardar').style.display = 'inline-block';
+    }
+
+    // Log opcional
     try {
       const { data: { session } } = await client.auth.getSession();
       if (session) {
@@ -1135,13 +1172,10 @@ async function guardarFicha() {
     }
 
     showAlert(`✅ Ficha guardada exitosamente. N°: ${data.numero_ficha}`, 'success');
-    setTimeout(() => {
-      document.getElementById('btnExportarPDF').removeAttribute('disabled');
-    }, 1000);
 
   } catch (err) {
     console.error('Error al guardar ficha:', err);
-    showAlert(`❌ Error: ${err.message || 'Falla desconocida'}`, 'error');
+    showAlert(`❌ ${err.message || 'Error desconocido'}`, 'error');
   }
 }
 </script>
