@@ -805,31 +805,34 @@ document.getElementById('credencialNo').addEventListener('change', () => {
 );
 document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListener('change', actualizarVistaPrevia));
 
-// ✅ Inicialización
+// ✅ Inicialización — CORREGIDO (sin error de sintaxis)
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const {  { session } } = await client.auth.getSession();
+    // ✅ Corrección: destructuración válida
+    const {  } = await client.auth.getSession();
+    const session = data?.session;
+
     if (!session) {
       showAlert('⚠️ Debes iniciar sesión', 'error');
       setTimeout(() => window.location.href = '../index.html', 2000);
       return;
     }
 
-    const { data: perfil } = await client
+    const { data: perfilData } = await client
       .from('perfiles')
       .select('email, rol')
       .eq('id', session.user.id)
       .single();
 
-    if (!perfil) throw new Error('Perfil no encontrado');
+    if (!perfilData) throw new Error('Perfil no encontrado');
 
-    document.getElementById('userEmail').textContent = perfil.email;
-    const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
+    document.getElementById('userEmail').textContent = perfilData.email;
+    const rolText = perfilData.rol === 'admin' ? 'Administrador' : perfilData.rol === 'moderador' ? 'Moderador' : 'Consultor';
     document.getElementById('userRol').textContent = rolText;
 
     document.getElementById('previewEstadoUsuario').textContent = '—';
 
-    if (perfil.rol === 'admin') {
+    if (perfilData.rol === 'admin') {
       document.getElementById('rolLabel').style.display = 'none';
       const rolSpan = document.getElementById('userRol');
       rolSpan.style.color = '#c62828';
@@ -847,7 +850,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     showAlert(`❌ ${err.message || 'Error desconocido'}`, 'error');
   }
 });
-
 function showAlert(msg, type) {
   alertDiv.textContent = msg;
   alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
