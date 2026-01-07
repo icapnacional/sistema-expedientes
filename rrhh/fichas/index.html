@@ -1021,57 +1021,27 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
     showAlert(`❌ Error: ${err.message}`, 'error');
   }
 });
- async function guardarFicha() {
-  showAlert('🔍 Verificando cédula...', 'success');
+async function guardarFicha() {
   const cedula = document.getElementById('cedula').value.trim();
   if (!cedula || cedula.length !== 8) {
     return showAlert('⚠️ Cédula inválida (debe tener 8 dígitos)', 'error');
   }
 
   try {
-    // 🔍 Primero: ¿Ya existe una ficha con esta cédula?
+    // 🔍 Verificar si ya existe ficha con esta cédula
     const { data: fichaExistente, error: checkError } = await client
       .from('fichas')
-      .select('id, numero_ficha, fecha_creacion')
+      .select('id')
       .eq('cedula', cedula)
       .single();
 
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = "no rows"
-      throw checkError;
+    if (!checkError) {
+      // ✅ Ya existe → bloquear
+      return showAlert(`⚠️ Ya existe una ficha registrada para la cédula ${cedula}. No se permite duplicar.`, 'error');
     }
 
-    if (fichaExistente) {
-      // ✅ Ya existe → bloquear guardado y mostrar opción de modificación
-      const fecha = new Date(fichaExistente.fecha_creacion).toLocaleDateString('es-VE');
-      showAlert(`⚠️ Ya existe una ficha para esta cédula (${cedula})\nN°: ${fichaExistente.numero_ficha} – ${fecha}`, 'error');
-      
-      // Habilitar botón "Modificar Ficha" (lo creamos ahora si no existe)
-      let btnModificar = document.getElementById('btnModificarFicha');
-      if (!btnModificar) {
-        const btnGuardar = document.getElementById('btnGuardar');
-        btnModificar = document.createElement('button');
-        btnModificar.id = 'btnModificarFicha';
-        btnModificar.className = 'btn';
-        btnModificar.style.backgroundColor = '#1976d2';
-        btnModificar.innerHTML = '✏️ Modificar Ficha';
-        btnModificar.onclick = () => {
-          // → Aquí más adelante implementarás cargar y actualizar
-          showAlert('⚠️ Función de modificación aún en desarrollo. Próximamente disponible.', 'error');
-        };
-        btnGuardar.insertAdjacentElement('beforebegin', btnModificar);
-        btnGuardar.style.display = 'none'; // ocultamos "Guardar" temporalmente
-      } else {
-        btnModificar.style.display = 'inline-block';
-        document.getElementById('btnGuardar').style.display = 'none';
-      }
-      return;
-    }
-
-    // ✅ No existe → continuar con el guardado
+    // ✅ Continuar con guardado normal
     showAlert('💾 Guardando ficha...', 'success');
-
-    // === COPIA AQUÍ TU CÓDIGO ACTUAL DE RECOLECCIÓN + VALIDACIÓN + UPLOAD + INSERT ===
-    // (Todo desde "const datos = {" hasta antes del "showAlert(`✅ Ficha guardada...")")
 
     const datos = {
       cedula: cedula,
@@ -1128,7 +1098,6 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
 
     if (error) throw error;
 
-    // ✅ Éxito → actualizar UI
     const fecha = new Date(data.fecha_creacion).toLocaleDateString('es-VE', {
       day: '2-digit', month: '2-digit', year: 'numeric'
     });
@@ -1147,14 +1116,6 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
       padre.innerHTML = nuevoTitulo;
     }
 
-    // ✅ Ocultar botón "Modificar" si estaba visible, mostrar "Guardar" de nuevo
-    const btnModificar = document.getElementById('btnModificarFicha');
-    if (btnModificar) {
-      btnModificar.style.display = 'none';
-      document.getElementById('btnGuardar').style.display = 'inline-block';
-    }
-
-    // Log opcional
     try {
       const { data: { session } } = await client.auth.getSession();
       if (session) {
