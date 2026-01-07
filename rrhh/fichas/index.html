@@ -806,53 +806,78 @@ document.getElementById('btnImprimir').onclick = () => window.print();
 function exportarPDF() {
   const ficha = document.getElementById('fichaPreview');
   
-  // Función para convertir una imagen a Base64 (solo si es externa)
-  function imageToBase64(img) {
-    return new Promise((resolve) => {
-      if (img.src.startsWith('data:')) {
-        resolve(); // ya es base64
-        return;
-      }
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = img.naturalWidth || img.width;
-      canvas.height = img.naturalHeight || img.height;
-      ctx.drawImage(img, 0, 0);
-      img.src = canvas.toDataURL('image/png');
-      resolve();
-    });
-  }
+  // 1. Forzar recarga de logos con CORS (sin tocar el HTML original)
+  const logoIzq = ficha.querySelector('.logo-izquierda');
+  const logoDer = ficha.querySelector('.logo-derecha');
+  
+  // Guardar estado original
+  const origSrcIzq = logoIzq.src;
+  const origSrcDer = logoDer.src;
+  
+  // Recargar con CORS
+  logoIzq.crossOrigin = 'anonymous';
+  logoDer.crossOrigin = 'anonymous';
+  logoIzq.src = origSrcIzq + '?t=' + Date.now();  // evitar caché
+  logoDer.src = origSrcDer + '?t=' + Date.now();
 
-  // Seleccionar solo las imágenes críticas: logos + fotos
-  const criticalImgs = [
-    ...ficha.querySelectorAll('.logo-izquierda, .logo-derecha, #previewFoto, #previewCedulaFoto')
-  ];
+  // 2. Forzar visibilidad de fotos
+  const fotoEl = ficha.querySelector('#previewFoto');
+  const cedulaEl = ficha.querySelector('#previewCedulaFoto');
+  const origStyleFoto = fotoEl.style.cssText;
+  const origStyleCedula = cedulaEl.style.cssText;
+  fotoEl.style.display = 'block';
+  cedulaEl.style.display = 'block';
+  const placeholder1 = ficha.querySelector('.foto-funcionario > div');
+  const placeholder2 = ficha.querySelector('.foto-cedula > div');
+  if (placeholder1) placeholder1.style.display = 'none';
+  if (placeholder2) placeholder2.style.display = 'none';
 
-  // Convertir imágenes externas a Base64
-  Promise.all(criticalImgs.map(img => 
-    img.complete ? imageToBase64(img) : new Promise(r => { img.onload = () => imageToBase64(img).then(r); })
-  )).then(() => {
-    // Forzar visibilidad de placeholders
-    const placeholders = ficha.querySelectorAll('.foto-funcionario > div, .foto-cedula > div');
-    placeholders.forEach(el => el.style.display = 'none');
+  // 3. Esperar que carguen y capturar
+  const waitForLoad = (img) => new Promise(r => {
+    if (img.complete && img.naturalWidth > 0) r();
+    else img.onload = img.onerror = r;
+  });
 
+  Promise.all([
+    waitForLoad(logoIzq),
+    waitForLoad(logoDer),
+    waitForLoad(fotoEl),
+    waitForLoad(cedulaEl)
+  ]).then(() => {
+    // ✅ Ya están cargadas con CORS → seguro usar html2canvas
     html2canvas(ficha, {
       scale: 2,
-      useCORS: false,      // ya no necesario (todo en base64)
-      allowTaint: false,   // más seguro
+      useCORS: true,       // ahora sí funciona
+      allowTaint: false,   // importante: mantener en false
       logging: false
     }).then(canvas => {
-      // Restaurar placeholders (opcional, para UX)
-      placeholders.forEach(el => el.style.display = '');
-      
-      const imgData = canvas.toDataURL('image/jpeg', 0.9);
+      // Restaurar estado original
+      logoIzq.src = origSrcIzq;
+      logoDer.src = origSrcDer;
+      fotoEl.style.cssText = origStyleFoto;
+      cedulaEl.style.cssText = origStyleCedula;
+      if (placeholder1) placeholder1.style.display = '';
+      if (placeholder2) placeholder2.style.display = '';
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
       const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
       pdf.addImage(imgData, 'JPEG', 0, 0, 25.4, 19.05);
       pdf.save(`ficha_${document.getElementById('cedula').value || 'sin-cedula'}.pdf`);
     }).catch(err => {
       console.error('html2canvas error:', err);
       showAlert('❌ Error al generar PDF', 'error');
+      
+      // Siempre restaurar
+      logoIzq.src = origSrcIzq;
+      logoDer.src = origSrcDer;
+      fotoEl.style.cssText = origStyleFoto;
+      cedulaEl.style.cssText = origStyleCedula;
+      if (placeholder1) placeholder1.style.display = '';
+      if (placeholder2) placeholder2.style.display = '';
     });
+  }).catch(err => {
+    console.error('Error esperando carga:', err);
+    showAlert('❌ Error al cargar imágenes', 'error');
   });
 }
 // ✅ BÚSQUEDA POR CÉDULA — con soporte para <select> (estado, rango, etc.)
