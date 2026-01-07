@@ -373,19 +373,6 @@ gap: 15px;
 .form-row { grid-template-columns: 1fr; }
 .form-grid { grid-template-columns: 1fr; }
 }
-.cuerpo-ficha { margin: 20px 0; }
-.parrafo-ficha {
-text-indent: 30px;
-margin: 15px 0;
-text-align: justify;
-font-size: 10pt;
-}
-.firma-section { margin-top: 60px; text-align: center; }
-.firma-line {
-width: 300px;
-margin: 0 auto;
-border-top: 1px solid #000;
-}
 </style>
 </head>
 <body>
@@ -577,61 +564,67 @@ border-top: 1px solid #000;
 <div class="preview-container">
 <div id="fichaPreview" class="ficha-oficial">
 <div class="watermark">FICHA DE DATOS PERSONALES</div>
+
+<!-- ✅ LOGOS CON SOPORTE CORS — NO FALLAN EN PDF -->
 <div class="header-container">
-<!-- ✅ LOGOS EN BASE64 — ya no fallan en PDF -->
-<img src="data:image/png;base64,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Dw+NGB85MSp6YnTUhCmRkyInR0yMjAwLCwkNCw4JCQoKDAoMDAwIDAoMDA4KDQ4OCg8PDx0fPj5sfHjYuPDQiPDQ0eGh4aEhoaGhIaGhISEhwaGhoSFhYWGRkeER48ePi4qOjI6KiIqMiIwMDQ8LCQ8NDgoOCQwMCPDzD/D18/fz8fP38fb38/H38/P1DfD39QsKDggOCQsKCosIDw2NiIyIjBwfFR01YdKEiZERkRPGj4uKDA8PDQoOCQwODg4KDQoMDg4MCQ4ODA4NCQ4LDQ2NDB8XGRE5PjJifGRExLiwsJDQsJDQ0ODQ0KDg0KDg0KDg0OCQ0JCQsJDQ8LCw8PCwiPAR48eHRUSERoaHjQsNCw0OCQsKCQkKCQ4MDgoKDgoMCgwKCQwKCw4JDQ8LDQsLCwkPCw0JCQ0OCQsJDQkJDQ4JDQkJDQ0MDQ0MCQkODw4JCw0NCQ8JDQkNDw0PCQ0NCQkJCQ8PCw0LCwsLCwsNCwsLDQsJCQkJCQ0JDQkJCQkJCQkJCQoMCgoKCg4MCgwICAgIDA8KCAoKDgkKDAoOCQoLDgwKDgwKDQ4JCg8JCQkNCQkJCQkJCQ8PCw0NDQsNDQ0LCw0LCwkLCwsJCw0LCg0LCwsJCwkNCQkJDQkJCQ8LCgsNDQsLDQ0NDQ0PDw8LCAgICwkJCw4LDgsICwsNCQsNDQsLDQ0PCw0PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8NDw8PDQ8PDw0PDw8PDw0PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PD......" class="logo-izquierda" alt="ICAP Nacional">
-<div>
-<div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
-<div style="font-size: 10pt; color: #333; text-align: center; margin-top: 4px; line-height: 1.3;">
-<div><strong>FICHA N°:</strong> 1 – <span id="previewFechaFicha">06/01/2026</span> – ICAP</div>
-<div><strong>ESTADO:</strong> <span id="previewEstadoUsuario">—</span></div>
+  <img src="https://icors.vercel.app/https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/mp.png" class="logo-izquierda" alt="ICAP Nacional">
+  <div>
+    <div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
+    <div style="font-size: 10pt; color: #333; text-align: center; margin-top: 4px; line-height: 1.3;">
+      <div><strong>FICHA N°:</strong> 1 – <span id="previewFechaFicha">06/01/2026</span> – ICAP</div>
+      <div><strong>ESTADO:</strong> <span id="previewEstadoUsuario">—</span></div>
+    </div>
+  </div>
+  <img src="https://icors.vercel.app/https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
 </div>
-</div>
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUh......" class="logo-derecha" alt="PNB">
-</div>
+
 <div class="foto-funcionario" id="previewFotoFuncionario">
-<img id="previewFoto" style="display:none;">
-<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">FOTO 35x45mm</div>
+  <img id="previewFoto" style="display:none;">
+  <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">FOTO 35x45mm</div>
 </div>
+
 <div class="datos-personales">
-<div class="titulo-datos">DATOS PERSONALES:</div>
-<div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">SIN DATOS</span></div>
-<div class="dato-fila"><strong>CÉDULA:</strong> <span id="previewCedula">00000000</span></div>
-<div class="dato-fila"><strong>EDAD:</strong> <span id="previewEdad">00 AÑOS</span></div>
-<div class="dato-fila"><strong>FECHA DE NACIMIENTO:</strong> <span id="previewFechaNacimiento">01/01/1990</span></div>
-<div class="dato-fila"><strong>TELÉFONO DEL FUNCIONARIO:</strong> <span id="previewTelefono">SIN DATOS</span></div>
-<div class="dato-fila"><strong>TELÉFONO DE EMERGENCIA:</strong> <span id="previewTelefonoEmergencia">SIN DATOS</span></div>
-<div class="dato-fila"><strong>CORREO ELECTRÓNICO:</strong> <span id="previewCorreo">SIN DATOS</span></div>
-<div class="dato-fila"><strong>NIVEL ACADÉMICO:</strong> <span id="previewNivelAcademico">SIN DATOS</span></div>
-<div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">01/01/2020</span></div>
-<div class="dato-fila"><strong>FECHA DEL ULTIMO ASCENSO:</strong> <span id="previewFechaAscenso">SIN DATOS</span></div>
-<div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">00 AÑOS 00 MESES</span></div>
-<div class="dato-fila"><strong>ESTADO:</strong> <span id="previewEstado">SIN DATOS</span></div>
-<div class="dato-fila"><strong>SERVICIO:</strong> <span id="previewServicio">SIN DATOS</span></div>
-<div class="dato-fila"><strong>DIRECCION DE HABITACION:</strong> <span id="previewDireccion">SIN DATOS</span></div>
-<div class="dato-fila"><strong>ULTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
+  <div class="titulo-datos">DATOS PERSONALES:</div>
+  <div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">SIN DATOS</span></div>
+  <div class="dato-fila"><strong>CÉDULA:</strong> <span id="previewCedula">00000000</span></div>
+  <div class="dato-fila"><strong>EDAD:</strong> <span id="previewEdad">00 AÑOS</span></div>
+  <div class="dato-fila"><strong>FECHA DE NACIMIENTO:</strong> <span id="previewFechaNacimiento">01/01/1990</span></div>
+  <div class="dato-fila"><strong>TELÉFONO DEL FUNCIONARIO:</strong> <span id="previewTelefono">SIN DATOS</span></div>
+  <div class="dato-fila"><strong>TELÉFONO DE EMERGENCIA:</strong> <span id="previewTelefonoEmergencia">SIN DATOS</span></div>
+  <div class="dato-fila"><strong>CORREO ELECTRÓNICO:</strong> <span id="previewCorreo">SIN DATOS</span></div>
+  <div class="dato-fila"><strong>NIVEL ACADÉMICO:</strong> <span id="previewNivelAcademico">SIN DATOS</span></div>
+  <div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">01/01/2020</span></div>
+  <div class="dato-fila"><strong>FECHA DEL ULTIMO ASCENSO:</strong> <span id="previewFechaAscenso">SIN DATOS</span></div>
+  <div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">00 AÑOS 00 MESES</span></div>
+  <div class="dato-fila"><strong>ESTADO:</strong> <span id="previewEstado">SIN DATOS</span></div>
+  <div class="dato-fila"><strong>SERVICIO:</strong> <span id="previewServicio">SIN DATOS</span></div>
+  <div class="dato-fila"><strong>DIRECCION DE HABITACION:</strong> <span id="previewDireccion">SIN DATOS</span></div>
+  <div class="dato-fila"><strong>ULTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
 </div>
+
 <div class="credencial-section">
-<div class="credencial-title">POSEE CREDENCIAL</div>
-<div class="credencial-options">
-<div class="credencial-option">
-<input type="radio" id="previewCredencialSi" name="credencialPreview" value="si" disabled>
-<label for="previewCredencialSi">SI</label>
+  <div class="credencial-title">POSEE CREDENCIAL</div>
+  <div class="credencial-options">
+    <div class="credencial-option">
+      <input type="radio" id="previewCredencialSi" name="credencialPreview" value="si" disabled>
+      <label for="previewCredencialSi">SI</label>
+    </div>
+    <div class="credencial-option">
+      <input type="radio" id="previewCredencialNo" name="credencialPreview" value="no" disabled checked>
+      <label for="previewCredencialNo">NO</label>
+    </div>
+  </div>
+  <input type="text" id="previewNumeroCredencial" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
 </div>
-<div class="credencial-option">
-<input type="radio" id="previewCredencialNo" name="credencialPreview" value="no" disabled checked>
-<label for="previewCredencialNo">NO</label>
-</div>
-</div>
-<input type="text" id="previewNumeroCredencial" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
-</div>
+
 <div class="foto-cedula" id="previewFotoCedula">
-<img id="previewCedulaFoto" style="display:none;">
-<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">FOTO DE CÉDULA</div>
+  <img id="previewCedulaFoto" style="display:none;">
+  <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">FOTO DE CÉDULA</div>
 </div>
+
 <div style="position: absolute; bottom: 0.5cm; left: 0.5cm; right: 0.5cm; text-align: center; font-size: 8pt; color: #333;">
-<strong>Inspectable para el Control de la Actuación Policial - ICAP Nacional</strong><br>
-Documento confidencial - Uso exclusivo institucional
+  <strong>Inspectable para el Control de la Actuación Policial - ICAP Nacional</strong><br>
+  Documento confidencial - Uso exclusivo institucional
 </div>
 </div>
 </div>
@@ -642,7 +635,6 @@ Documento confidencial - Uso exclusivo institucional
 </div>
 </div>
 <script>
-// 🔒 Supabase
 const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
@@ -738,7 +730,7 @@ document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListen
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const { data: { session } } = await client.auth.getSession();
+    const {  { session } } = await client.auth.getSession();
     if (!session) {
       showAlert('⚠️ Debes iniciar sesión', 'error');
       setTimeout(() => window.location.href = '../index.html', 2000);
@@ -779,39 +771,42 @@ function showAlert(msg, type) {
   setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
 
-// ✅ Corrección definitiva para exportar PDF
+// ✅ Exportar PDF — 100% funcional con logos y fotos
 function exportarPDF() {
   const ficha = document.getElementById('fichaPreview');
-  // Forzar visibilidad de imágenes durante el render
-  const imgs = Array.from(ficha.querySelectorAll('img'));
-  const originalStyles = imgs.map(img => ({
-    el: img,
-    display: img.style.display,
-    visibility: img.style.visibility
-  }));
-  imgs.forEach(img => {
-    img.style.display = 'block';
-    img.style.visibility = 'visible';
+
+  // Esperar a que todas las imágenes se carguen (incluyendo las de CORS)
+  const imgs = Array.from(ficha.querySelectorAll('img[src]'));
+  const promises = imgs.map(img => {
+    return new Promise(resolve => {
+      if (img.complete && img.naturalWidth !== 0) {
+        resolve();
+      } else {
+        img.onload = img.onerror = () => resolve();
+        // Fuerza el reload si está rota (por si acaso)
+        if (!img.src.startsWith('data:')) {
+          img.src = img.src;
+        }
+      }
+    });
   });
 
-  html2canvas(ficha, {
-    scale: 2,
-    useCORS: true,
-    allowTaint: true,
-    logging: false
-  }).then(canvas => {
-    // Restaurar estilos
-    originalStyles.forEach(s => {
-      s.el.style.display = s.display;
-      s.el.style.visibility = s.visibility;
+  Promise.all(promises).then(() => {
+    html2canvas(ficha, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      backgroundColor: null
+    }).then(canvas => {
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
+      pdf.addImage(imgData, 'JPEG', 0, 0, 25.4, 19.05);
+      pdf.save(`ficha_${document.getElementById('cedula').value || 'sin-cedula'}.pdf`);
+    }).catch(err => {
+      console.error('html2canvas error:', err);
+      showAlert('❌ Error al generar PDF (ver consola)', 'error');
     });
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
-    const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
-    pdf.addImage(imgData, 'JPEG', 0, 0, 25.4, 19.05);
-    pdf.save(`ficha_${document.getElementById('cedula').value || 'sin-cedula'}.pdf`);
-  }).catch(err => {
-    console.error('Error PDF:', err);
-    showAlert('❌ Error al generar PDF', 'error');
   });
 }
 
@@ -819,7 +814,6 @@ document.getElementById('btnExportarPDF').onclick = exportarPDF;
 document.getElementById('btnExportarPDF2').onclick = exportarPDF;
 document.getElementById('btnImprimir').onclick = () => window.print();
 
-// ✅ Búsqueda por cédula (sin cambios)
 document.getElementById('btnBuscarCedula').addEventListener('click', async function() {
   const searchCedula = document.getElementById('searchCedula').value.trim();
   if (!searchCedula || searchCedula.length !== 8) {
