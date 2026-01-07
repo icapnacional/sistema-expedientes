@@ -148,6 +148,7 @@ width: 25.4cm;
 height: 19.05cm;
 padding: 1.5cm;
 }
+/* ——— HEADER CON LOGOS AL LADO DEL TÍTULO ——— */
 .header-container {
 display: flex;
 align-items: center;
@@ -176,6 +177,7 @@ text-align: center;
 flex-grow: 1;
 margin: 0 1cm;
 }
+/* ——— FOTO FUNCIONARIO ——— */
 .foto-funcionario {
 position: absolute;
 top: 3.5cm;
@@ -191,6 +193,7 @@ width: 100%;
 height: 100%;
 object-fit: cover;
 }
+/* ——— FOTO CÉDULA ——— */
 .foto-cedula {
 position: absolute;
 bottom: 1cm;
@@ -206,6 +209,7 @@ width: 100%;
 height: 100%;
 object-fit: contain;
 }
+/* ——— DATOS PERSONALES ——— */
 .datos-personales {
 position: absolute;
 top: 3.5cm;
@@ -224,6 +228,7 @@ color: #000;
 margin-bottom: 4px;
 font-size: 10pt;
 }
+/* ——— CREDENCIAL ——— */
 .credencial-section {
 position: absolute;
 top: 8.5cm;
@@ -247,6 +252,7 @@ width: 100%;
 margin-top: 5px;
 font-size: 9pt;
 }
+/* ——— MARCA DE AGUA ——— */
 .watermark {
 position: absolute;
 opacity: 0.05;
@@ -258,6 +264,7 @@ white-space: nowrap;
 color: #722F37;
 font-weight: bold;
 }
+/* ——— IMPRESIÓN ——— */
 @media print {
 @page {
 size: 25.4cm 19.05cm;
@@ -272,6 +279,7 @@ top: 0;
 width: 25.4cm;
 height: 19.05cm;
 }
+/* Fotos más grandes en impresión */
 .foto-funcionario {
 width: 40mm !important;
 height: 50mm !important;
@@ -283,6 +291,7 @@ bottom: auto !important;
 top: 12cm !important;
 }
 }
+/* ——— VISTA EN PANTALLA ——— */
 @media screen {
 .ficha-oficial {
 width: 100%;
@@ -336,6 +345,7 @@ position: static;
 margin-top: 20px;
 clear: both;
 }
+/* ✅ Fotos más grandes y mejor posicionadas */
 .foto-funcionario {
 max-width: 180px !important;
 max-height: 225px !important;
@@ -346,6 +356,7 @@ max-height: 170px !important;
 margin-top: -150px !important;
 }
 }
+/* ——— DISEÑO FORMULARIO ——— */
 .form-grid {
 display: grid;
 grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -372,6 +383,19 @@ gap: 15px;
 @media (max-width: 768px) {
 .form-row { grid-template-columns: 1fr; }
 .form-grid { grid-template-columns: 1fr; }
+}
+.cuerpo-ficha { margin: 20px 0; }
+.parrafo-ficha {
+text-indent: 30px;
+margin: 15px 0;
+text-align: justify;
+font-size: 10pt;
+}
+.firma-section { margin-top: 60px; text-align: center; }
+.firma-line {
+width: 300px;
+margin: 0 auto;
+border-top: 1px solid #000;
 }
 </style>
 </head>
@@ -402,6 +426,7 @@ gap: 15px;
 </div>
 </div>
 <div class="form-grid">
+<!-- Columna 1: Básicos -->
 <div class="form-column">
 <div class="section-title">👤 Información Básica</div>
 <div class="form-group">
@@ -449,6 +474,7 @@ gap: 15px;
 <input type="email" id="correo_electronico" placeholder="ejemplo@correo.com">
 </div>
 </div>
+<!-- Columna 2: Policiales -->
 <div class="form-column">
 <div class="section-title">👮‍♂️ Datos Policiales</div>
 <div class="form-group">
@@ -485,6 +511,7 @@ gap: 15px;
 <input type="text" id="antiguedad" placeholder="Ej: 5 años 3 meses">
 </div>
 <div class="section-title" style="margin-top: 20px;">📍 Ubicación</div>
+<!-- ✅ LISTA COMPLETA DE LOS 24 ESTADOS -->
 <div class="form-group">
 <label for="estado">Estado *</label>
 <select id="estado">
@@ -524,6 +551,7 @@ gap: 15px;
 <textarea id="direccion_habitacion" rows="2" placeholder="Dirección completa"></textarea>
 </div>
 </div>
+<!-- Columna 3: Credencial y fotos -->
 <div class="form-column">
 <div class="section-title">🆔 Credencial</div>
 <div class="form-group">
@@ -559,72 +587,73 @@ gap: 15px;
 <button id="btnExportarPDF" class="btn btn-pdf">📄 Exportar a PDF</button>
 </div>
 </div>
+<!-- Vista Previa -->
 <div class="preview-section">
 <h2>🔍 Vista Previa en Tiempo Real</h2>
 <div class="preview-container">
 <div id="fichaPreview" class="ficha-oficial">
 <div class="watermark">FICHA DE DATOS PERSONALES</div>
-
-<!-- ✅ LOGOS CON SOPORTE CORS — NO FALLAN EN PDF -->
+<!-- ✅ LOGOS A LOS LADOS DEL TÍTULO -->
 <div class="header-container">
-  <img src="https://icors.vercel.app/https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/mp.png" class="logo-izquierda" alt="ICAP Nacional">
-  <div>
-    <div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
-    <div style="font-size: 10pt; color: #333; text-align: center; margin-top: 4px; line-height: 1.3;">
-      <div><strong>FICHA N°:</strong> 1 – <span id="previewFechaFicha">06/01/2026</span> – ICAP</div>
-      <div><strong>ESTADO:</strong> <span id="previewEstadoUsuario">—</span></div>
-    </div>
-  </div>
-  <img src="https://icors.vercel.app/https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/mp.png" class="logo-izquierda" alt="ICAP Nacional">
+<div>
+<div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
+<!-- ✅ NUEVO FORMATO -->
+<div style="font-size: 10pt; color: #333; text-align: center; margin-top: 4px; line-height: 1.3;">
+<div><strong>FICHA N°:</strong> 1 – <span id="previewFechaFicha">06/01/2026</span> – ICAP</div>
+<div><strong>ESTADO:</strong> <span id="previewEstadoUsuario">—</span></div>
 </div>
-
+</div>
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
+</div>
+<!-- Foto funcionario -->
 <div class="foto-funcionario" id="previewFotoFuncionario">
-  <img id="previewFoto" style="display:none;">
-  <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">FOTO 35x45mm</div>
+<img id="previewFoto" style="display:none;">
+<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px;">FOTO 35x45mm</div>
 </div>
-
+<!-- Datos -->
 <div class="datos-personales">
-  <div class="titulo-datos">DATOS PERSONALES:</div>
-  <div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">SIN DATOS</span></div>
-  <div class="dato-fila"><strong>CÉDULA:</strong> <span id="previewCedula">00000000</span></div>
-  <div class="dato-fila"><strong>EDAD:</strong> <span id="previewEdad">00 AÑOS</span></div>
-  <div class="dato-fila"><strong>FECHA DE NACIMIENTO:</strong> <span id="previewFechaNacimiento">01/01/1990</span></div>
-  <div class="dato-fila"><strong>TELÉFONO DEL FUNCIONARIO:</strong> <span id="previewTelefono">SIN DATOS</span></div>
-  <div class="dato-fila"><strong>TELÉFONO DE EMERGENCIA:</strong> <span id="previewTelefonoEmergencia">SIN DATOS</span></div>
-  <div class="dato-fila"><strong>CORREO ELECTRÓNICO:</strong> <span id="previewCorreo">SIN DATOS</span></div>
-  <div class="dato-fila"><strong>NIVEL ACADÉMICO:</strong> <span id="previewNivelAcademico">SIN DATOS</span></div>
-  <div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">01/01/2020</span></div>
-  <div class="dato-fila"><strong>FECHA DEL ULTIMO ASCENSO:</strong> <span id="previewFechaAscenso">SIN DATOS</span></div>
-  <div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">00 AÑOS 00 MESES</span></div>
-  <div class="dato-fila"><strong>ESTADO:</strong> <span id="previewEstado">SIN DATOS</span></div>
-  <div class="dato-fila"><strong>SERVICIO:</strong> <span id="previewServicio">SIN DATOS</span></div>
-  <div class="dato-fila"><strong>DIRECCION DE HABITACION:</strong> <span id="previewDireccion">SIN DATOS</span></div>
-  <div class="dato-fila"><strong>ULTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
+<div class="titulo-datos">DATOS PERSONALES:</div>
+<div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">SIN DATOS</span></div>
+<div class="dato-fila"><strong>CÉDULA:</strong> <span id="previewCedula">00000000</span></div>
+<div class="dato-fila"><strong>EDAD:</strong> <span id="previewEdad">00 AÑOS</span></div>
+<div class="dato-fila"><strong>FECHA DE NACIMIENTO:</strong> <span id="previewFechaNacimiento">01/01/1990</span></div>
+<div class="dato-fila"><strong>TELÉFONO DEL FUNCIONARIO:</strong> <span id="previewTelefono">SIN DATOS</span></div>
+<div class="dato-fila"><strong>TELÉFONO DE EMERGENCIA:</strong> <span id="previewTelefonoEmergencia">SIN DATOS</span></div>
+<div class="dato-fila"><strong>CORREO ELECTRÓNICO:</strong> <span id="previewCorreo">SIN DATOS</span></div>
+<div class="dato-fila"><strong>NIVEL ACADÉMICO:</strong> <span id="previewNivelAcademico">SIN DATOS</span></div>
+<div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">01/01/2020</span></div>
+<div class="dato-fila"><strong>FECHA DEL ULTIMO ASCENSO:</strong> <span id="previewFechaAscenso">SIN DATOS</span></div>
+<div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">00 AÑOS 00 MESES</span></div>
+<div class="dato-fila"><strong>ESTADO:</strong> <span id="previewEstado">SIN DATOS</span></div>
+<div class="dato-fila"><strong>SERVICIO:</strong> <span id="previewServicio">SIN DATOS</span></div>
+<div class="dato-fila"><strong>DIRECCION DE HABITACION:</strong> <span id="previewDireccion">SIN DATOS</span></div>
+<div class="dato-fila"><strong>ULTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
 </div>
-
+<!-- Credencial -->
 <div class="credencial-section">
-  <div class="credencial-title">POSEE CREDENCIAL</div>
-  <div class="credencial-options">
-    <div class="credencial-option">
-      <input type="radio" id="previewCredencialSi" name="credencialPreview" value="si" disabled>
-      <label for="previewCredencialSi">SI</label>
-    </div>
-    <div class="credencial-option">
-      <input type="radio" id="previewCredencialNo" name="credencialPreview" value="no" disabled checked>
-      <label for="previewCredencialNo">NO</label>
-    </div>
-  </div>
-  <input type="text" id="previewNumeroCredencial" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
+<div class="credencial-title">POSEE CREDENCIAL</div>
+<div class="credencial-options">
+<div class="credencial-option">
+<input type="radio" id="previewCredencialSi" name="credencialPreview" value="si" disabled>
+<label for="previewCredencialSi">SI</label>
 </div>
-
+<div class="credencial-option">
+<input type="radio" id="previewCredencialNo" name="credencialPreview" value="no" disabled checked>
+<label for="previewCredencialNo">NO</label>
+</div>
+</div>
+<input type="text" id="previewNumeroCredencial" class="credencial-input" placeholder="Ej: PNB-33311" style="display:none;">
+</div>
+<!-- Foto cédula -->
 <div class="foto-cedula" id="previewFotoCedula">
-  <img id="previewCedulaFoto" style="display:none;">
-  <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">FOTO DE CÉDULA</div>
+<img id="previewCedulaFoto" style="display:none;">
+<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#666; font-size:14px;">FOTO DE CÉDULA</div>
 </div>
-
+<!-- Pie -->
 <div style="position: absolute; bottom: 0.5cm; left: 0.5cm; right: 0.5cm; text-align: center; font-size: 8pt; color: #333;">
-  <strong>Inspectable para el Control de la Actuación Policial - ICAP Nacional</strong><br>
-  Documento confidencial - Uso exclusivo institucional
+<strong>Inspectable para el Control de la Actuación Policial - ICAP Nacional</strong><br>
+Documento confidencial - Uso exclusivo institucional
 </div>
 </div>
 </div>
@@ -635,252 +664,297 @@ gap: 15px;
 </div>
 </div>
 <script>
+// 🔒 Supabase
 const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
 const alertDiv = document.getElementById('alertMessage');
-
+// 🎯 Actualizar vista previa
 function actualizarVistaPrevia() {
-  const getVal = id => document.getElementById(id)?.value || 'SIN DATOS';
-  const getChecked = id => document.getElementById(id)?.checked;
-  const nombre = getVal('nombre_apellidos');
-  const cedula = (getVal('cedula') || '00000000').padStart(8, '0');
-  const edad = getVal('edad') ? getVal('edad') + ' AÑOS' : '00 AÑOS';
-  const fechaNacimiento = getVal('fecha_nacimiento') ? new Date(getVal('fecha_nacimiento')).toLocaleDateString('es-VE') : '01/01/1990';
-  const telefono = getVal('telefono_funcionario');
-  const telefonoEmergencia = getVal('telefono_emergencia');
-  const correo = getVal('correo_electronico');
-  const nivelAcademico = getVal('nivel_academico');
-  const fechaIngreso = getVal('fecha_ingreso_cpn') ? new Date(getVal('fecha_ingreso_cpn')).toLocaleDateString('es-VE') : '01/01/2020';
-  const fechaAscenso = getVal('fecha_ultimo_ascenso') ? new Date(getVal('fecha_ultimo_ascenso')).toLocaleDateString('es-VE') : 'SIN DATOS';
-  const antiguedad = getVal('antiguedad');
-  const estado = getVal('estado');
-  const servicio = getVal('servicio');
-  const direccion = getVal('direccion_habitacion');
-  const ultimoCargo = getVal('ultimo_cargo');
-
-  document.getElementById('previewNombre').textContent = nombre;
-  document.getElementById('previewCedula').textContent = cedula;
-  document.getElementById('previewEdad').textContent = edad;
-  document.getElementById('previewFechaNacimiento').textContent = fechaNacimiento;
-  document.getElementById('previewTelefono').textContent = telefono;
-  document.getElementById('previewTelefonoEmergencia').textContent = telefonoEmergencia;
-  document.getElementById('previewCorreo').textContent = correo;
-  document.getElementById('previewNivelAcademico').textContent = nivelAcademico;
-  document.getElementById('previewFechaIngreso').textContent = fechaIngreso;
-  document.getElementById('previewFechaAscenso').textContent = fechaAscenso;
-  document.getElementById('previewAntiguedad').textContent = antiguedad;
-  document.getElementById('previewEstado').textContent = estado;
-  document.getElementById('previewServicio').textContent = servicio;
-  document.getElementById('previewDireccion').textContent = direccion;
-  document.getElementById('previewUltimoCargo').textContent = ultimoCargo;
-
-  const esSi = getChecked('credencialSi');
-  document.getElementById('previewCredencialSi').checked = esSi;
-  document.getElementById('previewCredencialNo').checked = !esSi;
-  if (esSi) {
-    const num = getVal('numero_credencial') || 'PNB-33311';
-    document.getElementById('previewNumeroCredencial').textContent = num;
-    document.getElementById('previewNumeroCredencial').style.display = 'block';
-  } else {
-    document.getElementById('previewNumeroCredencial').style.display = 'none';
-  }
+const getVal = id => document.getElementById(id)?.value || 'SIN DATOS';
+const getChecked = id => document.getElementById(id)?.checked;
+const nombre = getVal('nombre_apellidos');
+const cedula = (getVal('cedula') || '00000000').padStart(8, '0');
+const edad = getVal('edad') ? getVal('edad') + ' AÑOS' : '00 AÑOS';
+const fechaNacimiento = getVal('fecha_nacimiento') ? new Date(getVal('fecha_nacimiento')).toLocaleDateString('es-VE') : '01/01/1990';
+const telefono = getVal('telefono_funcionario');
+const telefonoEmergencia = getVal('telefono_emergencia');
+const correo = getVal('correo_electronico');
+const nivel_academico = getVal('nivel_academico');
+const fechaIngreso = getVal('fecha_ingreso_cpn') ? new Date(getVal('fecha_ingreso_cpn')).toLocaleDateString('es-VE') : '01/01/2020';
+const fechaAscenso = getVal('fecha_ultimo_ascenso') ? new Date(getVal('fecha_ultimo_ascenso')).toLocaleDateString('es-VE') : 'SIN DATOS';
+const antiguedad = getVal('antiguedad');
+const estado = getVal('estado');
+const servicio = getVal('servicio');
+const direccion = getVal('direccion_habitacion');
+const ultimoCargo = getVal('ultimo_cargo');
+document.getElementById('previewNombre').textContent = nombre;
+document.getElementById('previewCedula').textContent = cedula;
+document.getElementById('previewEdad').textContent = edad;
+document.getElementById('previewFechaNacimiento').textContent = fechaNacimiento;
+document.getElementById('previewTelefono').textContent = telefono;
+document.getElementById('previewTelefonoEmergencia').textContent = telefonoEmergencia;
+document.getElementById('previewCorreo').textContent = correo;
+document.getElementById('previewNivelAcademico').textContent = nivel_academico;
+document.getElementById('previewFechaIngreso').textContent = fechaIngreso;
+document.getElementById('previewFechaAscenso').textContent = fechaAscenso;
+document.getElementById('previewAntiguedad').textContent = antiguedad;
+document.getElementById('previewEstado').textContent = estado;
+document.getElementById('previewServicio').textContent = servicio;
+document.getElementById('previewDireccion').textContent = direccion;
+document.getElementById('previewUltimoCargo').textContent = ultimoCargo;
+const esSi = getChecked('credencialSi');
+document.getElementById('previewCredencialSi').checked = esSi;
+document.getElementById('previewCredencialNo').checked = !esSi;
+if (esSi) {
+const num = getVal('numero_credencial') || 'PNB-33311';
+document.getElementById('previewNumeroCredencial').textContent = num;
+document.getElementById('previewNumeroCredencial').style.display = 'block';
+} else {
+document.getElementById('previewNumeroCredencial').style.display = 'none';
 }
-
+}
+// 📷 Previsualizar fotos
 document.getElementById('fotoFuncionario').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = document.getElementById('previewFoto');
-      img.src = reader.result;
-      img.style.display = 'block';
-      document.querySelector('#previewFotoFuncionario div').style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-  }
+const file = e.target.files[0];
+if (file) {
+const reader = new FileReader();
+reader.onload = () => {
+const img = document.getElementById('previewFoto');
+img.src = reader.result;
+img.style.display = 'block';
+document.querySelector('#previewFotoFuncionario div').style.display = 'none';
+};
+reader.readAsDataURL(file);
+}
 });
 document.getElementById('fotoCedula').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = document.getElementById('previewCedulaFoto');
-      img.src = reader.result;
-      img.style.display = 'block';
-      document.querySelector('#previewFotoCedula div').style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-  }
+const file = e.target.files[0];
+if (file) {
+const reader = new FileReader();
+reader.onload = () => {
+const img = document.getElementById('previewCedulaFoto');
+img.src = reader.result;
+img.style.display = 'block';
+document.querySelector('#previewFotoCedula div').style.display = 'none';
+};
+reader.readAsDataURL(file);
+}
 });
-
+// 🎛️ Toggle credencial
 document.getElementById('credencialSi').addEventListener('change', () => {
-  document.getElementById('numeroCredencialGroup').style.display = 'block';
-  actualizarVistaPrevia();
+document.getElementById('numeroCredencialGroup').style.display = 'block';
+actualizarVistaPrevia();
 });
 document.getElementById('credencialNo').addEventListener('change', () => {
-  document.getElementById('numeroCredencialGroup').style.display = 'none';
-  actualizarVistaPrevia();
+document.getElementById('numeroCredencialGroup').style.display = 'none';
+actualizarVistaPrevia();
 });
-
+// 🔄 Actualizar en tiempo real
 ['input', 'select', 'textarea'].forEach(tag =>
-  document.querySelectorAll(tag).forEach(el => el.addEventListener('input', actualizarVistaPrevia))
+document.querySelectorAll(tag).forEach(el => el.addEventListener('input', actualizarVistaPrevia))
 );
 document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListener('change', actualizarVistaPrevia));
-
+// ✅ Inicialización (sin 'estado' en perfiles)
 document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const {  { session } } = await client.auth.getSession();
-    if (!session) {
-      showAlert('⚠️ Debes iniciar sesión', 'error');
-      setTimeout(() => window.location.href = '../index.html', 2000);
-      return;
-    }
-    const { data: perfil } = await client
-      .from('perfiles')
-      .select('email, rol')
-      .eq('id', session.user.id)
-      .single();
-    if (!perfil) throw new Error('Perfil no encontrado');
-
-    document.getElementById('userEmail').textContent = perfil.email;
-    const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
-    document.getElementById('userRol').textContent = rolText;
-    document.getElementById('previewEstadoUsuario').textContent = '—';
-    if (perfil.rol === 'admin') {
-      document.getElementById('rolLabel').style.display = 'none';
-      const rolSpan = document.getElementById('userRol');
-      rolSpan.style.color = '#c62828';
-      rolSpan.title = 'Administrador';
-      rolSpan.style.cursor = 'help';
-    } else {
-      document.getElementById('rolLabel').style.display = 'inline';
-    }
-    document.getElementById('previewFechaFicha').textContent = '06/01/2026';
-    actualizarVistaPrevia();
-  } catch (err) {
-    console.error('Error al cargar sesión:', err);
-    showAlert(`❌ ${err.message}`, 'error');
-  }
-});
-
-function showAlert(msg, type) {
-  alertDiv.textContent = msg;
-  alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
-  alertDiv.style.display = 'block';
-  setTimeout(() => alertDiv.style.display = 'none', 3000);
+try {
+const { data: { session } } = await client.auth.getSession();
+if (!session) {
+showAlert('⚠️ Debes iniciar sesión', 'error');
+setTimeout(() => window.location.href = '../index.html', 2000);
+return;
 }
+const { data: perfil } = await client
+.from('perfiles')
+.select('email, rol')
+.eq('id', session.user.id)
+.single();
+if (!perfil) throw new Error('Perfil no encontrado');
+document.getElementById('userEmail').textContent = perfil.email;
+const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
+document.getElementById('userRol').textContent = rolText;
+// ✅ Inicializar estado en ficha como "—"
+document.getElementById('previewEstadoUsuario').textContent = '—';
+if (perfil.rol === 'admin') {
+document.getElementById('rolLabel').style.display = 'none';
+const rolSpan = document.getElementById('userRol');
+rolSpan.style.color = '#c62828';
+rolSpan.title = 'Administrador';
+rolSpan.style.cursor = 'help';
+} else {
+document.getElementById('rolLabel').style.display = 'inline';
+}
+// ✅ Fecha fija
+document.getElementById('previewFechaFicha').textContent = '06/01/2026';
+actualizarVistaPrevia();
+} catch (err) {
+console.error('Error al cargar sesión:', err);
+showAlert(`❌ ${err.message || 'Error desconocido'}`, 'error');
+}
+});
+function showAlert(msg, type) {
+alertDiv.textContent = msg;
+alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+alertDiv.style.display = 'block';
+setTimeout(() => alertDiv.style.display = 'none', 3000);
+}
+// PDF e imprimir
+document.getElementById('btnExportarPDF').onclick = exportarPDF;
+document.getElementById('btnExportarPDF2').onclick = exportarPDF;
+document.getElementById('btnImprimir').onclick = () => window.print();
 
-// ✅ Exportar PDF — 100% funcional con logos y fotos
+// ✅ ✅ ✅ FUNCIÓN REEMPLAZADA — Solo esto cambia ✅ ✅ ✅
 function exportarPDF() {
   const ficha = document.getElementById('fichaPreview');
 
-  // Esperar a que todas las imágenes se carguen (incluyendo las de CORS)
-  const imgs = Array.from(ficha.querySelectorAll('img[src]'));
-  const promises = imgs.map(img => {
-    return new Promise(resolve => {
-      if (img.complete && img.naturalWidth !== 0) {
-        resolve();
-      } else {
-        img.onload = img.onerror = () => resolve();
-        // Fuerza el reload si está rota (por si acaso)
-        if (!img.src.startsWith('data:')) {
-          img.src = img.src;
-        }
-      }
-    });
-  });
+  // 1. Temporalmente reemplazar src de logos por versión con CORS
+  const logoIzq = ficha.querySelector('.logo-izquierda');
+  const logoDer = ficha.querySelector('.logo-derecha');
+  const backupSrcIzq = logoIzq.src;
+  const backupSrcDer = logoDer.src;
+  logoIzq.src = 'https://icors.vercel.app/' + backupSrcIzq;
+  logoDer.src = 'https://icors.vercel.app/' + backupSrcDer;
 
-  Promise.all(promises).then(() => {
+  // 2. Forzar display:block en imágenes de fotos
+  const fotoEl = ficha.querySelector('#previewFoto');
+  const cedulaEl = ficha.querySelector('#previewCedulaFoto');
+  const backupStyleFoto = fotoEl.style.cssText;
+  const backupStyleCedula = cedulaEl.style.cssText;
+  fotoEl.style.display = 'block';
+  cedulaEl.style.display = 'block';
+
+  // 3. Esperar carga mínima y capturar
+  setTimeout(() => {
     html2canvas(ficha, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
-      logging: false,
-      backgroundColor: null
+      logging: false
     }).then(canvas => {
+      // Restaurar todo
+      logoIzq.src = backupSrcIzq;
+      logoDer.src = backupSrcDer;
+      fotoEl.style.cssText = backupStyleFoto;
+      cedulaEl.style.cssText = backupStyleCedula;
+
       const imgData = canvas.toDataURL('image/jpeg', 0.92);
       const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
       pdf.addImage(imgData, 'JPEG', 0, 0, 25.4, 19.05);
       pdf.save(`ficha_${document.getElementById('cedula').value || 'sin-cedula'}.pdf`);
     }).catch(err => {
-      console.error('html2canvas error:', err);
-      showAlert('❌ Error al generar PDF (ver consola)', 'error');
+      // Restaurar en caso de error
+      logoIzq.src = backupSrcIzq;
+      logoDer.src = backupSrcDer;
+      fotoEl.style.cssText = backupStyleFoto;
+      cedulaEl.style.cssText = backupStyleCedula;
+      console.error('Error exportarPDF:', err);
+      showAlert('❌ Error al generar el PDF', 'error');
     });
-  });
+  }, 300); // Pequeño delay para que los nuevos src se carguen
 }
 
-document.getElementById('btnExportarPDF').onclick = exportarPDF;
-document.getElementById('btnExportarPDF2').onclick = exportarPDF;
-document.getElementById('btnImprimir').onclick = () => window.print();
-
+// ✅ BÚSQUEDA POR CÉDULA — con soporte para <select> (estado, rango, etc.)
 document.getElementById('btnBuscarCedula').addEventListener('click', async function() {
-  const searchCedula = document.getElementById('searchCedula').value.trim();
-  if (!searchCedula || searchCedula.length !== 8) {
-    showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
-    return;
-  }
-  try {
-    const response = await client.from('auditoria_personal').select('*').eq('cedula', searchCedula).single();
-    if (response.error) {
-      showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`, 'error');
-      return;
-    }
-    const auditoriaData = response.data;
-    const mapeo = {
-      cedula: 'cedula', nombre_apellidos: 'apellidos_nombres', edad: 'edad_funcionario',
-      fecha_nacimiento: 'fecha_nacimiento', telefono_funcionario: 'telefono',
-      telefono_emergencia: 'telefono_emergencia', correo_electronico: 'correo_electronico',
-      nivel_academico: 'nivel_academico', fecha_ingreso_cpn: 'fecha_ingreso_cpn',
-      fecha_ultimo_ascenso: 'fecha_ultimo_ascenso', antiguedad: 'antiguedad',
-      estado: 'estado', servicio: 'servicio', direccion_habitacion: 'direccion',
-      ultimo_cargo: 'ultimo_cargo', rango: 'rango'
-    };
-    for (const [inputId, dbField] of Object.entries(mapeo)) {
-      const el = document.getElementById(inputId);
-      if (el) {
-        let val = auditoriaData[dbField] ?? '';
-        if (el.type === 'date' && val) el.value = val.split('T')[0];
-        else if (el.type === 'number') el.value = val ? String(val) : '';
-        else if (el.tagName === 'SELECT') {
-          const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-          const targetVal = normalize(val);
-          let opt = [...el.options].find(o => normalize(o.value) === targetVal || normalize(o.textContent) === targetVal);
-          el.value = opt ? opt.value : '';
-        } else el.value = val;
-      }
-    }
-    const posee = (auditoriaData.posee_credencial || '').toLowerCase() === 'si';
-    document.getElementById('credencialSi').checked = posee;
-    document.getElementById('credencialNo').checked = !posee;
-    document.getElementById('numeroCredencialGroup').style.display = posee ? 'block' : 'none';
-    if (posee && auditoriaData.numero_credencial) {
-      document.getElementById('numero_credencial').value = auditoriaData.numero_credencial;
-    }
-
-    const estadoRaw = (auditoriaData.estado || '').trim();
-    document.getElementById('previewEstadoUsuario').textContent = estadoRaw || '—';
-    actualizarVistaPrevia();
-
-    const bucket = client.storage.from('fichas');
-    const fotoUrl = bucket.getPublicUrl(`foto-${searchCedula}.jpg`).data.publicUrl;
-    const cedulaUrl = bucket.getPublicUrl(`cedula-${searchCedula}.jpg`).data.publicUrl;
-    const loadImg = (url, imgEl, placeholder) => {
-      fetch(url, {method:'HEAD'}).then(res => {
-        if (res.ok) {
-          imgEl.src = url;
-          imgEl.style.display = 'block';
-          if (placeholder) placeholder.style.display = 'none';
-        }
-      }).catch(()=>{});
-    };
-    loadImg(fotoUrl, document.getElementById('previewFoto'), document.querySelector('#previewFotoFuncionario div'));
-    loadImg(cedulaUrl, document.getElementById('previewCedulaFoto'), document.querySelector('#previewFotoCedula div'));
-    showAlert(`✅ Datos cargados para cédula ${searchCedula}`, 'success');
-  } catch (err) {
-    console.error('Error búsqueda:', err);
-    showAlert(`❌ Error: ${err.message}`, 'error');
-  }
+const searchCedula = document.getElementById('searchCedula').value.trim();
+if (!searchCedula || searchCedula.length !== 8) {
+showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
+return;
+}
+try {
+const response = await client
+.from('auditoria_personal')
+.select('*')
+.eq('cedula', searchCedula)
+.single();
+if (response.error) {
+showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`, 'error');
+return;
+}
+const auditoriaData = response.data;
+// ✅ Mapeo — ahora con soporte para <select>
+const mapeo = {
+cedula: 'cedula',
+nombre_apellidos: 'apellidos_nombres',
+edad: 'edad_funcionario',
+fecha_nacimiento: 'fecha_nacimiento',
+telefono_funcionario: 'telefono',
+telefono_emergencia: 'telefono_emergencia',
+correo_electronico: 'correo_electronico',
+nivel_academico: 'nivel_academico',
+fecha_ingreso_cpn: 'fecha_ingreso_cpn',
+fecha_ultimo_ascenso: 'fecha_ultimo_ascenso',
+antiguedad: 'antiguedad',
+estado: 'estado',
+servicio: 'servicio',
+direccion_habitacion: 'direccion',
+ultimo_cargo: 'ultimo_cargo',
+rango: 'rango'
+};
+for (const [inputId, dbField] of Object.entries(mapeo)) {
+const el = document.getElementById(inputId);
+if (el) {
+let val = auditoriaData[dbField] ?? '';
+if (el.type === 'date' && val) {
+el.value = val.split('T')[0];
+} else if (el.type === 'number') {
+el.value = val ? String(val) : '';
+} else if (el.tagName === 'SELECT') {
+// ✅ Selección inteligente para <select>
+const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+const targetVal = normalize(val);
+let found = false;
+for (const opt of el.options) {
+if (
+normalize(opt.value) === targetVal ||
+normalize(opt.textContent) === targetVal
+) {
+el.value = opt.value;
+found = true;
+break;
+}
+}
+if (!found) el.value = '';
+} else {
+el.value = val;
+}
+}
+}
+// ✅ Credencial
+const posee = (auditoriaData.posee_credencial || '').toLowerCase() === 'si';
+document.getElementById('credencialSi').checked = posee;
+document.getElementById('credencialNo').checked = !posee;
+document.getElementById('numeroCredencialGroup').style.display = posee ? 'block' : 'none';
+if (posee && auditoriaData.numero_credencial) {
+document.getElementById('numero_credencial').value = auditoriaData.numero_credencial;
+}
+// ✅ Actualizar estado en cabecera de ficha (FICHA N° línea)
+const estadoRaw = (auditoriaData.estado || '').trim();
+document.getElementById('previewEstadoUsuario').textContent =
+estadoRaw || '—';
+// ✅ Actualizar vista previa
+actualizarVistaPrevia();
+// ✅ Cargar fotos
+const bucket = client.storage.from('fichas');
+const fotoUrl = bucket.getPublicUrl(`foto-${searchCedula}.jpg`).data.publicUrl;
+const cedulaUrl = bucket.getPublicUrl(`cedula-${searchCedula}.jpg`).data.publicUrl;
+const loadImg = (url, imgEl, placeholderEl) => {
+fetch(url, { method: 'HEAD' })
+.then(res => res.ok ? imgEl.src = url : null)
+.then(() => {
+if (imgEl.src) {
+imgEl.style.display = 'block';
+if (placeholderEl) placeholderEl.style.display = 'none';
+}
+})
+.catch(() => {});
+};
+loadImg(fotoUrl, document.getElementById('previewFoto'), document.querySelector('#previewFotoFuncionario div'));
+loadImg(cedulaUrl, document.getElementById('previewCedulaFoto'), document.querySelector('#previewFotoCedula div'));
+showAlert(`✅ Datos cargados para cédula ${searchCedula}`, 'success');
+} catch (err) {
+console.error('Error al buscar cédula:', err);
+showAlert(`❌ Error: ${err.message}`, 'error');
+}
 });
 </script>
 </body>
