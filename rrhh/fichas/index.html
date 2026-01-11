@@ -853,6 +853,16 @@ showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`,
 return;
 }
 const auditoriaData = response.data;
+
+// ✅ Limpiar vistas previas de fotos ANTES de cargar nuevas
+document.getElementById('previewFoto').src = '';
+document.getElementById('previewFoto').style.display = 'none';
+document.querySelector('#previewFotoFuncionario div').style.display = 'flex';
+
+document.getElementById('previewCedulaFoto').src = '';
+document.getElementById('previewCedulaFoto').style.display = 'none';
+document.querySelector('#previewFotoCedula div').style.display = 'flex';
+
 // ✅ Mapeo — ahora con soporte para <select>
 const mapeo = {
 cedula: 'cedula',
