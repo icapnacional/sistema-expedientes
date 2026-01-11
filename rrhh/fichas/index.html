@@ -722,41 +722,42 @@ document.querySelectorAll(tag).forEach(el => el.addEventListener('input', actual
 );
 document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListener('change', actualizarVistaPrevia));
 
-// ✅ Inicialización (CORREGIDO)
+// ✅ Inicialización (sin 'estado' en perfiles)
 document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const { data } = await client.auth.getSession();
-    const session = data.session;
-    if (!session) {
-      showAlert('⚠️ Debes iniciar sesión', 'error');
-      setTimeout(() => window.location.href = '../index.html', 2000);
-      return;
-    }
-    const {  perfil } = await client
-      .from('perfiles')
-      .select('email, rol')
-      .eq('id', session.user.id)
-      .single();
-    if (!perfil) throw new Error('Perfil no encontrado');
-    document.getElementById('userEmail').textContent = perfil.email;
-    const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
-    document.getElementById('userRol').textContent = rolText;
-    document.getElementById('previewEstadoUsuario').textContent = '—';
-    if (perfil.rol === 'admin') {
-      document.getElementById('rolLabel').style.display = 'none';
-      const rolSpan = document.getElementById('userRol');
-      rolSpan.style.color = '#c62828';
-      rolSpan.title = 'Administrador';
-      rolSpan.style.cursor = 'help';
-    } else {
-      document.getElementById('rolLabel').style.display = 'inline';
-    }
-    document.getElementById('previewFechaFicha').textContent = '06/01/2026';
-    actualizarVistaPrevia();
-  } catch (err) {
-    console.error('Error al cargar sesión:', err);
-    showAlert(`❌ ${err.message || 'Error desconocido'}`, 'error');
-  }
+try {
+const {  { session } } = await client.auth.getSession();
+if (!session) {
+showAlert('⚠️ Debes iniciar sesión', 'error');
+setTimeout(() => window.location.href = '../index.html', 2000);
+return;
+}
+const { data: perfil } = await client
+.from('perfiles')
+.select('email, rol')
+.eq('id', session.user.id)
+.single();
+if (!perfil) throw new Error('Perfil no encontrado');
+document.getElementById('userEmail').textContent = perfil.email;
+const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
+document.getElementById('userRol').textContent = rolText;
+// ✅ Inicializar estado en ficha como "—"
+document.getElementById('previewEstadoUsuario').textContent = '—';
+if (perfil.rol === 'admin') {
+document.getElementById('rolLabel').style.display = 'none';
+const rolSpan = document.getElementById('userRol');
+rolSpan.style.color = '#c62828';
+rolSpan.title = 'Administrador';
+rolSpan.style.cursor = 'help';
+} else {
+document.getElementById('rolLabel').style.display = 'inline';
+}
+// ✅ Fecha fija
+document.getElementById('previewFechaFicha').textContent = '06/01/2026';
+actualizarVistaPrevia();
+} catch (err) {
+console.error('Error al cargar sesión:', err);
+showAlert(`❌ ${err.message || 'Error desconocido'}`, 'error');
+}
 });
 
 function showAlert(msg, type) {
@@ -882,7 +883,7 @@ showAlert(`❌ Error: ${err.message}`, 'error');
 }
 });
 
-// ✅ Guardar ficha — con verificación previa de duplicado (CORREGIDO)
+// ✅ Guardar ficha — con verificación previa de duplicado
 async function guardarFicha() {
 const cedula = document.getElementById('cedula').value.trim();
 if (!cedula || cedula.length !== 8) {
@@ -977,20 +978,18 @@ const nuevoTitulo = `
 padre.innerHTML = nuevoTitulo;
 }
 
-// ✅ Log: también corregido
 try {
-  const { data } = await client.auth.getSession();
-  const session = data.session;
-  if (session) {
-    await client.from('rrhh_logs').insert({
-      user_id: session.user.id,
-      accion: 'ficha_guardada',
-      cedula_afectada: cedula,
-      detalles: { modulo: 'fichas', numero_ficha: data.numero_ficha }
-    });
-  }
+const {  { session } } = await client.auth.getSession();
+if (session) {
+await client.from('rrhh_logs').insert({
+user_id: session.user.id,
+accion: 'ficha_guardada',
+cedula_afectada: cedula,
+detalles: { modulo: 'fichas', numero_ficha: data.numero_ficha }
+});
+}
 } catch (logErr) {
-  console.warn('Log no registrado:', logErr.message);
+console.warn('Log no registrado:', logErr.message);
 }
 
 showAlert(`✅ Ficha guardada exitosamente. N°: ${data.numero_ficha}`, 'success');
@@ -1001,7 +1000,7 @@ showAlert(`❌ ${err.message || 'Error desconocido'}`, 'error');
 }
 }
 
-// 🎯 Asignar evento al botón Guardar
+// 🎯 Asignar evento al botón Guardar (evita error de null.onclick)
 document.getElementById('btnGuardar').addEventListener('click', guardarFicha);
 </script>
 </body>
