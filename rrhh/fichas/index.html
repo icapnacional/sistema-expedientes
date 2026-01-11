@@ -675,13 +675,11 @@ function actualizarVistaPrevia() {
   const fechaNacimiento = getVal('fecha_nacimiento');
   const fechaIngreso = getVal('fecha_ingreso_cpn');
 
-  // Calcular y actualizar campos
   const edad = calcularEdad(fechaNacimiento);
   const antiguedad = calcularAntiguedad(fechaIngreso);
   document.getElementById('edad').value = edad;
   document.getElementById('antiguedad').value = antiguedad;
 
-  // Vista previa
   const nombre = getVal('nombre_apellidos');
   const cedula = (getVal('cedula') || '00000000').padStart(8, '0');
   const telefono = getVal('telefono_funcionario');
@@ -772,17 +770,19 @@ document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListen
 // ✅ Inicialización
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const {  { session } } = await client.auth.getSession();
+    const {  } = await client.auth.getSession();
+    const session = data?.session;
     if (!session) {
       showAlert('⚠️ Debes iniciar sesión', 'error');
       setTimeout(() => window.location.href = '../index.html', 2000);
       return;
     }
-    const { data: perfil } = await client
+    const {  } = await client
       .from('perfiles')
       .select('email, rol')
       .eq('id', session.user.id)
       .single();
+    const perfil = data;
     if (!perfil) throw new Error('Perfil no encontrado');
     document.getElementById('userEmail').textContent = perfil.email;
     const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
@@ -820,27 +820,27 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
   }
 
   try {
-    const {  fichaExistente, error: errorFicha } = await client
+    const {  } = await client
       .from('fichas')
       .select('cedula')
       .eq('cedula', searchCedula)
       .single();
 
-    if (errorFicha?.code !== 'PGRST116') {
+    if (error?.code !== 'PGRST116') {
       return showAlert('⚠️ Ya existe una ficha registrada con esta cédula. No se permiten duplicados.', 'error');
     }
 
-    const response = await client
+    const {  } = await client
       .from('auditoria_personal')
       .select('*')
       .eq('cedula', searchCedula)
       .single();
 
-    if (response.error) {
+    if (error) {
       return showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`, 'error');
     }
 
-    const auditoriaData = response.data;
+    const auditoriaData = data;
     const mapeo = {
       cedula: 'cedula',
       nombre_apellidos: 'apellidos_nombres',
@@ -929,8 +929,9 @@ async function guardarFicha() {
   }
 
   try {
-    const {  { session }, error: sessionError } = await client.auth.getSession();
-    if (sessionError || !session) {
+    const {  } = await client.auth.getSession();
+    const session = data?.session;
+    if (!session) {
       return showAlert('❌ Sesión expirada. Inicie sesión nuevamente.', 'error');
     }
     const userId = session.user.id;
@@ -977,15 +978,15 @@ async function guardarFicha() {
     const uploadFile = async (fileInput, filename) => {
       if (!fileInput.files?.[0]) return null;
       const file = fileInput.files[0];
-      const { error: uploadErr } = await storage.upload(filename, file, { upsert: true });
-      if (uploadErr) throw new Error(`Error al subir archivo: ${uploadErr.message}`);
-      const { data: { publicUrl } } = storage.getPublicUrl(filename);
+      const {  } = await storage.upload(filename, file, { upsert: true });
+      if (error) throw new Error(`Error al subir archivo: ${error.message}`);
+      const {  } = storage.getPublicUrl(filename);
       return publicUrl;
     };
     foto_url = await uploadFile(document.getElementById('fotoFuncionario'), `foto-${cedula}.jpg`);
     cedula_url = await uploadFile(document.getElementById('fotoCedula'), `cedula-${cedula}.jpg`);
 
-    const { error: insertError } = await client
+    const {  } = await client
       .from('fichas')
       .insert({
         cedula: datosFicha.cedula,
@@ -1011,12 +1012,12 @@ async function guardarFicha() {
         creado_por: userId
       });
 
-    if (insertError) {
-      console.error('Error de inserción:', insertError);
-      if (insertError.code === '23505') {
+    if (error) {
+      console.error('Error de inserción:', error);
+      if (error.code === '23505') {
         return showAlert('⚠️ Ya existe una ficha con esta cédula. No se permiten duplicados.', 'error');
       }
-      throw new Error(insertError.message);
+      throw new Error(error.message);
     }
 
     try {
