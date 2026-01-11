@@ -826,7 +826,7 @@ alertDiv.style.display = 'block';
 setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
 
-// ✅ BÚSQUEDA POR CÉDULA — CORREGIDA SOLO PARA FECHA_NACIMIENTO Y RANGO
+// ✅ BÚSQUEDA POR CÉDULA — CORREGIDA (sin errores de sintaxis)
 document.getElementById('btnBuscarCedula').addEventListener('click', async function() {
   const searchCedula = document.getElementById('searchCedula').value.trim();
   if (!searchCedula || searchCedula.length !== 8) {
@@ -834,8 +834,8 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
     return;
   }
 
-  // ✅ Verificar duplicado en `fichas`
-  const {  fichaExistente } = await client
+  // ✅ Verificar duplicado en tabla `fichas`
+  const { data: fichaExistente, error: errorFicha } = await client
     .from('fichas')
     .select('cedula')
     .eq('cedula', searchCedula)
@@ -847,29 +847,37 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
   }
 
   try {
-    // ✅ Limpiar fotos
+    // ✅ Limpiar fotos antes de cargar nuevas
     const previewFoto = document.getElementById('previewFoto');
     const previewCedulaFoto = document.getElementById('previewCedulaFoto');
     const placeholderFoto = document.querySelector('#previewFotoFuncionario div');
     const placeholderCedula = document.querySelector('#previewFotoCedula div');
-    previewFoto.removeAttribute('src'); previewFoto.src = ''; previewFoto.style.display = 'none';
-    previewCedulaFoto.removeAttribute('src'); previewCedulaFoto.src = ''; previewCedulaFoto.style.display = 'none';
+
+    previewFoto.removeAttribute('src');
+    previewFoto.src = '';
+    previewFoto.style.display = 'none';
     placeholderFoto.style.display = 'flex';
+
+    previewCedulaFoto.removeAttribute('src');
+    previewCedulaFoto.src = '';
+    previewCedulaFoto.style.display = 'none';
     placeholderCedula.style.display = 'flex';
 
     // ✅ Buscar en auditoria_personal
-    const {  auditoriaData, error } = await client
+    const { data, error } = await client
       .from('auditoria_personal')
       .select('*')
       .eq('cedula', searchCedula)
       .single();
 
-    if (error) {
+    if (error || !data) {
       showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`, 'error');
       return;
     }
 
-    // ✅ Mapeo correcto
+    const auditoriaData = data;
+
+    // ✅ Mapeo de campos
     const mapeo = {
       cedula: 'cedula',
       nombre_apellidos: 'apellidos_nombres',
@@ -878,7 +886,7 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
       telefono_emergencia: 'telefono_emergencia',
       correo_electronico: 'correo_electronico',
       nivel_academico: 'nivel_academico',
-      fecha_ingreso_cpn: 'fecha_ingreso',
+      fecha_ingreso_cpn: 'fecha_ingreso',        // ← ajustado si tu columna se llama "fecha_ingreso"
       fecha_ultimo_ascenso: 'fecha_ultimo_ascenso',
       antiguedad: 'antiguedad',
       estado: 'estado',
@@ -888,7 +896,7 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
       rango: 'rango'
     };
 
-    // ✅ Llenar campos — CORREGIDO SOLO PARA fecha_nacimiento Y rango
+    // ✅ Llenar campos
     for (const [inputId, dbField] of Object.entries(mapeo)) {
       const el = document.getElementById(inputId);
       if (!el) continue;
@@ -896,11 +904,7 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
       let val = auditoriaData[dbField] ?? '';
 
       if (inputId === 'fecha_nacimiento' && val) {
-        if (val.includes('T')) {
-          el.value = val.split('T')[0];
-        } else {
-          el.value = val;
-        }
+        el.value = val.includes('T') ? val.split('T')[0] : val;
       } else if (inputId === 'rango' && val) {
         const normalize = s => (s || '').toLowerCase().trim();
         const target = normalize(val);
@@ -942,9 +946,10 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
     // ✅ Estado en cabecera
     document.getElementById('previewEstadoUsuario').textContent = (auditoriaData.estado || '').trim() || '—';
 
-    // ✅ Actualizar vista y cargar fotos
+    // ✅ Actualizar vista previa
     actualizarVistaPrevia();
 
+    // ✅ Cargar fotos si existen
     const bucket = client.storage.from('fichas');
     const fotoUrl = bucket.getPublicUrl(`foto-${searchCedula}.jpg`).data.publicUrl;
     const cedulaUrl = bucket.getPublicUrl(`cedula-${searchCedula}.jpg`).data.publicUrl;
@@ -973,11 +978,10 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
     showAlert(`✅ Datos cargados para cédula ${searchCedula}`, 'success');
 
   } catch (err) {
-    console.error('Error al buscar en auditoria_personal:', err);
+    console.error('Error al buscar cédula:', err);
     showAlert(`❌ Error: ${err.message}`, 'error');
   }
 });
-
 // ✅ Guardar ficha
 async function guardarFicha() {
 showAlert('💾 Guardando ficha...', 'success');
