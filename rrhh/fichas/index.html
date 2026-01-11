@@ -883,7 +883,6 @@ estado: 'estado',
 servicio: 'servicio',
 direccion_habitacion: 'direccion',
 ultimo_cargo: 'ultimo_cargo',
-rango: 'rango'
 };
 
 for (const [inputId, dbField] of Object.entries(mapeo)) {
@@ -895,21 +894,61 @@ el.value = val.split('T')[0];
 } else if (el.type === 'number') {
 el.value = val ? String(val) : '';
 } else if (el.tagName === 'SELECT') {
-const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-const targetVal = normalize(val);
-let found = false;
-for (const opt of el.options) {
-if (normalize(opt.value) === targetVal || normalize(opt.textContent) === targetVal) {
-el.value = opt.value;
-found = true;
-break;
+  const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  const targetVal = normalize(val);
+  let found = false;
+  for (const opt of el.options) {
+    if (normalize(opt.value) === targetVal || normalize(opt.textContent) === targetVal) {
+      el.value = opt.value;
+      found = true;
+      break;
+    }
+  }
+  if (!found) el.value = '';
 }
-}
-if (!found) el.value = '';
+  // ✅ Manejo especial para RANGO
+const rangoSelect = document.getElementById('rango');
+const rangoDB = (auditoriaData.rango || '').toString().trim();
+
+if (rangoDB) {
+  // Primero: intentar coincidencia exacta (normalizada)
+  const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  const rangoNorm = normalize(rangoDB);
+  let found = false;
+
+  for (const opt of rangoSelect.options) {
+    if (normalize(opt.value) === rangoNorm || normalize(opt.textContent) === rangoNorm) {
+      rangoSelect.value = opt.value;
+      found = true;
+      break;
+    }
+  }
+
+  // Segundo: si no coincide, intentar coincidencia parcial (palabras clave)
+  if (!found) {
+    const keywords = ['comisario', 'inspector', 'superior', 'mayor', 'general', 'jefe', 'primer'];
+    const dbLower = rangoDB.toLowerCase();
+    for (const keyword of keywords) {
+      if (dbLower.includes(keyword)) {
+        // Buscar opción que contenga esa palabra
+        for (const opt of rangoSelect.options) {
+          if (opt.textContent.toLowerCase().includes(keyword)) {
+            rangoSelect.value = opt.value;
+            found = true;
+            break;
+          }
+        }
+        if (found) break;
+      }
+    }
+  }
+
+  // Si nada coincide, dejar vacío
+  if (!found) {
+    rangoSelect.value = '';
+  }
 } else {
-el.value = val;
-}
-}
+  rangoSelect.value = '';
 }
 
 // Recalcular edad y antigüedad tras cargar fechas
