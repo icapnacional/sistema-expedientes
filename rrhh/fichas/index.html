@@ -812,7 +812,7 @@ alertDiv.style.display = 'block';
 setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
 
-// ✅ BÚSQUEDA CORREGIDA — SIN MAPEO ERRÓNEO
+// ✅ BÚSQUEDA CORREGIDA — CON MANEJO ESPECIAL PARA ESTADO
 document.getElementById('btnBuscarCedula').addEventListener('click', async function() {
 const searchCedula = document.getElementById('searchCedula').value.trim();
 if (!searchCedula || searchCedula.length !== 8) {
@@ -862,7 +862,7 @@ return;
 
 const data = audResponse.data;
 
-// ✅ LLENADO DIRECTO Y SEGURO — SOLO CAMPOS REALES
+// ✅ LLENADO DIRECTO — CAMPOS SIMPLES
 document.getElementById('cedula').value = data.cedula || '';
 document.getElementById('nombre_apellidos').value = data.apellidos_nombres || '';
 document.getElementById('rango').value = data.rango || '';
@@ -870,9 +870,22 @@ document.getElementById('fecha_nacimiento').value = data.fecha_nacimiento ? data
 document.getElementById('telefono_funcionario').value = data.telefono || '';
 document.getElementById('correo_electronico').value = data.correo_electronico || '';
 document.getElementById('direccion_habitacion').value = data.direccion || '';
-document.getElementById('estado').value = data.estado || '';
 document.getElementById('servicio').value = data.servicio || '';
 document.getElementById('ultimo_cargo').value = data.ultimo_reporte || '';
+
+// ✅ MANEJO ESPECIAL PARA 'estado' — comparación flexible
+const estadoSelect = document.getElementById('estado');
+const estadoDB = (data.estado || '').trim();
+const normalize = str => str.trim().toLowerCase().replace(/\s+/g, ' ');
+if (estadoDB) {
+  const option = Array.from(estadoSelect.options).find(opt =>
+    normalize(opt.value) === normalize(estadoDB) ||
+    normalize(opt.textContent) === normalize(estadoDB)
+  );
+  estadoSelect.value = option ? option.value : '';
+} else {
+  estadoSelect.value = '';
+}
 
 // Recalcular edad y antigüedad
 if (data.fecha_nacimiento) {
