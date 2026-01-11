@@ -956,7 +956,7 @@ return showAlert('⚠️ Cédula inválida (debe tener exactamente 8 dígitos)',
 }
 try {
 // Verificar sesión activa y obtener user_id
-const { data: { session }, error: sessionError } = await client.auth.getSession();
+const {  { session }, error: sessionError } = await client.auth.getSession();
 if (sessionError || !session) {
 return showAlert('❌ Sesión expirada. Inicie sesión nuevamente.', 'error');
 }
@@ -1056,8 +1056,45 @@ detalles: JSON.stringify({ modulo: 'fichas' })
 console.warn('No se pudo registrar el log:', logErr.message);
 }
 showAlert(`✅ Ficha guardada exitosamente para cédula ${cedula}`, 'success');
-// Opcional: limpiar formulario o redirigir
-// document.getElementById('fichaForm')?.reset();
+
+// 🧹 Limpiar formulario
+document.getElementById('searchCedula').value = '';
+document.getElementById('cedula').value = '';
+document.getElementById('nombre_apellidos').value = '';
+document.getElementById('fecha_nacimiento').value = '';
+document.getElementById('telefono_funcionario').value = '';
+document.getElementById('telefono_emergencia').value = '';
+document.getElementById('correo_electronico').value = '';
+document.getElementById('nivel_academico').value = '';
+document.getElementById('fecha_ingreso_cpn').value = '';
+document.getElementById('fecha_ultimo_ascenso').value = '';
+document.getElementById('estado').value = '';
+document.getElementById('servicio').value = '';
+document.getElementById('direccion_habitacion').value = '';
+document.getElementById('ultimo_cargo').value = '';
+document.getElementById('rango').value = '';
+document.getElementById('credencialNo').checked = true;
+document.getElementById('numeroCredencialGroup').style.display = 'none';
+document.getElementById('numero_credencial').value = '';
+
+// 📸 Limpiar VISTAS PREVIAS y inputs de fotos
+document.getElementById('previewFoto').src = '';
+document.getElementById('previewFoto').style.display = 'none';
+document.querySelector('#previewFotoFuncionario div').style.display = 'flex';
+
+document.getElementById('previewCedulaFoto').src = '';
+document.getElementById('previewCedulaFoto').style.display = 'none';
+document.querySelector('#previewFotoCedula div').style.display = 'flex';
+
+document.getElementById('fotoFuncionario').value = '';
+document.getElementById('fotoCedula').value = '';
+
+// 👁️ Actualizar vista previa para reflejar campos vacíos
+actualizarVistaPrevia();
+
+// 🎯 Enfocar campo de búsqueda
+document.getElementById('searchCedula').focus();
+
 } catch (err) {
 console.error('Error al guardar la ficha:', err);
 showAlert(`❌ Error al guardar: ${err.message || 'Falló la operación'}`, 'error');
