@@ -425,9 +425,23 @@ border-top: 1px solid #000;
 <label for="cedula">Cédula *</label>
 <input type="text" id="cedula" maxlength="8" inputmode="numeric" placeholder="Ej: 25275015">
 </div>
-<div class="form-group">
-<label for="nombre_apellidos">Nombres y Apellidos *</label>
-<input type="text" id="nombre_apellidos" placeholder="Ej: GARCIA PEREZ, JUAN CARLOS">
+<!-- Fila combinada: Nombres y Apellidos + Estatus -->
+<div class="form-row">
+  <div class="form-group">
+    <label for="nombre_apellidos">Nombres y Apellidos *</label>
+    <input type="text" id="nombre_apellidos" placeholder="Ej: GARCIA PEREZ, JUAN CARLOS">
+  </div>
+  <div class="form-group">
+    <label for="estatus">Estatus *</label>
+    <select id="estatus">
+      <option value="">— Seleccione —</option>
+      <option value="activo">Activo</option>
+      <option value="suspendido">Suspendido</option>
+      <option value="destituido">Destituido</option>
+      <option value="DA">DA</option>
+      <option value="P">P</option>
+    </select>
+  </div>
 </div>
 <div class="form-row">
 <div class="form-group">
@@ -592,6 +606,7 @@ border-top: 1px solid #000;
 <div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">SIN DATOS</span></div>
 <div class="dato-fila"><strong>CÉDULA:</strong> <span id="previewCedula">00000000</span></div>
 <div class="dato-fila"><strong>RANGO:</strong> <span id="previewRango">SIN DATOS</span></div>
+<div class="dato-fila"><strong>ESTATUS:</strong> <span id="previewEstatus">SIN DATOS</span></div>
 <div class="dato-fila"><strong>EDAD:</strong> <span id="previewEdad">00 AÑOS</span></div>
 <div class="dato-fila"><strong>FECHA DE NACIMIENTO:</strong> <span id="previewFechaNacimiento">01/01/1990</span></div>
 <div class="dato-fila"><strong>TELÉFONO DEL FUNCIONARIO:</strong> <span id="previewTelefono">SIN DATOS</span></div>
@@ -683,6 +698,8 @@ const estado = getVal('estado');
 const servicio = getVal('servicio');
 const direccion = getVal('direccion_habitacion');
 const ultimoCargo = getVal('ultimo_cargo');
+const estatus = getVal('estatus');
+document.getElementById('previewEstatus').textContent = estatus || 'SIN DATOS';
 
 document.getElementById('previewNombre').textContent = nombre;
 document.getElementById('previewCedula').textContent = cedula;
