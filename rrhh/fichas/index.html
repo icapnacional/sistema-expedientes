@@ -786,13 +786,13 @@ document.getElementById('fecha_ingreso_cpn').addEventListener('change', function
 // ✅ Inicialización
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const { data: { session }, error: sessionError } = await client.auth.getSession();
-if (sessionError || !session) {
+const { data: { session } } = await client.auth.getSession();
+if (!session) {
 showAlert('⚠️ Debes iniciar sesión', 'error');
 setTimeout(() => window.location.href = '../index.html', 2000);
 return;
 }
-const { data: perfil } = await client
+const {  perfil } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
@@ -987,7 +987,7 @@ return showAlert('⚠️ Cédula inválida (debe tener exactamente 8 dígitos)',
 }
 
 // ✅ Verificar duplicado antes de guardar
-const { data: existe } = await client
+const {  existe } = await client
 .from('fichas')
 .select('cedula')
 .eq('cedula', cedula)
