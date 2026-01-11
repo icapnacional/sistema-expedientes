@@ -121,6 +121,27 @@ text-decoration: none;
 font-weight: 600;
 }
 .breadcrumb span { margin: 0 8px; color: #888; }
+
+/* ——— BADGE DE ESTATUS ——— */
+.status-badge {
+padding: 8px 12px;
+border-radius: 6px;
+font-weight: bold;
+text-align: center;
+color: #333;
+background: #f0f0f0;
+display: block;
+width: 100%;
+font-size: 14px;
+}
+.status-badge.activo { background: #4CAF50; color: white; }
+.status-badge.suspendido { background: #FF9800; color: white; }
+.status-badge.destituido { background: #F44336; color: white; }
+.status-badge.da { background: #9C27B0; color: white; }
+.status-badge.p { background: #2196F3; color: white; }
+.status-badge.d { background: #FFEB3B; color: black; }
+.status-badge.inactivo { background: #e0e0e0; color: #666; }
+
 /* ===== FICHA OFICIAL — DISEÑO PARA IMPRESIÓN ===== */
 .preview-container {
 border: 1px solid #ddd;
@@ -421,28 +442,19 @@ border-top: 1px solid #000;
 <!-- Columna 1: Básicos -->
 <div class="form-column">
 <div class="section-title">👤 Información Básica</div>
-<div class="form-group">
-<label for="cedula">Cédula *</label>
-<input type="text" id="cedula" maxlength="8" inputmode="numeric" placeholder="Ej: 25275015">
-</div>
-<!-- Fila combinada: Nombres y Apellidos + Estatus -->
+
+<!-- ✅ NOMBRES + ESTATUS EN LA MISMA FILA -->
 <div class="form-row">
   <div class="form-group">
     <label for="nombre_apellidos">Nombres y Apellidos *</label>
     <input type="text" id="nombre_apellidos" placeholder="Ej: GARCIA PEREZ, JUAN CARLOS">
   </div>
   <div class="form-group">
-    <label for="estatus">Estatus *</label>
-    <select id="estatus">
-      <option value="">— Seleccione —</option>
-      <option value="activo">Activo</option>
-      <option value="suspendido">Suspendido</option>
-      <option value="destituido">Destituido</option>
-      <option value="DA">DA</option>
-      <option value="P">P</option>
-    </select>
+    <label>Estatus</label>
+    <div id="estatusDisplay" class="status-badge inactivo">—</div>
   </div>
 </div>
+
 <div class="form-row">
 <div class="form-group">
 <label for="edad">Edad *</label>
@@ -606,7 +618,7 @@ border-top: 1px solid #000;
 <div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">SIN DATOS</span></div>
 <div class="dato-fila"><strong>CÉDULA:</strong> <span id="previewCedula">00000000</span></div>
 <div class="dato-fila"><strong>RANGO:</strong> <span id="previewRango">SIN DATOS</span></div>
-<div class="dato-fila"><strong>ESTATUS:</strong> <span id="previewEstatus">SIN DATOS</span></div>
+<div class="dato-fila"><strong>ESTATUS:</strong> <span id="previewEstatus">—</span></div>
 <div class="dato-fila"><strong>EDAD:</strong> <span id="previewEdad">00 AÑOS</span></div>
 <div class="dato-fila"><strong>FECHA DE NACIMIENTO:</strong> <span id="previewFechaNacimiento">01/01/1990</span></div>
 <div class="dato-fila"><strong>TELÉFONO DEL FUNCIONARIO:</strong> <span id="previewTelefono">SIN DATOS</span></div>
@@ -681,10 +693,10 @@ return `${años} año${años !== 1 ? 's' : ''} ${meses} mes${meses !== 1 ? 'es' 
 
 function actualizarVistaPrevia() {
 const getVal = id => document.getElementById(id)?.value || 'SIN DATOS';
-const getChecked = id => document.getElementById(id)?.checked;
 const nombre = getVal('nombre_apellidos');
 const cedula = (getVal('cedula') || '00000000').padStart(8, '0');
 const rango = getVal('rango');
+const estatus = document.getElementById('estatusDisplay').textContent || '—';
 const edad = getVal('edad') ? getVal('edad') + ' AÑOS' : '00 AÑOS';
 const fechaNacimiento = getVal('fecha_nacimiento') ? new Date(getVal('fecha_nacimiento')).toLocaleDateString('es-VE') : '01/01/1990';
 const telefono = getVal('telefono_funcionario');
@@ -698,12 +710,11 @@ const estado = getVal('estado');
 const servicio = getVal('servicio');
 const direccion = getVal('direccion_habitacion');
 const ultimoCargo = getVal('ultimo_cargo');
-const estatus = getVal('estatus');
-document.getElementById('previewEstatus').textContent = estatus || 'SIN DATOS';
 
 document.getElementById('previewNombre').textContent = nombre;
 document.getElementById('previewCedula').textContent = cedula;
 document.getElementById('previewRango').textContent = rango;
+document.getElementById('previewEstatus').textContent = estatus;
 document.getElementById('previewEdad').textContent = edad;
 document.getElementById('previewFechaNacimiento').textContent = fechaNacimiento;
 document.getElementById('previewTelefono').textContent = telefono;
@@ -718,7 +729,7 @@ document.getElementById('previewServicio').textContent = servicio;
 document.getElementById('previewDireccion').textContent = direccion;
 document.getElementById('previewUltimoCargo').textContent = ultimoCargo;
 
-const esSi = getChecked('credencialSi');
+const esSi = document.querySelector('input[name="credencial"]:checked')?.value === 'si';
 document.getElementById('previewCredencialSi').checked = esSi;
 document.getElementById('previewCredencialNo').checked = !esSi;
 if (esSi) {
@@ -770,7 +781,8 @@ actualizarVistaPrevia();
 ['input', 'select', 'textarea'].forEach(tag =>
 document.querySelectorAll(tag).forEach(el => el.addEventListener('input', actualizarVistaPrevia))
 );
-document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListener('change', actualizarVistaPrevia));
+
+// No hay listener para 'estatus' porque es solo lectura
 
 document.getElementById('fecha_nacimiento').addEventListener('change', function() {
 const edad = calcularEdad(this.value);
@@ -829,7 +841,7 @@ alertDiv.style.display = 'block';
 setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
 
-// ✅ BÚSQUEDA CORREGIDA — CON MANEJO ESPECIAL PARA ESTADO
+// ✅ BÚSQUEDA CORREGIDA — CON ESTATUS AUTOMÁTICO
 document.getElementById('btnBuscarCedula').addEventListener('click', async function() {
 const searchCedula = document.getElementById('searchCedula').value.trim();
 if (!searchCedula || searchCedula.length !== 8) {
@@ -890,7 +902,7 @@ document.getElementById('direccion_habitacion').value = data.direccion || '';
 document.getElementById('servicio').value = data.servicio || '';
 document.getElementById('ultimo_cargo').value = data.ultimo_reporte || '';
 
-// ✅ MANEJO ESPECIAL PARA 'estado' — comparación flexible
+// ✅ MANEJO ESPECIAL PARA 'estado'
 const estadoSelect = document.getElementById('estado');
 const estadoDB = (data.estado || '').trim();
 const normalize = str => str.trim().toLowerCase().replace(/\s+/g, ' ');
@@ -903,6 +915,20 @@ if (estadoDB) {
 } else {
   estadoSelect.value = '';
 }
+
+// ✅ CARGAR ESTATUS COMO BADGE DE COLOR
+const estatusValue = (data.status || '').trim().toLowerCase();
+const estatusBadge = document.getElementById('estatusDisplay');
+estatusBadge.className = 'status-badge';
+estatusBadge.textContent = data.status || '—';
+
+if (estatusValue === 'activo') estatusBadge.classList.add('activo');
+else if (estatusValue === 'suspendido') estatusBadge.classList.add('suspendido');
+else if (estatusValue === 'destituido') estatusBadge.classList.add('destituido');
+else if (estatusValue === 'da') estatusBadge.classList.add('da');
+else if (estatusValue === 'p') estatusBadge.classList.add('p');
+else if (estatusValue === 'd') estatusBadge.classList.add('d');
+else estatusBadge.classList.add('inactivo');
 
 // Recalcular edad y antigüedad
 if (data.fecha_nacimiento) {
@@ -1013,7 +1039,10 @@ direccion_habitacion: document.getElementById('direccion_habitacion').value.trim
 ultimo_cargo: document.getElementById('ultimo_cargo').value.trim(),
 rango: document.getElementById('rango').value.trim(),
 posee_credencial: poseeCredencial,
-numero_credencial: numeroCredencial
+numero_credencial: numeroCredencial,
+// Nota: el campo 'status' no se guarda aquí porque no es editable;
+// si necesitas guardarlo, deberías añadirlo desde el badge
+status: document.getElementById('estatusDisplay').textContent.replace('—', '').trim() || null
 };
 
 const camposObligatorios = [
@@ -1066,6 +1095,7 @@ ultimo_cargo: datosFicha.ultimo_cargo,
 rango: datosFicha.rango,
 posee_credencial: datosFicha.posee_credencial,
 numero_credencial: datosFicha.numero_credencial,
+status: datosFicha.status,
 foto_url: foto_url,
 cedula_url: cedula_url,
 creado_por: userId
@@ -1096,6 +1126,10 @@ showAlert(`✅ Ficha guardada exitosamente para cédula ${cedula}`, 'success');
 'nivel_academico','fecha_ingreso_cpn','fecha_ultimo_ascenso','antiguedad',
 'estado','servicio','direccion_habitacion','ultimo_cargo','rango'
 ].forEach(id => document.getElementById(id).value = '');
+
+// Limpiar badge de estatus
+document.getElementById('estatusDisplay').className = 'status-badge inactivo';
+document.getElementById('estatusDisplay').textContent = '—';
 
 document.getElementById('credencialNo').checked = true;
 document.getElementById('numeroCredencialGroup').style.display = 'none';
