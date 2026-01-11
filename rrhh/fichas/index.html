@@ -783,7 +783,7 @@ actualizarVistaPrevia();
 // ✅ Inicialización
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const { data: { session } } = await client.auth.getSession();
+const {  { session } } = await client.auth.getSession();
 if (!session) {
 showAlert('⚠️ Debes iniciar sesión', 'error');
 setTimeout(() => window.location.href = '../index.html', 2000);
@@ -829,7 +829,7 @@ showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
 return;
 }
 // ✅ Verificar si YA EXISTE en la tabla `fichas`
-const { data: fichaExistente, error: errorFicha } = await client
+const {  fichaExistente, error: errorFicha } = await client
 .from('fichas')
 .select('cedula')
 .eq('cedula', searchCedula)
@@ -856,7 +856,7 @@ return;
 }
 // ✅ Si NO existe, buscar en auditoria_personal para precargar
 try {
-const { data: auditoriaData, error: audError } = await client
+const {  auditoriaData, error: audError } = await client
 .from('auditoria_personal')
 .select('*')
 .eq('cedula', searchCedula)
@@ -867,6 +867,7 @@ showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`,
 return;
 }
 
+// ✅ MAPEO SIN EL CAMPO 'rango'
 const mapeo = {
 cedula: 'cedula',
 nombre_apellidos: 'apellidos_nombres',
@@ -882,7 +883,8 @@ antiguedad: 'antiguedad',
 estado: 'estado',
 servicio: 'servicio',
 direccion_habitacion: 'direccion',
-ultimo_cargo: 'ultimo_cargo',
+ultimo_cargo: 'ultimo_cargo'
+// ❌ rango se maneja aparte
 };
 
 for (const [inputId, dbField] of Object.entries(mapeo)) {
@@ -894,28 +896,34 @@ el.value = val.split('T')[0];
 } else if (el.type === 'number') {
 el.value = val ? String(val) : '';
 } else if (el.tagName === 'SELECT') {
-  const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-  const targetVal = normalize(val);
-  let found = false;
-  for (const opt of el.options) {
-    if (normalize(opt.value) === targetVal || normalize(opt.textContent) === targetVal) {
-      el.value = opt.value;
-      found = true;
-      break;
-    }
-  }
-  if (!found) el.value = '';
+const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+const targetVal = normalize(val);
+let found = false;
+for (const opt of el.options) {
+if (normalize(opt.value) === targetVal || normalize(opt.textContent) === targetVal) {
+el.value = opt.value;
+found = true;
+break;
 }
-  // ✅ Manejo especial para RANGO
+}
+if (!found) el.value = '';
+} else {
+el.value = val;
+}
+}
+}
+
+// ✅ MANEJO ESPECIAL PARA RANGO (fuera del bucle)
 const rangoSelect = document.getElementById('rango');
 const rangoDB = (auditoriaData.rango || '').toString().trim();
 
 if (rangoDB) {
-  // Primero: intentar coincidencia exacta (normalizada)
+  // Normalización para coincidencia flexible
   const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
   const rangoNorm = normalize(rangoDB);
   let found = false;
 
+  // Intentar coincidencia exacta (normalizada)
   for (const opt of rangoSelect.options) {
     if (normalize(opt.value) === rangoNorm || normalize(opt.textContent) === rangoNorm) {
       rangoSelect.value = opt.value;
@@ -924,13 +932,12 @@ if (rangoDB) {
     }
   }
 
-  // Segundo: si no coincide, intentar coincidencia parcial (palabras clave)
+  // Si no coincide, intentar coincidencia parcial por palabras clave
   if (!found) {
     const keywords = ['comisario', 'inspector', 'superior', 'mayor', 'general', 'jefe', 'primer'];
     const dbLower = rangoDB.toLowerCase();
     for (const keyword of keywords) {
       if (dbLower.includes(keyword)) {
-        // Buscar opción que contenga esa palabra
         for (const opt of rangoSelect.options) {
           if (opt.textContent.toLowerCase().includes(keyword)) {
             rangoSelect.value = opt.value;
@@ -943,7 +950,6 @@ if (rangoDB) {
     }
   }
 
-  // Si nada coincide, dejar vacío
   if (!found) {
     rangoSelect.value = '';
   }
@@ -1019,7 +1025,7 @@ if (!cedula || cedula.length !== 8 || !/^\d{8}$/.test(cedula)) {
 return showAlert('⚠️ Cédula inválida (debe tener exactamente 8 dígitos)', 'error');
 }
 // ✅ Verificar duplicado antes de guardar
-const { data: existe, error: dupError } = await client
+const {  existe, error: dupError } = await client
 .from('fichas')
 .select('cedula')
 .eq('cedula', cedula)
@@ -1079,7 +1085,7 @@ if (!fileInput.files?.[0]) return null;
 const file = fileInput.files[0];
 const { error: uploadErr } = await storage.upload(filename, file, { upsert: true });
 if (uploadErr) throw new Error(`Error al subir archivo: ${uploadErr.message}`);
-const { data: { publicUrl } } = storage.getPublicUrl(filename);
+const {  { publicUrl } } = storage.getPublicUrl(filename);
 return publicUrl;
 };
 foto_url = await uploadFile(document.getElementById('fotoFuncionario'), `foto-${cedula}.jpg`);
