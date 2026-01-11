@@ -890,114 +890,135 @@ console.error('Error al buscar cédula:', err);
 showAlert(`❌ Error: ${err.message}`, 'error');
 }
 });
-// ✅ Guardar ficha completa (datos + fotos)
 async function guardarFicha() {
-showAlert('💾 Guardando ficha...', 'success');
-const cedula = document.getElementById('cedula').value.trim();
-if (!cedula || cedula.length !== 8) {
-document.getElementById('previewNumeroFicha').textContent = data.numero_ficha;
-return showAlert('⚠️ Cédula inválida (debe tener 8 dígitos)', 'error');
-}
-try {
-// 1. Recolectar datos del formulario
-const datos = {
-cedula: cedula,
-nombre_apellidos: document.getElementById('nombre_apellidos').value.trim(),
-edad: document.getElementById('edad').value.trim(),
-fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
-telefono_funcionario: document.getElementById('telefono_funcionario').value.trim(),
-telefono_emergencia: document.getElementById('telefono_emergencia').value.trim(),
-correo_electronico: document.getElementById('correo_electronico').value.trim(),
-nivel_academico: document.getElementById('nivel_academico').value,
-fecha_ingreso_cpn: document.getElementById('fecha_ingreso_cpn').value,
-fecha_ultimo_ascenso: document.getElementById('fecha_ultimo_ascenso').value,
-antiguedad: document.getElementById('antiguedad').value.trim(),
-estado: document.getElementById('estado').value,
-servicio: document.getElementById('servicio').value.trim(),
-direccion_habitacion: document.getElementById('direccion_habitacion').value.trim(),
-ultimo_cargo: document.getElementById('ultimo_cargo').value.trim(),
-rango: document.getElementById('rango').value,
-posee_credencial: document.querySelector('input[name="credencial"]:checked')?.value === 'si',
-numero_credencial: document.getElementById('numero_credencial').value.trim() || null
-};
-// Validar campos obligatorios
-const obligatorios = ['nombre_apellidos', 'edad', 'fecha_nacimiento', 'nivel_academico', 'telefono_funcionario', 'telefono_emergencia', 'correo_electronico', 'rango', 'ultimo_cargo', 'fecha_ingreso_cpn', 'antiguedad', 'estado', 'servicio', 'direccion_habitacion'];
-for (const campo of obligatorios) {
-if (!datos[campo]) {
-return showAlert(`⚠️ Campo obligatorio faltante: ${campo.replace(/_/g, ' ')}`, 'error');
-}
-}
-// 2. Subir fotos (si existen)
-const storage = client.storage.from('fichas');
-let fotoUrl = null, cedulaUrl = null;
-const uploadFile = async (fileInput, path) => {
-if (!fileInput.files?.[0]) return null;
-const file = fileInput.files[0];
-const { error } = await storage.upload(path, file, { upsert: true });
-if (error) throw error;
-return storage.getPublicUrl(path).data.publicUrl;
-};
-fotoUrl = await uploadFile(document.getElementById('fotoFuncionario'), `foto-${cedula}.jpg`);
-cedulaUrl = await uploadFile(document.getElementById('fotoCedula'), `cedula-${cedula}.jpg`);
-// 3. Insertar en tabla `fichas`
-const { data, error } = await client
-.from('fichas')
-.insert([{
-cedula: datos.cedula,
-datos: datos,
-foto_url: fotoUrl,
-cedula_url: cedulaUrl,
-creado_por: (await client.auth.getSession()).data.session?.user?.id
-}])
-.select('numero_ficha, fecha_creacion')
-.single();
-if (error) throw error;
-// 4. Actualizar título con número de ficha y fecha
-const fecha = new Date(data.fecha_creacion).toLocaleDateString('es-VE', {
-day: '2-digit',
-month: '2-digit',
-year: 'numeric'
-});
-document.getElementById('previewFechaFicha').textContent = fecha;
-document.getElementById('previewEstadoUsuario').textContent = datos.estado || '—';
-// ✅ Aquí actualizamos el número en el título
-const tituloFicha = document.querySelector('.header-container .titulo-ficha');
-if (tituloFicha) {
-const padre = tituloFicha.parentElement;
-const nuevoTitulo = `
-<div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
-<div style="font-size: 10pt; color: #333; text-align: center; margin-top: 4px; line-height: 1.3;">
-<div><strong>FICHA N°:</strong> ${data.numero_ficha} – ${fecha} – ICAP</div>
-<div><strong>ESTADO:</strong> ${datos.estado || '—'}</div>
-</div>
-`;
-padre.innerHTML = padre.innerHTML.replace(
-/<div class="titulo-ficha">[\s\S]*?<\/div>\s*<div style="[^"]*">[\s\S]*?<\/div>/,
-nuevoTitulo
-);
-}
-// 5. Log (opcional)
-try {
-const { data: { session } } = await client.auth.getSession();
-if (session) {
-await client.from('rrhh_logs').insert({
-user_id: session.user.id,
-accion: 'ficha_guardada',
-cedula_afectada: cedula,
-detalles: { modulo: 'fichas', numero_ficha: data.numero_ficha }
-});
-}
-} catch (logErr) {
-console.warn('Log no registrado:', logErr.message);
-}
-showAlert(`✅ Ficha guardada exitosamente. N°: ${data.numero_ficha}`, 'success');
-setTimeout(() => {
-document.getElementById('btnExportarPDF').removeAttribute('disabled');
-}, 1000);
-} catch (err) {
-console.error('Error al guardar ficha:', err);
-showAlert(`❌ Error: ${err.message || 'Falla desconocida'}`, 'error');
-}
+  showAlert('💾 Guardando ficha...', 'success');
+
+  const cedula = document.getElementById('cedula').value.trim();
+  if (!cedula || cedula.length !== 8 || !/^\d{8}$/.test(cedula)) {
+    return showAlert('⚠️ Cédula inválida (debe tener exactamente 8 dígitos)', 'error');
+  }
+
+  try {
+    // Verificar sesión activa y obtener user_id
+    const { data: { session }, error: sessionError } = await client.auth.getSession();
+    if (sessionError || !session) {
+      return showAlert('❌ Sesión expirada. Inicie sesión nuevamente.', 'error');
+    }
+    const userId = session.user.id;
+
+    // Recopilar datos del formulario
+    const poseeCredencial = document.querySelector('input[name="credencial"]:checked')?.value === 'si';
+    const numeroCredencial = poseeCredencial ? document.getElementById('numero_credencial').value.trim() : null;
+
+    const datosFicha = {
+      cedula: cedula,
+      nombre_apellidos: document.getElementById('nombre_apellidos').value.trim(),
+      edad: document.getElementById('edad').value.trim(),
+      fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
+      telefono_funcionario: document.getElementById('telefono_funcionario').value.trim(),
+      telefono_emergencia: document.getElementById('telefono_emergencia').value.trim(),
+      correo_electronico: document.getElementById('correo_electronico').value.trim(),
+      nivel_academico: document.getElementById('nivel_academico').value,
+      fecha_ingreso_cpn: document.getElementById('fecha_ingreso_cpn').value,
+      fecha_ultimo_ascenso: document.getElementById('fecha_ultimo_ascenso').value,
+      antiguedad: document.getElementById('antiguedad').value.trim(),
+      estado: document.getElementById('estado').value,
+      servicio: document.getElementById('servicio').value.trim(),
+      direccion_habitacion: document.getElementById('direccion_habitacion').value.trim(),
+      ultimo_cargo: document.getElementById('ultimo_cargo').value.trim(),
+      rango: document.getElementById('rango').value,
+      posee_credencial: poseeCredencial,
+      numero_credencial: numeroCredencial
+    };
+
+    // Validar campos obligatorios
+    const camposObligatorios = [
+      'nombre_apellidos', 'edad', 'fecha_nacimiento', 'nivel_academico',
+      'telefono_funcionario', 'telefono_emergencia', 'correo_electronico',
+      'rango', 'ultimo_cargo', 'fecha_ingreso_cpn', 'antiguedad',
+      'estado', 'servicio', 'direccion_habitacion'
+    ];
+
+    for (const campo of camposObligatorios) {
+      if (!datosFicha[campo]) {
+        const nombreCampo = campo.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return showAlert(`⚠️ Campo obligatorio faltante: ${nombreCampo}`, 'error');
+      }
+    }
+
+    // Subir fotos (opcional)
+    let foto_url = null, cedula_url = null;
+    const storage = client.storage.from('fichas');
+
+    const uploadFile = async (fileInput, filename) => {
+      if (!fileInput.files?.[0]) return null;
+      const file = fileInput.files[0];
+      const { error: uploadErr } = await storage.upload(filename, file, { upsert: true });
+      if (uploadErr) throw new Error(`Error al subir archivo: ${uploadErr.message}`);
+      const { data: { publicUrl } } = storage.getPublicUrl(filename);
+      return publicUrl;
+    };
+
+    foto_url = await uploadFile(document.getElementById('fotoFuncionario'), `foto-${cedula}.jpg`);
+    cedula_url = await uploadFile(document.getElementById('fotoCedula'), `cedula-${cedula}.jpg`);
+
+    // Insertar en la tabla `fichas`
+    const { error: insertError } = await client
+      .from('fichas')
+      .insert({
+        cedula: datosFicha.cedula,
+        nombre_apellidos: datosFicha.nombre_apellidos,
+        edad: datosFicha.edad,
+        fecha_nacimiento: datosFicha.fecha_nacimiento,
+        telefono_funcionario: datosFicha.telefono_funcionario,
+        telefono_emergencia: datosFicha.telefono_emergencia,
+        correo_electronico: datosFicha.correo_electronico,
+        nivel_academico: datosFicha.nivel_academico,
+        fecha_ingreso_cpn: datosFicha.fecha_ingreso_cpn,
+        fecha_ultimo_ascenso: datosFicha.fecha_ultimo_ascenso,
+        antiguedad: datosFicha.antiguedad,
+        estado: datosFicha.estado,
+        servicio: datosFicha.servicio,
+        direccion_habitacion: datosFicha.direccion_habitacion,
+        ultimo_cargo: datosFicha.ultimo_cargo,
+        rango: datosFicha.rango,
+        posee_credencial: datosFicha.posee_credencial,
+        numero_credencial: datosFicha.numero_credencial,
+        foto_url: foto_url,
+        cedula_url: cedula_url,
+        creado_por: userId
+      });
+
+    if (insertError) {
+      console.error('Error de inserción:', insertError);
+      // Verifica si es un error de duplicado (constraint unique)
+      if (insertError.code === '23505') {
+        return showAlert('⚠️ Ya existe una ficha con esta cédula. No se permiten duplicados.', 'error');
+      }
+      throw new Error(insertError.message);
+    }
+
+    // Registrar en logs (opcional)
+    try {
+      await client.from('rrhh_logs').insert({
+        user_id: userId,
+        accion: 'ficha_guardada',
+        cedula_afectada: cedula,
+        detalles: JSON.stringify({ modulo: 'fichas' })
+      });
+    } catch (logErr) {
+      console.warn('No se pudo registrar el log:', logErr.message);
+    }
+
+    showAlert(`✅ Ficha guardada exitosamente para cédula ${cedula}`, 'success');
+
+    // Opcional: limpiar formulario o redirigir
+    // document.getElementById('fichaForm')?.reset();
+
+  } catch (err) {
+    console.error('Error al guardar la ficha:', err);
+    showAlert(`❌ Error al guardar: ${err.message || 'Falló la operación'}`, 'error');
+  }
 }
 </script>
 </body>
