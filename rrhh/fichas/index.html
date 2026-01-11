@@ -832,7 +832,7 @@ alertDiv.style.display = 'block';
 setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
 
-// ✅ BÚSQUEDA POR CÉDULA — con validación de duplicado en `fichas`
+// ✅ BÚSQUEDA POR CÉDULA — con validación de duplicado en `fichas` y corrección de rango
 document.getElementById('btnBuscarCedula').addEventListener('click', async function() {
 const searchCedula = document.getElementById('searchCedula').value.trim();
 if (!searchCedula || searchCedula.length !== 8) {
@@ -911,17 +911,42 @@ el.value = val.split('T')[0];
 } else if (el.type === 'number') {
 el.value = val ? String(val) : '';
 } else if (el.tagName === 'SELECT') {
-const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-const targetVal = normalize(val);
-let found = false;
-for (const opt of el.options) {
-if (normalize(opt.value) === targetVal || normalize(opt.textContent) === targetVal) {
-el.value = opt.value;
-found = true;
-break;
-}
-}
-if (!found) el.value = '';
+  // ✅ Corrección robusta para <select> (incluye rango)
+  const normalize = s => (s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // elimina tildes
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const targetVal = normalize(val);
+  let found = false;
+
+  for (const opt of el.options) {
+    if (
+      normalize(opt.value) === targetVal ||
+      normalize(opt.textContent) === targetVal
+    ) {
+      el.value = opt.value;
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    // Segunda estrategia: coincidencia parcial por primera palabra
+    const firstWordTarget = targetVal.split(' ')[0];
+    for (const opt of el.options) {
+      const optNorm = normalize(opt.textContent);
+      if (optNorm.startsWith(firstWordTarget)) {
+        el.value = opt.value;
+        found = true;
+        break;
+      }
+    }
+  }
+
+  if (!found) el.value = '';
 } else {
 el.value = val;
 }
