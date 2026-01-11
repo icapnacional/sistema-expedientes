@@ -998,7 +998,7 @@ return showAlert('⚠️ Ya existe una ficha con esta cédula. No se permiten du
 }
 
 try {
-const {  { session }, error: sessionError } = await client.auth.getSession();
+const { data: { session }, error: sessionError } = await client.auth.getSession();
 if (sessionError || !session) {
 return showAlert('❌ Sesión expirada. Inicie sesión nuevamente.', 'error');
 }
