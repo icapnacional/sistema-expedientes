@@ -780,40 +780,51 @@ const antiguedad = calcularAntiguedad(this.value);
 if (antiguedad) document.getElementById('antiguedad').value = antiguedad;
 actualizarVistaPrevia();
 });
-// ✅ Inicialización
+// ✅ Inicialización segura
 document.addEventListener('DOMContentLoaded', async () => {
-try {
-const { data: { session }, error: sessionError } = await client.auth.getSession();
-if (sessionError || !session) {
-showAlert('⚠️ Debes iniciar sesión', 'error');
-setTimeout(() => window.location.href = '../index.html', 2000);
-return;
-}
-const { data: perfil } = await client
-.from('perfiles')
-.select('email, rol')
-.eq('id', session.user.id)
-.single();
-if (!perfil) throw new Error('Perfil no encontrado');
-document.getElementById('userEmail').textContent = perfil.email;
-const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
-document.getElementById('userRol').textContent = rolText;
-document.getElementById('previewEstadoUsuario').textContent = '—';
-if (perfil.rol === 'admin') {
-document.getElementById('rolLabel').style.display = 'none';
-const rolSpan = document.getElementById('userRol');
-rolSpan.style.color = '#c62828';
-rolSpan.title = 'Administrador';
-rolSpan.style.cursor = 'help';
-} else {
-document.getElementById('rolLabel').style.display = 'inline';
-}
-document.getElementById('previewFechaFicha').textContent = '06/01/2026';
-actualizarVistaPrevia();
-} catch (err) {
-console.error('Error al cargar sesión:', err);
-showAlert(`❌ ${err.message || 'Error desconocido'}`, 'error');
-}
+  try {
+    const sessionResponse = await client.auth.getSession();
+    const session = sessionResponse.data?.session;
+
+    if (!session) {
+      showAlert('⚠️ Debes iniciar sesión', 'error');
+      setTimeout(() => window.location.href = '../index.html', 2000);
+      return;
+    }
+
+    const perfilResponse = await client
+      .from('perfiles')
+      .select('email, rol')
+      .eq('id', session.user.id)
+      .single();
+
+    if (perfilResponse.error || !perfilResponse.data) {
+      throw new Error('Perfil no encontrado');
+    }
+
+    const perfil = perfilResponse.data;
+
+    document.getElementById('userEmail').textContent = perfil.email;
+    const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
+    document.getElementById('userRol').textContent = rolText;
+    document.getElementById('previewEstadoUsuario').textContent = '—';
+
+    if (perfil.rol === 'admin') {
+      document.getElementById('rolLabel').style.display = 'none';
+      const rolSpan = document.getElementById('userRol');
+      rolSpan.style.color = '#c62828';
+      rolSpan.title = 'Administrador';
+      rolSpan.style.cursor = 'help';
+    } else {
+      document.getElementById('rolLabel').style.display = 'inline';
+    }
+
+    document.getElementById('previewFechaFicha').textContent = '06/01/2026';
+    actualizarVistaPrevia();
+  } catch (err) {
+    console.error('Error al cargar sesión:', err);
+    showAlert(`❌ ${err.message || 'Error desconocido'}`, 'error');
+  }
 });
 function showAlert(msg, type) {
 alertDiv.textContent = msg;
@@ -829,17 +840,21 @@ showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
 return;
 }
 // ✅ Verificar si YA EXISTE en la tabla `fichas`
-const {  fichaExistente, error: errorFicha } = await client
+const fichaResponse = await client
 .from('fichas')
 .select('cedula')
 .eq('cedula', searchCedula)
 .limit(1)
 .maybeSingle();
-if (errorFicha) {
-console.error('Error al verificar duplicado:', errorFicha);
+
+if (fichaResponse.error) {
+console.error('Error al verificar duplicado:', fichaResponse.error);
 showAlert('❌ Error al verificar la cédula', 'error');
 return;
 }
+
+const fichaExistente = fichaResponse.data;
+
 if (fichaExistente) {
 showAlert('⚠️ Ya existe una ficha con esta cédula. No se permiten duplicados.', 'error');
 // Limpiar formulario y vista previa
@@ -856,16 +871,18 @@ return;
 }
 // ✅ Si NO existe, buscar en auditoria_personal para precargar
 try {
-const {  auditoriaData, error: audError } = await client
+const audResponse = await client
 .from('auditoria_personal')
 .select('*')
 .eq('cedula', searchCedula)
 .single();
 
-if (audError) {
+if (audResponse.error) {
 showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`, 'error');
 return;
 }
+
+const auditoriaData = audResponse.data;
 
 // ✅ MAPEO SIN EL CAMPO 'rango'
 const mapeo = {
@@ -1025,24 +1042,32 @@ if (!cedula || cedula.length !== 8 || !/^\d{8}$/.test(cedula)) {
 return showAlert('⚠️ Cédula inválida (debe tener exactamente 8 dígitos)', 'error');
 }
 // ✅ Verificar duplicado antes de guardar
-const {  existe, error: dupError } = await client
+const dupResponse = await client
 .from('fichas')
 .select('cedula')
 .eq('cedula', cedula)
 .limit(1)
 .maybeSingle();
-if (dupError) {
-console.error('Error al verificar duplicado al guardar:', dupError);
+
+if (dupResponse.error) {
+console.error('Error al verificar duplicado al guardar:', dupResponse.error);
 return showAlert('❌ Error al verificar duplicado', 'error');
 }
+
+const existe = dupResponse.data;
+
 if (existe) {
 return showAlert('⚠️ Ya existe una ficha con esta cédula. No se permiten duplicados.', 'error');
 }
 try {
-const { data: { session }, error: sessionError } = await client.auth.getSession();
+const sessionRes = await client.auth.getSession();
+const session = sessionRes.data?.session;
+const sessionError = sessionRes.error;
+
 if (sessionError || !session) {
 return showAlert('❌ Sesión expirada. Inicie sesión nuevamente.', 'error');
 }
+
 const userId = session.user.id;
 const poseeCredencial = document.querySelector('input[name="credencial"]:checked')?.value === 'si';
 const numeroCredencial = poseeCredencial ? document.getElementById('numero_credencial').value.trim() : null;
@@ -1090,7 +1115,7 @@ return publicUrl;
 };
 foto_url = await uploadFile(document.getElementById('fotoFuncionario'), `foto-${cedula}.jpg`);
 cedula_url = await uploadFile(document.getElementById('fotoCedula'), `cedula-${cedula}.jpg`);
-const { error: insertError } = await client
+const insertResponse = await client
 .from('fichas')
 .insert({
 cedula: datosFicha.cedula,
@@ -1115,10 +1140,12 @@ foto_url: foto_url,
 cedula_url: cedula_url,
 creado_por: userId
 });
-if (insertError) {
-console.error('Error de inserción:', insertError);
-throw new Error(insertError.message);
+
+if (insertResponse.error) {
+console.error('Error de inserción:', insertResponse.error);
+throw new Error(insertResponse.error.message);
 }
+
 try {
 await client.from('rrhh_logs').insert({
 user_id: userId,
@@ -1129,7 +1156,9 @@ detalles: JSON.stringify({ modulo: 'fichas' })
 } catch (logErr) {
 console.warn('No se pudo registrar el log:', logErr.message);
 }
+
 showAlert(`✅ Ficha guardada exitosamente para cédula ${cedula}`, 'success');
+
 // 🧹 Limpiar todo
 [
 'searchCedula','cedula','nombre_apellidos','edad','fecha_nacimiento',
