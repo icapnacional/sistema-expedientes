@@ -786,7 +786,7 @@ document.getElementById('fecha_ingreso_cpn').addEventListener('change', function
 // ✅ Inicialización
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const { data: { session } } = await client.auth.getSession();
+const {  { session } } = await client.auth.getSession();
 if (!session) {
 showAlert('⚠️ Debes iniciar sesión', 'error');
 setTimeout(() => window.location.href = '../index.html', 2000);
@@ -826,7 +826,7 @@ alertDiv.style.display = 'block';
 setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
 
-// ✅ BÚSQUEDA POR CÉDULA — CORREGIDA
+// ✅ BÚSQUEDA POR CÉDULA — CORREGIDA SOLO PARA FECHA_NACIMIENTO Y RANGO
 document.getElementById('btnBuscarCedula').addEventListener('click', async function() {
   const searchCedula = document.getElementById('searchCedula').value.trim();
   if (!searchCedula || searchCedula.length !== 8) {
@@ -835,7 +835,7 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
   }
 
   // ✅ Verificar duplicado en `fichas`
-  const { data: fichaExistente } = await client
+  const {  fichaExistente } = await client
     .from('fichas')
     .select('cedula')
     .eq('cedula', searchCedula)
@@ -858,7 +858,7 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
     placeholderCedula.style.display = 'flex';
 
     // ✅ Buscar en auditoria_personal
-    const { data: auditoriaData, error } = await client
+    const {  auditoriaData, error } = await client
       .from('auditoria_personal')
       .select('*')
       .eq('cedula', searchCedula)
@@ -869,7 +869,7 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
       return;
     }
 
-    // ✅ Mapeo correcto (usa "fecha_ingreso", no "fecha_ingreso_cpn")
+    // ✅ Mapeo correcto
     const mapeo = {
       cedula: 'cedula',
       nombre_apellidos: 'apellidos_nombres',
@@ -878,7 +878,7 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
       telefono_emergencia: 'telefono_emergencia',
       correo_electronico: 'correo_electronico',
       nivel_academico: 'nivel_academico',
-      fecha_ingreso_cpn: 'fecha_ingreso',        // ← CORREGIDO
+      fecha_ingreso_cpn: 'fecha_ingreso',
       fecha_ultimo_ascenso: 'fecha_ultimo_ascenso',
       antiguedad: 'antiguedad',
       estado: 'estado',
@@ -888,28 +888,35 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
       rango: 'rango'
     };
 
-    // ✅ Llenar campos
+    // ✅ Llenar campos — CORREGIDO SOLO PARA fecha_nacimiento Y rango
     for (const [inputId, dbField] of Object.entries(mapeo)) {
       const el = document.getElementById(inputId);
       if (!el) continue;
 
       let val = auditoriaData[dbField] ?? '';
 
-      if (el.type === 'date' && val) {
-        el.value = val.split('T')[0];
-      } else if (el.tagName === 'SELECT' && inputId === 'rango') {
-        // ✅ Normalización robusta para rango
-        const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      if (inputId === 'fecha_nacimiento' && val) {
+        if (val.includes('T')) {
+          el.value = val.split('T')[0];
+        } else {
+          el.value = val;
+        }
+      } else if (inputId === 'rango' && val) {
+        const normalize = s => (s || '').toLowerCase().trim();
         const target = normalize(val);
         let found = false;
         for (const opt of el.options) {
-          if (normalize(opt.value) === target || normalize(opt.textContent) === target) {
+          if (normalize(opt.textContent) === target) {
             el.value = opt.value;
             found = true;
             break;
           }
         }
         if (!found) el.value = '';
+      } else if (el.type === 'date' && val) {
+        el.value = val.split('T')[0];
+      } else if (el.type === 'number') {
+        el.value = val ? String(val) : '';
       } else if (el.tagName === 'SELECT') {
         el.value = val;
       } else {
@@ -991,7 +998,7 @@ return showAlert('⚠️ Ya existe una ficha con esta cédula. No se permiten du
 }
 
 try {
-const { data: { session }, error: sessionError } = await client.auth.getSession();
+const {  { session }, error: sessionError } = await client.auth.getSession();
 if (sessionError || !session) {
 return showAlert('❌ Sesión expirada. Inicie sesión nuevamente.', 'error');
 }
@@ -1041,7 +1048,7 @@ if (!fileInput.files?.[0]) return null;
 const file = fileInput.files[0];
 const { error: uploadErr } = await storage.upload(filename, file, { upsert: true });
 if (uploadErr) throw new Error(`Error al subir archivo: ${uploadErr.message}`);
-const { data: { publicUrl } } = storage.getPublicUrl(filename);
+const {  { publicUrl } } = storage.getPublicUrl(filename);
 return publicUrl;
 };
 foto_url = await uploadFile(document.getElementById('fotoFuncionario'), `foto-${cedula}.jpg`);
