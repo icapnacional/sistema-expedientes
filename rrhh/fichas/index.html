@@ -998,6 +998,41 @@ detalles: JSON.stringify({ modulo: 'fichas' })
 console.warn('No se pudo registrar el log:', logErr.message);
 }
 showAlert(`✅ Ficha guardada exitosamente para cédula ${cedula}`, 'success');
+  // 🧹 Limpiar formulario
+document.getElementById('searchCedula').value = '';
+document.getElementById('cedula').value = '';
+document.getElementById('nombre_apellidos').value = '';
+document.getElementById('edad').value = '';
+document.getElementById('fecha_nacimiento').value = '';
+document.getElementById('telefono_funcionario').value = '';
+document.getElementById('telefono_emergencia').value = '';
+document.getElementById('correo_electronico').value = '';
+document.getElementById('nivel_academico').value = '';
+document.getElementById('fecha_ingreso_cpn').value = '';
+document.getElementById('fecha_ultimo_ascenso').value = '';
+document.getElementById('antiguedad').value = '';
+document.getElementById('estado').value = '';
+document.getElementById('servicio').value = '';
+document.getElementById('direccion_habitacion').value = '';
+document.getElementById('ultimo_cargo').value = '';
+document.getElementById('rango').value = '';
+document.getElementById('credencialNo').checked = true;
+document.getElementById('numeroCredencialGroup').style.display = 'none';
+document.getElementById('numero_credencial').value = '';
+
+// 📸 Limpiar inputs de archivos
+document.getElementById('fotoFuncionario').value = '';
+document.getElementById('fotoCedula').value = '';
+
+// 👁️ Resetear vista previa
+actualizarVistaPrevia();
+document.getElementById('previewFoto').style.display = 'none';
+document.querySelector('#previewFotoFuncionario div').style.display = 'flex';
+document.getElementById('previewCedulaFoto').style.display = 'none';
+document.querySelector('#previewFotoCedula div').style.display = 'flex';
+
+// 🎯 Enfocar campo de búsqueda para nueva operación
+document.getElementById('searchCedula').focus();
 // Opcional: limpiar formulario o redirigir
 // document.getElementById('fichaForm')?.reset();
 } catch (err) {
