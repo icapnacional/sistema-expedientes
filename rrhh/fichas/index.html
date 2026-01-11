@@ -78,6 +78,10 @@ border-radius: 8px;
 font-size: 15px;
 background: #fdfdfd;
 }
+input[readonly] {
+background-color: #f5f5f5;
+cursor: not-allowed;
+}
 .btn {
 background-color: #722F37;
 color: white;
@@ -142,7 +146,6 @@ width: 25.4cm;
 height: 19.05cm;
 padding: 1.5cm;
 }
-/* ——— HEADER CON LOGOS AL LADO DEL TÍTULO ——— */
 .header-container {
 display: flex;
 align-items: center;
@@ -171,7 +174,6 @@ text-align: center;
 flex-grow: 1;
 margin: 0 1cm;
 }
-/* ——— FOTO FUNCIONARIO ——— */
 .foto-funcionario {
 position: absolute;
 top: 3.5cm;
@@ -187,7 +189,6 @@ width: 100%;
 height: 100%;
 object-fit: cover;
 }
-/* ——— FOTO CÉDULA ——— */
 .foto-cedula {
 position: absolute;
 bottom: 1cm;
@@ -203,7 +204,6 @@ width: 100%;
 height: 100%;
 object-fit: contain;
 }
-/* ——— DATOS PERSONALES ——— */
 .datos-personales {
 position: absolute;
 top: 3.5cm;
@@ -222,7 +222,6 @@ color: #000;
 margin-bottom: 4px;
 font-size: 10pt;
 }
-/* ——— CREDENCIAL ——— */
 .credencial-section {
 position: absolute;
 top: 8.5cm;
@@ -246,7 +245,6 @@ width: 100%;
 margin-top: 5px;
 font-size: 9pt;
 }
-/* ——— MARCA DE AGUA ——— */
 .watermark {
 position: absolute;
 opacity: 0.05;
@@ -258,7 +256,6 @@ white-space: nowrap;
 color: #722F37;
 font-weight: bold;
 }
-/* ——— IMPRESIÓN ——— */
 @media print {
 @page {
 size: 25.4cm 19.05cm;
@@ -284,7 +281,6 @@ bottom: auto !important;
 top: 12cm !important;
 }
 }
-/* ——— VISTA EN PANTALLA ——— */
 @media screen {
 .ficha-oficial {
 width: 100%;
@@ -348,7 +344,6 @@ max-height: 170px !important;
 margin-top: -150px !important;
 }
 }
-/* ——— DISEÑO FORMULARIO ——— */
 .form-grid {
 display: grid;
 grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -432,7 +427,7 @@ border-top: 1px solid #000;
 <div class="form-row">
 <div class="form-group">
 <label for="edad">Edad *</label>
-<input type="number" id="edad" min="18" max="100" placeholder="Ej: 35">
+<input type="text" id="edad" readonly placeholder="Se calcula automáticamente">
 </div>
 <div class="form-group">
 <label for="fecha_nacimiento">Fecha de Nacimiento *</label>
@@ -500,7 +495,7 @@ border-top: 1px solid #000;
 </div>
 <div class="form-group">
 <label for="antiguedad">Antigüedad *</label>
-<input type="text" id="antiguedad" placeholder="Ej: 5 años 3 meses">
+<input type="text" id="antiguedad" readonly placeholder="Se calcula automáticamente">
 </div>
 <div class="section-title" style="margin-top: 20px;">📍 Ubicación</div>
 <div class="form-group">
@@ -649,407 +644,414 @@ const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
 const alertDiv = document.getElementById('alertMessage');
 
-// 🎯 Actualizar vista previa
-function actualizarVistaPrevia() {
-const getVal = id => document.getElementById(id)?.value || 'SIN DATOS';
-const getChecked = id => document.getElementById(id)?.checked;
-const nombre = getVal('nombre_apellidos');
-const cedula = (getVal('cedula') || '00000000').padStart(8, '0');
-const edad = getVal('edad') ? getVal('edad') + ' AÑOS' : '00 AÑOS';
-const fechaNacimiento = getVal('fecha_nacimiento') ? new Date(getVal('fecha_nacimiento')).toLocaleDateString('es-VE') : '01/01/1990';
-const telefono = getVal('telefono_funcionario');
-const telefonoEmergencia = getVal('telefono_emergencia');
-const correo = getVal('correo_electronico');
-const nivelAcademico = getVal('nivel_academico');
-const fechaIngreso = getVal('fecha_ingreso_cpn') ? new Date(getVal('fecha_ingreso_cpn')).toLocaleDateString('es-VE') : '01/01/2020';
-const fechaAscenso = getVal('fecha_ultimo_ascenso') ? new Date(getVal('fecha_ultimo_ascenso')).toLocaleDateString('es-VE') : 'SIN DATOS';
-const antiguedad = getVal('antiguedad');
-const estado = getVal('estado');
-const servicio = getVal('servicio');
-const direccion = getVal('direccion_habitacion');
-const ultimoCargo = getVal('ultimo_cargo');
-document.getElementById('previewNombre').textContent = nombre;
-document.getElementById('previewCedula').textContent = cedula;
-document.getElementById('previewEdad').textContent = edad;
-document.getElementById('previewFechaNacimiento').textContent = fechaNacimiento;
-document.getElementById('previewTelefono').textContent = telefono;
-document.getElementById('previewTelefonoEmergencia').textContent = telefonoEmergencia;
-document.getElementById('previewCorreo').textContent = correo;
-document.getElementById('previewNivelAcademico').textContent = nivelAcademico;
-document.getElementById('previewFechaIngreso').textContent = fechaIngreso;
-document.getElementById('previewFechaAscenso').textContent = fechaAscenso;
-document.getElementById('previewAntiguedad').textContent = antiguedad;
-document.getElementById('previewEstado').textContent = estado;
-document.getElementById('previewServicio').textContent = servicio;
-document.getElementById('previewDireccion').textContent = direccion;
-document.getElementById('previewUltimoCargo').textContent = ultimoCargo;
-const esSi = getChecked('credencialSi');
-document.getElementById('previewCredencialSi').checked = esSi;
-document.getElementById('previewCredencialNo').checked = !esSi;
-if (esSi) {
-const num = getVal('numero_credencial') || 'PNB-33311';
-document.getElementById('previewNumeroCredencial').textContent = num;
-document.getElementById('previewNumeroCredencial').style.display = 'block';
-} else {
-document.getElementById('previewNumeroCredencial').style.display = 'none';
+// 📅 Calcular edad
+function calcularEdad(fechaNacimiento) {
+  if (!fechaNacimiento) return '';
+  const hoy = new Date();
+  const nac = new Date(fechaNacimiento);
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const mes = hoy.getMonth() - nac.getMonth();
+  if (mes < 0 || (mes === 0 && hoy.getDate() < nac.getDate())) edad--;
+  return edad >= 0 ? edad : '';
 }
+
+// 📅 Calcular antigüedad
+function calcularAntiguedad(fechaIngreso) {
+  if (!fechaIngreso) return '';
+  const hoy = new Date();
+  const ing = new Date(fechaIngreso);
+  let anos = hoy.getFullYear() - ing.getFullYear();
+  let meses = hoy.getMonth() - ing.getMonth();
+  if (meses < 0) {
+    anos--;
+    meses += 12;
+  }
+  return `${anos} año${anos !== 1 ? 's' : ''} ${meses} mes${meses !== 1 ? 'es' : ''}`;
+}
+
+// 🎯 Actualizar vista previa + cálculos
+function actualizarVistaPrevia() {
+  const getVal = id => document.getElementById(id)?.value || '';
+  const fechaNacimiento = getVal('fecha_nacimiento');
+  const fechaIngreso = getVal('fecha_ingreso_cpn');
+
+  // Calcular y actualizar campos
+  const edad = calcularEdad(fechaNacimiento);
+  const antiguedad = calcularAntiguedad(fechaIngreso);
+  document.getElementById('edad').value = edad;
+  document.getElementById('antiguedad').value = antiguedad;
+
+  // Vista previa
+  const nombre = getVal('nombre_apellidos');
+  const cedula = (getVal('cedula') || '00000000').padStart(8, '0');
+  const telefono = getVal('telefono_funcionario');
+  const telefonoEmergencia = getVal('telefono_emergencia');
+  const correo = getVal('correo_electronico');
+  const nivelAcademico = getVal('nivel_academico');
+  const fechaAscenso = getVal('fecha_ultimo_ascenso');
+  const estado = getVal('estado');
+  const servicio = getVal('servicio');
+  const direccion = getVal('direccion_habitacion');
+  const ultimoCargo = getVal('ultimo_cargo');
+
+  document.getElementById('previewNombre').textContent = nombre || 'SIN DATOS';
+  document.getElementById('previewCedula').textContent = cedula;
+  document.getElementById('previewEdad').textContent = edad ? `${edad} AÑOS` : '00 AÑOS';
+  document.getElementById('previewFechaNacimiento').textContent = 
+    fechaNacimiento ? new Date(fechaNacimiento).toLocaleDateString('es-VE') : '01/01/1990';
+  document.getElementById('previewTelefono').textContent = telefono || 'SIN DATOS';
+  document.getElementById('previewTelefonoEmergencia').textContent = telefonoEmergencia || 'SIN DATOS';
+  document.getElementById('previewCorreo').textContent = correo || 'SIN DATOS';
+  document.getElementById('previewNivelAcademico').textContent = nivelAcademico || 'SIN DATOS';
+  document.getElementById('previewFechaIngreso').textContent = 
+    fechaIngreso ? new Date(fechaIngreso).toLocaleDateString('es-VE') : '01/01/2020';
+  document.getElementById('previewFechaAscenso').textContent = 
+    fechaAscenso ? new Date(fechaAscenso).toLocaleDateString('es-VE') : 'SIN DATOS';
+  document.getElementById('previewAntiguedad').textContent = antiguedad || '00 AÑOS 00 MESES';
+  document.getElementById('previewEstado').textContent = estado || 'SIN DATOS';
+  document.getElementById('previewServicio').textContent = servicio || 'SIN DATOS';
+  document.getElementById('previewDireccion').textContent = direccion || 'SIN DATOS';
+  document.getElementById('previewUltimoCargo').textContent = ultimoCargo || 'SIN DATOS';
+
+  const esSi = document.getElementById('credencialSi')?.checked;
+  document.getElementById('previewCredencialSi').checked = esSi;
+  document.getElementById('previewCredencialNo').checked = !esSi;
+  if (esSi) {
+    const num = getVal('numero_credencial') || 'PNB-33311';
+    document.getElementById('previewNumeroCredencial').textContent = num;
+    document.getElementById('previewNumeroCredencial').style.display = 'block';
+  } else {
+    document.getElementById('previewNumeroCredencial').style.display = 'none';
+  }
 }
 
 // 📷 Previsualizar fotos
 document.getElementById('fotoFuncionario').addEventListener('change', function(e) {
-const file = e.target.files[0];
-if (file) {
-const reader = new FileReader();
-reader.onload = () => {
-const img = document.getElementById('previewFoto');
-img.src = reader.result;
-img.style.display = 'block';
-document.querySelector('#previewFotoFuncionario div').style.display = 'none';
-};
-reader.readAsDataURL(file);
-}
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = document.getElementById('previewFoto');
+      img.src = reader.result;
+      img.style.display = 'block';
+      document.querySelector('#previewFotoFuncionario div').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
 });
 document.getElementById('fotoCedula').addEventListener('change', function(e) {
-const file = e.target.files[0];
-if (file) {
-const reader = new FileReader();
-reader.onload = () => {
-const img = document.getElementById('previewCedulaFoto');
-img.src = reader.result;
-img.style.display = 'block';
-document.querySelector('#previewFotoCedula div').style.display = 'none';
-};
-reader.readAsDataURL(file);
-}
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = document.getElementById('previewCedulaFoto');
+      img.src = reader.result;
+      img.style.display = 'block';
+      document.querySelector('#previewFotoCedula div').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
 });
 
 // 🎛️ Toggle credencial
 document.getElementById('credencialSi').addEventListener('change', () => {
-document.getElementById('numeroCredencialGroup').style.display = 'block';
-actualizarVistaPrevia();
+  document.getElementById('numeroCredencialGroup').style.display = 'block';
+  actualizarVistaPrevia();
 });
 document.getElementById('credencialNo').addEventListener('change', () => {
-document.getElementById('numeroCredencialGroup').style.display = 'none';
-actualizarVistaPrevia();
+  document.getElementById('numeroCredencialGroup').style.display = 'none';
+  actualizarVistaPrevia();
 });
 
-// 🔄 Actualizar en tiempo real
+// 🔄 Eventos en tiempo real
 ['input', 'select', 'textarea'].forEach(tag =>
-document.querySelectorAll(tag).forEach(el => el.addEventListener('input', actualizarVistaPrevia))
+  document.querySelectorAll(tag).forEach(el => el.addEventListener('input', actualizarVistaPrevia))
 );
 document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListener('change', actualizarVistaPrevia));
 
 // ✅ Inicialización
 document.addEventListener('DOMContentLoaded', async () => {
-try {
-const { data: { session } } = await client.auth.getSession();
-if (!session) {
-showAlert('⚠️ Debes iniciar sesión', 'error');
-setTimeout(() => window.location.href = '../index.html', 2000);
-return;
-}
-const { data: perfil } = await client
-.from('perfiles')
-.select('email, rol')
-.eq('id', session.user.id)
-.single();
-if (!perfil) throw new Error('Perfil no encontrado');
-document.getElementById('userEmail').textContent = perfil.email;
-const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
-document.getElementById('userRol').textContent = rolText;
-document.getElementById('previewEstadoUsuario').textContent = '—';
-if (perfil.rol === 'admin') {
-document.getElementById('rolLabel').style.display = 'none';
-const rolSpan = document.getElementById('userRol');
-rolSpan.style.color = '#c62828';
-rolSpan.title = 'Administrador';
-rolSpan.style.cursor = 'help';
-} else {
-document.getElementById('rolLabel').style.display = 'inline';
-}
-document.getElementById('previewFechaFicha').textContent = '06/01/2026';
-actualizarVistaPrevia();
-} catch (err) {
-console.error('Error al cargar sesión:', err);
-showAlert(`❌ ${err.message || 'Error desconocido'}`, 'error');
-}
+  try {
+    const {  { session } } = await client.auth.getSession();
+    if (!session) {
+      showAlert('⚠️ Debes iniciar sesión', 'error');
+      setTimeout(() => window.location.href = '../index.html', 2000);
+      return;
+    }
+    const { data: perfil } = await client
+      .from('perfiles')
+      .select('email, rol')
+      .eq('id', session.user.id)
+      .single();
+    if (!perfil) throw new Error('Perfil no encontrado');
+    document.getElementById('userEmail').textContent = perfil.email;
+    const rolText = perfil.rol === 'admin' ? 'Administrador' : perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
+    document.getElementById('userRol').textContent = rolText;
+    document.getElementById('previewEstadoUsuario').textContent = '—';
+    if (perfil.rol === 'admin') {
+      document.getElementById('rolLabel').style.display = 'none';
+      const rolSpan = document.getElementById('userRol');
+      rolSpan.style.color = '#c62828';
+      rolSpan.title = 'Administrador';
+      rolSpan.style.cursor = 'help';
+    } else {
+      document.getElementById('rolLabel').style.display = 'inline';
+    }
+    document.getElementById('previewFechaFicha').textContent = '06/01/2026';
+    actualizarVistaPrevia();
+  } catch (err) {
+    console.error('Error al cargar sesión:', err);
+    showAlert(`❌ ${err.message || 'Error desconocido'}`, 'error');
+  }
 });
 
 function showAlert(msg, type) {
-alertDiv.textContent = msg;
-alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
-alertDiv.style.display = 'block';
-setTimeout(() => alertDiv.style.display = 'none', 3000);
+  alertDiv.textContent = msg;
+  alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+  alertDiv.style.display = 'block';
+  setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
 
 // ✅ BÚSQUEDA POR CÉDULA — con verificación de duplicados
 document.getElementById('btnBuscarCedula').addEventListener('click', async function() {
-const searchCedula = document.getElementById('searchCedula').value.trim();
-if (!searchCedula || searchCedula.length !== 8) {
-return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
-}
+  const searchCedula = document.getElementById('searchCedula').value.trim();
+  if (!searchCedula || searchCedula.length !== 8) {
+    return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
+  }
 
-try {
-// 🔍 Verificar si YA EXISTE una ficha
-const { data: fichaExistente, error: errorFicha } = await client
-.from('fichas')
-.select('cedula')
-.eq('cedula', searchCedula)
-.single();
+  try {
+    const {  fichaExistente, error: errorFicha } = await client
+      .from('fichas')
+      .select('cedula')
+      .eq('cedula', searchCedula)
+      .single();
 
-if (errorFicha?.code !== 'PGRST116') {
-return showAlert('⚠️ Ya existe una ficha registrada con esta cédula. No se permiten duplicados.', 'error');
-}
+    if (errorFicha?.code !== 'PGRST116') {
+      return showAlert('⚠️ Ya existe una ficha registrada con esta cédula. No se permiten duplicados.', 'error');
+    }
 
-// 📋 Cargar desde auditoría
-const response = await client
-.from('auditoria_personal')
-.select('*')
-.eq('cedula', searchCedula)
-.single();
+    const response = await client
+      .from('auditoria_personal')
+      .select('*')
+      .eq('cedula', searchCedula)
+      .single();
 
-if (response.error) {
-return showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`, 'error');
-}
+    if (response.error) {
+      return showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`, 'error');
+    }
 
-const auditoriaData = response.data;
-const mapeo = {
-cedula: 'cedula',
-nombre_apellidos: 'apellidos_nombres',
-edad: 'edad_funcionario',
-fecha_nacimiento: 'fecha_nacimiento',
-telefono_funcionario: 'telefono',
-telefono_emergencia: 'telefono_emergencia',
-correo_electronico: 'correo_electronico',
-nivel_academico: 'nivel_academico',
-fecha_ingreso_cpn: 'fecha_ingreso_cpn',
-fecha_ultimo_ascenso: 'fecha_ultimo_ascenso',
-antiguedad: 'antiguedad',
-estado: 'estado',
-servicio: 'servicio',
-direccion_habitacion: 'direccion',
-ultimo_cargo: 'ultimo_cargo',
-rango: 'rango'
-};
+    const auditoriaData = response.data;
+    const mapeo = {
+      cedula: 'cedula',
+      nombre_apellidos: 'apellidos_nombres',
+      fecha_nacimiento: 'fecha_nacimiento',
+      telefono_funcionario: 'telefono',
+      telefono_emergencia: 'telefono_emergencia',
+      correo_electronico: 'correo_electronico',
+      nivel_academico: 'nivel_academico',
+      fecha_ingreso_cpn: 'fecha_ingreso_cpn',
+      fecha_ultimo_ascenso: 'fecha_ultimo_ascenso',
+      estado: 'estado',
+      servicio: 'servicio',
+      direccion_habitacion: 'direccion',
+      ultimo_cargo: 'ultimo_cargo',
+      rango: 'rango'
+    };
 
-for (const [inputId, dbField] of Object.entries(mapeo)) {
-const el = document.getElementById(inputId);
-if (el) {
-let val = auditoriaData[dbField] ?? '';
-if (el.type === 'date' && val) {
-el.value = val.split('T')[0];
-} else if (el.type === 'number') {
-el.value = val ? String(val) : '';
-} else if (el.tagName === 'SELECT') {
-const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-const targetVal = normalize(val);
-let found = false;
-for (const opt of el.options) {
-if (normalize(opt.value) === targetVal || normalize(opt.textContent) === targetVal) {
-el.value = opt.value;
-found = true;
-break;
-}
-}
-if (!found) el.value = '';
-} else {
-el.value = val;
-}
-}
-}
+    for (const [inputId, dbField] of Object.entries(mapeo)) {
+      const el = document.getElementById(inputId);
+      if (el) {
+        let val = auditoriaData[dbField] ?? '';
+        if (el.type === 'date' && val) {
+          el.value = val.split('T')[0];
+        } else if (el.tagName === 'SELECT') {
+          const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+          const targetVal = normalize(val);
+          let found = false;
+          for (const opt of el.options) {
+            if (normalize(opt.value) === targetVal || normalize(opt.textContent) === targetVal) {
+              el.value = opt.value;
+              found = true;
+              break;
+            }
+          }
+          if (!found) el.value = '';
+        } else {
+          el.value = val;
+        }
+      }
+    }
 
-const posee = (auditoriaData.posee_credencial || '').toLowerCase() === 'si';
-document.getElementById('credencialSi').checked = posee;
-document.getElementById('credencialNo').checked = !posee;
-document.getElementById('numeroCredencialGroup').style.display = posee ? 'block' : 'none';
-if (posee && auditoriaData.numero_credencial) {
-document.getElementById('numero_credencial').value = auditoriaData.numero_credencial;
-}
+    const posee = (auditoriaData.posee_credencial || '').toLowerCase() === 'si';
+    document.getElementById('credencialSi').checked = posee;
+    document.getElementById('credencialNo').checked = !posee;
+    document.getElementById('numeroCredencialGroup').style.display = posee ? 'block' : 'none';
+    if (posee && auditoriaData.numero_credencial) {
+      document.getElementById('numero_credencial').value = auditoriaData.numero_credencial;
+    }
 
-document.getElementById('previewEstadoUsuario').textContent = (auditoriaData.estado || '').trim() || '—';
-actualizarVistaPrevia();
+    document.getElementById('previewEstadoUsuario').textContent = (auditoriaData.estado || '').trim() || '—';
+    actualizarVistaPrevia();
 
-// Cargar fotos
-const bucket = client.storage.from('fichas');
-const fotoUrl = bucket.getPublicUrl(`foto-${searchCedula}.jpg`).data.publicUrl;
-const cedulaUrl = bucket.getPublicUrl(`cedula-${searchCedula}.jpg`).data.publicUrl;
+    const bucket = client.storage.from('fichas');
+    const fotoUrl = bucket.getPublicUrl(`foto-${searchCedula}.jpg`).data.publicUrl;
+    const cedulaUrl = bucket.getPublicUrl(`cedula-${searchCedula}.jpg`).data.publicUrl;
 
-const loadImg = (url, imgEl, placeholderEl) => {
-fetch(url, { method: 'HEAD' })
-.then(res => res.ok ? imgEl.src = url : null)
-.then(() => {
-if (imgEl.src) {
-imgEl.style.display = 'block';
-if (placeholderEl) placeholderEl.style.display = 'none';
-}
-})
-.catch(() => {});
-};
+    const loadImg = (url, imgEl, placeholderEl) => {
+      fetch(url, { method: 'HEAD' })
+        .then(res => res.ok ? imgEl.src = url : null)
+        .then(() => {
+          if (imgEl.src) {
+            imgEl.style.display = 'block';
+            if (placeholderEl) placeholderEl.style.display = 'none';
+          }
+        })
+        .catch(() => {});
+    };
 
-loadImg(fotoUrl, document.getElementById('previewFoto'), document.querySelector('#previewFotoFuncionario div'));
-loadImg(cedulaUrl, document.getElementById('previewCedulaFoto'), document.querySelector('#previewFotoCedula div'));
+    loadImg(fotoUrl, document.getElementById('previewFoto'), document.querySelector('#previewFotoFuncionario div'));
+    loadImg(cedulaUrl, document.getElementById('previewCedulaFoto'), document.querySelector('#previewFotoCedula div'));
 
-showAlert(`✅ Datos cargados para cédula ${searchCedula}`, 'success');
+    showAlert(`✅ Datos cargados para cédula ${searchCedula}`, 'success');
 
-} catch (err) {
-console.error('Error al buscar cédula:', err);
-showAlert(`❌ Error: ${err.message}`, 'error');
-}
+  } catch (err) {
+    console.error('Error al buscar cédula:', err);
+    showAlert(`❌ Error: ${err.message}`, 'error');
+  }
 });
 
 // ✅ GUARDAR FICHA
 async function guardarFicha() {
-showAlert('💾 Guardando ficha...', 'success');
-const cedula = document.getElementById('cedula').value.trim();
-if (!cedula || cedula.length !== 8 || !/^\d{8}$/.test(cedula)) {
-return showAlert('⚠️ Cédula inválida (debe tener exactamente 8 dígitos)', 'error');
-}
+  showAlert('💾 Guardando ficha...', 'success');
+  const cedula = document.getElementById('cedula').value.trim();
+  if (!cedula || cedula.length !== 8 || !/^\d{8}$/.test(cedula)) {
+    return showAlert('⚠️ Cédula inválida (debe tener exactamente 8 dígitos)', 'error');
+  }
 
-try {
-const { data: { session }, error: sessionError } = await client.auth.getSession();
-if (sessionError || !session) {
-return showAlert('❌ Sesión expirada. Inicie sesión nuevamente.', 'error');
-}
-const userId = session.user.id;
+  try {
+    const {  { session }, error: sessionError } = await client.auth.getSession();
+    if (sessionError || !session) {
+      return showAlert('❌ Sesión expirada. Inicie sesión nuevamente.', 'error');
+    }
+    const userId = session.user.id;
 
-const poseeCredencial = document.querySelector('input[name="credencial"]:checked')?.value === 'si';
-const numeroCredencial = poseeCredencial ? document.getElementById('numero_credencial').value.trim() : null;
+    const poseeCredencial = document.querySelector('input[name="credencial"]:checked')?.value === 'si';
+    const numeroCredencial = poseeCredencial ? document.getElementById('numero_credencial').value.trim() : null;
 
-const datosFicha = {
-cedula: cedula,
-nombre_apellidos: document.getElementById('nombre_apellidos').value.trim(),
-edad: document.getElementById('edad').value.trim(),
-fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
-telefono_funcionario: document.getElementById('telefono_funcionario').value.trim(),
-telefono_emergencia: document.getElementById('telefono_emergencia').value.trim(),
-correo_electronico: document.getElementById('correo_electronico').value.trim(),
-nivel_academico: document.getElementById('nivel_academico').value,
-fecha_ingreso_cpn: document.getElementById('fecha_ingreso_cpn').value,
-fecha_ultimo_ascenso: document.getElementById('fecha_ultimo_ascenso').value,
-antiguedad: document.getElementById('antiguedad').value.trim(),
-estado: document.getElementById('estado').value,
-servicio: document.getElementById('servicio').value.trim(),
-direccion_habitacion: document.getElementById('direccion_habitacion').value.trim(),
-ultimo_cargo: document.getElementById('ultimo_cargo').value.trim(),
-rango: document.getElementById('rango').value,
-posee_credencial: poseeCredencial,
-numero_credencial: numeroCredencial
-};
+    const datosFicha = {
+      cedula: cedula,
+      nombre_apellidos: document.getElementById('nombre_apellidos').value.trim(),
+      edad: document.getElementById('edad').value.trim(),
+      fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
+      telefono_funcionario: document.getElementById('telefono_funcionario').value.trim(),
+      telefono_emergencia: document.getElementById('telefono_emergencia').value.trim(),
+      correo_electronico: document.getElementById('correo_electronico').value.trim(),
+      nivel_academico: document.getElementById('nivel_academico').value,
+      fecha_ingreso_cpn: document.getElementById('fecha_ingreso_cpn').value,
+      fecha_ultimo_ascenso: document.getElementById('fecha_ultimo_ascenso').value,
+      antiguedad: document.getElementById('antiguedad').value.trim(),
+      estado: document.getElementById('estado').value,
+      servicio: document.getElementById('servicio').value.trim(),
+      direccion_habitacion: document.getElementById('direccion_habitacion').value.trim(),
+      ultimo_cargo: document.getElementById('ultimo_cargo').value.trim(),
+      rango: document.getElementById('rango').value,
+      posee_credencial: poseeCredencial,
+      numero_credencial: numeroCredencial
+    };
 
-const camposObligatorios = [
-'nombre_apellidos', 'edad', 'fecha_nacimiento', 'nivel_academico',
-'telefono_funcionario', 'telefono_emergencia', 'correo_electronico',
-'rango', 'ultimo_cargo', 'fecha_ingreso_cpn', 'antiguedad',
-'estado', 'servicio', 'direccion_habitacion'
-];
-for (const campo of camposObligatorios) {
-if (!datosFicha[campo]) {
-const nombreCampo = campo.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-return showAlert(`⚠️ Campo obligatorio faltante: ${nombreCampo}`, 'error');
-}
-}
+    const camposObligatorios = [
+      'nombre_apellidos', 'edad', 'fecha_nacimiento', 'nivel_academico',
+      'telefono_funcionario', 'telefono_emergencia', 'correo_electronico',
+      'rango', 'ultimo_cargo', 'fecha_ingreso_cpn', 'antiguedad',
+      'estado', 'servicio', 'direccion_habitacion'
+    ];
+    for (const campo of camposObligatorios) {
+      if (!datosFicha[campo]) {
+        const nombreCampo = campo.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return showAlert(`⚠️ Campo obligatorio faltante: ${nombreCampo}`, 'error');
+      }
+    }
 
-let foto_url = null, cedula_url = null;
-const storage = client.storage.from('fichas');
-const uploadFile = async (fileInput, filename) => {
-if (!fileInput.files?.[0]) return null;
-const file = fileInput.files[0];
-const { error: uploadErr } = await storage.upload(filename, file, { upsert: true });
-if (uploadErr) throw new Error(`Error al subir archivo: ${uploadErr.message}`);
-const { data: { publicUrl } } = storage.getPublicUrl(filename);
-return publicUrl;
-};
-foto_url = await uploadFile(document.getElementById('fotoFuncionario'), `foto-${cedula}.jpg`);
-cedula_url = await uploadFile(document.getElementById('fotoCedula'), `cedula-${cedula}.jpg`);
+    let foto_url = null, cedula_url = null;
+    const storage = client.storage.from('fichas');
+    const uploadFile = async (fileInput, filename) => {
+      if (!fileInput.files?.[0]) return null;
+      const file = fileInput.files[0];
+      const { error: uploadErr } = await storage.upload(filename, file, { upsert: true });
+      if (uploadErr) throw new Error(`Error al subir archivo: ${uploadErr.message}`);
+      const { data: { publicUrl } } = storage.getPublicUrl(filename);
+      return publicUrl;
+    };
+    foto_url = await uploadFile(document.getElementById('fotoFuncionario'), `foto-${cedula}.jpg`);
+    cedula_url = await uploadFile(document.getElementById('fotoCedula'), `cedula-${cedula}.jpg`);
 
-const { error: insertError } = await client
-.from('fichas')
-.insert({
-cedula: datosFicha.cedula,
-nombre_apellidos: datosFicha.nombre_apellidos,
-edad: datosFicha.edad,
-fecha_nacimiento: datosFicha.fecha_nacimiento,
-telefono_funcionario: datosFicha.telefono_funcionario,
-telefono_emergencia: datosFicha.telefono_emergencia,
-correo_electronico: datosFicha.correo_electronico,
-nivel_academico: datosFicha.nivel_academico,
-fecha_ingreso_cpn: datosFicha.fecha_ingreso_cpn,
-fecha_ultimo_ascenso: datosFicha.fecha_ultimo_ascenso,
-antiguedad: datosFicha.antiguedad,
-estado: datosFicha.estado,
-servicio: datosFicha.servicio,
-direccion_habitacion: datosFicha.direccion_habitacion,
-ultimo_cargo: datosFicha.ultimo_cargo,
-rango: datosFicha.rango,
-posee_credencial: datosFicha.posee_credencial,
-numero_credencial: datosFicha.numero_credencial,
-foto_url: foto_url,
-cedula_url: cedula_url,
-creado_por: userId
-});
+    const { error: insertError } = await client
+      .from('fichas')
+      .insert({
+        cedula: datosFicha.cedula,
+        nombre_apellidos: datosFicha.nombre_apellidos,
+        edad: datosFicha.edad,
+        fecha_nacimiento: datosFicha.fecha_nacimiento,
+        telefono_funcionario: datosFicha.telefono_funcionario,
+        telefono_emergencia: datosFicha.telefono_emergencia,
+        correo_electronico: datosFicha.correo_electronico,
+        nivel_academico: datosFicha.nivel_academico,
+        fecha_ingreso_cpn: datosFicha.fecha_ingreso_cpn,
+        fecha_ultimo_ascenso: datosFicha.fecha_ultimo_ascenso,
+        antiguedad: datosFicha.antiguedad,
+        estado: datosFicha.estado,
+        servicio: datosFicha.servicio,
+        direccion_habitacion: datosFicha.direccion_habitacion,
+        ultimo_cargo: datosFicha.ultimo_cargo,
+        rango: datosFicha.rango,
+        posee_credencial: datosFicha.posee_credencial,
+        numero_credencial: datosFicha.numero_credencial,
+        foto_url: foto_url,
+        cedula_url: cedula_url,
+        creado_por: userId
+      });
 
-if (insertError) {
-console.error('Error de inserción:', insertError);
-if (insertError.code === '23505') {
-return showAlert('⚠️ Ya existe una ficha con esta cédula. No se permiten duplicados.', 'error');
-}
-throw new Error(insertError.message);
-}
+    if (insertError) {
+      console.error('Error de inserción:', insertError);
+      if (insertError.code === '23505') {
+        return showAlert('⚠️ Ya existe una ficha con esta cédula. No se permiten duplicados.', 'error');
+      }
+      throw new Error(insertError.message);
+    }
 
-// Registrar log
-try {
-await client.from('rrhh_logs').insert({
-user_id: userId,
-accion: 'ficha_guardada',
-cedula_afectada: cedula,
-detalles: JSON.stringify({ modulo: 'fichas' })
-});
-} catch (logErr) {
-console.warn('No se pudo registrar el log:', logErr.message);
-}
+    try {
+      await client.from('rrhh_logs').insert({
+        user_id: userId,
+        accion: 'ficha_guardada',
+        cedula_afectada: cedula,
+        detalles: JSON.stringify({ modulo: 'fichas' })
+      });
+    } catch (logErr) {
+      console.warn('No se pudo registrar el log:', logErr.message);
+    }
 
-showAlert(`✅ Ficha guardada exitosamente para cédula ${cedula}`, 'success');
+    showAlert(`✅ Ficha guardada exitosamente para cédula ${cedula}`, 'success');
 
-// 🧹 Limpiar formulario
-document.getElementById('searchCedula').value = '';
-document.getElementById('cedula').value = '';
-document.getElementById('nombre_apellidos').value = '';
-document.getElementById('edad').value = '';
-document.getElementById('fecha_nacimiento').value = '';
-document.getElementById('telefono_funcionario').value = '';
-document.getElementById('telefono_emergencia').value = '';
-document.getElementById('correo_electronico').value = '';
-document.getElementById('nivel_academico').value = '';
-document.getElementById('fecha_ingreso_cpn').value = '';
-document.getElementById('fecha_ultimo_ascenso').value = '';
-document.getElementById('antiguedad').value = '';
-document.getElementById('estado').value = '';
-document.getElementById('servicio').value = '';
-document.getElementById('direccion_habitacion').value = '';
-document.getElementById('ultimo_cargo').value = '';
-document.getElementById('rango').value = '';
-document.getElementById('credencialNo').checked = true;
-document.getElementById('numeroCredencialGroup').style.display = 'none';
-document.getElementById('numero_credencial').value = '';
+    // 🧹 Limpiar todo
+    ['searchCedula','cedula','nombre_apellidos','fecha_nacimiento','telefono_funcionario','telefono_emergencia','correo_electronico','nivel_academico','fecha_ingreso_cpn','fecha_ultimo_ascenso','estado','servicio','direccion_habitacion','ultimo_cargo','rango','numero_credencial'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('credencialNo').checked = true;
+    document.getElementById('numeroCredencialGroup').style.display = 'none';
+    document.getElementById('fotoFuncionario').value = '';
+    document.getElementById('fotoCedula').value = '';
+    actualizarVistaPrevia();
+    document.getElementById('previewFoto').style.display = 'none';
+    document.querySelector('#previewFotoFuncionario div').style.display = 'flex';
+    document.getElementById('previewCedulaFoto').style.display = 'none';
+    document.querySelector('#previewFotoCedula div').style.display = 'flex';
+    document.getElementById('searchCedula').focus();
 
-// 📸 Limpiar inputs de archivos
-document.getElementById('fotoFuncionario').value = '';
-document.getElementById('fotoCedula').value = '';
-
-// 👁️ Resetear vista previa
-actualizarVistaPrevia();
-document.getElementById('previewFoto').style.display = 'none';
-document.querySelector('#previewFotoFuncionario div').style.display = 'flex';
-document.getElementById('previewCedulaFoto').style.display = 'none';
-document.querySelector('#previewFotoCedula div').style.display = 'flex';
-
-// 🎯 Enfocar campo de búsqueda
-document.getElementById('searchCedula').focus();
-
-} catch (err) {
-console.error('Error al guardar la ficha:', err);
-showAlert(`❌ Error al guardar: ${err.message || 'Falló la operación'}`, 'error');
-}
+  } catch (err) {
+    console.error('Error al guardar la ficha:', err);
+    showAlert(`❌ Error al guardar: ${err.message || 'Falló la operación'}`, 'error');
+  }
 }
 
 // 🟢 Vincular botón Guardar
