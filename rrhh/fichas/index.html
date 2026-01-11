@@ -747,7 +747,7 @@ document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListen
 // ✅ Inicialización (sin 'estado' en perfiles)
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const { data: { session } } = await client.auth.getSession();
+const {  { session } } = await client.auth.getSession();
 if (!session) {
 showAlert('⚠️ Debes iniciar sesión', 'error');
 setTimeout(() => window.location.href = '../index.html', 2000);
@@ -787,7 +787,7 @@ alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-e
 alertDiv.style.display = 'block';
 setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
-// ✅ BÚSQUEDA POR CÉDULA — con soporte para <select> (estado, rango, etc.)
+// ✅ BÚSQUEDA POR CÉDULA — CORREGIDA PARA LIMPIAR FOTOS
 document.getElementById('btnBuscarCedula').addEventListener('click', async function() {
 const searchCedula = document.getElementById('searchCedula').value.trim();
 if (!searchCedula || searchCedula.length !== 8) {
@@ -795,16 +795,19 @@ showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
 return;
 }
 try {
-// ✅ LIMPIAR VISTAS PREVIAS DE FOTOS ANTES DE CARGAR NUEVOS DATOS
+// ✅ LIMPIEZA TOTAL DE LAS FOTOS ANTES DE CUALQUIER OPERACIÓN
 const previewFoto = document.getElementById('previewFoto');
 const previewCedulaFoto = document.getElementById('previewCedulaFoto');
 const placeholderFoto = document.querySelector('#previewFotoFuncionario div');
 const placeholderCedula = document.querySelector('#previewFotoCedula div');
 
+// Eliminar atributo y asignar vacío para evitar caché
+previewFoto.removeAttribute('src');
 previewFoto.src = '';
 previewFoto.style.display = 'none';
 placeholderFoto.style.display = 'flex';
 
+previewCedulaFoto.removeAttribute('src');
 previewCedulaFoto.src = '';
 previewCedulaFoto.style.display = 'none';
 placeholderCedula.style.display = 'flex';
@@ -881,23 +884,38 @@ document.getElementById('previewEstadoUsuario').textContent =
 estadoRaw || '—';
 // ✅ Actualizar vista previa
 actualizarVistaPrevia();
-// ✅ Cargar fotos
+
+// ✅ Cargar fotos SOLO si existen — con limpieza garantizada
 const bucket = client.storage.from('fichas');
 const fotoUrl = bucket.getPublicUrl(`foto-${searchCedula}.jpg`).data.publicUrl;
 const cedulaUrl = bucket.getPublicUrl(`cedula-${searchCedula}.jpg`).data.publicUrl;
-const loadImg = (url, imgEl, placeholderEl) => {
+
+const loadImgSafe = (url, imgEl, placeholderEl) => {
 fetch(url, { method: 'HEAD' })
 .then(res => {
 if (res.ok) {
+imgEl.removeAttribute('src');
 imgEl.src = url;
 imgEl.style.display = 'block';
 placeholderEl.style.display = 'none';
+} else {
+imgEl.removeAttribute('src');
+imgEl.src = '';
+imgEl.style.display = 'none';
+placeholderEl.style.display = 'flex';
 }
 })
-.catch(() => {});
+.catch(() => {
+imgEl.removeAttribute('src');
+imgEl.src = '';
+imgEl.style.display = 'none';
+placeholderEl.style.display = 'flex';
+});
 };
-loadImg(fotoUrl, previewFoto, placeholderFoto);
-loadImg(cedulaUrl, previewCedulaFoto, placeholderCedula);
+
+loadImgSafe(fotoUrl, previewFoto, placeholderFoto);
+loadImgSafe(cedulaUrl, previewCedulaFoto, placeholderCedula);
+
 showAlert(`✅ Datos cargados para cédula ${searchCedula}`, 'success');
 } catch (err) {
 console.error('Error al buscar cédula:', err);
@@ -912,7 +930,7 @@ return showAlert('⚠️ Cédula inválida (debe tener exactamente 8 dígitos)',
 }
 try {
 // Verificar sesión activa y obtener user_id
-const { data: { session }, error: sessionError } = await client.auth.getSession();
+const {  { session }, error: sessionError } = await client.auth.getSession();
 if (sessionError || !session) {
 return showAlert('❌ Sesión expirada. Inicie sesión nuevamente.', 'error');
 }
@@ -1044,14 +1062,12 @@ document.getElementById('previewCedulaFoto').style.display = 'none';
 document.querySelector('#previewFotoCedula div').style.display = 'flex';
 // 🎯 Enfocar campo de búsqueda para nueva operación
 document.getElementById('searchCedula').focus();
-// Opcional: limpiar formulario o redirigir
-// document.getElementById('fichaForm')?.reset();
 } catch (err) {
 console.error('Error al guardar la ficha:', err);
 showAlert(`❌ Error al guardar: ${err.message || 'Falló la operación'}`, 'error');
 }
 }
-// 🟢 🔑 ¡ESTA ES LA LÍNEA QUE FALTABA!
+// 🟢 ¡BOTÓN DE GUARDAR ACTIVO!
 document.getElementById('btnGuardar').addEventListener('click', guardarFicha);
 </script>
 </body>
