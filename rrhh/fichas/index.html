@@ -6,6 +6,8 @@
 <title>Ficha de Datos Personales | ICAP</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -271,6 +273,17 @@ top: 0;
 width: 25.4cm;
 height: 19.05cm;
 }
+/* Fotos más grandes en impresión */
+.foto-funcionario {
+width: 40mm !important;
+height: 50mm !important;
+}
+.foto-cedula {
+width: 9cm !important;
+height: 6cm !important;
+bottom: auto !important;
+top: 12cm !important;
+}
 }
 /* ——— VISTA EN PANTALLA ——— */
 @media screen {
@@ -326,6 +339,7 @@ position: static;
 margin-top: 20px;
 clear: both;
 }
+/* ✅ Fotos más grandes y mejor posicionadas */
 .foto-funcionario {
 max-width: 180px !important;
 max-height: 225px !important;
@@ -363,6 +377,19 @@ gap: 15px;
 @media (max-width: 768px) {
 .form-row { grid-template-columns: 1fr; }
 .form-grid { grid-template-columns: 1fr; }
+}
+.cuerpo-ficha { margin: 20px 0; }
+.parrafo-ficha {
+text-indent: 30px;
+margin: 15px 0;
+text-align: justify;
+font-size: 10pt;
+}
+.firma-section { margin-top: 60px; text-align: center; }
+.firma-line {
+width: 300px;
+margin: 0 auto;
+border-top: 1px solid #000;
 }
 </style>
 </head>
@@ -631,7 +658,6 @@ const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
 const alertDiv = document.getElementById('alertMessage');
-
 // 🎯 Actualizar vista previa
 function actualizarVistaPrevia() {
 const getVal = id => document.getElementById(id)?.value || 'SIN DATOS';
@@ -677,7 +703,6 @@ document.getElementById('previewNumeroCredencial').style.display = 'block';
 document.getElementById('previewNumeroCredencial').style.display = 'none';
 }
 }
-
 // 📷 Previsualizar fotos
 document.getElementById('fotoFuncionario').addEventListener('change', function(e) {
 const file = e.target.files[0];
@@ -705,7 +730,6 @@ document.querySelector('#previewFotoCedula div').style.display = 'none';
 reader.readAsDataURL(file);
 }
 });
-
 // 🎛️ Toggle credencial
 document.getElementById('credencialSi').addEventListener('change', () => {
 document.getElementById('numeroCredencialGroup').style.display = 'block';
@@ -715,17 +739,15 @@ document.getElementById('credencialNo').addEventListener('change', () => {
 document.getElementById('numeroCredencialGroup').style.display = 'none';
 actualizarVistaPrevia();
 });
-
 // 🔄 Actualizar en tiempo real
 ['input', 'select', 'textarea'].forEach(tag =>
 document.querySelectorAll(tag).forEach(el => el.addEventListener('input', actualizarVistaPrevia))
 );
 document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListener('change', actualizarVistaPrevia));
-
 // ✅ Inicialización (sin 'estado' en perfiles)
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const {  { session } } = await client.auth.getSession();
+const { data: { session } } = await client.auth.getSession();
 if (!session) {
 showAlert('⚠️ Debes iniciar sesión', 'error');
 setTimeout(() => window.location.href = '../index.html', 2000);
@@ -759,15 +781,13 @@ console.error('Error al cargar sesión:', err);
 showAlert(`❌ ${err.message || 'Error desconocido'}`, 'error');
 }
 });
-
 function showAlert(msg, type) {
 alertDiv.textContent = msg;
 alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
 alertDiv.style.display = 'block';
 setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
-
-// ✅ BÚSQUEDA POR CÉDULA — con verificación de ficha existente
+// ✅ BÚSQUEDA POR CÉDULA — con soporte para <select> (estado, rango, etc.)
 document.getElementById('btnBuscarCedula').addEventListener('click', async function() {
 const searchCedula = document.getElementById('searchCedula').value.trim();
 if (!searchCedula || searchCedula.length !== 8) {
@@ -775,29 +795,17 @@ showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
 return;
 }
 try {
-// 🔍 Primero: ¿ya existe una *ficha* con esta cédula?
-const {  fichaExistente, error: fichaError } = await client
-.from('fichas')
-.select('id')
-.eq('cedula', searchCedula)
-.single();
-
-if (!fichaError) {
-return showAlert(`⚠️ Ya existe una ficha registrada para la cédula ${searchCedula}. No se permite duplicar.`, 'error');
-}
-
-// ❌ No hay ficha → ahora sí buscar en auditoría_personal
-const {  auditoriaData, error: auditoriaError } = await client
+const response = await client
 .from('auditoria_personal')
 .select('*')
 .eq('cedula', searchCedula)
 .single();
-
-if (auditoriaError) {
-return showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`, 'error');
+if (response.error) {
+showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`, 'error');
+return;
 }
-
-// ✅ Cargar datos desde auditoría_personal (solo si NO hay ficha)
+const auditoriaData = response.data;
+// ✅ Mapeo — ahora con soporte para <select>
 const mapeo = {
 cedula: 'cedula',
 nombre_apellidos: 'apellidos_nombres',
@@ -816,21 +824,24 @@ direccion_habitacion: 'direccion',
 ultimo_cargo: 'ultimo_cargo',
 rango: 'rango'
 };
-
 for (const [inputId, dbField] of Object.entries(mapeo)) {
 const el = document.getElementById(inputId);
-if (!el) continue;
+if (el) {
 let val = auditoriaData[dbField] ?? '';
 if (el.type === 'date' && val) {
 el.value = val.split('T')[0];
 } else if (el.type === 'number') {
 el.value = val ? String(val) : '';
 } else if (el.tagName === 'SELECT') {
+// ✅ Selección inteligente para <select>
 const normalize = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 const targetVal = normalize(val);
 let found = false;
 for (const opt of el.options) {
-if (normalize(opt.value) === targetVal || normalize(opt.textContent) === targetVal) {
+if (
+normalize(opt.value) === targetVal ||
+normalize(opt.textContent) === targetVal
+) {
 el.value = opt.value;
 found = true;
 break;
@@ -841,7 +852,7 @@ if (!found) el.value = '';
 el.value = val;
 }
 }
-
+}
 // ✅ Credencial
 const posee = (auditoriaData.posee_credencial || '').toLowerCase() === 'si';
 document.getElementById('credencialSi').checked = posee;
@@ -850,61 +861,45 @@ document.getElementById('numeroCredencialGroup').style.display = posee ? 'block'
 if (posee && auditoriaData.numero_credencial) {
 document.getElementById('numero_credencial').value = auditoriaData.numero_credencial;
 }
-
-// ✅ Estado en cabecera
-document.getElementById('previewEstadoUsuario').textContent = auditoriaData.estado?.trim() || '—';
-
-// ✅ Fotos (solo si no hay ficha — ya validado)
+// ✅ Actualizar estado en cabecera de ficha (FICHA N° línea)
+const estadoRaw = (auditoriaData.estado || '').trim();
+document.getElementById('previewEstadoUsuario').textContent =
+estadoRaw || '—';
+// ✅ Actualizar vista previa
+actualizarVistaPrevia();
+// ✅ Cargar fotos
 const bucket = client.storage.from('fichas');
 const fotoUrl = bucket.getPublicUrl(`foto-${searchCedula}.jpg`).data.publicUrl;
 const cedulaUrl = bucket.getPublicUrl(`cedula-${searchCedula}.jpg`).data.publicUrl;
-
 const loadImg = (url, imgEl, placeholderEl) => {
 fetch(url, { method: 'HEAD' })
-.then(res => {
-if (res.ok) {
-imgEl.src = url;
+.then(res => res.ok ? imgEl.src = url : null)
+.then(() => {
+if (imgEl.src) {
 imgEl.style.display = 'block';
 if (placeholderEl) placeholderEl.style.display = 'none';
 }
 })
 .catch(() => {});
 };
-
 loadImg(fotoUrl, document.getElementById('previewFoto'), document.querySelector('#previewFotoFuncionario div'));
 loadImg(cedulaUrl, document.getElementById('previewCedulaFoto'), document.querySelector('#previewFotoCedula div'));
-
-actualizarVistaPrevia();
-showAlert(`✅ Datos cargados desde auditoría para cédula ${searchCedula}`, 'success');
-
+showAlert(`✅ Datos cargados para cédula ${searchCedula}`, 'success');
 } catch (err) {
 console.error('Error al buscar cédula:', err);
 showAlert(`❌ Error: ${err.message}`, 'error');
 }
 });
-
-// ✅ Guardar ficha — con verificación previa de duplicado
+// ✅ Guardar ficha completa (datos + fotos)
 async function guardarFicha() {
+showAlert('💾 Guardando ficha...', 'success');
 const cedula = document.getElementById('cedula').value.trim();
 if (!cedula || cedula.length !== 8) {
+document.getElementById('previewNumeroFicha').textContent = data.numero_ficha;
 return showAlert('⚠️ Cédula inválida (debe tener 8 dígitos)', 'error');
 }
-
 try {
-// 🔍 Verificar si ya existe ficha con esta cédula
-const {  fichaExistente, error: checkError } = await client
-.from('fichas')
-.select('id')
-.eq('cedula', cedula)
-.single();
-
-if (!checkError) {
-return showAlert(`⚠️ Ya existe una ficha registrada para la cédula ${cedula}. No se permite duplicar.`, 'error');
-}
-
-// ✅ Continuar con guardado normal
-showAlert('💾 Guardando ficha...', 'success');
-
+// 1. Recolectar datos del formulario
 const datos = {
 cedula: cedula,
 nombre_apellidos: document.getElementById('nombre_apellidos').value.trim(),
@@ -925,14 +920,14 @@ rango: document.getElementById('rango').value,
 posee_credencial: document.querySelector('input[name="credencial"]:checked')?.value === 'si',
 numero_credencial: document.getElementById('numero_credencial').value.trim() || null
 };
-
+// Validar campos obligatorios
 const obligatorios = ['nombre_apellidos', 'edad', 'fecha_nacimiento', 'nivel_academico', 'telefono_funcionario', 'telefono_emergencia', 'correo_electronico', 'rango', 'ultimo_cargo', 'fecha_ingreso_cpn', 'antiguedad', 'estado', 'servicio', 'direccion_habitacion'];
 for (const campo of obligatorios) {
 if (!datos[campo]) {
 return showAlert(`⚠️ Campo obligatorio faltante: ${campo.replace(/_/g, ' ')}`, 'error');
 }
 }
-
+// 2. Subir fotos (si existen)
 const storage = client.storage.from('fichas');
 let fotoUrl = null, cedulaUrl = null;
 const uploadFile = async (fileInput, path) => {
@@ -942,10 +937,9 @@ const { error } = await storage.upload(path, file, { upsert: true });
 if (error) throw error;
 return storage.getPublicUrl(path).data.publicUrl;
 };
-
 fotoUrl = await uploadFile(document.getElementById('fotoFuncionario'), `foto-${cedula}.jpg`);
 cedulaUrl = await uploadFile(document.getElementById('fotoCedula'), `cedula-${cedula}.jpg`);
-
+// 3. Insertar en tabla `fichas`
 const { data, error } = await client
 .from('fichas')
 .insert([{
@@ -957,17 +951,19 @@ creado_por: (await client.auth.getSession()).data.session?.user?.id
 }])
 .select('numero_ficha, fecha_creacion')
 .single();
-
 if (error) throw error;
-
+// 4. Actualizar título con número de ficha y fecha
 const fecha = new Date(data.fecha_creacion).toLocaleDateString('es-VE', {
-day: '2-digit', month: '2-digit', year: 'numeric'
+day: '2-digit',
+month: '2-digit',
+year: 'numeric'
 });
 document.getElementById('previewFechaFicha').textContent = fecha;
 document.getElementById('previewEstadoUsuario').textContent = datos.estado || '—';
-
-const padre = document.querySelector('.header-container > div:nth-child(2)');
-if (padre) {
+// ✅ Aquí actualizamos el número en el título
+const tituloFicha = document.querySelector('.header-container .titulo-ficha');
+if (tituloFicha) {
+const padre = tituloFicha.parentElement;
 const nuevoTitulo = `
 <div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
 <div style="font-size: 10pt; color: #333; text-align: center; margin-top: 4px; line-height: 1.3;">
@@ -975,11 +971,14 @@ const nuevoTitulo = `
 <div><strong>ESTADO:</strong> ${datos.estado || '—'}</div>
 </div>
 `;
-padre.innerHTML = nuevoTitulo;
+padre.innerHTML = padre.innerHTML.replace(
+/<div class="titulo-ficha">[\s\S]*?<\/div>\s*<div style="[^"]*">[\s\S]*?<\/div>/,
+nuevoTitulo
+);
 }
-
+// 5. Log (opcional)
 try {
-const {  { session } } = await client.auth.getSession();
+const { data: { session } } = await client.auth.getSession();
 if (session) {
 await client.from('rrhh_logs').insert({
 user_id: session.user.id,
@@ -991,17 +990,15 @@ detalles: { modulo: 'fichas', numero_ficha: data.numero_ficha }
 } catch (logErr) {
 console.warn('Log no registrado:', logErr.message);
 }
-
 showAlert(`✅ Ficha guardada exitosamente. N°: ${data.numero_ficha}`, 'success');
-
+setTimeout(() => {
+document.getElementById('btnExportarPDF').removeAttribute('disabled');
+}, 1000);
 } catch (err) {
 console.error('Error al guardar ficha:', err);
-showAlert(`❌ ${err.message || 'Error desconocido'}`, 'error');
+showAlert(`❌ Error: ${err.message || 'Falla desconocida'}`, 'error');
 }
 }
-
-// 🎯 Asignar evento al botón Guardar (evita error de null.onclick)
-document.getElementById('btnGuardar').addEventListener('click', guardarFicha);
 </script>
 </body>
 </html>
