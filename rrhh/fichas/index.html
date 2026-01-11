@@ -956,7 +956,7 @@ return showAlert('⚠️ Cédula inválida (debe tener exactamente 8 dígitos)',
 }
 try {
 // Verificar sesión activa y obtener user_id
-const {  { session }, error: sessionError } = await client.auth.getSession();
+const { data: { session }, error: sessionError } = await client.auth.getSession();
 if (sessionError || !session) {
 return showAlert('❌ Sesión expirada. Inicie sesión nuevamente.', 'error');
 }
