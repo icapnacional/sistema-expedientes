@@ -1105,16 +1105,22 @@ return showAlert(`⚠️ Campo obligatorio faltante: ${nombreCampo}`, 'error');
 }
 let foto_url = null, cedula_url = null;
 const storage = client.storage.from('fichas');
+
+// ✅ FUNCIÓN CORREGIDA: sin desestructuración anidada
 const uploadFile = async (fileInput, filename) => {
-if (!fileInput.files?.[0]) return null;
-const file = fileInput.files[0];
-const { error: uploadErr } = await storage.upload(filename, file, { upsert: true });
-if (uploadErr) throw new Error(`Error al subir archivo: ${uploadErr.message}`);
-const {  { publicUrl } } = storage.getPublicUrl(filename);
-return publicUrl;
+  if (!fileInput.files?.[0]) return null;
+  const file = fileInput.files[0];
+  const { error: uploadErr } = await storage.upload(filename, file, { upsert: true });
+  if (uploadErr) throw new Error(`Error al subir archivo: ${uploadErr.message}`);
+  
+  // ✅ Corrección clave: evitar { { publicUrl } }
+  const { data } = storage.getPublicUrl(filename);
+  return data?.publicUrl;
 };
+
 foto_url = await uploadFile(document.getElementById('fotoFuncionario'), `foto-${cedula}.jpg`);
 cedula_url = await uploadFile(document.getElementById('fotoCedula'), `cedula-${cedula}.jpg`);
+
 const insertResponse = await client
 .from('fichas')
 .insert({
