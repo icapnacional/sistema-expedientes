@@ -786,8 +786,8 @@ document.getElementById('fecha_ingreso_cpn').addEventListener('change', function
 // ✅ Inicialización
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const {  { session } } = await client.auth.getSession();
-if (!session) {
+const { data: { session }, error: sessionError } = await client.auth.getSession();
+if (sessionError || !session) {
 showAlert('⚠️ Debes iniciar sesión', 'error');
 setTimeout(() => window.location.href = '../index.html', 2000);
 return;
