@@ -649,7 +649,7 @@ const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
 const alertDiv = document.getElementById('alertMessage');
 
-// 📅 Calcular edad en años
+// 📅 Calcular edad a partir de fecha de nacimiento
 function calcularEdad(fechaNacStr) {
   if (!fechaNacStr) return '';
   const hoy = new Date();
@@ -838,27 +838,23 @@ document.getElementById('btnBuscarCedula').addEventListener('click', async funct
 
   if (fichaExistente) {
     showAlert('⚠️ Ya existe una ficha con esta cédula. No se permiten duplicados.', 'error');
-    // Limpiar solo el campo de búsqueda
     document.getElementById('searchCedula').value = '';
     return;
   }
 
   // ✅ Si NO existe, buscar en auditoria_personal para precargar
   try {
-    const response = await client
+    const { data: auditoriaData, error: audError } = await client
       .from('auditoria_personal')
       .select('*')
       .eq('cedula', searchCedula)
       .single();
 
-    if (response.error) {
+    if (audError) {
       showAlert(`❌ No se encontró ningún funcionario con cédula ${searchCedula}`, 'error');
       return;
     }
 
-    const auditoriaData = response.data;
-
-    // ✅ MAPEO ACTUALIZADO
     const mapeo = {
       cedula: 'cedula',
       nombre_apellidos: 'apellidos_nombres',
