@@ -470,14 +470,31 @@ return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
 }
 
 try {
-const { data, error } = await client
+// ✅ Paso 1: Cargar datos de la ficha
+const { data: fichaData, error: fichaError } = await client
 .from('fichas')
 .select('*')
 .eq('cedula', cedula)
 .single();
 
-if (error || !data) {
+if (fichaError || !fichaData) {
 return showAlert(`❌ No se encontró ninguna ficha con cédula ${cedula}`, 'error');
+}
+
+// ✅ Paso 2: Cargar estado desde auditoria_personal
+let estadoAuditoria = '—';
+try {
+const { data: audData, error: audError } = await client
+.from('auditoria_personal')
+.select('estado')
+.eq('cedula', cedula)
+.single();
+
+if (!audError && audData?.estado) {
+estadoAuditoria = audData.estado;
+}
+} catch (e) {
+console.warn('No se pudo cargar el estado de auditoria_personal:', e);
 }
 
 // Mostrar ficha
@@ -486,39 +503,47 @@ document.getElementById('mensajeVacio').style.display = 'none';
 document.getElementById('btnImprimir').style.display = 'inline-flex';
 document.getElementById('btnExportarPDF').style.display = 'inline-flex';
 
-// Llenar datos
+// Llenar datos de la ficha
 const setPreview = (id, value) => {
 const el = document.getElementById(id);
 if (el) el.textContent = value || 'SIN DATOS';
 };
 
-setPreview('previewNombre', data.nombre_apellidos);
-setPreview('previewCedula', (data.cedula || '').padStart(8, '0'));
-setPreview('previewRango', data.rango);
-setPreview('previewEdad', (data.edad ? data.edad + ' AÑOS' : '00 AÑOS'));
-setPreview('previewFechaNacimiento', data.fecha_nacimiento ? new Date(data.fecha_nacimiento).toLocaleDateString('es-VE') : '01/01/1990');
-setPreview('previewTelefono', data.telefono_funcionario);
-setPreview('previewTelefonoEmergencia', data.telefono_emergencia);
-setPreview('previewCorreo', data.correo_electronico);
-setPreview('previewNivelAcademico', data.nivel_academico);
-setPreview('previewFechaIngreso', data.fecha_ingreso_cpn ? new Date(data.fecha_ingreso_cpn).toLocaleDateString('es-VE') : '01/01/2020');
-setPreview('previewFechaAscenso', data.fecha_ultimo_ascenso ? new Date(data.fecha_ultimo_ascenso).toLocaleDateString('es-VE') : 'SIN DATOS');
-setPreview('previewAntiguedad', data.antiguedad);
-setPreview('previewEstado', data.estado);
-setPreview('previewServicio', data.servicio);
-setPreview('previewDireccion', data.direccion_habitacion);
-setPreview('previewUltimoCargo', data.ultimo_cargo);
+setPreview('previewNombre', fichaData.nombre_apellidos);
+setPreview('previewCedula', (fichaData.cedula || '').padStart(8, '0'));
+setPreview('previewRango', fichaData.rango);
+setPreview('previewEdad', (fichaData.edad ? fichaData.edad + ' AÑOS' : '00 AÑOS'));
+setPreview('previewFechaNacimiento', fichaData.fecha_nacimiento ? new Date(fichaData.fecha_nacimiento).toLocaleDateString('es-VE') : '01/01/1990');
+setPreview('previewTelefono', fichaData.telefono_funcionario);
+setPreview('previewTelefonoEmergencia', fichaData.telefono_emergencia);
+setPreview('previewCorreo', fichaData.correo_electronico);
+setPreview('previewNivelAcademico', fichaData.nivel_academico);
+setPreview('previewFechaIngreso', fichaData.fecha_ingreso_cpn ? new Date(fichaData.fecha_ingreso_cpn).toLocaleDateString('es-VE') : '01/01/2020');
+setPreview('previewFechaAscenso', fichaData.fecha_ultimo_ascenso ? new Date(fichaData.fecha_ultimo_ascenso).toLocaleDateString('es-VE') : 'SIN DATOS');
+setPreview('previewAntiguedad', fichaData.antiguedad);
+setPreview('previewEstado', fichaData.estado);
+setPreview('previewServicio', fichaData.servicio);
+setPreview('previewDireccion', fichaData.direccion_habitacion);
+setPreview('previewUltimoCargo', fichaData.ultimo_cargo);
 
-// Actualizar credencial
-const tieneCred = data.posee_credencial === true || data.posee_credencial === 'si';
-document.getElementById('previewCredencialSi').checked = tieneCred;
-document.getElementById('previewCredencialNo').checked = !tieneCred;
-if (tieneCred && data.numero_credencial) {
-document.getElementById('previewNumeroCredencial').textContent = data.numero_credencial;
-document.getElementById('previewNumeroCredencial').style.display = 'block';
-} else {
-document.getElementById('previewNumeroCredencial').style.display = 'none';
-}
+// ✅ ACTUALIZAR ENCABEZADO CON FECHA ACTUAL Y ESTADO DE AUDITORÍA
+const hoy = new Date();
+const fechaHoy = hoy.getDate().toString().padStart(2, '0') + '/' +
+(hoy.getMonth() + 1).toString().padStart(2, '0') + '/' +
+hoy.getFullYear();
+
+// FICHA N°: [cédula] – [fecha actual] – ICAP
+document.getElementById('previewNumeroFicha').textContent = fichaData.cedula || '—';
+document.getElementById('previewFechaFicha').textContent = fechaHoy;
+document.getElementById('previewEstadoUsuario').textContent = estadoAuditoria;
+
+// También actualizar en la columna izquierda si existe
+const smallNum = document.getElementById('previewNumeroFichaSmall');
+const smallFecha = document.getElementById('previewFechaFichaSmall');
+const smallEstado = document.getElementById('previewEstadoUsuarioSmall');
+if (smallNum) smallNum.textContent = fichaData.cedula || '—';
+if (smallFecha) smallFecha.textContent = fechaHoy;
+if (smallEstado) smallEstado.textContent = estadoAuditoria;
 
 // Cargar fotos si existen
 const bucket = client.storage.from('fichas');
