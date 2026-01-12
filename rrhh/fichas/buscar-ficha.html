@@ -461,11 +461,11 @@ setTimeout(() => alertDiv.style.display = 'none', 3000);
 // Cargar sesión
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-  // ✅ Corrección: sintaxis válida
+  // ✅ CORRECTO: desestructuración válida
   const {  { session } } = await client.auth.getSession();
   if (!session) return window.location.href = '../index.html';
-  
-  // ✅ Corrección: desestructuración correcta
+
+  // ✅ CORRECTO: usar 'data' y 'error'
   const {  perfil, error } = await client
     .from('perfiles')
     .select('email, rol')
@@ -486,7 +486,7 @@ try {
   else if (perfil.rol === 'consultor') rolTexto = 'Consultor';
   
   document.getElementById('userRol').textContent = rolTexto;
-  
+
 } catch (err) {
   console.error(err);
   window.location.href = '../index.html';
