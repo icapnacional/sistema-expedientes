@@ -369,7 +369,10 @@ flex-wrap: wrap;
 <div class="watermark">FICHA DE DATOS PERSONALES</div>
 <!-- ENCABEZADO -->
 <div class="header-container">
-<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/mp.png" class="logo-izquierda" alt="ICAP Nacional">
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/mp.png" 
+     class="logo-izquierda" 
+     alt="ICAP Nacional"
+     crossorigin="anonymous">
 <div>
 <div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
 <div style="font-size:10pt; color:#333; text-align:center; margin-top:4px; line-height:1.3;">
@@ -377,11 +380,14 @@ flex-wrap: wrap;
 <div><strong>ESTADO:</strong> <span id="previewEstadoUsuario">—</span></div>
 </div>
 </div>
-<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" 
+     class="logo-derecha" 
+     alt="PNB"
+     crossorigin="anonymous">
 </div>
 <!-- FOTO DEL FUNCIONARIO -->
 <div class="foto-funcionario" id="previewFotoFuncionario">
-<img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
+<img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;" crossorigin="anonymous">
 </div>
 <!-- DATOS PERSONALES -->
 <div class="datos-personales">
@@ -420,7 +426,7 @@ flex-wrap: wrap;
 </div>
 <!-- FOTO DE LA CÉDULA -->
 <div class="foto-cedula" id="previewFotoCedula">
-<img id="previewCedulaFoto" style="width:100%; height:100%; object-fit:contain; display:none;">
+<img id="previewCedulaFoto" style="width:100%; height:100%; object-fit:contain; display:none;" crossorigin="anonymous">
 </div>
 <!-- PIE DE PÁGINA -->
 <div style="position:absolute; bottom:0.5cm; left:0.5cm; right:0.5cm; text-align:center; font-size:8pt; color:#333;">
@@ -457,7 +463,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 try {
 const { data: { session } } = await client.auth.getSession();
 if (!session) return window.location.href = '../index.html';
-const { data: perfil } = await client
+const {  perfil } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
@@ -491,7 +497,7 @@ return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
 
 try {
 // ✅ Cargar datos de la ficha
-const { data: fichaData, error: fichaError } = await client
+const {  fichaData, error: fichaError } = await client
 .from('fichas')
 .select('*')
 .eq('cedula', cedula)
@@ -504,7 +510,7 @@ return showAlert(`❌ No se encontró ninguna ficha con cédula ${cedula}`, 'err
 // ✅ Cargar estado desde auditoria_personal
 let estadoAuditoria = '—';
 try {
-const { data: audData, error: audError } = await client
+const {  audData, error: audError } = await client
 .from('auditoria_personal')
 .select('estado')
 .eq('cedula', cedula)
@@ -568,7 +574,7 @@ if (smallEstado) smallEstado.textContent = estadoAuditoria;
 const bucket = client.storage.from('fichas');
 const loadImg = async (filename, imgEl) => {
 try {
-const { data: { publicUrl } } = bucket.getPublicUrl(filename);
+const {  { publicUrl } } = bucket.getPublicUrl(filename);
 const res = await fetch(publicUrl, { method: 'HEAD' });
 if (res.ok) {
 imgEl.src = publicUrl;
@@ -593,21 +599,61 @@ document.getElementById('btnImprimir').addEventListener('click', () => {
 window.print();
 });
 
-// Exportar PDF
+// Exportar PDF (versión corregida)
 document.getElementById('btnExportarPDF').addEventListener('click', async () => {
-showAlert('_generando PDF...', 'success');
-try {
-const element = document.getElementById('fichaPreview');
-const canvas = await html2canvas(element, { scale: 2 });
-const imgData = canvas.toDataURL('image/png');
-const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
-pdf.addImage(imgData, 'PNG', 0, 0, 25.4, 19.05);
-pdf.save(`ficha_${document.getElementById('searchCedula').value}.pdf`);
-showAlert('✅ PDF generado', 'success');
-} catch (err) {
-console.error(err);
-showAlert('❌ Error al generar PDF', 'error');
-}
+  showAlert('⏳ Generando PDF...', 'success');
+  
+  try {
+    const element = document.getElementById('fichaPreview');
+    
+    // Forzar visibilidad temporal de imágenes
+    const fotoFunc = document.getElementById('previewFoto');
+    const fotoCed = document.getElementById('previewCedulaFoto');
+    const originalDisplayFoto = fotoFunc.style.display;
+    const originalDisplayCed = fotoCed.style.display;
+    
+    fotoFunc.style.display = 'block';
+    fotoCed.style.display = 'block';
+    
+    // Esperar a que todas las imágenes se carguen
+    const images = element.querySelectorAll('img');
+    const imageLoadPromises = Array.from(images).map(img => {
+      if (img.complete && img.naturalHeight !== 0) {
+        return Promise.resolve();
+      } else {
+        return new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+      }
+    });
+
+    await Promise.all(imageLoadPromises);
+
+    // Generar canvas
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      logging: false
+    });
+
+    // Restaurar estado original
+    fotoFunc.style.display = originalDisplayFoto;
+    fotoCed.style.display = originalDisplayCed;
+
+    // Crear PDF
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
+    pdf.addImage(imgData, 'PNG', 0, 0, 25.4, 19.05);
+    pdf.save(`ficha_${document.getElementById('searchCedula').value}.pdf`);
+    
+    showAlert('✅ PDF generado correctamente', 'success');
+    
+  } catch (err) {
+    console.error('Error al generar PDF:', err);
+    showAlert('❌ Error al generar PDF. Intente nuevamente.', 'error');
+  }
 });
 
 // Volver
