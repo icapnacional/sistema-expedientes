@@ -1023,38 +1023,43 @@ return showAlert('❌ Sesión expirada. Inicie sesión nuevamente.', 'error');
 const userId = session.user.id;
 const poseeCredencial = document.querySelector('input[name="credencial"]:checked')?.value === 'si';
 const numeroCredencial = poseeCredencial ? document.getElementById('numero_credencial').value.trim() : null;
+
+// ✅ CORREGIDO: fechas vacías → null, y sin campo 'status'
 const datosFicha = {
-cedula: cedula,
-nombre_apellidos: document.getElementById('nombre_apellidos').value.trim(),
-edad: document.getElementById('edad').value.trim(),
-fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
-telefono_funcionario: document.getElementById('telefono_funcionario').value.trim(),
-telefono_emergencia: document.getElementById('telefono_emergencia').value.trim(),
-correo_electronico: document.getElementById('correo_electronico').value.trim(),
-nivel_academico: document.getElementById('nivel_academico').value,
-fecha_ingreso_cpn: document.getElementById('fecha_ingreso_cpn').value,
-fecha_ultimo_ascenso: document.getElementById('fecha_ultimo_ascenso').value,
-antiguedad: document.getElementById('antiguedad').value.trim(),
-estado: document.getElementById('estado').value,
-servicio: document.getElementById('servicio').value.trim(),
-direccion_habitacion: document.getElementById('direccion_habitacion').value.trim(),
-ultimo_cargo: document.getElementById('ultimo_cargo').value.trim(),
-rango: document.getElementById('rango').value,
-posee_credencial: poseeCredencial,
-numero_credencial: numeroCredencial,
+  cedula: cedula,
+  nombre_apellidos: document.getElementById('nombre_apellidos').value.trim(),
+  edad: document.getElementById('edad').value.trim(),
+  fecha_nacimiento: document.getElementById('fecha_nacimiento').value || null,
+  telefono_funcionario: document.getElementById('telefono_funcionario').value.trim(),
+  telefono_emergencia: document.getElementById('telefono_emergencia').value.trim(),
+  correo_electronico: document.getElementById('correo_electronico').value.trim(),
+  nivel_academico: document.getElementById('nivel_academico').value,
+  fecha_ingreso_cpn: document.getElementById('fecha_ingreso_cpn').value || null,
+  fecha_ultimo_ascenso: document.getElementById('fecha_ultimo_ascenso').value || null,
+  antiguedad: document.getElementById('antiguedad').value.trim(),
+  estado: document.getElementById('estado').value,
+  servicio: document.getElementById('servicio').value.trim(),
+  direccion_habitacion: document.getElementById('direccion_habitacion').value.trim(),
+  ultimo_cargo: document.getElementById('ultimo_cargo').value.trim(),
+  rango: document.getElementById('rango').value,
+  posee_credencial: poseeCredencial,
+  numero_credencial: numeroCredencial
 };
+
 const camposObligatorios = [
 'nombre_apellidos', 'edad', 'fecha_nacimiento', 'nivel_academico',
 'telefono_funcionario', 'telefono_emergencia', 'correo_electronico',
 'rango', 'ultimo_cargo', 'fecha_ingreso_cpn', 'antiguedad',
 'estado', 'servicio', 'direccion_habitacion'
 ];
+
 for (const campo of camposObligatorios) {
 if (!datosFicha[campo]) {
 const nombreCampo = campo.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 return showAlert(`⚠️ Campo obligatorio faltante: ${nombreCampo}`, 'error');
 }
 }
+
 let foto_url = null, cedula_url = null;
 const storage = client.storage.from('fichas');
 // ✅ FUNCIÓN CORREGIDA: sin desestructuración anidada
@@ -1069,6 +1074,8 @@ return data?.publicUrl;
 };
 foto_url = await uploadFile(document.getElementById('fotoFuncionario'), `foto-${cedula}.jpg`);
 cedula_url = await uploadFile(document.getElementById('fotoCedula'), `cedula-${cedula}.jpg`);
+
+// ✅ INSERT SIN 'status' y con fechas como null si están vacías
 const insertResponse = await client
 .from('fichas')
 .insert({
@@ -1090,15 +1097,16 @@ ultimo_cargo: datosFicha.ultimo_cargo,
 rango: datosFicha.rango,
 posee_credencial: datosFicha.posee_credencial,
 numero_credencial: datosFicha.numero_credencial,
-status: datosFicha.status,
 foto_url: foto_url,
 cedula_url: cedula_url,
 creado_por: userId
 });
+
 if (insertResponse.error) {
 console.error('Error de inserción:', insertResponse.error);
 throw new Error(insertResponse.error.message);
 }
+
 try {
 await client.from('rrhh_logs').insert({
 user_id: userId,
@@ -1109,7 +1117,9 @@ detalles: JSON.stringify({ modulo: 'fichas' })
 } catch (logErr) {
 console.warn('No se pudo registrar el log:', logErr.message);
 }
+
 showAlert(`✅ Ficha guardada exitosamente para cédula ${cedula}`, 'success');
+
 // 🧹 Limpiar todo
 [
 'searchCedula','cedula','nombre_apellidos','edad','fecha_nacimiento',
@@ -1117,12 +1127,14 @@ showAlert(`✅ Ficha guardada exitosamente para cédula ${cedula}`, 'success');
 'nivel_academico','fecha_ingreso_cpn','fecha_ultimo_ascenso','antiguedad',
 'estado','servicio','direccion_habitacion','ultimo_cargo','rango'
 ].forEach(id => document.getElementById(id).value = '');
+
 // Limpiar badge de estatus
 const estatusBadge = document.getElementById('estatusDisplay');
 if (estatusBadge) {
   estatusBadge.className = 'badge-estatus-header inactivo';
   estatusBadge.textContent = '—';
 }
+
 document.getElementById('credencialNo').checked = true;
 document.getElementById('numeroCredencialGroup').style.display = 'none';
 document.getElementById('numero_credencial').value = '';
@@ -1134,6 +1146,7 @@ document.querySelector('#previewFotoFuncionario div').style.display = 'flex';
 document.getElementById('previewCedulaFoto').style.display = 'none';
 document.querySelector('#previewFotoCedula div').style.display = 'flex';
 document.getElementById('searchCedula').focus();
+
 } catch (err) {
 console.error('Error al guardar la ficha:', err);
 showAlert(`❌ Error al guardar: ${err.message || 'Falló la operación'}`, 'error');
