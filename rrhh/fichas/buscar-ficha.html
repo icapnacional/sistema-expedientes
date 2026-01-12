@@ -461,15 +461,23 @@ setTimeout(() => alertDiv.style.display = 'none', 3000);
 // Cargar sesión
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const { data: { session } } = await client.auth.getSession();
-if (!session) return window.location.href = '../index.html';
-const {  perfil } = await client
-.from('perfiles')
-.select('email, rol')
-.eq('id', session.user.id)
-.single();
+  // ✅ Corrección: sintaxis válida
+  const {  { session } } = await client.auth.getSession();
+  if (!session) return window.location.href = '../index.html';
+  
+  // ✅ Corrección: desestructuración correcta
+  const {  perfil, error } = await client
+    .from('perfiles')
+    .select('email, rol')
+    .eq('id', session.user.id)
+    .single();
 
-if (perfil) {
+  if (error || !perfil) {
+    document.getElementById('userEmail').textContent = '—';
+    document.getElementById('userRol').textContent = '—';
+    return;
+  }
+
   document.getElementById('userEmail').textContent = perfil.email || '—';
   
   let rolTexto = '—';
@@ -478,13 +486,10 @@ if (perfil) {
   else if (perfil.rol === 'consultor') rolTexto = 'Consultor';
   
   document.getElementById('userRol').textContent = rolTexto;
-} else {
-  document.getElementById('userEmail').textContent = '—';
-  document.getElementById('userRol').textContent = '—';
-}
+  
 } catch (err) {
-console.error(err);
-window.location.href = '../index.html';
+  console.error(err);
+  window.location.href = '../index.html';
 }
 });
 
