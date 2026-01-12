@@ -47,6 +47,12 @@ font-size: 24px;
 font-weight: 700;
 color: #2d2d2d;
 }
+.header .subtitle {
+font-size: 16px;
+color: #722F37;
+font-weight: 600;
+margin-top: 8px;
+}
 .user-info {
 background: white;
 border-radius: 12px;
@@ -160,7 +166,7 @@ object-fit: cover;
 /* ——— FOTO CÉDULA ——— */
 .foto-cedula {
 position: absolute;
-bottom: 3.5cm;
+bottom: 4cm;
 right: 1cm;
 width: 8.5cm;
 height: 5.5cm;
@@ -173,15 +179,16 @@ width: 100%;
 height: 100%;
 object-fit: contain;
 }
+/* ——— DATOS PERSONALES ——— */
 .datos-personales {
 position: absolute;
 top: 3.5cm;
 left: 0.5cm;
-right: 9.5cm; /* 👈 Aumentamos el margen derecho */
+right: 9.5cm;
 bottom: 1cm;
 overflow: hidden;
 }
-  itulo-datos {
+.titulo-datos {
 font-weight: bold;
 margin-bottom: 8px;
 font-size: 12pt;
@@ -338,10 +345,12 @@ flex-wrap: wrap;
 <div class="header">
 <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
 <h1>Inspectable para el Control de la Actuación Policial</h1>
+<div class="subtitle">• Módulo para Buscar Ficha •</div>
 </div>
 
 <div class="user-info">
-<strong>Usuario:</strong> <span id="userEmail">—</span>
+<strong>Usuario:</strong> <span id="userEmail">—</span> |
+<strong>Rol:</strong> <span id="userRol">—</span>
 </div>
 
 <div class="search-section">
@@ -373,7 +382,6 @@ flex-wrap: wrap;
 <!-- FOTO DEL FUNCIONARIO -->
 <div class="foto-funcionario" id="previewFotoFuncionario">
 <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
-<!-- 👇 Texto eliminado: no mostrar "FOTO 35x45mm" -->
 </div>
 <!-- DATOS PERSONALES -->
 <div class="datos-personales">
@@ -413,7 +421,6 @@ flex-wrap: wrap;
 <!-- FOTO DE LA CÉDULA -->
 <div class="foto-cedula" id="previewFotoCedula">
 <img id="previewCedulaFoto" style="width:100%; height:100%; object-fit:contain; display:none;">
-<!-- 👇 Texto eliminado: no mostrar "FOTO DE CÉDULA" -->
 </div>
 <!-- PIE DE PÁGINA -->
 <div style="position:absolute; bottom:0.5cm; left:0.5cm; right:0.5cm; text-align:center; font-size:8pt; color:#333;">
@@ -452,10 +459,23 @@ const { data: { session } } = await client.auth.getSession();
 if (!session) return window.location.href = '../index.html';
 const { data: perfil } = await client
 .from('perfiles')
-.select('email')
+.select('email, rol')
 .eq('id', session.user.id)
 .single();
-document.getElementById('userEmail').textContent = perfil?.email || '—';
+
+if (perfil) {
+  document.getElementById('userEmail').textContent = perfil.email || '—';
+  
+  let rolTexto = '—';
+  if (perfil.rol === 'admin') rolTexto = 'Administrador';
+  else if (perfil.rol === 'moderador') rolTexto = 'Moderador';
+  else if (perfil.rol === 'consultor') rolTexto = 'Consultor';
+  
+  document.getElementById('userRol').textContent = rolTexto;
+} else {
+  document.getElementById('userEmail').textContent = '—';
+  document.getElementById('userRol').textContent = '—';
+}
 } catch (err) {
 console.error(err);
 window.location.href = '../index.html';
@@ -470,7 +490,7 @@ return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
 }
 
 try {
-// ✅ Paso 1: Cargar datos de la ficha
+// ✅ Cargar datos de la ficha
 const { data: fichaData, error: fichaError } = await client
 .from('fichas')
 .select('*')
@@ -481,7 +501,7 @@ if (fichaError || !fichaData) {
 return showAlert(`❌ No se encontró ninguna ficha con cédula ${cedula}`, 'error');
 }
 
-// ✅ Paso 2: Cargar estado desde auditoria_personal
+// ✅ Cargar estado desde auditoria_personal
 let estadoAuditoria = '—';
 try {
 const { data: audData, error: audError } = await client
@@ -503,7 +523,7 @@ document.getElementById('mensajeVacio').style.display = 'none';
 document.getElementById('btnImprimir').style.display = 'inline-flex';
 document.getElementById('btnExportarPDF').style.display = 'inline-flex';
 
-// Llenar datos de la ficha
+// Llenar datos
 const setPreview = (id, value) => {
 const el = document.getElementById(id);
 if (el) el.textContent = value || 'SIN DATOS';
@@ -532,12 +552,11 @@ const fechaHoy = hoy.getDate().toString().padStart(2, '0') + '/' +
 (hoy.getMonth() + 1).toString().padStart(2, '0') + '/' +
 hoy.getFullYear();
 
-// FICHA N°: [cédula] – [fecha actual] – ICAP
 document.getElementById('previewNumeroFicha').textContent = fichaData.cedula || '—';
 document.getElementById('previewFechaFicha').textContent = fechaHoy;
 document.getElementById('previewEstadoUsuario').textContent = estadoAuditoria;
 
-// También actualizar en la columna izquierda si existe
+// Actualizar en columna izquierda si existe
 const smallNum = document.getElementById('previewNumeroFichaSmall');
 const smallFecha = document.getElementById('previewFechaFichaSmall');
 const smallEstado = document.getElementById('previewEstadoUsuarioSmall');
@@ -545,7 +564,7 @@ if (smallNum) smallNum.textContent = fichaData.cedula || '—';
 if (smallFecha) smallFecha.textContent = fechaHoy;
 if (smallEstado) smallEstado.textContent = estadoAuditoria;
 
-// Cargar fotos si existen
+// Cargar fotos
 const bucket = client.storage.from('fichas');
 const loadImg = async (filename, imgEl) => {
 try {
