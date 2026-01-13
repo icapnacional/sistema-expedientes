@@ -484,7 +484,8 @@ return estilos[estado] || { bg: '#ccc', color: '#000' };
 }
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const {  { session } } = await client.auth.getSession();
+const sessionRes = await client.auth.getSession();
+const session = sessionRes.data?.session;
 if (!session) return window.location.href = '../index.html';
 const {  perfil } = await client
 .from('perfiles')
