@@ -288,52 +288,86 @@ body {
     font-size: 16pt;
     margin: 0 0.8cm;
   }
+
+  /* DATOS PERSONALES */
   .datos-personales {
     position: static;
-    padding-top: 110px;
-    margin-top: 10px;
+    margin-top: 20px;
+    padding-top: 0;
+    clear: both;
   }
-  .foto-funcionario,
-  .foto-cedula {
+
+  /* FOTO FUNCIONARIO */
+  .foto-funcionario {
     position: relative !important;
+    float: right;
+    clear: right;
     width: auto !important;
     height: auto !important;
-    max-width: 120px;
-    margin-bottom: 12px;
-    float: right;
-    clear: both;
+    max-width: 140px;
+    max-height: 180px;
+    margin: 0 0 15px 20px;
+    border: 1px solid #000;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
+  .foto-funcionario img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* CAJA DE ESTADO COLOREADA */
   .estado-box {
     position: relative !important;
-    width: auto !important;
-    max-width: 120px;
-    margin-top: 5px;
     float: right;
-    clear: both;
+    clear: right;
+    width: auto !important;
+    max-width: 140px;
+    margin: 0 0 15px 20px;
+    font-size: 10pt;
+    text-align: center;
+    font-weight: bold;
+    padding: 4px 0;
+    border: 1px solid #000;
+    border-top: none;
   }
+
+  /* FOTO CÉDULA */
+  .foto-cedula {
+    position: relative !important;
+    float: right;
+    clear: right;
+    width: auto !important;
+    height: auto !important;
+    max-width: 220px;
+    max-height: 140px;
+    margin: 0 0 15px 20px;
+    border: 1px solid #000;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .foto-cedula img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* SECCIÓN CREDENCIAL */
   .credencial-section {
     position: static;
-    margin-top: 20px;
+    float: none;
     clear: both;
+    margin-top: 25px;
+    width: auto;
+    max-width: 300px;
   }
-  .foto-funcionario {
-    max-width: 180px !important;
-    max-height: 225px !important;
-  }
-  .foto-cedula {
-    max-width: 250px !important;
-    max-height: 170px !important;
-    margin-top: -150px !important;
-  }
-}
-
-.actions-bar {
-  margin-top: 20px;
-  text-align: center;
-  gap: 12px;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
 }
 </style>
 </head>
@@ -380,10 +414,10 @@ body {
 
       <!-- FOTO DEL FUNCIONARIO -->
       <div class="foto-funcionario" id="previewFotoFuncionario">
-        <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
+        <img id="previewFoto" style="display:none;">
       </div>
 
-      <!-- CAJA DE ESTADO COLOREADA -->
+      <!-- CAJA DE ESTADO COLOREADA (clave para ti) -->
       <div id="estadoBox" class="estado-box" style="display:none;"></div>
 
       <!-- DATOS PERSONALES -->
@@ -425,7 +459,7 @@ body {
 
       <!-- FOTO DE LA CÉDULA -->
       <div class="foto-cedula" id="previewFotoCedula">
-        <img id="previewCedulaFoto" style="width:100%; height:100%; object-fit:contain; display:none;">
+        <img id="previewCedulaFoto" style="display:none;">
       </div>
 
       <!-- PIE DE PÁGINA -->
@@ -438,7 +472,7 @@ body {
       Ingrese una cédula y haga clic en "Buscar" para ver la ficha.
     </div>
   </div>
-  <div class="actions-bar">
+  <div class="actions-bar" style="margin-top:20px; text-align:center; gap:12px; display:flex; justify-content:center; flex-wrap:wrap;">
     <button id="btnImprimir" class="btn" style="display:none;">🖨️ Imprimir</button>
     <button id="btnExportarPDF" class="btn" style="display:none;">📥 Exportar PDF</button>
   </div>
@@ -457,13 +491,11 @@ function showAlert(msg, type) {
   setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
 
-// Formatear fecha actual DD/MM/YYYY
 function getTodayFormatted() {
   const now = new Date();
   return `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
 }
 
-// Calcular edad
 function calcularEdad(fechaNac) {
   if (!fechaNac) return null;
   const hoy = new Date();
@@ -474,7 +506,6 @@ function calcularEdad(fechaNac) {
   return edad;
 }
 
-// Calcular antigüedad (en años y meses)
 function calcularAntiguedad(fechaIngreso) {
   if (!fechaIngreso) return '00 AÑOS 00 MESES';
   const inicio = new Date(fechaIngreso);
@@ -488,7 +519,6 @@ function calcularAntiguedad(fechaIngreso) {
   return `${String(anos).padStart(2, '0')} AÑOS ${String(meses).padStart(2, '0')} MESES`;
 }
 
-// Estilos de estado
 function estiloEstado(estado) {
   const estilos = {
     'activo': { bg: '#4CAF50', color: '#FFFFFF' },
@@ -524,7 +554,6 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
   }
 
   try {
-    // ✅ CONSULTAMOS auditoria_personal, NO fichas
     const { data, error } = await client
       .from('auditoria_personal')
       .select('*')
@@ -535,16 +564,13 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
       return showAlert(`❌ No se encontró ninguna ficha con cédula ${cedula}`, 'error');
     }
 
-    // Mostrar elementos
     document.getElementById('fichaPreview').style.display = 'block';
     document.getElementById('mensajeVacio').style.display = 'none';
     document.getElementById('btnImprimir').style.display = 'inline-flex';
     document.getElementById('btnExportarPDF').style.display = 'inline-flex';
 
-    // Fecha actual en encabezado
     document.getElementById('previewFechaFicha').textContent = getTodayFormatted();
 
-    // Llenar datos
     const setPreview = (id, value) => {
       const el = document.getElementById(id);
       if (el) el.textContent = value || 'SIN DATOS';
@@ -565,17 +591,15 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     setPreview('previewDireccion', data.direccion_habitacion);
     setPreview('previewUltimoCargo', data.ultimo_cargo);
 
-    // Calcular y mostrar edad y antigüedad
     const edad = calcularEdad(data.fecha_nacimiento);
     setPreview('previewEdad', edad ? `${edad} AÑOS` : 'SIN DATOS');
 
     const antiguedad = calcularAntiguedad(data.fecha_ingreso_cpn);
     setPreview('previewAntiguedad', antiguedad);
 
-    // Estado en encabezado
     setPreview('previewEstadoUsuario', data.estado || '—');
 
-    // ✅ Caja coloreada de estado bajo la foto
+    // ✅ LLENAR CAJA DE ESTADO COLOREADA
     const estadoBox = document.getElementById('estadoBox');
     const estadoValor = (data.estado || '').toLowerCase();
     const estilo = estiloEstado(estadoValor);
@@ -584,7 +608,6 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     estadoBox.style.color = estilo.color;
     estadoBox.style.display = 'block';
 
-    // Credencial
     const tieneCred = data.posee_credencial === true || data.posee_credencial === 'si';
     document.getElementById('previewCredencialSi').checked = tieneCred;
     document.getElementById('previewCredencialNo').checked = !tieneCred;
@@ -595,7 +618,6 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
       document.getElementById('previewNumeroCredencial').style.display = 'none';
     }
 
-    // Fotos
     const bucket = client.storage.from('fichas');
     const loadImg = async (filename, imgEl) => {
       try {
