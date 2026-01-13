@@ -458,36 +458,37 @@ alertDiv.style.display = 'block';
 setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
 
-// Cargar sesión con rol
+// ✅ CORREGIDO: Sintaxis válida
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const {  { session } } = await client.auth.getSession();
-const {  perfil, error } = await client.from('perfiles').select(...).single();
-if (!session) return window.location.href = '../index.html';
-const {  perfil, error } = await client
-.from('perfiles')
-.select('email, rol')
-.eq('id', session.user.id)
-.single();
+  // ✅ Correcta desestructuración
+  const {  { session } } = await client.auth.getSession();
+  if (!session) return window.location.href = '../index.html';
+  
+  const {  perfil, error } = await client
+    .from('perfiles')
+    .select('email, rol')
+    .eq('id', session.user.id)
+    .single();
 
-if (error || !perfil) {
-document.getElementById('userEmail').textContent = '—';
-document.getElementById('userRol').textContent = '—';
-return;
-}
+  if (error || !perfil) {
+    document.getElementById('userEmail').textContent = '—';
+    document.getElementById('userRol').textContent = '—';
+    return;
+  }
 
-document.getElementById('userEmail').textContent = perfil.email || '—';
-
-let rolTexto = '—';
-if (perfil.rol === 'admin') rolTexto = 'Administrador';
-else if (perfil.rol === 'moderador') rolTexto = 'Moderador';
-else if (perfil.rol === 'consultor') rolTexto = 'Consultor';
-
-document.getElementById('userRol').textContent = rolTexto;
+  document.getElementById('userEmail').textContent = perfil.email || '—';
+  
+  let rolTexto = '—';
+  if (perfil.rol === 'admin') rolTexto = 'Administrador';
+  else if (perfil.rol === 'moderador') rolTexto = 'Moderador';
+  else if (perfil.rol === 'consultor') rolTexto = 'Consultor';
+  
+  document.getElementById('userRol').textContent = rolTexto;
 
 } catch (err) {
-console.error(err);
-window.location.href = '../index.html';
+  console.error(err);
+  window.location.href = '../index.html';
 }
 });
 
@@ -499,7 +500,6 @@ return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
 }
 
 try {
-// ✅ Cargar datos de la ficha
 const {  fichaData, error: fichaError } = await client
 .from('fichas')
 .select('*')
@@ -510,7 +510,6 @@ if (fichaError || !fichaData) {
 return showAlert(`❌ No se encontró ninguna ficha con cédula ${cedula}`, 'error');
 }
 
-// ✅ Cargar estado desde auditoria_personal
 let estadoAuditoria = '—';
 try {
 const {  audData, error: audError } = await client
@@ -526,13 +525,11 @@ estadoAuditoria = audData.estado;
 console.warn('No se pudo cargar el estado de auditoria_personal:', e);
 }
 
-// Mostrar ficha
 document.getElementById('fichaPreview').style.display = 'block';
 document.getElementById('mensajeVacio').style.display = 'none';
 document.getElementById('btnImprimir').style.display = 'inline-flex';
 document.getElementById('btnExportarPDF').style.display = 'inline-flex';
 
-// Llenar datos
 const setPreview = (id, value) => {
 const el = document.getElementById(id);
 if (el) el.textContent = value || 'SIN DATOS';
@@ -555,7 +552,7 @@ setPreview('previewServicio', fichaData.servicio);
 setPreview('previewDireccion', fichaData.direccion_habitacion);
 setPreview('previewUltimoCargo', fichaData.ultimo_cargo);
 
-// ✅ Fecha actual y estado de auditoría
+// ✅ Fecha actual
 const hoy = new Date();
 const fechaHoy = hoy.getDate().toString().padStart(2, '0') + '/' +
 (hoy.getMonth() + 1).toString().padStart(2, '0') + '/' +
