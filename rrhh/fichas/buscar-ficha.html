@@ -283,7 +283,7 @@ position: static;
 padding-top: 110px;
 margin-top: 10px;
 }
-/* === AJUSTE PRINCIPAL AQUÍ === */
+/* === AJUSTE PRINCIPAL: CENTRAR FOTOS EN VISTA PREVIA === */
 .foto-funcionario,
 .foto-cedula {
   position: relative !important;
@@ -292,31 +292,34 @@ margin-top: 10px;
   display: block;
   margin-left: auto;
   margin-right: 0;
-  margin-bottom: 12px;
+  margin-bottom: 15px;
   float: none !important;
   clear: none !important;
-}
-.estado-box {
-position: relative !important;
-width: auto !important;
-max-width: 120px;
-margin-top: 5px;
-float: right;
-clear: both;
-}
-.credencial-section {
-position: static;
-margin-top: 20px;
-clear: both;
+  border: 1px solid #000;
 }
 .foto-funcionario {
-max-width: 180px !important;
-max-height: 225px !important;
+  max-width: 180px !important;
+  max-height: 225px !important;
 }
 .foto-cedula {
-max-width: 250px !important;
-max-height: 170px !important;
-margin-top: 20px !important; /* ← Separación razonable */
+  max-width: 250px !important;
+  max-height: 170px !important;
+  margin-top: 0 !important; /* Eliminado el -150px problemático */
+}
+.estado-box {
+  position: relative !important;
+  width: auto !important;
+  max-width: 120px;
+  margin-top: 5px;
+  margin-left: auto;
+  float: none;
+  clear: both;
+  display: block;
+}
+.credencial-section {
+  position: static;
+  margin-top: 20px;
+  clear: both;
 }
 }
 .actions-bar {
@@ -330,6 +333,277 @@ flex-wrap: wrap;
 </style>
 </head>
 <body>
-<!-- ... resto del HTML idéntico ... -->
+<div class="container">
+<div class="breadcrumb">
+<a href="../index.html">Inicio</a> <span>›</span>
+<a href="index.html">Fichas</a> <span>›</span>
+<strong>Buscar Ficha</strong>
+</div>
+<div class="header">
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+<h1>Inspectable para el Control de la Actuación Policial</h1>
+</div>
+<div class="user-info">
+<strong>Usuario:</strong> <span id="userEmail">—</span>
+</div>
+<div class="search-section">
+<h2>🔍 Buscar Ficha por Cédula</h2>
+<div id="alertMessage" class="alert"></div>
+<div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+<input type="text" id="searchCedula" placeholder="Ingrese cédula (8 dígitos)" maxlength="8" inputmode="numeric" style="flex:1; min-width:200px; padding:10px 12px; border:1px solid #ddd; border-radius:8px;">
+<button id="btnBuscar" class="btn">🔍 Buscar</button>
+<button id="btnVolver" class="btn btn-outline">← Volver</button>
+</div>
+</div>
+<div class="preview-container">
+<h2>📄 Vista Previa de la Ficha</h2>
+<div id="fichaPreview" class="ficha-oficial" style="display:none;">
+<div class="watermark">FICHA DE DATOS PERSONALES</div>
+<!-- ENCABEZADO -->
+<div class="header-container">
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/mp.png" class="logo-izquierda" alt="ICAP Nacional">
+<div>
+<div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
+<div style="font-size:10pt; color:#333; text-align:center; margin-top:4px; line-height:1.3;">
+<div><strong>FICHA N°:</strong> <span id="previewNumeroFicha">—</span> – <span id="previewFechaFicha"></span> – ICAP</div>
+<div><strong>ESTADO:</strong> <span id="previewEstadoUsuario">—</span></div>
+</div>
+</div>
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
+</div>
+<!-- FOTO DEL FUNCIONARIO -->
+<div class="foto-funcionario" id="previewFotoFuncionario">
+<img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
+</div>
+<!-- CAJA DE ESTADO COLOREADA -->
+<div id="estadoBox" class="estado-box" style="display:none;"></div>
+<!-- DATOS PERSONALES -->
+<div class="datos-personales">
+<div class="titulo-datos">DATOS PERSONALES:</div>
+<div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">SIN DATOS</span></div>
+<div class="dato-fila"><strong>CÉDULA:</strong> <span id="previewCedula">00000000</span></div>
+<div class="dato-fila"><strong>RANGO:</strong> <span id="previewRango">SIN DATOS</span></div>
+<div class="dato-fila"><strong>EDAD:</strong> <span id="previewEdad">00 AÑOS</span></div>
+<div class="dato-fila"><strong>FECHA DE NACIMIENTO:</strong> <span id="previewFechaNacimiento">01/01/1990</span></div>
+<div class="dato-fila"><strong>TELÉFONO DEL FUNCIONARIO:</strong> <span id="previewTelefono">SIN DATOS</span></div>
+<div class="dato-fila"><strong>TELÉFONO DE EMERGENCIA:</strong> <span id="previewTelefonoEmergencia">SIN DATOS</span></div>
+<div class="dato-fila"><strong>CORREO ELECTRÓNICO:</strong> <span id="previewCorreo">SIN DATOS</span></div>
+<div class="dato-fila"><strong>NIVEL ACADÉMICO:</strong> <span id="previewNivelAcademico">SIN DATOS</span></div>
+<div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">01/01/2020</span></div>
+<div class="dato-fila"><strong>FECHA DEL ULTIMO ASCENSO:</strong> <span id="previewFechaAscenso">SIN DATOS</span></div>
+<div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">00 AÑOS 00 MESES</span></div>
+<div class="dato-fila"><strong>ESTADO:</strong> <span id="previewEstado">SIN DATOS</span></div>
+<div class="dato-fila"><strong>SERVICIO:</strong> <span id="previewServicio">SIN DATOS</span></div>
+<div class="dato-fila" style="max-width: 16cm;"><strong>DIRECCION DE HABITACION:</strong> <span id="previewDireccion">SIN DATOS</span></div>
+<div class="dato-fila"><strong>ULTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
+</div>
+<!-- CREDENCIAL -->
+<div class="credencial-section">
+<div class="credencial-title">POSEE CREDENCIAL</div>
+<div class="credencial-options">
+<div class="credencial-option">
+<input type="radio" id="previewCredencialSi" name="credencialPreview" value="si" disabled>
+<label for="previewCredencialSi">SI</label>
+</div>
+<div class="credencial-option">
+<input type="radio" id="previewCredencialNo" name="credencialPreview" value="no" disabled checked>
+<label for="previewCredencialNo">NO</label>
+</div>
+</div>
+<div id="previewNumeroCredencial" class="credencial-input" style="display:none; margin-top:5px; font-weight: bold;"></div>
+</div>
+<!-- FOTO DE LA CÉDULA -->
+<div class="foto-cedula" id="previewFotoCedula">
+<img id="previewCedulaFoto" style="width:100%; height:100%; object-fit:contain; display:none;">
+</div>
+<!-- PIE DE PÁGINA -->
+<div style="position:absolute; bottom:0.5cm; left:0.5cm; right:0.5cm; text-align:center; font-size:8pt; color:#333;">
+<strong>Inspectable para el Control de la Actuación Policial - ICAP Nacional</strong><br>
+Documento confidencial - Uso exclusivo institucional
+</div>
+</div>
+<div id="mensajeVacio" style="text-align:center; padding:40px; color:#666;">
+Ingrese una cédula y haga clic en "Buscar" para ver la ficha.
+</div>
+</div>
+<div class="actions-bar">
+<button id="btnImprimir" class="btn" style="display:none;">🖨️ Imprimir</button>
+<button id="btnExportarPDF" class="btn" style="display:none;">📥 Exportar PDF</button>
+</div>
+</div>
+<script>
+const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+const alertDiv = document.getElementById('alertMessage');
+function showAlert(msg, type) {
+alertDiv.textContent = msg;
+alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+alertDiv.style.display = 'block';
+setTimeout(() => alertDiv.style.display = 'none', 3000);
+}
+// Formatear fecha actual DD/MM/YYYY
+function getTodayFormatted() {
+const now = new Date();
+return `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+}
+// Calcular edad
+function calcularEdad(fechaNac) {
+if (!fechaNac) return null;
+const hoy = new Date();
+const nac = new Date(fechaNac);
+let edad = hoy.getFullYear() - nac.getFullYear();
+const m = hoy.getMonth() - nac.getMonth();
+if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+return edad;
+}
+// Calcular antigüedad (en años y meses)
+function calcularAntiguedad(fechaIngreso) {
+if (!fechaIngreso) return '00 AÑOS 00 MESES';
+const inicio = new Date(fechaIngreso);
+const hoy = new Date();
+let anos = hoy.getFullYear() - inicio.getFullYear();
+let meses = hoy.getMonth() - inicio.getMonth();
+if (meses < 0) {
+anos--;
+meses += 12;
+}
+return `${String(anos).padStart(2, '0')} AÑOS ${String(meses).padStart(2, '0')} MESES`;
+}
+// Estilos de estado
+function estiloEstado(estado) {
+const estilos = {
+'activo': { bg: '#4CAF50', color: '#FFFFFF' },
+'P': { bg: '#2196F3', color: '#FFFFFF' },
+'destituido': { bg: '#F44336', color: '#FFFFFF' },
+'suspendido': { bg: '#FF9800', color: '#FFFFFF' },
+'DA': { bg: '#9C27B0', color: '#FFFFFF' },
+'D': { bg: '#FFEB3B', color: '#000000' }
+};
+return estilos[estado] || { bg: '#ccc', color: '#000' };
+}
+document.addEventListener('DOMContentLoaded', async () => {
+try {
+const {  { session } } = await client.auth.getSession();
+if (!session) return window.location.href = '../index.html';
+const {  perfil } = await client
+.from('perfiles')
+.select('email')
+.eq('id', session.user.id)
+.single();
+document.getElementById('userEmail').textContent = perfil?.email || '—';
+} catch (err) {
+console.error(err);
+window.location.href = '../index.html';
+}
+});
+document.getElementById('btnBuscar').addEventListener('click', async () => {
+const cedula = document.getElementById('searchCedula').value.trim();
+if (!cedula || cedula.length !== 8 || !/^\d{8}$/.test(cedula)) {
+return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
+}
+try {
+// ✅ CONSULTAMOS auditoria_personal, NO fichas
+const { data, error } = await client
+.from('auditoria_personal')
+.select('*')
+.eq('cedula', cedula)
+.single();
+if (error || !data) {
+return showAlert(`❌ No se encontró ninguna ficha con cédula ${cedula}`, 'error');
+}
+// Mostrar elementos
+document.getElementById('fichaPreview').style.display = 'block';
+document.getElementById('mensajeVacio').style.display = 'none';
+document.getElementById('btnImprimir').style.display = 'inline-flex';
+document.getElementById('btnExportarPDF').style.display = 'inline-flex';
+// Fecha actual en encabezado
+document.getElementById('previewFechaFicha').textContent = getTodayFormatted();
+// Llenar datos
+const setPreview = (id, value) => {
+const el = document.getElementById(id);
+if (el) el.textContent = value || 'SIN DATOS';
+};
+setPreview('previewNombre', data.nombre_apellidos);
+setPreview('previewCedula', (data.cedula || '').padStart(8, '0'));
+setPreview('previewRango', data.rango);
+setPreview('previewFechaNacimiento', data.fecha_nacimiento ? new Date(data.fecha_nacimiento).toLocaleDateString('es-VE') : '01/01/1990');
+setPreview('previewTelefono', data.telefono_funcionario);
+setPreview('previewTelefonoEmergencia', data.telefono_emergencia);
+setPreview('previewCorreo', data.correo_electronico);
+setPreview('previewNivelAcademico', data.nivel_academico);
+setPreview('previewFechaIngreso', data.fecha_ingreso_cpn ? new Date(data.fecha_ingreso_cpn).toLocaleDateString('es-VE') : '01/01/2020');
+setPreview('previewFechaAscenso', data.fecha_ultimo_ascenso ? new Date(data.fecha_ultimo_ascenso).toLocaleDateString('es-VE') : 'SIN DATOS');
+setPreview('previewEstado', data.estado);
+setPreview('previewServicio', data.servicio);
+setPreview('previewDireccion', data.direccion_habitacion);
+setPreview('previewUltimoCargo', data.ultimo_cargo);
+// Calcular y mostrar edad y antigüedad
+const edad = calcularEdad(data.fecha_nacimiento);
+setPreview('previewEdad', edad ? `${edad} AÑOS` : 'SIN DATOS');
+const antiguedad = calcularAntiguedad(data.fecha_ingreso_cpn);
+setPreview('previewAntiguedad', antiguedad);
+// Estado en encabezado
+setPreview('previewEstadoUsuario', data.estado || '—');
+// ✅ Caja coloreada de estado bajo la foto
+const estadoBox = document.getElementById('estadoBox');
+const estadoValor = (data.estado || '').toLowerCase();
+const estilo = estiloEstado(estadoValor);
+estadoBox.textContent = data.estado || '—';
+estadoBox.style.backgroundColor = estilo.bg;
+estadoBox.style.color = estilo.color;
+estadoBox.style.display = 'block';
+// Credencial
+const tieneCred = data.posee_credencial === true || data.posee_credencial === 'si';
+document.getElementById('previewCredencialSi').checked = tieneCred;
+document.getElementById('previewCredencialNo').checked = !tieneCred;
+if (tieneCred && data.numero_credencial) {
+document.getElementById('previewNumeroCredencial').textContent = data.numero_credencial;
+document.getElementById('previewNumeroCredencial').style.display = 'block';
+} else {
+document.getElementById('previewNumeroCredencial').style.display = 'none';
+}
+// Fotos
+const bucket = client.storage.from('fichas');
+const loadImg = async (filename, imgEl) => {
+try {
+const {  { publicUrl } } = bucket.getPublicUrl(filename);
+const res = await fetch(publicUrl, { method: 'HEAD' });
+if (res.ok) {
+imgEl.src = publicUrl;
+imgEl.style.display = 'block';
+}
+} catch (e) {}
+};
+loadImg(`foto-${cedula}.jpg`, document.getElementById('previewFoto'));
+loadImg(`cedula-${cedula}.jpg`, document.getElementById('previewCedulaFoto'));
+showAlert(`✅ Ficha encontrada para cédula ${cedula}`, 'success');
+} catch (err) {
+console.error(err);
+showAlert('❌ Error al buscar la ficha', 'error');
+}
+});
+document.getElementById('btnImprimir').addEventListener('click', () => {
+window.print();
+});
+document.getElementById('btnExportarPDF').addEventListener('click', async () => {
+showAlert('_generando PDF...', 'success');
+try {
+const element = document.getElementById('fichaPreview');
+const canvas = await html2canvas(element, { scale: 2 });
+const imgData = canvas.toDataURL('image/png');
+const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
+pdf.addImage(imgData, 'PNG', 0, 0, 25.4, 19.05);
+pdf.save(`ficha_${document.getElementById('searchCedula').value}.pdf`);
+showAlert('✅ PDF generado', 'success');
+} catch (err) {
+console.error(err);
+showAlert('❌ Error al generar PDF', 'error');
+}
+});
+document.getElementById('btnVolver').addEventListener('click', () => {
+window.history.back();
+});
+</script>
 </body>
 </html>
