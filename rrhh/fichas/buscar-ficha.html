@@ -478,9 +478,9 @@ return estilos[estado] || { bg: '#ccc', color: '#000' };
 }
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const { data: { session } } = await client.auth.getSession();
+const {  { session } } = await client.auth.getSession();
 if (!session) return window.location.href = '../index.html';
-const { data: perfil, error } = await client
+const {  perfil, error } = await client
 .from('perfiles')
 .select('email')
 .eq('id', session.user.id)
