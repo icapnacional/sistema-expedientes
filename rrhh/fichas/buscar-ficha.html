@@ -142,10 +142,19 @@ body {
   margin: 0 1cm;
 }
 
-.foto-funcionario {
+/* ——— CONTENEDOR DERECHO PARA FOTOS Y ESTADO ——— */
+.fotos-derecha {
   position: absolute;
   top: 3.5cm;
   right: 0.5cm;
+  width: 35mm;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.foto-funcionario {
   width: 35mm;
   height: 45mm;
   border: 1px solid #000;
@@ -160,9 +169,6 @@ body {
 
 /* ——— CAJA DE ESTADO (coloreada) ——— */
 .estado-box {
-  position: absolute;
-  top: 8.5cm;
-  right: 0.5cm;
   width: 35mm;
   text-align: center;
   font-size: 9pt;
@@ -174,10 +180,10 @@ body {
 
 .foto-cedula {
   position: absolute;
-  bottom: 3.5cm;
-  right: 1cm;
-  width: 8.5cm;
-  height: 5.5cm;
+  top: 8.5cm;
+  right: 0.5cm;
+  width: 85mm;
+  height: 55mm;
   border: 1px solid #000;
   background: #fff;
   overflow: hidden;
@@ -288,64 +294,63 @@ body {
     font-size: 16pt;
     margin: 0 0.8cm;
   }
+
+  /* === VISTA EN PANTALLA: REORGANIZACIÓN === */
   .datos-personales {
     position: static;
     padding-top: 110px;
     margin-top: 10px;
+    margin-right: 10cm; /* espacio para el bloque derecho */
   }
- @media screen {
-  .fotos-container {
+
+  .fotos-derecha {
     position: relative;
     float: right;
-    width: 260px;
+    width: auto;
     margin-left: 20px;
+    align-items: flex-end;
+    gap: 12px;
   }
+
   .foto-funcionario,
   .foto-cedula {
     position: relative !important;
     width: auto !important;
     height: auto !important;
-    display: block;
-    margin: 0 auto 16px auto;
+    max-width: 180px;
+    margin: 0;
+    float: none;
     clear: both;
+    border: 1px solid #aaa;
+    background: #fff;
   }
+
   .foto-funcionario {
-    max-width: 180px !important;
-    max-height: 225px !important;
+    max-height: 225px;
   }
+
   .foto-cedula {
-    max-width: 250px !important;
-    max-height: 170px !important;
+    max-width: 250px;
+    max-height: 170px;
+    margin-top: 0 !important;
   }
+
   .estado-box {
     position: relative !important;
     width: auto !important;
-    max-width: 180px !important;
-    margin: 8px auto;
+    max-width: 180px;
+    margin: 0;
+    float: none;
     clear: both;
+    text-align: center;
+    padding: 6px 0;
+    border-radius: 4px;
   }
-}
-  .estado-box {
-    position: relative !important;
-    width: auto !important;
-    max-width: 120px;
-    margin-top: 5px;
-    float: right;
-    clear: both;
-  }
+
   .credencial-section {
     position: static;
     margin-top: 20px;
     clear: both;
-  }
-  .foto-funcionario {
-    max-width: 180px !important;
-    max-height: 225px !important;
-  }
-  .foto-cedula {
-    max-width: 250px !important;
-    max-height: 170px !important;
-    margin-top: -150px !important;
   }
 }
 
@@ -366,13 +371,16 @@ body {
     <a href="index.html">Fichas</a> <span>›</span>
     <strong>Buscar Ficha</strong>
   </div>
+
   <div class="header">
     <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
     <h1>Inspectable para el Control de la Actuación Policial</h1>
   </div>
+
   <div class="user-info">
     <strong>Usuario:</strong> <span id="userEmail">—</span>
   </div>
+
   <div class="search-section">
     <h2>🔍 Buscar Ficha por Cédula</h2>
     <div id="alertMessage" class="alert"></div>
@@ -382,6 +390,7 @@ body {
       <button id="btnVolver" class="btn btn-outline">← Volver</button>
     </div>
   </div>
+
   <div class="preview-container">
     <h2>📄 Vista Previa de la Ficha</h2>
     <div id="fichaPreview" class="ficha-oficial" style="display:none;">
@@ -400,18 +409,13 @@ body {
         <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
       </div>
 
-<!-- Dentro de .preview-container, antes de .datos-personales -->
-<div class="fotos-container">
-  <div class="foto-funcionario" id="previewFotoFuncionario">
-    <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
-  </div>
-  <div id="estadoBox" class="estado-box" style="display:none;"></div>
-  <div class="foto-cedula" id="previewFotoCedula">
-    <img id="previewCedulaFoto" style="width:100%; height:100%; object-fit:contain; display:none;">
-  </div>
-</div>
-      <!-- CAJA DE ESTADO COLOREADA -->
-      <div id="estadoBox" class="estado-box" style="display:none;"></div>
+      <!-- BLOQUE DERECHO: FOTO + ESTADO + FOTO CÉDULA -->
+      <div class="fotos-derecha">
+        <div class="foto-funcionario" id="previewFotoFuncionario">
+          <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
+        </div>
+        <div id="estadoBox" class="estado-box" style="display:none;"></div>
+      </div>
 
       <!-- DATOS PERSONALES -->
       <div class="datos-personales">
@@ -461,10 +465,12 @@ body {
         Documento confidencial - Uso exclusivo institucional
       </div>
     </div>
+
     <div id="mensajeVacio" style="text-align:center; padding:40px; color:#666;">
       Ingrese una cédula y haga clic en "Buscar" para ver la ficha.
     </div>
   </div>
+
   <div class="actions-bar">
     <button id="btnImprimir" class="btn" style="display:none;">🖨️ Imprimir</button>
     <button id="btnExportarPDF" class="btn" style="display:none;">📥 Exportar PDF</button>
@@ -595,7 +601,6 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     // Calcular y mostrar edad y antigüedad
     const edad = calcularEdad(data.fecha_nacimiento);
     setPreview('previewEdad', edad ? `${edad} AÑOS` : 'SIN DATOS');
-
     const antiguedad = calcularAntiguedad(data.fecha_ingreso_cpn);
     setPreview('previewAntiguedad', antiguedad);
 
