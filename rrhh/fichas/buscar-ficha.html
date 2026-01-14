@@ -47,10 +47,11 @@ body {
   font-weight: 700;
   color: #2d2d2d;
 }
-.header p {
-  margin-top: 8px;
+.header .subtitle {
   font-size: 16px;
-  color: #555;
+  color: #722F37;
+  font-weight: 600;
+  margin-top: 8px;
 }
 .user-info {
   background: white;
@@ -59,6 +60,9 @@ body {
   margin-bottom: 24px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.08);
   border: 1px solid #eee;
+  text-align: center;
+  font-weight: 600;
+  color: #333;
 }
 .search-section {
   background: white;
@@ -161,6 +165,29 @@ body {
 .dato-fila {
   margin-bottom: 4px;
   font-size: 10pt;
+}
+.credencial-section {
+  position: absolute;
+  top: 8.5cm;
+  right: 4cm;
+  width: 4.5cm;
+  height: 2cm;
+  font-size: 10pt;
+}
+.credencial-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #000;
+}
+.credencial-option {
+  display: inline-block;
+  margin-right: 10px;
+}
+.credencial-input {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  font-size: 9pt;
 }
 .watermark {
   position: absolute;
@@ -303,10 +330,10 @@ body {
   <div class="header">
     <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
     <h1>Inspectable para el Control de la Actuación Policial</h1>
-    <p>Módulo para buscar fichas</p>
+    <p class="subtitle">• Formato de Datos Personales •</p>
   </div>
   <div class="user-info">
-    <strong>Usuario:</strong> <span id="userEmail">—</span>
+    <strong>Usuario:</strong> <span id="userEmail">—</span> | <strong>Rol:</strong> <span id="userRol">—</span>
   </div>
   <div class="search-section">
     <h2>🔍 Buscar Ficha por Cédula</h2>
@@ -422,18 +449,30 @@ function calcularAntiguedad(fechaIngreso) {
 }
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    // ✅ Corrección: sintaxis válida
     const { data } = await client.auth.getSession();
     const session = data?.session;
     if (!session) return window.location.href = '../index.html';
-    
-    const {  perfil } = await client
+
+    const { data: perfil } = await client
       .from('perfiles')
-      .select('email')
+      .select('email, rol')
       .eq('id', session.user.id)
       .single();
-      
+
     document.getElementById('userEmail').textContent = perfil?.email || '—';
+    
+    // ✅ Mostrar rol
+    const rolText = perfil?.rol === 'admin' ? 'Administrador' : 
+                    perfil?.rol === 'moderador' ? 'Moderador' : 
+                    'Consultor';
+    document.getElementById('userRol').textContent = rolText;
+
+    // ✅ Estilizar rol si es administrador
+    if (perfil?.rol === 'admin') {
+      document.getElementById('userRol').style.color = '#c62828';
+      document.getElementById('userRol').style.fontWeight = 'bold';
+    }
+
   } catch (err) {
     console.error(err);
     window.location.href = '../index.html';
@@ -445,7 +484,7 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
   }
   try {
-    // ✅ Consultamos la tabla FICHAS
+    // ✅ CONSULTAMOS LA TABLA FICHAS
     const { data, error } = await client
       .from('fichas')
       .select('*')
@@ -477,7 +516,7 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     setPreview('previewNivelAcademico', data.nivel_academico);
     setPreview('previewFechaIngreso', data.fecha_ingreso_cpn ? new Date(data.fecha_ingreso_cpn).toLocaleDateString('es-VE') : '01/01/2020');
     setPreview('previewFechaAscenso', data.fecha_ultimo_ascenso ? new Date(data.fecha_ultimo_ascenso).toLocaleDateString('es-VE') : 'SIN DATOS');
-    setPreview('previewEstado', data.estado); // estado geográfico
+    setPreview('previewEstado', data.estado);
     setPreview('previewServicio', data.servicio);
     setPreview('previewDireccion', data.direccion_habitacion);
     setPreview('previewUltimoCargo', data.ultimo_cargo);
@@ -500,11 +539,11 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
       document.getElementById('previewNumeroCredencial').style.display = 'none';
     }
 
-    // ✅ Cargar fotos (sin await en getPublicUrl)
+    // ✅ Cargar fotos
     const bucket = client.storage.from('fichas');
     const loadImg = async (filename, imgEl) => {
       try {
-        const { data } = bucket.getPublicUrl(filename); // ← síncrono
+        const { data } = bucket.getPublicUrl(filename);
         const publicUrl = data?.publicUrl;
         if (!publicUrl) return;
         const res = await fetch(publicUrl, { method: 'HEAD' });
@@ -512,9 +551,7 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
           imgEl.src = publicUrl;
           imgEl.style.display = 'block';
         }
-      } catch (e) {
-        console.warn('Imagen no cargada:', filename);
-      }
+      } catch (e) {}
     };
     loadImg(`foto-${cedula}.jpg`, document.getElementById('previewFoto'));
     loadImg(`cedula-${cedula}.jpg`, document.getElementById('previewCedulaFoto'));
