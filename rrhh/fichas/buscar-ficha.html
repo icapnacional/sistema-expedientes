@@ -478,13 +478,14 @@ return estilos[estado] || { bg: '#ccc', color: '#000' };
 }
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const {  { session } } = await client.auth.getSession();
+const { data: { session } } = await client.auth.getSession();
 if (!session) return window.location.href = '../index.html';
-const {  perfil } = await client
+const { data: perfil, error } = await client
 .from('perfiles')
 .select('email')
 .eq('id', session.user.id)
 .single();
+if (error) throw error;
 document.getElementById('userEmail').textContent = perfil?.email || '—';
 } catch (err) {
 console.error(err);
@@ -561,7 +562,7 @@ document.getElementById('previewNumeroCredencial').style.display = 'none';
 const bucket = client.storage.from('fichas');
 const loadImg = async (filename, imgEl) => {
 try {
-const {  { publicUrl } } = bucket.getPublicUrl(filename);
+const { data: { publicUrl } } = bucket.getPublicUrl(filename);
 const res = await fetch(publicUrl, { method: 'HEAD' });
 if (res.ok) {
 imgEl.src = publicUrl;
