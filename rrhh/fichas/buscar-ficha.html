@@ -284,7 +284,7 @@ body {
     margin-top: 10px;
   }
 
-  /* ——— CENTRADO DE FOTOS Y ESTADO EN VISTA WEB ——— */
+  /* ——— Fotos alineadas a la derecha (sin centrar, sin float) ——— */
   .foto-funcionario,
   .foto-cedula {
     position: relative !important;
@@ -292,7 +292,7 @@ body {
     width: auto !important;
     height: auto !important;
     max-width: 180px !important;
-    margin: 12px auto 20px auto !important;
+    margin: 12px 0 20px auto !important; /* "auto" en margen derecho = alineación a la derecha */
     float: none !important;
     clear: both;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
@@ -305,11 +305,12 @@ body {
     max-height: 170px !important;
     margin-top: 10px !important;
   }
+
   .estado-box {
     position: relative !important;
     width: auto !important;
     max-width: 180px !important;
-    margin: 8px auto !important;
+    margin: 8px 0 12px auto !important;
     float: none !important;
     clear: both;
     text-align: center !important;
@@ -319,11 +320,13 @@ body {
     border: 1px solid #000;
     border-top: none;
   }
+
   .credencial-section {
     position: static;
     margin-top: 20px;
     clear: both;
-    text-align: center;
+    text-align: right;
+    padding-right: 10px;
   }
 }
 .actions-bar {
@@ -488,9 +491,9 @@ function estiloEstado(estado) {
 }
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const { data: { session } } = await client.auth.getSession();
+    const {  { session } } = await client.auth.getSession();
     if (!session) return window.location.href = '../index.html';
-    const { data: perfil } = await client
+    const {  perfil } = await client
       .from('perfiles')
       .select('email')
       .eq('id', session.user.id)
