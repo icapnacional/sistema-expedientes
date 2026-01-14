@@ -97,7 +97,6 @@ body {
 }
 .alert-success { background: #e8f5e9; color: #2e7d32; }
 .alert-error { background: #ffebee; color: #c62828; }
-
 /* ===== FICHA OFICIAL ===== */
 .ficha-oficial {
   font-family: 'Times New Roman', Times, serif;
@@ -112,7 +111,6 @@ body {
   padding: 1.5cm;
   margin: 0 auto;
 }
-
 .header-container {
   display: flex;
   align-items: center;
@@ -141,20 +139,10 @@ body {
   flex-grow: 1;
   margin: 0 1cm;
 }
-
-/* ——— CONTENEDOR DERECHO PARA FOTOS Y ESTADO ——— */
-.fotos-derecha {
+.foto-funcionario {
   position: absolute;
   top: 3.5cm;
   right: 0.5cm;
-  width: 35mm;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: flex-end;
-}
-
-.foto-funcionario {
   width: 35mm;
   height: 45mm;
   border: 1px solid #000;
@@ -166,9 +154,11 @@ body {
   height: 100%;
   object-fit: cover;
 }
-
 /* ——— CAJA DE ESTADO (coloreada) ——— */
 .estado-box {
+  position: absolute;
+  top: 8.5cm;
+  right: 0.5cm;
   width: 35mm;
   text-align: center;
   font-size: 9pt;
@@ -177,13 +167,12 @@ body {
   border: 1px solid #000;
   border-top: none;
 }
-
 .foto-cedula {
   position: absolute;
-  top: 8.5cm;
-  right: 0.5cm;
-  width: 85mm;
-  height: 55mm;
+  bottom: 3.5cm;
+  right: 1cm;
+  width: 8.5cm;
+  height: 5.5cm;
   border: 1px solid #000;
   background: #fff;
   overflow: hidden;
@@ -193,7 +182,6 @@ body {
   height: 100%;
   object-fit: contain;
 }
-
 .datos-personales {
   position: absolute;
   top: 3.5cm;
@@ -212,7 +200,6 @@ body {
   margin-bottom: 4px;
   font-size: 10pt;
 }
-
 .credencial-section {
   position: absolute;
   top: 8.5cm;
@@ -236,7 +223,6 @@ body {
   margin-top: 5px;
   font-size: 9pt;
 }
-
 .watermark {
   position: absolute;
   opacity: 0.05;
@@ -248,7 +234,6 @@ body {
   color: #722F37;
   font-weight: bold;
 }
-
 @media print {
   @page {
     size: 25.4cm 19.05cm;
@@ -264,7 +249,6 @@ body {
     height: 19.05cm;
   }
 }
-
 @media screen {
   .ficha-oficial {
     width: 100%;
@@ -294,66 +278,54 @@ body {
     font-size: 16pt;
     margin: 0 0.8cm;
   }
-
-  /* === VISTA EN PANTALLA: REORGANIZACIÓN === */
   .datos-personales {
     position: static;
     padding-top: 110px;
     margin-top: 10px;
-    margin-right: 10cm; /* espacio para el bloque derecho */
   }
 
-  .fotos-derecha {
-    position: relative;
-    float: right;
-    width: auto;
-    margin-left: 20px;
-    align-items: flex-end;
-    gap: 12px;
-  }
-
+  /* ——— CENTRADO DE FOTOS Y ESTADO EN VISTA WEB ——— */
   .foto-funcionario,
   .foto-cedula {
     position: relative !important;
+    display: block !important;
     width: auto !important;
     height: auto !important;
-    max-width: 180px;
-    margin: 0;
-    float: none;
+    max-width: 180px !important;
+    margin: 12px auto 20px auto !important;
+    float: none !important;
     clear: both;
-    border: 1px solid #aaa;
-    background: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border: 1px solid #ccc;
   }
-
   .foto-funcionario {
-    max-height: 225px;
+    max-height: 225px !important;
   }
-
   .foto-cedula {
-    max-width: 250px;
-    max-height: 170px;
-    margin-top: 0 !important;
+    max-height: 170px !important;
+    margin-top: 10px !important;
   }
-
   .estado-box {
     position: relative !important;
     width: auto !important;
-    max-width: 180px;
-    margin: 0;
-    float: none;
+    max-width: 180px !important;
+    margin: 8px auto !important;
+    float: none !important;
     clear: both;
-    text-align: center;
-    padding: 6px 0;
-    border-radius: 4px;
+    text-align: center !important;
+    font-size: 9pt;
+    font-weight: bold;
+    padding: 4px 0;
+    border: 1px solid #000;
+    border-top: none;
   }
-
   .credencial-section {
     position: static;
     margin-top: 20px;
     clear: both;
+    text-align: center;
   }
 }
-
 .actions-bar {
   margin-top: 20px;
   text-align: center;
@@ -371,16 +343,13 @@ body {
     <a href="index.html">Fichas</a> <span>›</span>
     <strong>Buscar Ficha</strong>
   </div>
-
   <div class="header">
     <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
     <h1>Inspectable para el Control de la Actuación Policial</h1>
   </div>
-
   <div class="user-info">
     <strong>Usuario:</strong> <span id="userEmail">—</span>
   </div>
-
   <div class="search-section">
     <h2>🔍 Buscar Ficha por Cédula</h2>
     <div id="alertMessage" class="alert"></div>
@@ -390,12 +359,10 @@ body {
       <button id="btnVolver" class="btn btn-outline">← Volver</button>
     </div>
   </div>
-
   <div class="preview-container">
     <h2>📄 Vista Previa de la Ficha</h2>
     <div id="fichaPreview" class="ficha-oficial" style="display:none;">
       <div class="watermark">FICHA DE DATOS PERSONALES</div>
-
       <!-- ENCABEZADO -->
       <div class="header-container">
         <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/mp.png" class="logo-izquierda" alt="ICAP Nacional">
@@ -408,15 +375,12 @@ body {
         </div>
         <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
       </div>
-
-      <!-- BLOQUE DERECHO: FOTO + ESTADO + FOTO CÉDULA -->
-      <div class="fotos-derecha">
-        <div class="foto-funcionario" id="previewFotoFuncionario">
-          <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
-        </div>
-        <div id="estadoBox" class="estado-box" style="display:none;"></div>
+      <!-- FOTO DEL FUNCIONARIO -->
+      <div class="foto-funcionario" id="previewFotoFuncionario">
+        <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
       </div>
-
+      <!-- CAJA DE ESTADO COLOREADA -->
+      <div id="estadoBox" class="estado-box" style="display:none;"></div>
       <!-- DATOS PERSONALES -->
       <div class="datos-personales">
         <div class="titulo-datos">DATOS PERSONALES:</div>
@@ -437,7 +401,6 @@ body {
         <div class="dato-fila" style="max-width: 16cm;"><strong>DIRECCION DE HABITACION:</strong> <span id="previewDireccion">SIN DATOS</span></div>
         <div class="dato-fila"><strong>ULTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
       </div>
-
       <!-- CREDENCIAL -->
       <div class="credencial-section">
         <div class="credencial-title">POSEE CREDENCIAL</div>
@@ -453,49 +416,41 @@ body {
         </div>
         <div id="previewNumeroCredencial" class="credencial-input" style="display:none; margin-top:5px; font-weight: bold;"></div>
       </div>
-
       <!-- FOTO DE LA CÉDULA -->
       <div class="foto-cedula" id="previewFotoCedula">
         <img id="previewCedulaFoto" style="width:100%; height:100%; object-fit:contain; display:none;">
       </div>
-
       <!-- PIE DE PÁGINA -->
       <div style="position:absolute; bottom:0.5cm; left:0.5cm; right:0.5cm; text-align:center; font-size:8pt; color:#333;">
         <strong>Inspectable para el Control de la Actuación Policial - ICAP Nacional</strong><br>
         Documento confidencial - Uso exclusivo institucional
       </div>
     </div>
-
     <div id="mensajeVacio" style="text-align:center; padding:40px; color:#666;">
       Ingrese una cédula y haga clic en "Buscar" para ver la ficha.
     </div>
   </div>
-
   <div class="actions-bar">
     <button id="btnImprimir" class="btn" style="display:none;">🖨️ Imprimir</button>
     <button id="btnExportarPDF" class="btn" style="display:none;">📥 Exportar PDF</button>
   </div>
 </div>
-
 <script>
 const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
 const alertDiv = document.getElementById('alertMessage');
-
 function showAlert(msg, type) {
   alertDiv.textContent = msg;
   alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
   alertDiv.style.display = 'block';
   setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
-
 // Formatear fecha actual DD/MM/YYYY
 function getTodayFormatted() {
   const now = new Date();
   return `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
 }
-
 // Calcular edad
 function calcularEdad(fechaNac) {
   if (!fechaNac) return null;
@@ -506,7 +461,6 @@ function calcularEdad(fechaNac) {
   if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
   return edad;
 }
-
 // Calcular antigüedad (en años y meses)
 function calcularAntiguedad(fechaIngreso) {
   if (!fechaIngreso) return '00 AÑOS 00 MESES';
@@ -520,7 +474,6 @@ function calcularAntiguedad(fechaIngreso) {
   }
   return `${String(anos).padStart(2, '0')} AÑOS ${String(meses).padStart(2, '0')} MESES`;
 }
-
 // Estilos de estado
 function estiloEstado(estado) {
   const estilos = {
@@ -533,7 +486,6 @@ function estiloEstado(estado) {
   };
   return estilos[estado] || { bg: '#ccc', color: '#000' };
 }
-
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     const { data: { session } } = await client.auth.getSession();
@@ -549,13 +501,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = '../index.html';
   }
 });
-
 document.getElementById('btnBuscar').addEventListener('click', async () => {
   const cedula = document.getElementById('searchCedula').value.trim();
   if (!cedula || cedula.length !== 8 || !/^\d{8}$/.test(cedula)) {
     return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
   }
-
   try {
     // ✅ CONSULTAMOS auditoria_personal, NO fichas
     const { data, error } = await client
@@ -563,26 +513,21 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
       .select('*')
       .eq('cedula', cedula)
       .single();
-
     if (error || !data) {
       return showAlert(`❌ No se encontró ninguna ficha con cédula ${cedula}`, 'error');
     }
-
     // Mostrar elementos
     document.getElementById('fichaPreview').style.display = 'block';
     document.getElementById('mensajeVacio').style.display = 'none';
     document.getElementById('btnImprimir').style.display = 'inline-flex';
     document.getElementById('btnExportarPDF').style.display = 'inline-flex';
-
     // Fecha actual en encabezado
     document.getElementById('previewFechaFicha').textContent = getTodayFormatted();
-
     // Llenar datos
     const setPreview = (id, value) => {
       const el = document.getElementById(id);
       if (el) el.textContent = value || 'SIN DATOS';
     };
-
     setPreview('previewNombre', data.nombre_apellidos);
     setPreview('previewCedula', (data.cedula || '').padStart(8, '0'));
     setPreview('previewRango', data.rango);
@@ -597,16 +542,13 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     setPreview('previewServicio', data.servicio);
     setPreview('previewDireccion', data.direccion_habitacion);
     setPreview('previewUltimoCargo', data.ultimo_cargo);
-
     // Calcular y mostrar edad y antigüedad
     const edad = calcularEdad(data.fecha_nacimiento);
     setPreview('previewEdad', edad ? `${edad} AÑOS` : 'SIN DATOS');
     const antiguedad = calcularAntiguedad(data.fecha_ingreso_cpn);
     setPreview('previewAntiguedad', antiguedad);
-
     // Estado en encabezado
     setPreview('previewEstadoUsuario', data.estado || '—');
-
     // ✅ Caja coloreada de estado bajo la foto
     const estadoBox = document.getElementById('estadoBox');
     const estadoValor = (data.estado || '').toLowerCase();
@@ -615,7 +557,6 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     estadoBox.style.backgroundColor = estilo.bg;
     estadoBox.style.color = estilo.color;
     estadoBox.style.display = 'block';
-
     // Credencial
     const tieneCred = data.posee_credencial === true || data.posee_credencial === 'si';
     document.getElementById('previewCredencialSi').checked = tieneCred;
@@ -626,7 +567,6 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     } else {
       document.getElementById('previewNumeroCredencial').style.display = 'none';
     }
-
     // Fotos
     const bucket = client.storage.from('fichas');
     const loadImg = async (filename, imgEl) => {
@@ -641,18 +581,15 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     };
     loadImg(`foto-${cedula}.jpg`, document.getElementById('previewFoto'));
     loadImg(`cedula-${cedula}.jpg`, document.getElementById('previewCedulaFoto'));
-
     showAlert(`✅ Ficha encontrada para cédula ${cedula}`, 'success');
   } catch (err) {
     console.error(err);
     showAlert('❌ Error al buscar la ficha', 'error');
   }
 });
-
 document.getElementById('btnImprimir').addEventListener('click', () => {
   window.print();
 });
-
 document.getElementById('btnExportarPDF').addEventListener('click', async () => {
   showAlert('_generando PDF...', 'success');
   try {
@@ -668,7 +605,6 @@ document.getElementById('btnExportarPDF').addEventListener('click', async () => 
     showAlert('❌ Error al generar PDF', 'error');
   }
 });
-
 document.getElementById('btnVolver').addEventListener('click', () => {
   window.history.back();
 });
