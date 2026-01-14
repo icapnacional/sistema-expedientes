@@ -351,14 +351,13 @@ body {
         <div>
           <div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
           <div style="font-size:10pt; color:#333; text-align:center; margin-top:4px; line-height:1.3;">
-            <!-- ✅ SIN "N°: — –" -->
             <div><strong>FICHA</strong> <span id="previewFechaFicha"></span> – ICAP</div>
           </div>
         </div>
         <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
       </div>
 
-      <!-- FOTOS Y ESTADO (ahora muestra "estatus") -->
+      <!-- FOTOS Y ESTATUS -->
       <div class="foto-funcionario" id="previewFotoFuncionario">
         <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
       </div>
@@ -382,7 +381,6 @@ body {
         <div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">01/01/2020</span></div>
         <div class="dato-fila"><strong>FECHA DEL ÚLTIMO ASCENSO:</strong> <span id="previewFechaAscenso">SIN DATOS</span></div>
         <div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">00 AÑOS 00 MESES</span></div>
-        <!-- ❌ Eliminado: ESTADO como texto -->
         <div class="dato-fila"><strong>SERVICIO:</strong> <span id="previewServicio">SIN DATOS</span></div>
         <div class="dato-fila" style="max-width: 16cm;"><strong>DIRECCIÓN DE HABITACIÓN:</strong> <span id="previewDireccion">SIN DATOS</span></div>
         <div class="dato-fila"><strong>ÚLTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
@@ -446,17 +444,18 @@ function calcularAntiguedad(fechaIngreso) {
   }
   return `${String(anos).padStart(2, '0')} AÑOS ${String(meses).padStart(2, '0')} MESES`;
 }
-// ✅ Estilos basados en "estatus"
+// ✅ COLORES IGUALES A index.html.txt (valores en minúsculas)
 function estiloEstado(estatus) {
+  const valor = (estatus || '').toLowerCase().trim();
   const estilos = {
     'activo': { bg: '#4CAF50', color: '#FFFFFF' },
-    'P': { bg: '#2196F3', color: '#FFFFFF' },
+    'p': { bg: '#2196F3', color: '#FFFFFF' },
     'destituido': { bg: '#F44336', color: '#FFFFFF' },
     'suspendido': { bg: '#FF9800', color: '#FFFFFF' },
-    'DA': { bg: '#9C27B0', color: '#FFFFFF' },
-    'D': { bg: '#FFEB3B', color: '#000000' }
+    'da': { bg: '#9C27B0', color: '#FFFFFF' },
+    'd': { bg: '#FFEB3B', color: '#000000' }
   };
-  return estilos[estatus] || { bg: '#ccc', color: '#000' };
+  return estilos[valor] || { bg: '#ccc', color: '#000' };
 }
 document.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -479,6 +478,7 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
   }
   try {
+    // ✅ Consultamos auditoria_personal
     const { data, error } = await client
       .from('auditoria_personal')
       .select('*')
@@ -493,7 +493,7 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     document.getElementById('btnImprimir').style.display = 'inline-flex';
     document.getElementById('btnExportarPDF').style.display = 'inline-flex';
 
-    // ✅ Fecha actual en encabezado (ej: 15/01/2026)
+    // Fecha actual en encabezado
     document.getElementById('previewFechaFicha').textContent = getTodayFormatted();
 
     const setPreview = (id, value) => {
@@ -511,7 +511,6 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     setPreview('previewNivelAcademico', data.nivel_academico);
     setPreview('previewFechaIngreso', data.fecha_ingreso_cpn ? new Date(data.fecha_ingreso_cpn).toLocaleDateString('es-VE') : '01/01/2020');
     setPreview('previewFechaAscenso', data.fecha_ultimo_ascenso ? new Date(data.fecha_ultimo_ascenso).toLocaleDateString('es-VE') : 'SIN DATOS');
-    // ❌ Ya no mostramos "estado" como texto
     setPreview('previewServicio', data.servicio);
     setPreview('previewDireccion', data.direccion_habitacion);
     setPreview('previewUltimoCargo', data.ultimo_cargo);
@@ -521,11 +520,11 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     const antiguedad = calcularAntiguedad(data.fecha_ingreso_cpn);
     setPreview('previewAntiguedad', antiguedad);
 
-    // ✅ Mostrar "estatus" en la caja coloreada
+    // ✅ MOSTRAR ESTATUS CON COLORES CORRECTOS
     const estadoBox = document.getElementById('estadoBox');
-    const estatusValor = (data.estatus || '').toLowerCase(); // ← ¡CAMPO "estatus"!
+    const estatusValor = data.status || ''; // ← campo "status"
     const estilo = estiloEstado(estatusValor);
-    estadoBox.textContent = data.estatus || '—';
+    estadoBox.textContent = estatusValor || '—';
     estadoBox.style.backgroundColor = estilo.bg;
     estadoBox.style.color = estilo.color;
     estadoBox.style.display = 'block';
