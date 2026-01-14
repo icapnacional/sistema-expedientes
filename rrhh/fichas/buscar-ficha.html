@@ -422,13 +422,17 @@ function calcularAntiguedad(fechaIngreso) {
 }
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const {  { session } } = await client.auth.getSession();
+    // ✅ Corrección: sintaxis válida
+    const { data } = await client.auth.getSession();
+    const session = data?.session;
     if (!session) return window.location.href = '../index.html';
-    const { data: perfil } = await client
+    
+    const {  perfil } = await client
       .from('perfiles')
       .select('email')
       .eq('id', session.user.id)
       .single();
+      
     document.getElementById('userEmail').textContent = perfil?.email || '—';
   } catch (err) {
     console.error(err);
@@ -441,7 +445,7 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
   }
   try {
-    // ✅ CONSULTAMOS LA TABLA FICHAS (NO auditoria_personal)
+    // ✅ Consultamos la tabla FICHAS
     const { data, error } = await client
       .from('fichas')
       .select('*')
@@ -473,7 +477,7 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     setPreview('previewNivelAcademico', data.nivel_academico);
     setPreview('previewFechaIngreso', data.fecha_ingreso_cpn ? new Date(data.fecha_ingreso_cpn).toLocaleDateString('es-VE') : '01/01/2020');
     setPreview('previewFechaAscenso', data.fecha_ultimo_ascenso ? new Date(data.fecha_ultimo_ascenso).toLocaleDateString('es-VE') : 'SIN DATOS');
-    setPreview('previewEstado', data.estado); // ← estado geográfico (ej. "Miranda")
+    setPreview('previewEstado', data.estado); // estado geográfico
     setPreview('previewServicio', data.servicio);
     setPreview('previewDireccion', data.direccion_habitacion);
     setPreview('previewUltimoCargo', data.ultimo_cargo);
@@ -496,11 +500,11 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
       document.getElementById('previewNumeroCredencial').style.display = 'none';
     }
 
-    // ✅ Cargar fotos
+    // ✅ Cargar fotos (sin await en getPublicUrl)
     const bucket = client.storage.from('fichas');
     const loadImg = async (filename, imgEl) => {
       try {
-        const { data } = bucket.getPublicUrl(filename);
+        const { data } = bucket.getPublicUrl(filename); // ← síncrono
         const publicUrl = data?.publicUrl;
         if (!publicUrl) return;
         const res = await fetch(publicUrl, { method: 'HEAD' });
@@ -508,7 +512,9 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
           imgEl.src = publicUrl;
           imgEl.style.display = 'block';
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Imagen no cargada:', filename);
+      }
     };
     loadImg(`foto-${cedula}.jpg`, document.getElementById('previewFoto'));
     loadImg(`cedula-${cedula}.jpg`, document.getElementById('previewCedulaFoto'));
