@@ -478,18 +478,24 @@ return estilos[estado] || { bg: '#ccc', color: '#000' };
 }
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const {  { session } } = await client.auth.getSession();
-if (!session) return window.location.href = '../index.html';
-const {  perfil, error } = await client
-.from('perfiles')
-.select('email')
-.eq('id', session.user.id)
-.single();
-if (error) throw error;
-document.getElementById('userEmail').textContent = perfil?.email || '—';
+  const { data, error } = await client.auth.getSession();
+  if (error || !data?.session) {
+    return window.location.href = '../index.html';
+  }
+  const session = data.session;
+
+  const {  perfilData, error: perfilError } = await client
+    .from('perfiles')
+    .select('email')
+    .eq('id', session.user.id)
+    .single();
+
+  if (perfilError) throw perfilError;
+
+  document.getElementById('userEmail').textContent = perfilData?.email || '—';
 } catch (err) {
-console.error(err);
-window.location.href = '../index.html';
+  console.error(err);
+  window.location.href = '../index.html';
 }
 });
 document.getElementById('btnBuscar').addEventListener('click', async () => {
