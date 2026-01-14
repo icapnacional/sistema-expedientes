@@ -292,7 +292,7 @@ body {
     width: auto !important;
     height: auto !important;
     max-width: 180px !important;
-    margin: 12px 0 20px auto !important; /* "auto" en margen derecho = alineación a la derecha */
+    margin: 12px 0 20px auto !important;
     float: none !important;
     clear: both;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
@@ -491,9 +491,9 @@ function estiloEstado(estado) {
 }
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const {  { session } } = await client.auth.getSession();
+    const { data: { session } } = await client.auth.getSession();
     if (!session) return window.location.href = '../index.html';
-    const {  perfil } = await client
+    const { data: perfil } = await client
       .from('perfiles')
       .select('email')
       .eq('id', session.user.id)
@@ -570,17 +570,21 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     } else {
       document.getElementById('previewNumeroCredencial').style.display = 'none';
     }
-    // Fotos
+    // ✅ CORREGIDO: Carga segura de imágenes
     const bucket = client.storage.from('fichas');
     const loadImg = async (filename, imgEl) => {
       try {
-        const { data: { publicUrl } } = bucket.getPublicUrl(filename);
+        const { data } = bucket.getPublicUrl(filename);
+        const publicUrl = data?.publicUrl;
+        if (!publicUrl) return;
         const res = await fetch(publicUrl, { method: 'HEAD' });
         if (res.ok) {
           imgEl.src = publicUrl;
           imgEl.style.display = 'block';
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Imagen no cargada:', filename);
+      }
     };
     loadImg(`foto-${cedula}.jpg`, document.getElementById('previewFoto'));
     loadImg(`cedula-${cedula}.jpg`, document.getElementById('previewCedulaFoto'));
