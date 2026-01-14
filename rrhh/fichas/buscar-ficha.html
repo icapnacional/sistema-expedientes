@@ -47,6 +47,11 @@ body {
   font-weight: 700;
   color: #2d2d2d;
 }
+.header p {
+  margin-top: 8px;
+  font-size: 16px;
+  color: #555;
+}
 .user-info {
   background: white;
   border-radius: 12px;
@@ -322,6 +327,7 @@ body {
   <div class="header">
     <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
     <h1>Inspectable para el Control de la Actuación Policial</h1>
+    <p>Módulo para buscar fichas</p>
   </div>
   <div class="user-info">
     <strong>Usuario:</strong> <span id="userEmail">—</span>
@@ -345,14 +351,14 @@ body {
         <div>
           <div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
           <div style="font-size:10pt; color:#333; text-align:center; margin-top:4px; line-height:1.3;">
-            <div><strong>FICHA N°:</strong> <span id="previewNumeroFicha">—</span> – <span id="previewFechaFicha"></span> – ICAP</div>
-            <div><strong>ESTADO:</strong> <span id="previewEstadoUsuario">—</span></div>
+            <!-- ✅ SIN "N°: — –" -->
+            <div><strong>FICHA</strong> <span id="previewFechaFicha"></span> – ICAP</div>
           </div>
         </div>
         <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
       </div>
 
-      <!-- FOTOS Y ESTADO -->
+      <!-- FOTOS Y ESTADO (ahora muestra "estatus") -->
       <div class="foto-funcionario" id="previewFotoFuncionario">
         <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;">
       </div>
@@ -361,7 +367,7 @@ body {
         <img id="previewCedulaFoto" style="width:100%; height:100%; object-fit:contain; display:none;">
       </div>
 
-      <!-- DATOS PERSONALES + CREDENCIAL INTEGRADA -->
+      <!-- DATOS PERSONALES -->
       <div class="datos-personales">
         <div class="titulo-datos">DATOS PERSONALES:</div>
         <div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">SIN DATOS</span></div>
@@ -376,12 +382,12 @@ body {
         <div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">01/01/2020</span></div>
         <div class="dato-fila"><strong>FECHA DEL ÚLTIMO ASCENSO:</strong> <span id="previewFechaAscenso">SIN DATOS</span></div>
         <div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">00 AÑOS 00 MESES</span></div>
-        <div class="dato-fila"><strong>ESTADO:</strong> <span id="previewEstado">SIN DATOS</span></div>
+        <!-- ❌ Eliminado: ESTADO como texto -->
         <div class="dato-fila"><strong>SERVICIO:</strong> <span id="previewServicio">SIN DATOS</span></div>
         <div class="dato-fila" style="max-width: 16cm;"><strong>DIRECCIÓN DE HABITACIÓN:</strong> <span id="previewDireccion">SIN DATOS</span></div>
         <div class="dato-fila"><strong>ÚLTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
 
-        <!-- ✅ CREDENCIAL INTEGRADA AQUÍ -->
+        <!-- ✅ CREDENCIAL INTEGRADA -->
         <div class="dato-fila" style="margin-top: 10px;">
           <strong>POSEE CREDENCIAL:</strong>
           <span id="previewCredencialTexto">NO</span>
@@ -440,7 +446,8 @@ function calcularAntiguedad(fechaIngreso) {
   }
   return `${String(anos).padStart(2, '0')} AÑOS ${String(meses).padStart(2, '0')} MESES`;
 }
-function estiloEstado(estado) {
+// ✅ Estilos basados en "estatus"
+function estiloEstado(estatus) {
   const estilos = {
     'activo': { bg: '#4CAF50', color: '#FFFFFF' },
     'P': { bg: '#2196F3', color: '#FFFFFF' },
@@ -449,7 +456,7 @@ function estiloEstado(estado) {
     'DA': { bg: '#9C27B0', color: '#FFFFFF' },
     'D': { bg: '#FFEB3B', color: '#000000' }
   };
-  return estilos[estado] || { bg: '#ccc', color: '#000' };
+  return estilos[estatus] || { bg: '#ccc', color: '#000' };
 }
 document.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -486,6 +493,7 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     document.getElementById('btnImprimir').style.display = 'inline-flex';
     document.getElementById('btnExportarPDF').style.display = 'inline-flex';
 
+    // ✅ Fecha actual en encabezado (ej: 15/01/2026)
     document.getElementById('previewFechaFicha').textContent = getTodayFormatted();
 
     const setPreview = (id, value) => {
@@ -503,7 +511,7 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     setPreview('previewNivelAcademico', data.nivel_academico);
     setPreview('previewFechaIngreso', data.fecha_ingreso_cpn ? new Date(data.fecha_ingreso_cpn).toLocaleDateString('es-VE') : '01/01/2020');
     setPreview('previewFechaAscenso', data.fecha_ultimo_ascenso ? new Date(data.fecha_ultimo_ascenso).toLocaleDateString('es-VE') : 'SIN DATOS');
-    setPreview('previewEstado', data.estado);
+    // ❌ Ya no mostramos "estado" como texto
     setPreview('previewServicio', data.servicio);
     setPreview('previewDireccion', data.direccion_habitacion);
     setPreview('previewUltimoCargo', data.ultimo_cargo);
@@ -513,17 +521,16 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     const antiguedad = calcularAntiguedad(data.fecha_ingreso_cpn);
     setPreview('previewAntiguedad', antiguedad);
 
-    setPreview('previewEstadoUsuario', data.estado || '—');
-
+    // ✅ Mostrar "estatus" en la caja coloreada
     const estadoBox = document.getElementById('estadoBox');
-    const estadoValor = (data.estado || '').toLowerCase();
-    const estilo = estiloEstado(estadoValor);
-    estadoBox.textContent = data.estado || '—';
+    const estatusValor = (data.estatus || '').toLowerCase(); // ← ¡CAMPO "estatus"!
+    const estilo = estiloEstado(estatusValor);
+    estadoBox.textContent = data.estatus || '—';
     estadoBox.style.backgroundColor = estilo.bg;
     estadoBox.style.color = estilo.color;
     estadoBox.style.display = 'block';
 
-    // ✅ Mostrar credencial como texto (sin radios)
+    // ✅ Credencial como texto
     const tieneCred = data.posee_credencial === true || 
                       data.posee_credencial === 'si' || 
                       data.posee_credencial === 'SI';
@@ -536,7 +543,7 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
       document.getElementById('previewNumeroCredencial').style.display = 'none';
     }
 
-    // Cargar fotos
+    // ✅ Cargar fotos
     const bucket = client.storage.from('fichas');
     const loadImg = async (filename, imgEl) => {
       try {
