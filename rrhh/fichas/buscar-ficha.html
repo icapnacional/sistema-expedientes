@@ -241,6 +241,8 @@ white-space: nowrap;
 color: #722F37;
 font-weight: bold;
 }
+
+/* ============= CORRECCIÓN PARA IMPRESIÓN ============= */
 @media print {
   @page {
     size: 25.4cm 19.05cm;
@@ -281,6 +283,32 @@ font-weight: bold;
     width: 2.2cm !important;
     height: 2.2cm !important;
   }
+}
+
+@media screen {
+.ficha-oficial {
+width: 100%;
+height: auto;
+min-height: 750px;
+padding: 20px;
+box-shadow: 0 0 20px rgba(0,0,0,0.1);
+border: 1px solid #ddd;
+}
+.header-container {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 8px 0;
+margin-bottom: 15px;
+border-bottom: 2px solid #000;
+}
+.logo-izquierda {
+width: 180px !important;
+height: 70px !important;
+}
+.logo-derecha {
+width: 88px !important;
+height: 88px !important;
 }
 .titulo-ficha {
 font-size: 16pt;
@@ -377,7 +405,6 @@ flex-wrap: wrap;
 </div>
 <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
 </div>
-
 <!-- FOTO DEL FUNCIONARIO -->
 <div class="foto-funcionario" id="previewFotoFuncionario">
 <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;" crossOrigin="anonymous">
@@ -503,8 +530,8 @@ const { data: perfil } = await client
 document.getElementById('userEmail').textContent = perfil?.email || '—';
 // ✅ Mostrar rol
 const rolText = perfil?.rol === 'admin' ? 'Administrador' :
-                perfil?.rol === 'moderador' ? 'Moderador' :
-                'Consultor';
+perfil?.rol === 'moderador' ? 'Moderador' :
+'Consultor';
 document.getElementById('userRol').textContent = rolText;
 } catch (err) {
 console.error(err);
@@ -526,7 +553,6 @@ const { data: fichaData, error: fichaError } = await client
 if (fichaError || !fichaData) {
 return showAlert(`❌ No se encontró ficha en 'fichas' con cédula ${cedula}`, 'error');
 }
-
 // ✅ 2. Cargar ESTATUS desde auditoria_personal
 const { data: audData, error: audError } = await client
 .from('auditoria_personal')
@@ -534,20 +560,16 @@ const { data: audData, error: audError } = await client
 .eq('cedula', cedula)
 .single();
 const estatus = audData?.status || '—';
-
 // Mostrar ficha
 document.getElementById('fichaPreview').style.display = 'block';
 document.getElementById('mensajeVacio').style.display = 'none';
 document.getElementById('btnImprimir').style.display = 'inline-flex';
 document.getElementById('btnExportarPDF').style.display = 'inline-flex';
-
 document.getElementById('previewFechaFicha').textContent = getTodayFormatted();
-
 const setPreview = (id, value) => {
 const el = document.getElementById(id);
 if (el) el.textContent = value || 'SIN DATOS';
 };
-
 // ✅ Llenar desde FICHAS
 setPreview('previewNombre', fichaData.nombre_apellidos);
 setPreview('previewCedula', (fichaData.cedula || '').padStart(8, '0'));
@@ -563,12 +585,10 @@ setPreview('previewFechaAscenso', fichaData.fecha_ultimo_ascenso ? new Date(fich
 setPreview('previewServicio', fichaData.servicio);
 setPreview('previewDireccion', fichaData.direccion_habitacion);
 setPreview('previewUltimoCargo', fichaData.ultimo_cargo);
-
 const edad = calcularEdad(fichaData.fecha_nacimiento);
 setPreview('previewEdad', edad ? `${edad} AÑOS` : 'SIN DATOS');
 const antiguedad = calcularAntiguedad(fichaData.fecha_ingreso_cpn);
 setPreview('previewAntiguedad', antiguedad);
-
 // ✅ Mostrar ESTATUS en la caja coloreada
 const estadoBox = document.getElementById('estadoBox');
 const estilo = estiloEstado(estatus);
@@ -576,10 +596,8 @@ estadoBox.textContent = estatus.toUpperCase() || '—';
 estadoBox.style.backgroundColor = estilo.bg;
 estadoBox.style.color = estilo.color;
 estadoBox.style.display = 'block';
-
 // Estado en encabezado (usamos estado geográfico de fichas)
 setPreview('previewEstadoUsuario', fichaData.estado || '—');
-
 // Credencial
 const tieneCred = fichaData.posee_credencial === true || fichaData.posee_credencial === 'si';
 document.getElementById('previewCredencialSi').checked = tieneCred;
@@ -590,7 +608,6 @@ document.getElementById('previewNumeroCredencial').style.display = 'block';
 } else {
 document.getElementById('previewNumeroCredencial').style.display = 'none';
 }
-
 // Fotos
 const bucket = client.storage.from('fichas');
 const loadImg = async (filename, imgEl) => {
@@ -605,7 +622,6 @@ imgEl.style.display = 'block';
 };
 loadImg(`foto-${cedula}.jpg`, document.getElementById('previewFoto'));
 loadImg(`cedula-${cedula}.jpg`, document.getElementById('previewCedulaFoto'));
-
 showAlert(`✅ Ficha encontrada para cédula ${cedula}`, 'success');
 } catch (err) {
 console.error(err);
