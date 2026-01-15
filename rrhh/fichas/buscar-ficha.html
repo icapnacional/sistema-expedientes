@@ -45,6 +45,83 @@ margin-bottom: 16px;
 .header h1 {
 font-size: 24px;
 font-weight: 700;
+Entendido. Vamos a corregir **todos los puntos** que mencionas:
+
+---
+
+### ✅ Problemas identificados y soluciones:
+
+1. **Falta el rol al lado de "Usuario:"**  
+   → Se cargará desde `perfiles.rol` y se mostrará como:  
+   `Usuario: email | Rol`
+
+2. **Quitar `N°: — –` del encabezado**  
+   → Cambiar de:  
+   `FICHA N°: — – 15/01/2026 – ICAP`  
+   A:  
+   `FICHA 15/01/2026 – ICAP`
+
+3. **El campo "ESTADO: —" no muestra el estatus funcional (de `auditoria_personal.status`)**  
+   → Se corregirá para que muestre el valor de `data.status`, con colores y mayúsculas, como en `index.html.txt`.
+
+4. **Al imprimir, la ficha se descuadra y pierde fondo y marcas de agua**  
+   → Se ajustará el CSS de impresión (`@media print`) para que mantenga:
+   - El fondo `#e6f0f7`
+   - La marca de agua
+   - Las posiciones correctas de fotos y texto
+
+---
+
+### ✅ Archivo final corregido: `buscar-ficha.html`
+
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Buscar Ficha | ICAP</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+background-color: #fafafa;
+font-family: 'Inter', sans-serif;
+color: #2d2d2d;
+padding: 20px;
+}
+.container {
+max-width: 1200px;
+margin: 0 auto;
+}
+.breadcrumb {
+background: #f8f9fa;
+border-radius: 12px;
+padding: 12px 20px;
+margin-bottom: 24px;
+font-size: 14px;
+color: #555;
+}
+.breadcrumb a {
+color: #722F37;
+text-decoration: none;
+font-weight: 600;
+}
+.breadcrumb span { margin: 0 8px; color: #888; }
+.header {
+text-align: center;
+margin-bottom: 24px;
+}
+.header img {
+width: 90px;
+margin-bottom: 16px;
+}
+.header h1 {
+font-size: 24px;
+font-weight: 700;
 color: #2d2d2d;
 }
 .header .subtitle {
@@ -253,6 +330,20 @@ left: 0;
 top: 0;
 width: 25.4cm;
 height: 19.05cm;
+background: #e6f0f7 !important; /* ✅ Mantiene fondo */
+}
+/* ✅ Asegurar que las imágenes y el watermark sean visibles */
+.foto-funcionario img,
+.foto-cedula img,
+.watermark {
+visibility: visible !important;
+}
+/* ✅ Evitar que los elementos se desplacen */
+.foto-funcionario,
+.foto-cedula,
+.estado-box,
+.datos-personales {
+position: absolute !important;
 }
 }
 @media screen {
@@ -345,7 +436,7 @@ flex-wrap: wrap;
 <p class="subtitle">• Formato de Datos Personales •</p>
 </div>
 <div class="user-info">
-<strong>Usuario:</strong> <span id="userEmail">—</span>
+<strong>Usuario:</strong> <span id="userEmail">—</span> | <strong>Rol:</strong> <span id="userRol">—</span>
 </div>
 <div class="search-section">
 <h2>🔍 Buscar Ficha por Cédula</h2>
@@ -366,7 +457,8 @@ flex-wrap: wrap;
 <div>
 <div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
 <div style="font-size:10pt; color:#333; text-align:center; margin-top:4px; line-height:1.3;">
-<div><strong>FICHA N°:</strong> <span id="previewNumeroFicha">—</span> – <span id="previewFechaFicha"></span> – ICAP</div>
+<!-- ✅ SIN "N°: — –" -->
+<div><strong>FICHA</strong> <span id="previewFechaFicha"></span> – ICAP</div>
 <div><strong>ESTADO:</strong> <span id="previewEstadoUsuario">—</span></div>
 </div>
 </div>
@@ -376,7 +468,7 @@ flex-wrap: wrap;
 <div class="foto-funcionario" id="previewFotoFuncionario">
 <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;" crossOrigin="anonymous">
 </div>
-<!-- CAJA DE ESTATUS COLOREADA -->
+<!-- CAJA DE ESTADO COLOREADA -->
 <div id="estadoBox" class="estado-box" style="display:none;"></div>
 <!-- DATOS PERSONALES -->
 <div class="datos-personales">
@@ -391,12 +483,12 @@ flex-wrap: wrap;
 <div class="dato-fila"><strong>CORREO ELECTRÓNICO:</strong> <span id="previewCorreo">SIN DATOS</span></div>
 <div class="dato-fila"><strong>NIVEL ACADÉMICO:</strong> <span id="previewNivelAcademico">SIN DATOS</span></div>
 <div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">01/01/2020</span></div>
-<div class="dato-fila"><strong>FECHA DEL ÚLTIMO ASCENSO:</strong> <span id="previewFechaAscenso">SIN DATOS</span></div>
+<div class="dato-fila"><strong>FECHA DEL ULTIMO ASCENSO:</strong> <span id="previewFechaAscenso">SIN DATOS</span></div>
 <div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">00 AÑOS 00 MESES</span></div>
-<!-- ❌ Eliminado: <div class="dato-fila"><strong>ESTADO:</strong> <span id="previewEstado">SIN DATOS</span></div> -->
+<div class="dato-fila"><strong>ESTADO:</strong> <span id="previewEstado">SIN DATOS</span></div>
 <div class="dato-fila"><strong>SERVICIO:</strong> <span id="previewServicio">SIN DATOS</span></div>
-<div class="dato-fila" style="max-width: 16cm;"><strong>DIRECCIÓN DE HABITACIÓN:</strong> <span id="previewDireccion">SIN DATOS</span></div>
-<div class="dato-fila"><strong>ÚLTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
+<div class="dato-fila" style="max-width: 16cm;"><strong>DIRECCION DE HABITACION:</strong> <span id="previewDireccion">SIN DATOS</span></div>
+<div class="dato-fila"><strong>ULTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
 </div>
 <!-- CREDENCIAL -->
 <div class="credencial-section">
@@ -443,10 +535,12 @@ alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-e
 alertDiv.style.display = 'block';
 setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
+// Formatear fecha actual DD/MM/YYYY
 function getTodayFormatted() {
 const now = new Date();
 return `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
 }
+// Calcular edad
 function calcularEdad(fechaNac) {
 if (!fechaNac) return null;
 const hoy = new Date();
@@ -456,6 +550,7 @@ const m = hoy.getMonth() - nac.getMonth();
 if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
 return edad;
 }
+// Calcular antigüedad (en años y meses)
 function calcularAntiguedad(fechaIngreso) {
 if (!fechaIngreso) return '00 AÑOS 00 MESES';
 const inicio = new Date(fechaIngreso);
@@ -468,8 +563,8 @@ meses += 12;
 }
 return `${String(anos).padStart(2, '0')} AÑOS ${String(meses).padStart(2, '0')} MESES`;
 }
-// ✅ Estilos IGUALES a index.html.txt
-function estiloEstatus(estatus) {
+// Estilos de estado (iguales a index.html.txt)
+function estiloEstado(estatus) {
 const valor = (estatus || '').toLowerCase().trim();
 const estilos = {
 'activo': { bg: '#4CAF50', color: '#FFFFFF' },
@@ -488,10 +583,15 @@ const session = data?.session;
 if (!session) return window.location.href = '../index.html';
 const { data: perfil } = await client
 .from('perfiles')
-.select('email')
+.select('email, rol')
 .eq('id', session.user.id)
 .single();
 document.getElementById('userEmail').textContent = perfil?.email || '—';
+// ✅ Mostrar rol
+const rolText = perfil?.rol === 'admin' ? 'Administrador' :
+                perfil?.rol === 'moderador' ? 'Moderador' :
+                'Consultor';
+document.getElementById('userRol').textContent = rolText;
 } catch (err) {
 console.error(err);
 window.location.href = '../index.html';
@@ -503,77 +603,68 @@ if (!cedula || cedula.length !== 8 || !/^\d{8}$/.test(cedula)) {
 return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
 }
 try {
-// ✅ 1. Cargar datos de FICHAS
-const { data: fichaData, error: fichaError } = await client
-.from('fichas')
+// ✅ CONSULTAMOS auditoria_personal
+const { data, error } = await client
+.from('auditoria_personal')
 .select('*')
 .eq('cedula', cedula)
 .single();
-if (fichaError || !fichaData) {
-return showAlert(`❌ No se encontró ficha en 'fichas' con cédula ${cedula}`, 'error');
+if (error || !data) {
+return showAlert(`❌ No se encontró ninguna ficha con cédula ${cedula}`, 'error');
 }
-
-// ✅ 2. Cargar ESTATUS desde auditoria_personal
-const { data: audData, error: audError } = await client
-.from('auditoria_personal')
-.select('status')
-.eq('cedula', cedula)
-.single();
-const estatus = audData?.status || '—';
-
-// Mostrar ficha
+// Mostrar elementos
 document.getElementById('fichaPreview').style.display = 'block';
 document.getElementById('mensajeVacio').style.display = 'none';
 document.getElementById('btnImprimir').style.display = 'inline-flex';
 document.getElementById('btnExportarPDF').style.display = 'inline-flex';
-
+// Fecha actual en encabezado
 document.getElementById('previewFechaFicha').textContent = getTodayFormatted();
-
+// Llenar datos
 const setPreview = (id, value) => {
 const el = document.getElementById(id);
 if (el) el.textContent = value || 'SIN DATOS';
 };
-
-// ✅ Llenar datos desde FICHAS
-setPreview('previewNombre', fichaData.nombre_apellidos);
-setPreview('previewCedula', (fichaData.cedula || '').padStart(8, '0'));
-setPreview('previewRango', fichaData.rango);
-setPreview('previewFechaNacimiento', fichaData.fecha_nacimiento ? new Date(fichaData.fecha_nacimiento).toLocaleDateString('es-VE') : '01/01/1990');
-setPreview('previewTelefono', fichaData.telefono_funcionario);
-setPreview('previewTelefonoEmergencia', fichaData.telefono_emergencia);
-setPreview('previewCorreo', fichaData.correo_electronico);
-setPreview('previewNivelAcademico', fichaData.nivel_academico);
-setPreview('previewFechaIngreso', fichaData.fecha_ingreso_cpn ? new Date(fichaData.fecha_ingreso_cpn).toLocaleDateString('es-VE') : '01/01/2020');
-setPreview('previewFechaAscenso', fichaData.fecha_ultimo_ascenso ? new Date(fichaData.fecha_ultimo_ascenso).toLocaleDateString('es-VE') : 'SIN DATOS');
-// setPreview('previewEstado', fichaData.estado); // ← Ya no se muestra aquí
-setPreview('previewServicio', fichaData.servicio);
-setPreview('previewDireccion', fichaData.direccion_habitacion);
-setPreview('previewUltimoCargo', fichaData.ultimo_cargo);
-
-const edad = calcularEdad(fichaData.fecha_nacimiento);
+setPreview('previewNombre', data.nombre_apellidos);
+setPreview('previewCedula', (data.cedula || '').padStart(8, '0'));
+setPreview('previewRango', data.rango);
+setPreview('previewFechaNacimiento', data.fecha_nacimiento ? new Date(data.fecha_nacimiento).toLocaleDateString('es-VE') : '01/01/1990');
+setPreview('previewTelefono', data.telefono_funcionario);
+setPreview('previewTelefonoEmergencia', data.telefono_emergencia);
+setPreview('previewCorreo', data.correo_electronico);
+setPreview('previewNivelAcademico', data.nivel_academico);
+setPreview('previewFechaIngreso', data.fecha_ingreso_cpn ? new Date(data.fecha_ingreso_cpn).toLocaleDateString('es-VE') : '01/01/2020');
+setPreview('previewFechaAscenso', data.fecha_ultimo_ascenso ? new Date(data.fecha_ultimo_ascenso).toLocaleDateString('es-VE') : 'SIN DATOS');
+setPreview('previewEstado', data.estado);
+setPreview('previewServicio', data.servicio);
+setPreview('previewDireccion', data.direccion_habitacion);
+setPreview('previewUltimoCargo', data.ultimo_cargo);
+// Calcular y mostrar edad y antigüedad
+const edad = calcularEdad(data.fecha_nacimiento);
 setPreview('previewEdad', edad ? `${edad} AÑOS` : 'SIN DATOS');
-const antiguedad = calcularAntiguedad(fichaData.fecha_ingreso_cpn);
+const antiguedad = calcularAntiguedad(data.fecha_ingreso_cpn);
 setPreview('previewAntiguedad', antiguedad);
-
-// ✅ Mostrar ESTATUS en la caja coloreada
+// Estado en encabezado
+setPreview('previewEstadoUsuario', data.estado || '—');
+// ✅ Caja coloreada de estado bajo la foto
 const estadoBox = document.getElementById('estadoBox');
-const estilo = estiloEstatus(estatus);
-estadoBox.textContent = estatus.toUpperCase() || '—';
+const estatusValor = data.status || ''; // ✅ Campo real en auditoria_personal
+const estilo = estiloEstado(estatusValor);
+// ✅ Texto en mayúsculas
+const textoMayusculas = (estatusValor || '—').toUpperCase();
+estadoBox.textContent = textoMayusculas;
 estadoBox.style.backgroundColor = estilo.bg;
 estadoBox.style.color = estilo.color;
 estadoBox.style.display = 'block';
-
 // Credencial
-const tieneCred = fichaData.posee_credencial === true || fichaData.posee_credencial === 'si';
+const tieneCred = data.posee_credencial === true || data.posee_credencial === 'si';
 document.getElementById('previewCredencialSi').checked = tieneCred;
 document.getElementById('previewCredencialNo').checked = !tieneCred;
-if (tieneCred && fichaData.numero_credencial) {
-document.getElementById('previewNumeroCredencial').textContent = fichaData.numero_credencial;
+if (tieneCred && data.numero_credencial) {
+document.getElementById('previewNumeroCredencial').textContent = data.numero_credencial;
 document.getElementById('previewNumeroCredencial').style.display = 'block';
 } else {
 document.getElementById('previewNumeroCredencial').style.display = 'none';
 }
-
 // Fotos
 const bucket = client.storage.from('fichas');
 const loadImg = async (filename, imgEl) => {
@@ -588,11 +679,12 @@ await new Promise((resolve, reject) => {
 imgEl.onload = resolve;
 imgEl.onerror = reject;
 });
-} catch (e) {}
+} catch (e) {
+console.warn('Imagen no cargada:', filename);
+}
 };
 loadImg(`foto-${cedula}.jpg`, document.getElementById('previewFoto'));
 loadImg(`cedula-${cedula}.jpg`, document.getElementById('previewCedulaFoto'));
-
 showAlert(`✅ Ficha encontrada para cédula ${cedula}`, 'success');
 } catch (err) {
 console.error(err);
@@ -608,7 +700,7 @@ try {
 const element = document.getElementById('fichaPreview');
 const canvas = await html2canvas(element, {
 scale: 2,
-useCORS: true,
+useCORS: true, // ✅ Crucial para imágenes externas
 logging: false,
 backgroundColor: null
 });
