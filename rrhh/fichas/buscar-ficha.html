@@ -241,48 +241,6 @@ white-space: nowrap;
 color: #722F37;
 font-weight: bold;
 }
-
-@media print {
-  @page {
-    size: 25.4cm 19.05cm;
-    margin: 0;
-  }
-
-  /* Ocultar solo los elementos que no queremos imprimir */
-  .breadcrumb, .header, .user-info, .search-section, .preview-container > h2, .actions-bar {
-    display: none !important;
-  }
-
-  /* Asegurar que la ficha se muestre correctamente */
-  #fichaPreview {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 25.4cm;
-    height: 19.05cm;
-    background: #e6f0f7 !important;
-    box-shadow: none !important;
-    border: 1px solid #000 !important;
-    padding: 1.5cm !important;
-  }
-
-  /* Asegurar que las imágenes y el watermark sean visibles */
-  .foto-funcionario img,
-  .foto-cedula img,
-  .watermark {
-    visibility: visible !important;
-  }
-
-  /* Ajustar el tamaño de los logos para la impresión */
-  .logo-izquierda {
-    width: 3.5cm !important;
-    height: 1.4cm !important;
-  }
-  .logo-derecha {
-    width: 2.2cm !important;
-    height: 2.2cm !important;
-  }
-}
 @media screen {
 .ficha-oficial {
 width: 100%;
@@ -459,7 +417,8 @@ Ingrese una cédula y haga clic en "Buscar" para ver la ficha.
 </div>
 </div>
 <div class="actions-bar">
-<button id="btnExportarPDF" class="btn" style="display:none;">📥 Exportar PDF</button>
+<!-- ✅ Botón de imprimir ELIMINADO -->
+<button id="btnExportarPDF" class="btn" style="display:none;">👁️ Ver PDF</button>
 </div>
 </div>
 <script>
@@ -560,7 +519,7 @@ const estatus = audData?.status || '—';
 // Mostrar ficha
 document.getElementById('fichaPreview').style.display = 'block';
 document.getElementById('mensajeVacio').style.display = 'none';
-document.getElementById('btnImprimir').style.display = 'inline-flex';
+// ❌ REMOVIDO: document.getElementById('btnImprimir').style.display = 'inline-flex';
 document.getElementById('btnExportarPDF').style.display = 'inline-flex';
 document.getElementById('previewFechaFicha').textContent = getTodayFormatted();
 const setPreview = (id, value) => {
@@ -625,33 +584,31 @@ console.error(err);
 showAlert('❌ Error al buscar la ficha', 'error');
 }
 });
-document.getElementById('btnImprimir').addEventListener('click', () => {
-window.print();
-});
+// ❌ REMOVIDO: evento de btnImprimir
+
+// ✅ NUEVO: abrir PDF en pestaña
 document.getElementById('btnExportarPDF').addEventListener('click', async () => {
-  showAlert('_generando PDF...', 'success');
-  try {
-    const element = document.getElementById('fichaPreview');
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: null
-    });
-    const imgData = canvas.toDataURL('image/jpeg', 0.95); // Mejor compresión
-    const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
-    pdf.addImage(imgData, 'JPEG', 0, 0, 25.4, 19.05);
-    
-    // Generar blob y abrir en nueva pestaña
-    const pdfBlob = pdf.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    window.open(pdfUrl, '_blank');
-    
-    showAlert('✅ PDF abierto en nueva pestaña', 'success');
-  } catch (err) {
-    console.error(err);
-    showAlert('❌ Error al generar PDF', 'error');
-  }
+showAlert('_generando PDF...', 'success');
+try {
+const element = document.getElementById('fichaPreview');
+const canvas = await html2canvas(element, {
+scale: 2,
+useCORS: true,
+logging: false,
+backgroundColor: null
+});
+const imgData = canvas.toDataURL('image/jpeg', 0.95);
+const { jsPDF } = window.jspdf;
+const pdf = new jsPDF('landscape', 'cm', [25.4, 19.05]);
+pdf.addImage(imgData, 'JPEG', 0, 0, 25.4, 19.05);
+const pdfBlob = pdf.output('blob');
+const pdfUrl = URL.createObjectURL(pdfBlob);
+window.open(pdfUrl, '_blank');
+showAlert('✅ PDF abierto en nueva pestaña', 'success');
+} catch (err) {
+console.error(err);
+showAlert('❌ Error al generar PDF', 'error');
+}
 });
 document.getElementById('btnVolver').addEventListener('click', () => {
 window.history.back();
