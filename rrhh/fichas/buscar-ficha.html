@@ -459,7 +459,6 @@ Ingrese una cédula y haga clic en "Buscar" para ver la ficha.
 </div>
 </div>
 <div class="actions-bar">
-<button id="btnImprimir" class="btn" style="display:none;">🖨️ Imprimir</button>
 <button id="btnExportarPDF" class="btn" style="display:none;">📥 Exportar PDF</button>
 </div>
 </div>
@@ -630,24 +629,29 @@ document.getElementById('btnImprimir').addEventListener('click', () => {
 window.print();
 });
 document.getElementById('btnExportarPDF').addEventListener('click', async () => {
-showAlert('_generando PDF...', 'success');
-try {
-const element = document.getElementById('fichaPreview');
-const canvas = await html2canvas(element, {
-scale: 2,
-useCORS: true,
-logging: false,
-backgroundColor: null
-});
-const imgData = canvas.toDataURL('image/png');
-const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
-pdf.addImage(imgData, 'PNG', 0, 0, 25.4, 19.05);
-pdf.save(`ficha_${document.getElementById('searchCedula').value}.pdf`);
-showAlert('✅ PDF generado', 'success');
-} catch (err) {
-console.error(err);
-showAlert('❌ Error al generar PDF', 'error');
-}
+  showAlert('_generando PDF...', 'success');
+  try {
+    const element = document.getElementById('fichaPreview');
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: null
+    });
+    const imgData = canvas.toDataURL('image/jpeg', 0.95); // Mejor compresión
+    const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
+    pdf.addImage(imgData, 'JPEG', 0, 0, 25.4, 19.05);
+    
+    // Generar blob y abrir en nueva pestaña
+    const pdfBlob = pdf.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
+    
+    showAlert('✅ PDF abierto en nueva pestaña', 'success');
+  } catch (err) {
+    console.error(err);
+    showAlert('❌ Error al generar PDF', 'error');
+  }
 });
 document.getElementById('btnVolver').addEventListener('click', () => {
 window.history.back();
