@@ -242,50 +242,45 @@ color: #722F37;
 font-weight: bold;
 }
 @media print {
-@page {
-size: 25.4cm 19.05cm;
-margin: 0;
-}
-body * { visibility: hidden; }
-#fichaPreview, #fichaPreview * { visibility: visible; }
-#fichaPreview {
-position: absolute;
-left: 0;
-top: 0;
-width: 25.4cm;
-height: 19.05cm;
-background: #e6f0f7 !important;
-}
-.foto-funcionario img,
-.foto-cedula img,
-.watermark {
-visibility: visible !important;
-}
-}
-@media screen {
-.ficha-oficial {
-width: 100%;
-height: auto;
-min-height: 750px;
-padding: 20px;
-box-shadow: 0 0 20px rgba(0,0,0,0.1);
-border: 1px solid #ddd;
-}
-.header-container {
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 8px 0;
-margin-bottom: 15px;
-border-bottom: 2px solid #000;
-}
-.logo-izquierda {
-width: 180px !important;
-height: 70px !important;
-}
-.logo-derecha {
-width: 88px !important;
-height: 88px !important;
+  @page {
+    size: 25.4cm 19.05cm;
+    margin: 0;
+  }
+
+  /* Ocultar solo los elementos que no queremos imprimir */
+  .breadcrumb, .header, .user-info, .search-section, .preview-container > h2, .actions-bar {
+    display: none !important;
+  }
+
+  /* Asegurar que la ficha se muestre correctamente */
+  #fichaPreview {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 25.4cm;
+    height: 19.05cm;
+    background: #e6f0f7 !important;
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+    padding: 1.5cm !important;
+  }
+
+  /* Asegurar que las imágenes y el watermark sean visibles */
+  .foto-funcionario img,
+  .foto-cedula img,
+  .watermark {
+    visibility: visible !important;
+  }
+
+  /* Ajustar el tamaño de los logos para la impresión */
+  .logo-izquierda {
+    width: 3.5cm !important;
+    height: 1.4cm !important;
+  }
+  .logo-derecha {
+    width: 2.2cm !important;
+    height: 2.2cm !important;
+  }
 }
 .titulo-ficha {
 font-size: 16pt;
