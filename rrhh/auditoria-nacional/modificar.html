@@ -89,7 +89,7 @@
       line-height: 1.5;
       padding: 10px 12px;
     }
-    /* ✅ Dirección más alta por defecto */
+   
     #direccion {
       min-height: 60px !important;
     }
@@ -146,7 +146,7 @@
     }
     .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
     .breadcrumb span { margin: 0 8px; color: #888; }
-    /* Foto */
+
     .photo-section {
       text-align: center;
       margin-bottom: 24px;
@@ -337,7 +337,6 @@
             <label for="fecha_ingreso">Fecha de Ingreso</label>
             <input type="date" id="fecha_ingreso">
           </div>
-          <!-- ✅ Teléfono unificado -->
           <div class="form-group">
             <label for="telefono">Teléfono</label>
             <input type="tel" id="telefono" placeholder="Ej: 04121234567">
@@ -411,7 +410,6 @@
     </div>
   </div>
   <script>
-    // ✅ Autoresize
     document.querySelectorAll('textarea.autoresize').forEach(el => {
       const adjust = () => {
         el.style.height = 'auto';
@@ -478,7 +476,6 @@
     }
     function cargarDatosFormulario(f) {
       currentCedula = f.cedula;
-      // Mostrar en header
       document.getElementById('headerCedula').textContent = f.cedula;
       document.getElementById('rango').value = f.rango || '';
       document.getElementById('headerNombre').textContent = f.apellidos_nombres || '—';
@@ -491,7 +488,6 @@
       else if (f.status === 'suspendido') bgColor = '#ef6c00';
       else if (f.status === 'DA') bgColor = '#7b1fa2';
       statusEl.style.backgroundColor = bgColor;
-      // ✅ Campos de texto simples
       document.getElementById('cedula').value = f.cedula || '';
       document.getElementById('apellidos_nombres').value = f.apellidos_nombres || '';
       document.getElementById('sexo').value = f.sexo || '';
@@ -511,9 +507,7 @@
       document.getElementById('fechas_egreso').value = f.fechas_egreso || '';
       document.getElementById('direccion').value = f.direccion || '';
       document.getElementById('status').value = f.status || '';
-      // ✅ Teléfono completo (sin separar)
       document.getElementById('telefono').value = f.telefono || '';
-      // ✅ Correo
       if (f.correo_electronico) {
         const parts = f.correo_electronico.split('@');
         if (parts.length === 2) {
@@ -521,15 +515,12 @@
           document.getElementById('correo_dominio').value = parts[1];
         }
       }
-      // ✅ Foto
       cargarFotoActual(f.cedula);
-      // ✅ Ajustar altura de textareas tras cargar
       document.querySelectorAll('textarea.autoresize').forEach(el => {
         el.style.height = 'auto';
         el.style.height = el.scrollHeight + 'px';
       });
     }
-    // ✅ FUNCIÓN CORREGIDA: igual que en consulta.html
     async function cargarFotoActual(cedula) {
       const container = document.getElementById('photoContainer');
       container.innerHTML = '🪪';
@@ -576,12 +567,10 @@
       e.preventDefault();
       showAlert('', '');
       if (!currentCedula) return showAlert('⚠️ Primero busca una cédula.', 'error');
-      // ✅ Teléfono completo con validación
       const telefono = document.getElementById('telefono').value.trim();
       if (telefono && !/^04\d{9}$/.test(telefono)) {
         return showAlert('⚠️ El teléfono debe ser venezolano válido (ej: 04121234567).', 'error');
       }
-      // ✅ Correo
       const local = document.getElementById('correo_local').value.trim();
       const dom = document.getElementById('correo_dominio').value;
       let correo = '';
@@ -609,7 +598,6 @@
         direccion: document.getElementById('direccion').value.trim(),
         correo_electronico: correo
       };
-      // ✅ Validar obligatorios
       const required = ['apellidos_nombres', 'rango', 'estado', 'region', 'status'];
       for (let field of required) {
         if (!data[field]) {
@@ -622,7 +610,6 @@
           .update(data)
           .eq('cedula', currentCedula);
         if (error) throw error;
-        // ✅ Subir nueva foto (si se seleccionó)
         const photoInput = document.getElementById('photoInput');
         if (photoInput.files.length > 0) {
           const file = photoInput.files[0];
@@ -633,8 +620,6 @@
             .upload(fileName, file, { upsert: true });
           if (upErr) console.warn('Foto subida con advertencia:', upErr.message);
         }
-
-        // ✅ 🔑 ÚNICA MODIFICACIÓN: registrar log de edición
         try {
           const sessionResponse = await client.auth.getSession();
           const session = sessionResponse?.data?.session;
