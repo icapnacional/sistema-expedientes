@@ -76,12 +76,15 @@ const PERMISSIONS = {
   'btnDocFormularios': { roles: ['admin', 'moderador', 'consultor'], action: () => alert('Módulo en desarrollo') },
   'btnDocManuales': { roles: ['admin', 'moderador', 'consultor'], action: () => alert('Módulo en desarrollo') }
 };
-  // 🔹 Fichas
+'btnFichasBuscar': {
+  roles: ['admin', 'moderador', 'consultor'],
+  action: () => window.location.href = 'fichas/buscar-ficha.html'
+},
 'btnFichasModificar': {
   roles: ['admin', 'moderador'],
   action: () => window.location.href = 'fichas/modificar-ficha.html',
   tooltip: '🔒 Solo RRHH autorizado'
-
+},
 function initRolePermissions(userRol) {
   if (!userRol) return;
   Object.entries(PERMISSIONS).forEach(([btnId, config]) => {
