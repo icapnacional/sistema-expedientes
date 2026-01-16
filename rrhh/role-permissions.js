@@ -62,6 +62,12 @@ const PERMISSIONS = {
   roles: ['admin', 'moderador', 'consultor'],
   action: () => window.location.href = 'fichas/consulta.html'
 },
+  
+'btnFichasModificar': {
+  roles: ['admin', 'moderador'],
+  action: () => window.location.href = 'fichas/modificar-ficha.html',
+  tooltip: '🔒 Solo RRHH autorizado'
+},
   'btnRhObjetivos': { roles: ['admin', 'moderador'], action: () => alert('Módulo en desarrollo'), tooltip: '🔒 Solo RRHH autorizado' },
   'btnRhDesempeno': { roles: ['admin', 'moderador'], action: () => alert('Módulo en desarrollo'), tooltip: '🔒 Solo RRHH autorizado' },
   'btnRhCapacitacion': { roles: ['admin', 'moderador'], action: () => alert('Módulo en desarrollo'), tooltip: '🔒 Solo RRHH autorizado' },
