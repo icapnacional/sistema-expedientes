@@ -244,7 +244,6 @@
     .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb span { margin: 0 8px; color: #888; }
-    /* Botón de descarga (solo visible para roles permitidos) */
 #btnDescargarFoto {
   background: #e3f2fd;
   color: #1976d2;
@@ -271,7 +270,7 @@
     <div class="header">
       <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
       <h1>Inspectoria para el Control de la Actuación Policial</h1>
-      <div class="subtitle">• Consulta de Personal Auditado •</div>
+      <div class="subtitle">• Consulta de Personal Nomina Nacional •</div>
     </div>
     <div class="user-info">
       <strong>Usuario:</strong> <span id="userEmail">—</span> |
@@ -358,7 +357,6 @@
             <div class="field-label">Teléfono</div>
             <div class="field-value" id="telefono"></div>
           </div>
-          <!-- ⚠️ Campo "Status" original eliminado aquí -->
           <div class="field">
             <div class="field-label">Fecha de Nacimiento</div>
             <div class="field-value" id="fecha_nacimiento"></div>
@@ -410,7 +408,6 @@
 
  document.addEventListener('DOMContentLoaded', async () => {
   try {
-    // ✅ Corregido: sin destructuring anidado, sin riesgo de caracteres ocultos
     const sessionResponse = await client.auth.getSession();
     const session = sessionResponse?.data?.session;
     const sessionError = sessionResponse?.error;
@@ -427,8 +424,6 @@
   alert('⚠️ Perfil no encontrado. Redirigiendo...');
   return window.location.href = '../index.html';
 }
-
-    // ... resto del código (userRol, eventos, etc.)
         const userRol = perfil.rol || 'consultor';
         if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
           alert('🔒 Acceso denegado: no tienes permiso para Recursos Humanos.');
@@ -606,8 +601,7 @@
       document.getElementById('fechas_egreso').textContent = f.fechas_egreso || '—';
       document.getElementById('direccion').textContent = f.direccion || '—';
       document.getElementById('correo_electronico').textContent = f.correo_electronico || '—';
-
-      // ✅ Nuevo: Mostrar status en el cuadro coloreado
+      
       const statusBox = document.getElementById('statusBox');
       let statusValue = (f.status || '').trim().toLowerCase();
       let displayText = statusValue;
@@ -630,9 +624,7 @@
         displayText = 'DA';
         bgColor = '#7b1fa2';
       } else if (['desvinculado', 'd2'].includes(statusValue)) {
-        // Nota: si usas 'D' tanto para destituido como desvinculado,
-        // puedes decidir si diferenciar por otro campo (ej: tipo de baja).
-        // Aquí asumimos que 'D' solo = destituido, y desvinculado debe ser explícito.
+
         displayText = 'D';
         bgColor = '#fbc02d';
         textColor = 'black';
@@ -648,16 +640,16 @@
       cargarFoto(f.cedula);
     }
 
-let currentFotoURL = null; // ← para guardar la URL válida
+let currentFotoURL = null;
 
 async function cargarFoto(cedula) {
   const container = document.getElementById('photoContainer');
   const btnDescargar = document.getElementById('btnDescargarFoto');
   container.innerHTML = '🪪';
-  btnDescargar.style.display = 'none'; // ocultar por defecto
+  btnDescargar.style.display = 'none'; 
   currentFotoURL = null;
 
-  const extensions = ['jpeg', 'jpg', 'png']; // orden óptimo
+  const extensions = ['jpeg', 'jpg', 'png']; 
   for (const ext of extensions) {
     const path = `foto_${cedula}.${ext}`;
     try {
@@ -671,13 +663,13 @@ async function cargarFoto(cedula) {
         img.onload = () => {
           container.innerHTML = '';
           container.appendChild(img);
-          // ✅ Solo mostrar botón si rol es admin o moderador
+
           const userRolElement = document.getElementById('userRol');
           const userRol = userRolElement?.textContent?.trim();
           if (['Administrador', 'Moderador'].includes(userRol)) {
-            btnDescargar.style.display = 'inline-block'; // mostrar
+            btnDescargar.style.display = 'inline-block'; 
           }
-          currentFotoURL = data.signedUrl; // guardar URL para descargar
+          currentFotoURL = data.signedUrl;
         };
         img.onerror = () => console.warn('Imagen falló:', path);
         img.src = data.signedUrl;
@@ -765,7 +757,7 @@ async function cargarFoto(cedula) {
         if (clone.parentNode) clone.parentNode.removeChild(clone);
       }
     }
-    // ✅ Descargar foto (solo para admin/moderador)
+
 document.getElementById('btnDescargarFoto')?.addEventListener('click', () => {
   if (!currentFotoURL) {
     alert('❌ No hay foto disponible para descargar.');
@@ -774,7 +766,6 @@ document.getElementById('btnDescargarFoto')?.addEventListener('click', () => {
 
   const link = document.createElement('a');
   link.href = currentFotoURL;
-  // Extraer nombre del archivo desde la URL
   const url = new URL(currentFotoURL);
   const path = url.pathname;
   const filename = path.split('/').pop() || 'foto_funcionario.jpg';
@@ -808,7 +799,6 @@ async function registrarLogConsulta(cedula = null, nombre = null) {
   }
 }
 
-// ✅ Inyectar llamada en las funciones existentes (sin reescribirlas)
 const original_mostrarFichaCompleta = mostrarFichaCompleta;
 mostrarFichaCompleta = function(f) {
   original_mostrarFichaCompleta(f);
