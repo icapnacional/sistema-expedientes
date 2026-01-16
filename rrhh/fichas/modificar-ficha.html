@@ -6,8 +6,6 @@
 <title>Modificar Ficha | ICAP</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -170,7 +168,6 @@ width: 100%;
 height: 100%;
 object-fit: cover;
 }
-/* ——— CAJA DE ESTATUS (coloreada) ——— */
 .estado-box {
 position: absolute;
 top: 1cm;
@@ -210,12 +207,18 @@ font-size: 12pt;
 color: #000;
 }
 .dato-fila {
-margin-bottom: 4px;
+margin-bottom: 8px;
 font-size: 10pt;
+display: flex;
+align-items: center;
+}
+.dato-label {
+font-weight: bold;
+min-width: 220px;
 }
 .editable-field {
 width: 100%;
-padding: 4px 6px;
+padding: 6px 8px;
 border: 1px solid #aaa;
 border-radius: 4px;
 font-size: 10pt;
@@ -223,40 +226,23 @@ font-size: 10pt;
 .readonly-field {
 background-color: #f5f5f5;
 color: #666;
-cursor: not-allowed;
+padding: 6px 8px;
+border: 1px solid #ddd;
+border-radius: 4px;
+font-size: 10pt;
 }
 .credencial-section {
 margin-top: 20px;
-clear: both;
 font-size: 10pt;
 }
 .credencial-title {
 font-weight: bold;
-margin-bottom: 5px;
+margin-bottom: 8px;
 color: #000;
 }
 .credencial-option {
 display: inline-block;
-margin-right: 10px;
-}
-.watermark {
-position: absolute;
-opacity: 0.05;
-font-size: 80px;
-top: 50%;
-left: 50%;
-transform: translate(-50%, -50%) rotate(-45deg);
-white-space: nowrap;
-color: #722F37;
-font-weight: bold;
-}
-.actions-bar {
-margin-top: 20px;
-text-align: center;
-gap: 12px;
-display: flex;
-justify-content: center;
-flex-wrap: wrap;
+margin-right: 15px;
 }
 .edit-actions {
 margin-top: 30px;
@@ -272,24 +258,6 @@ width: 100%;
 padding: 20px;
 box-shadow: 0 0 20px rgba(0,0,0,0.1);
 border: 1px solid #ddd;
-}
-.foto-funcionario,
-.foto-cedula {
-position: relative !important;
-width: auto !important;
-height: auto !important;
-max-width: 120px;
-margin-bottom: 12px;
-float: right;
-clear: both;
-}
-.estado-box {
-position: relative !important;
-width: auto !important;
-max-width: 120px;
-margin-top: 5px;
-float: right;
-clear: both;
 }
 }
 </style>
@@ -321,7 +289,6 @@ clear: both;
 <div class="preview-container">
 <h2>✏️ Modificar Ficha</h2>
 <div id="fichaPreview" class="ficha-editable" style="display:none;">
-<div class="watermark">FICHA DE DATOS PERSONALES</div>
 <div class="header-container">
 <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/mp.png" class="logo-izquierda" alt="ICAP Nacional">
 <div>
@@ -338,58 +305,61 @@ clear: both;
 </div>
 <div id="estadoBox" class="estado-box" style="display:none;"></div>
 <div class="datos-personales">
-<div class="titulo-datos">DATOS PERSONALES:</div>
-<div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre" class="readonly-field">SIN DATOS</span></div>
-<div class="dato-fila"><strong>CÉDULA:</strong> <span id="previewCedula" class="readonly-field">00000000</span></div>
 <div class="dato-fila">
-<strong>RANGO:</strong> 
+<span class="dato-label">APELLIDOS Y NOMBRES:</span>
+<span id="previewNombre" class="readonly-field">SIN DATOS</span>
+</div>
+<div class="dato-fila">
+<span class="dato-label">CÉDULA:</span>
+<span id="previewCedula" class="readonly-field">00000000</span>
+</div>
+<div class="dato-fila">
+<span class="dato-label">RANGO:</span>
 <input type="text" id="editRango" class="editable-field" value="SIN DATOS">
 </div>
-<div class="dato-fila"><strong>EDAD:</strong> <span id="previewEdad">00 AÑOS</span></div>
 <div class="dato-fila">
-<strong>FECHA DE NACIMIENTO:</strong> 
+<span class="dato-label">FECHA DE NACIMIENTO:</span>
 <input type="date" id="editFechaNacimiento" class="editable-field" value="1990-01-01">
 </div>
 <div class="dato-fila">
-<strong>TELÉFONO DEL FUNCIONARIO:</strong> 
-<input type="tel" id="editTelefono" class="editable-field" value="SIN DATOS" pattern="[0-9]{11}">
+<span class="dato-label">TELÉFONO DEL FUNCIONARIO:</span>
+<input type="tel" id="editTelefono" class="editable-field" value="" pattern="[0-9]{11}" maxlength="11">
 </div>
 <div class="dato-fila">
-<strong>TELÉFONO DE EMERGENCIA:</strong> 
-<input type="tel" id="editTelefonoEmergencia" class="editable-field" value="SIN DATOS" pattern="[0-9]{11}">
+<span class="dato-label">TELÉFONO DE EMERGENCIA:</span>
+<input type="tel" id="editTelefonoEmergencia" class="editable-field" value="" pattern="[0-9]{11}" maxlength="11">
 </div>
 <div class="dato-fila">
-<strong>CORREO ELECTRÓNICO:</strong> 
-<input type="email" id="editCorreo" class="editable-field" value="SIN DATOS">
+<span class="dato-label">CORREO ELECTRÓNICO:</span>
+<input type="email" id="editCorreo" class="editable-field" value="">
 </div>
 <div class="dato-fila">
-<strong>NIVEL ACADÉMICO:</strong> 
-<input type="text" id="editNivelAcademico" class="editable-field" value="SIN DATOS">
+<span class="dato-label">NIVEL ACADÉMICO:</span>
+<input type="text" id="editNivelAcademico" class="editable-field" value="">
 </div>
 <div class="dato-fila">
-<strong>FECHA DE INGRESO AL CPNB:</strong> 
+<span class="dato-label">FECHA DE INGRESO AL CPNB:</span>
 <input type="date" id="editFechaIngreso" class="editable-field" value="2020-01-01">
 </div>
 <div class="dato-fila">
-<strong>FECHA DEL ULTIMO ASCENSO:</strong> 
+<span class="dato-label">FECHA DEL ÚLTIMO ASCENSO:</span>
 <input type="date" id="editFechaAscenso" class="editable-field" value="">
 </div>
-<div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">00 AÑOS 00 MESES</span></div>
 <div class="dato-fila">
-<strong>ESTADO:</strong> 
-<input type="text" id="editEstado" class="editable-field" value="SIN DATOS">
+<span class="dato-label">ESTADO:</span>
+<input type="text" id="editEstado" class="editable-field" value="">
 </div>
 <div class="dato-fila">
-<strong>SERVICIO:</strong> 
-<input type="text" id="editServicio" class="editable-field" value="SIN DATOS">
+<span class="dato-label">SERVICIO:</span>
+<input type="text" id="editServicio" class="editable-field" value="">
 </div>
 <div class="dato-fila">
-<strong>DIRECCION DE HABITACION:</strong> 
-<textarea id="editDireccion" class="editable-field" rows="2" style="resize:vertical;">SIN DATOS</textarea>
+<span class="dato-label">DIRECCIÓN DE HABITACIÓN:</span>
+<textarea id="editDireccion" class="editable-field" rows="2" style="resize:vertical; width: calc(100% - 240px);"></textarea>
 </div>
 <div class="dato-fila">
-<strong>ULTIMO CARGO:</strong> 
-<input type="text" id="editUltimoCargo" class="editable-field" value="SIN DATOS">
+<span class="dato-label">ÚLTIMO CARGO:</span>
+<input type="text" id="editUltimoCargo" class="editable-field" value="">
 </div>
 </div>
 <div class="credencial-section">
@@ -418,9 +388,6 @@ clear: both;
 Ingrese una cédula y haga clic en "Buscar" para modificar una ficha existente.
 </div>
 </div>
-<div class="actions-bar">
-<button id="btnExportarPDF" class="btn" style="display:none;">📄 Exportar PDF</button>
-</div>
 </div>
 <script>
 const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
@@ -428,7 +395,6 @@ const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
 const alertDiv = document.getElementById('alertMessage');
 let currentCedula = null;
-let currentFichaData = null;
 
 function showAlert(msg, type) {
 alertDiv.textContent = msg;
@@ -442,48 +408,12 @@ const now = new Date();
 return `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
 }
 
-function calcularEdad(fechaNac) {
-if (!fechaNac) return null;
-const hoy = new Date();
-const nac = new Date(fechaNac);
-let edad = hoy.getFullYear() - nac.getFullYear();
-const m = hoy.getMonth() - nac.getMonth();
-if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
-return edad;
-}
-
-function calcularAntiguedad(fechaIngreso) {
-if (!fechaIngreso) return '00 AÑOS 00 MESES';
-const inicio = new Date(fechaIngreso);
-const hoy = new Date();
-let anos = hoy.getFullYear() - inicio.getFullYear();
-let meses = hoy.getMonth() - inicio.getMonth();
-if (meses < 0) {
-anos--;
-meses += 12;
-}
-return `${String(anos).padStart(2, '0')} AÑOS ${String(meses).padStart(2, '0')} MESES`;
-}
-
-function estiloEstado(estatus) {
-const valor = (estatus || '').toLowerCase().trim();
-const estilos = {
-'activo': { bg: '#4CAF50', color: '#FFFFFF' },
-'p': { bg: '#2196F3', color: '#FFFFFF' },
-'destituido': { bg: '#F44336', color: '#FFFFFF' },
-'suspendido': { bg: '#FF9800', color: '#FFFFFF' },
-'da': { bg: '#9C27B0', color: '#FFFFFF' },
-'d': { bg: '#FFEB3B', color: '#000000' }
-};
-return estilos[valor] || { bg: '#ccc', color: '#000' };
-}
-
 document.addEventListener('DOMContentLoaded', async () => {
 try {
 const { data } = await client.auth.getSession();
 const session = data?.session;
 if (!session) return window.location.href = '../index.html';
-const {  perfil } = await client
+const { data: perfil } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
@@ -499,88 +429,6 @@ window.location.href = '../index.html';
 }
 });
 
-document.getElementById('btnBuscar').addEventListener('click', async () => {
-const cedula = document.getElementById('searchCedula').value.trim();
-if (!cedula || cedula.length !== 8 || !/^\d{8}$/.test(cedula)) {
-return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
-}
-try {
-const {  fichaData, error: fichaError } = await client
-.from('fichas')
-.select('*')
-.eq('cedula', cedula)
-.single();
-if (fichaError || !fichaData) {
-return showAlert(`❌ No se encontró ficha en 'fichas' con cédula ${cedula}`, 'error');
-}
-const {  audData, error: audError } = await client
-.from('auditoria_personal')
-.select('status')
-.eq('cedula', cedula)
-.single();
-const estatus = audData?.status || '—';
-document.getElementById('fichaPreview').style.display = 'block';
-document.getElementById('mensajeVacio').style.display = 'none';
-document.getElementById('btnExportarPDF').style.display = 'inline-flex';
-document.getElementById('previewFechaFicha').textContent = getTodayFormatted();
-currentCedula = cedula;
-currentFichaData = fichaData;
-// Llenar campos de visualización
-document.getElementById('previewNombre').textContent = fichaData.nombre_apellidos || 'SIN DATOS';
-document.getElementById('previewCedula').textContent = (fichaData.cedula || '').padStart(8, '0');
-document.getElementById('previewEstadoUsuario').textContent = fichaData.estado || '—';
-// Llenar campos editables
-document.getElementById('editRango').value = fichaData.rango || '';
-document.getElementById('editFechaNacimiento').value = fichaData.fecha_nacimiento ? new Date(fichaData.fecha_nacimiento).toISOString().split('T')[0] : '1990-01-01';
-document.getElementById('editTelefono').value = fichaData.telefono_funcionario || '';
-document.getElementById('editTelefonoEmergencia').value = fichaData.telefono_emergencia || '';
-document.getElementById('editCorreo').value = fichaData.correo_electronico || '';
-document.getElementById('editNivelAcademico').value = fichaData.nivel_academico || '';
-document.getElementById('editFechaIngreso').value = fichaData.fecha_ingreso_cpn ? new Date(fichaData.fecha_ingreso_cpn).toISOString().split('T')[0] : '2020-01-01';
-document.getElementById('editFechaAscenso').value = fichaData.fecha_ultimo_ascenso ? new Date(fichaData.fecha_ultimo_ascenso).toISOString().split('T')[0] : '';
-document.getElementById('editEstado').value = fichaData.estado || '';
-document.getElementById('editServicio').value = fichaData.servicio || '';
-document.getElementById('editDireccion').value = fichaData.direccion_habitacion || '';
-document.getElementById('editUltimoCargo').value = fichaData.ultimo_cargo || '';
-// Calcular edad y antigüedad
-const edad = calcularEdad(fichaData.fecha_nacimiento);
-document.getElementById('previewEdad').textContent = edad ? `${edad} AÑOS` : 'SIN DATOS';
-const antiguedad = calcularAntiguedad(fichaData.fecha_ingreso_cpn);
-document.getElementById('previewAntiguedad').textContent = antiguedad;
-// Credencial
-const tieneCred = fichaData.posee_credencial === true || fichaData.posee_credencial === 'si';
-document.getElementById('editCredencialSi').checked = tieneCred;
-document.getElementById('editCredencialNo').checked = !tieneCred;
-document.getElementById('editNumeroCredencialContainer').style.display = tieneCred ? 'block' : 'none';
-document.getElementById('editNumeroCredencial').value = fichaData.numero_credencial || '';
-// Estatus coloreado
-const estadoBox = document.getElementById('estadoBox');
-const estilo = estiloEstado(estatus);
-estadoBox.textContent = estatus.toUpperCase() || '—';
-estadoBox.style.backgroundColor = estilo.bg;
-estadoBox.style.color = estilo.color;
-estadoBox.style.display = 'block';
-// Fotos
-const bucket = client.storage.from('fichas');
-const loadImg = async (filename, imgEl) => {
-try {
-const { data } = bucket.getPublicUrl(filename);
-const publicUrl = data?.publicUrl;
-if (!publicUrl) return;
-imgEl.crossOrigin = "anonymous";
-imgEl.src = publicUrl;
-imgEl.style.display = 'block';
-} catch (e) {}
-};
-loadImg(`foto-${cedula}.jpg`, document.getElementById('previewFoto'));
-loadImg(`cedula-${cedula}.jpg`, document.getElementById('previewCedulaFoto'));
-showAlert(`✅ Ficha encontrada para cédula ${cedula}`, 'success');
-} catch (err) {
-console.error(err);
-showAlert('❌ Error al buscar la ficha', 'error');
-}
-});
-
 // Manejar cambio de credencial
 document.getElementById('editCredencialSi').addEventListener('change', (e) => {
 if (e.target.checked) {
@@ -593,14 +441,58 @@ document.getElementById('editNumeroCredencialContainer').style.display = 'none';
 }
 });
 
-document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
-if (!currentCedula || !currentFichaData) {
-return showAlert('❌ No hay ficha seleccionada para modificar', 'error');
+document.getElementById('btnBuscar').addEventListener('click', async () => {
+const cedula = document.getElementById('searchCedula').value.trim();
+if (!cedula || cedula.length !== 8 || !/^\d{8}$/.test(cedula)) {
+return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
 }
-showAlert('Guardando cambios...', 'success');
 try {
-// Validar campos obligatorios
-const telefonoRegex = /^[0-9]{11}$/;
+const { data: fichaData, error: fichaError } = await client
+.from('fichas')
+.select('*')
+.eq('cedula', cedula)
+.single();
+if (fichaError || !fichaData) {
+return showAlert(`❌ No se encontró ficha con cédula ${cedula}`, 'error');
+}
+currentCedula = cedula;
+document.getElementById('fichaPreview').style.display = 'block';
+document.getElementById('mensajeVacio').style.display = 'none';
+document.getElementById('previewFechaFicha').textContent = getTodayFormatted();
+document.getElementById('previewNombre').textContent = fichaData.nombre_apellidos || 'SIN DATOS';
+document.getElementById('previewCedula').textContent = (fichaData.cedula || '').padStart(8, '0');
+document.getElementById('previewEstadoUsuario').textContent = fichaData.estado || '—';
+// Llenar campos editables
+document.getElementById('editRango').value = fichaData.rango || '';
+document.getElementById('editFechaNacimiento').value = fichaData.fecha_nacimiento ? fichaData.fecha_nacimiento.split('T')[0] : '';
+document.getElementById('editTelefono').value = fichaData.telefono_funcionario || '';
+document.getElementById('editTelefonoEmergencia').value = fichaData.telefono_emergencia || '';
+document.getElementById('editCorreo').value = fichaData.correo_electronico || '';
+document.getElementById('editNivelAcademico').value = fichaData.nivel_academico || '';
+document.getElementById('editFechaIngreso').value = fichaData.fecha_ingreso_cpn ? fichaData.fecha_ingreso_cpn.split('T')[0] : '';
+document.getElementById('editFechaAscenso').value = fichaData.fecha_ultimo_ascenso ? fichaData.fecha_ultimo_ascenso.split('T')[0] : '';
+document.getElementById('editEstado').value = fichaData.estado || '';
+document.getElementById('editServicio').value = fichaData.servicio || '';
+document.getElementById('editDireccion').value = fichaData.direccion_habitacion || '';
+document.getElementById('editUltimoCargo').value = fichaData.ultimo_cargo || '';
+// Credencial
+const tieneCred = fichaData.posee_credencial === true || fichaData.posee_credencial === 'si';
+document.getElementById('editCredencialSi').checked = tieneCred;
+document.getElementById('editCredencialNo').checked = !tieneCred;
+document.getElementById('editNumeroCredencialContainer').style.display = tieneCred ? 'block' : 'none';
+document.getElementById('editNumeroCredencial').value = fichaData.numero_credencial || '';
+showAlert(`✅ Ficha cargada para cédula ${cedula}`, 'success');
+} catch (err) {
+console.error(err);
+showAlert('❌ Error al cargar la ficha', 'error');
+}
+});
+
+document.getElementById('btnGuardarCambios').addEventListener('click', async () => {
+if (!currentCedula) {
+return showAlert('❌ No hay ficha seleccionada', 'error');
+}
+const telefonoRegex = /^\d{11}$/;
 if (!telefonoRegex.test(document.getElementById('editTelefono').value.trim())) {
 return showAlert('⚠️ Teléfono del funcionario debe tener 11 dígitos', 'error');
 }
@@ -610,15 +502,14 @@ return showAlert('⚠️ Teléfono de emergencia debe tener 11 dígitos', 'error
 if (document.getElementById('editCredencialSi').checked && !document.getElementById('editNumeroCredencial').value.trim()) {
 return showAlert('⚠️ Debe ingresar el número de credencial', 'error');
 }
-// Preparar datos actualizados
 const updatedData = {
 rango: document.getElementById('editRango').value.trim(),
-fecha_nacimiento: document.getElementById('editFechaNacimiento').value,
+fecha_nacimiento: document.getElementById('editFechaNacimiento').value || null,
 telefono_funcionario: document.getElementById('editTelefono').value.trim(),
 telefono_emergencia: document.getElementById('editTelefonoEmergencia').value.trim(),
 correo_electronico: document.getElementById('editCorreo').value.trim(),
 nivel_academico: document.getElementById('editNivelAcademico').value.trim(),
-fecha_ingreso_cpn: document.getElementById('editFechaIngreso').value,
+fecha_ingreso_cpn: document.getElementById('editFechaIngreso').value || null,
 fecha_ultimo_ascenso: document.getElementById('editFechaAscenso').value || null,
 estado: document.getElementById('editEstado').value.trim(),
 servicio: document.getElementById('editServicio').value.trim(),
@@ -627,55 +518,23 @@ ultimo_cargo: document.getElementById('editUltimoCargo').value.trim(),
 posee_credencial: document.getElementById('editCredencialSi').checked,
 numero_credencial: document.getElementById('editCredencialSi').checked ? document.getElementById('editNumeroCredencial').value.trim() : null
 };
-// Actualizar en la base de datos
-const { error: updateError } = await client
+showAlert('Guardando cambios...', 'success');
+try {
+const { error } = await client
 .from('fichas')
 .update(updatedData)
 .eq('cedula', currentCedula);
-if (updateError) throw updateError;
+if (error) throw error;
 showAlert('✅ Cambios guardados exitosamente', 'success');
-// Recalcular edad y antigüedad con nuevos datos
-const edad = calcularEdad(updatedData.fecha_nacimiento);
-document.getElementById('previewEdad').textContent = edad ? `${edad} AÑOS` : 'SIN DATOS';
-const antiguedad = calcularAntiguedad(updatedData.fecha_ingreso_cpn);
-document.getElementById('previewAntiguedad').textContent = antiguedad;
 } catch (err) {
 console.error(err);
-showAlert('❌ Error al guardar cambios', 'error');
+showAlert('❌ Error al guardar: ' + (err.message || 'desconocido'), 'error');
 }
 });
 
 document.getElementById('btnCancelarEdicion').addEventListener('click', () => {
-if (confirm('¿Está seguro de cancelar los cambios? Se perderán todas las modificaciones no guardadas.')) {
+if (confirm('¿Está seguro de cancelar los cambios?')) {
 window.location.reload();
-}
-});
-
-document.getElementById('btnExportarPDF').addEventListener('click', async () => {
-showAlert('Generando PDF...', 'success');
-try {
-const element = document.getElementById('fichaPreview').cloneNode(true);
-// Eliminar botones de edición para el PDF
-const editActions = element.querySelector('.edit-actions');
-if (editActions) editActions.remove();
-const inputs = element.querySelectorAll('input, textarea, select');
-inputs.forEach(input => {
-input.replaceWith(document.createTextNode(input.value || ''));
-});
-const canvas = await html2canvas(element, {
-scale: 2,
-useCORS: true,
-logging: false,
-backgroundColor: null
-});
-const imgData = canvas.toDataURL('image/png');
-const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
-pdf.addImage(imgData, 'PNG', 0, 0, 25.4, 19.05);
-pdf.save(`ficha_modificada_${currentCedula}.pdf`);
-showAlert('✅ PDF generado', 'success');
-} catch (err) {
-console.error(err);
-showAlert('❌ Error al generar PDF', 'error');
 }
 });
 
