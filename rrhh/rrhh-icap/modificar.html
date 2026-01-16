@@ -231,7 +231,7 @@
           </div>
           <div class="form-group">
             <label for="nombre_apellidos">NOMBRE Y APELLIDOS *</label>
-            <textarea id="nombre_apellidos" rows="1" required></textarea>
+            <textarea id="nombre_apellidos" class="autoresize" rows="1" required></textarea>
           </div>
           <div class="form-group">
             <label for="cedula">C.I. *</label>
@@ -265,7 +265,7 @@
           </div>
           <div class="form-group">
             <label for="direccion">DIRECCIÓN</label>
-            <textarea id="direccion" rows="1"></textarea>
+            <textarea id="direccion" class="autoresize" rows="1"></textarea>
           </div>
           <div class="form-group">
             <label for="cargo">CARGO</label>
@@ -298,19 +298,27 @@
     </div>
   </div>
   <script>
+    // ✅ Autoresize para textareas
+    document.querySelectorAll('textarea.autoresize').forEach(el => {
+      const adjust = () => {
+        el.style.height = 'auto';
+        el.style.height = (el.scrollHeight) + 'px';
+      };
+      el.addEventListener('input', adjust);
+      adjust();
+    });
+
     const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const alertDiv = document.getElementById('searchMessage');
     let currentCedula = null;
 
-    // ✅ Función de log — CORREGIDA
     async function registrarLogEdicion(cedula, nombre) {
       try {
         const sessionRes = await client.auth.getSession();
         const session = sessionRes?.data?.session;
         if (!session) return;
-        
         const perfilRes = await client
           .from('perfiles')
           .select('email, rol')
@@ -318,15 +326,14 @@
           .single();
         const perfil = perfilRes?.data;
         if (!perfil) return;
-
         await client.from('rrhh_logs').insert({
           user_id: session.user.id,
           email: perfil.email,
           rol: perfil.rol,
-          accion: 'edicion',                 // ✅ SOLO 'edicion'
+          accion: 'edicion',
           cedula_afectada: cedula,
           nombre_afectado: nombre,
-          detalles: { modulo: 'rrhh_icap' } // ✅ clave para historial
+          detalles: { modulo: 'rrhh_icap' }
         });
       } catch (err) {
         console.warn('⚠️ Log de edición no guardado:', err.message);
@@ -338,19 +345,16 @@
         const sessionRes = await client.auth.getSession();
         const session = sessionRes?.data?.session;
         if (!session) return window.location.href = '../../index.html';
-
         const perfilRes = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
           .single();
         const perfil = perfilRes?.data;
-
         if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
           alert('🔒 Solo RRHH autorizado puede modificar.');
           return window.location.href = '../index.html';
         }
-
         document.getElementById('userEmail').textContent = perfil.email;
         document.getElementById('userRol').textContent = 
           perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
@@ -360,6 +364,7 @@
           if (e.key === 'Enter') buscarPorCedula();
         });
         document.getElementById('modificarForm').addEventListener('submit', actualizarRegistro);
+        document.getElementById('photoInput').addEventListener('change', previsualizarFoto);
       } catch (err) {
         console.error(err);
         window.location.href = '../../index.html';
@@ -369,25 +374,21 @@
     async function buscarPorCedula() {
       const cedula = document.getElementById('searchCedula').value.trim();
       if (!/^\d{8}$/.test(cedula)) {
-        alertDiv.textContent = '⚠️ Cédula debe tener 8 dígitos.';
-        alertDiv.className = 'alert alert-error';
-        alertDiv.style.display = 'block';
+        showAlert('⚠️ Cédula debe tener 8 dígitos.', 'error');
         return;
       }
-      alertDiv.style.display = 'none';
+      showAlert('', '');
       try {
         const { data, error } = await client
-  .from('rrhh_icap')
-  .select('*')
-  .eq('cedula', cedula)
-  .single();
+          .from('rrhh_icap')
+          .select('*')
+          .eq('cedula', cedula)
+          .single();
         if (error || !data) throw new Error('No encontrado');
         cargarDatosFormulario(data);
         document.getElementById('modificarForm').style.display = 'block';
       } catch (err) {
-        alertDiv.textContent = '❌ Cédula no encontrada.';
-        alertDiv.className = 'alert alert-error';
-        alertDiv.style.display = 'block';
+        showAlert('❌ Cédula no encontrada.', 'error');
       }
     }
 
@@ -395,6 +396,8 @@
       currentCedula = f.cedula;
       document.getElementById('headerCedula').textContent = f.cedula;
       document.getElementById('headerNombre').textContent = f.nombre_apellidos || '—';
+      
+      // ✅ Campos del formulario
       document.getElementById('rango').value = f.rango || '';
       document.getElementById('nombre_apellidos').value = f.nombre_apellidos || '';
       document.getElementById('cedula').value = f.cedula || '';
@@ -404,6 +407,58 @@
       document.getElementById('direccion').value = f.direccion || '';
       document.getElementById('cargo').value = f.cargo || '';
       document.getElementById('estatus').value = f.estatus || '';
+
+      // ✅ Cargar foto
+      cargarFotoActual(f.cedula);
+
+      // ✅ Ajustar altura de textareas
+      document.querySelectorAll('textarea.autoresize').forEach(el => {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+      });
+    }
+
+    // ✅ Cargar foto desde Supabase Storage
+    async function cargarFotoActual(cedula) {
+      const container = document.getElementById('photoContainer');
+      container.innerHTML = '🪪';
+      const extensions = ['jpeg', 'jpg', 'png'];
+      for (const ext of extensions) {
+        const path = `foto_${cedula}.${ext}`;
+        try {
+          const { data, error } = await client.storage
+            .from('fotos_funcionarios')
+            .createSignedUrl(path, 3600);
+          if (error) continue;
+          if (data?.signedUrl) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+              container.innerHTML = '';
+              container.appendChild(img);
+            };
+            img.src = data.signedUrl;
+            return;
+          }
+        } catch (err) {
+          continue;
+        }
+      }
+    }
+
+    function previsualizarFoto(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.src = ev.target.result;
+        img.onload = () => {
+          document.getElementById('photoContainer').innerHTML = '';
+          document.getElementById('photoContainer').appendChild(img);
+        };
+      };
+      reader.readAsDataURL(file);
     }
 
     async function actualizarRegistro(e) {
@@ -421,6 +476,15 @@
         estatus: document.getElementById('estatus').value
       };
 
+      // Validar campos obligatorios
+      const required = ['rango', 'nombre_apellidos', 'sexo', 'region', 'estado', 'estatus'];
+      for (let field of required) {
+        if (!data[field]) {
+          showAlert(`⚠️ El campo "${field}" es obligatorio.`, 'error');
+          return;
+        }
+      }
+
       try {
         const { error } = await client
           .from('rrhh_icap')
@@ -428,46 +492,32 @@
           .eq('cedula', currentCedula);
         if (error) throw error;
 
-        // 🔑 ¡LLAMADA AL LOG AQUÍ — CORREGIDA!
-        await registrarLogEdicion(currentCedula, data.nombre_apellidos);
+        // Subir nueva foto si se seleccionó
+        const photoInput = document.getElementById('photoInput');
+        if (photoInput.files.length > 0) {
+          const file = photoInput.files[0];
+          const ext = file.name.split('.').pop().toLowerCase();
+          const fileName = `foto_${currentCedula}.${ext}`;
+          const { error: upErr } = await client.storage
+            .from('fotos_funcionarios')
+            .upload(fileName, file, { upsert: true });
+          if (upErr) console.warn('Foto subida con advertencia:', upErr.message);
+        }
 
-        alertDiv.textContent = '✅ Ficha actualizada.';
-        alertDiv.className = 'alert alert-success';
-        alertDiv.style.display = 'block';
+        await registrarLogEdicion(currentCedula, data.nombre_apellidos);
+        showAlert('✅ Ficha actualizada exitosamente.', 'success');
         setTimeout(() => location.reload(), 1500);
       } catch (err) {
-        alertDiv.textContent = '❌ Error: ' + err.message;
-        alertDiv.className = 'alert alert-error';
-        alertDiv.style.display = 'block';
+        console.error('Error al actualizar:', err);
+        showAlert(`❌ Error: ${err.message || 'verifique los datos'}`, 'error');
       }
     }
-    // ✅ Cargar foto desde Supabase Storage
-async function cargarFotoActual(cedula) {
-  const container = document.getElementById('photoContainer');
-  container.innerHTML = '🪪';
-  const extensions = ['jpeg', 'jpg', 'png'];
-  for (const ext of extensions) {
-    const path = `foto_${cedula}.${ext}`;
-    try {
-      const { data, error } = await client.storage
-        .from('fotos_funcionarios')
-        .createSignedUrl(path, 3600);
-      if (error) continue;
-      if (data?.signedUrl) {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-          container.innerHTML = '';
-          container.appendChild(img);
-        };
-        img.src = data.signedUrl;
-        return;
-      }
-    } catch (err) {
-      continue;
+
+    function showAlert(msg, type) {
+      alertDiv.textContent = msg;
+      alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+      alertDiv.style.display = msg ? 'block' : 'none';
     }
-  }
-}
   </script>
 </body>
 </html>
