@@ -170,6 +170,16 @@
       margin-top: 8px;
     }
     .upload-btn:hover { background: #5e262d; }
+    #direccion {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  resize: none; /* Evita que el usuario lo redimensione manualmente */
+  box-sizing: border-box;
+  overflow: hidden; /* Oculta barras de desplazamiento */
+}
   </style>
 </head>
 <body>
@@ -478,6 +488,17 @@
   } catch (err) {
     console.warn('⚠️ Log de registro no guardado:', err.message);
   }
+}
+    // Auto-ajustar altura del textarea de dirección
+const direccionTextarea = document.getElementById('direccion');
+if (direccionTextarea) {
+  const ajustarAltura = () => {
+    direccionTextarea.style.height = 'auto';
+    direccionTextarea.style.height = Math.max(38, direccionTextarea.scrollHeight) + 'px';
+  };
+  direccionTextarea.addEventListener('input', ajustarAltura);
+  // Ajustar al inicio (por si hay valor pre-cargado)
+  ajustarAltura();
 }
   </script>
 </body>
