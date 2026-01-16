@@ -241,27 +241,6 @@ white-space: nowrap;
 color: #722F37;
 font-weight: bold;
 }
-@media print {
-@page {
-size: 25.4cm 19.05cm;
-margin: 0;
-}
-body * { visibility: hidden; }
-#fichaPreview, #fichaPreview * { visibility: visible; }
-#fichaPreview {
-position: absolute;
-left: 0;
-top: 0;
-width: 25.4cm;
-height: 19.05cm;
-background: #e6f0f7 !important;
-}
-.foto-funcionario img,
-.foto-cedula img,
-.watermark {
-visibility: visible !important;
-}
-}
 @media screen {
 .ficha-oficial {
 width: 100%;
@@ -382,7 +361,6 @@ flex-wrap: wrap;
 </div>
 <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
 </div>
-
 <!-- FOTO DEL FUNCIONARIO -->
 <div class="foto-funcionario" id="previewFotoFuncionario">
 <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;" crossOrigin="anonymous">
@@ -439,8 +417,8 @@ Ingrese una cédula y haga clic en "Buscar" para ver la ficha.
 </div>
 </div>
 <div class="actions-bar">
-<button id="btnImprimir" class="btn" style="display:none;">🖨️ Imprimir</button>
-<button id="btnExportarPDF" class="btn" style="display:none;">📥 Exportar PDF</button>
+<!-- ✅ Botón de imprimir ELIMINADO -->
+<button id="btnExportarPDF" class="btn" style="display:none;">👁️ Ver PDF</button>
 </div>
 </div>
 <script>
@@ -500,7 +478,7 @@ try {
 const { data } = await client.auth.getSession();
 const session = data?.session;
 if (!session) return window.location.href = '../index.html';
-const { data: perfil } = await client
+const {  perfil } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
@@ -508,8 +486,8 @@ const { data: perfil } = await client
 document.getElementById('userEmail').textContent = perfil?.email || '—';
 // ✅ Mostrar rol
 const rolText = perfil?.rol === 'admin' ? 'Administrador' :
-                perfil?.rol === 'moderador' ? 'Moderador' :
-                'Consultor';
+perfil?.rol === 'moderador' ? 'Moderador' :
+'Consultor';
 document.getElementById('userRol').textContent = rolText;
 } catch (err) {
 console.error(err);
@@ -523,7 +501,7 @@ return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
 }
 try {
 // ✅ 1. Cargar datos de FICHAS
-const { data: fichaData, error: fichaError } = await client
+const {  fichaData, error: fichaError } = await client
 .from('fichas')
 .select('*')
 .eq('cedula', cedula)
@@ -531,28 +509,23 @@ const { data: fichaData, error: fichaError } = await client
 if (fichaError || !fichaData) {
 return showAlert(`❌ No se encontró ficha en 'fichas' con cédula ${cedula}`, 'error');
 }
-
 // ✅ 2. Cargar ESTATUS desde auditoria_personal
-const { data: audData, error: audError } = await client
+const {  audData, error: audError } = await client
 .from('auditoria_personal')
 .select('status')
 .eq('cedula', cedula)
 .single();
 const estatus = audData?.status || '—';
-
 // Mostrar ficha
 document.getElementById('fichaPreview').style.display = 'block';
 document.getElementById('mensajeVacio').style.display = 'none';
-document.getElementById('btnImprimir').style.display = 'inline-flex';
+// ❌ REMOVIDO: document.getElementById('btnImprimir').style.display = 'inline-flex';
 document.getElementById('btnExportarPDF').style.display = 'inline-flex';
-
 document.getElementById('previewFechaFicha').textContent = getTodayFormatted();
-
 const setPreview = (id, value) => {
 const el = document.getElementById(id);
 if (el) el.textContent = value || 'SIN DATOS';
 };
-
 // ✅ Llenar desde FICHAS
 setPreview('previewNombre', fichaData.nombre_apellidos);
 setPreview('previewCedula', (fichaData.cedula || '').padStart(8, '0'));
@@ -568,12 +541,10 @@ setPreview('previewFechaAscenso', fichaData.fecha_ultimo_ascenso ? new Date(fich
 setPreview('previewServicio', fichaData.servicio);
 setPreview('previewDireccion', fichaData.direccion_habitacion);
 setPreview('previewUltimoCargo', fichaData.ultimo_cargo);
-
 const edad = calcularEdad(fichaData.fecha_nacimiento);
 setPreview('previewEdad', edad ? `${edad} AÑOS` : 'SIN DATOS');
 const antiguedad = calcularAntiguedad(fichaData.fecha_ingreso_cpn);
 setPreview('previewAntiguedad', antiguedad);
-
 // ✅ Mostrar ESTATUS en la caja coloreada
 const estadoBox = document.getElementById('estadoBox');
 const estilo = estiloEstado(estatus);
@@ -581,10 +552,8 @@ estadoBox.textContent = estatus.toUpperCase() || '—';
 estadoBox.style.backgroundColor = estilo.bg;
 estadoBox.style.color = estilo.color;
 estadoBox.style.display = 'block';
-
 // Estado en encabezado (usamos estado geográfico de fichas)
 setPreview('previewEstadoUsuario', fichaData.estado || '—');
-
 // Credencial
 const tieneCred = fichaData.posee_credencial === true || fichaData.posee_credencial === 'si';
 document.getElementById('previewCredencialSi').checked = tieneCred;
@@ -595,7 +564,6 @@ document.getElementById('previewNumeroCredencial').style.display = 'block';
 } else {
 document.getElementById('previewNumeroCredencial').style.display = 'none';
 }
-
 // Fotos
 const bucket = client.storage.from('fichas');
 const loadImg = async (filename, imgEl) => {
@@ -610,16 +578,15 @@ imgEl.style.display = 'block';
 };
 loadImg(`foto-${cedula}.jpg`, document.getElementById('previewFoto'));
 loadImg(`cedula-${cedula}.jpg`, document.getElementById('previewCedulaFoto'));
-
 showAlert(`✅ Ficha encontrada para cédula ${cedula}`, 'success');
 } catch (err) {
 console.error(err);
 showAlert('❌ Error al buscar la ficha', 'error');
 }
 });
-document.getElementById('btnImprimir').addEventListener('click', () => {
-window.print();
-});
+// ❌ REMOVIDO: evento de btnImprimir
+
+// ✅ NUEVO: abrir PDF en pestaña
 document.getElementById('btnExportarPDF').addEventListener('click', async () => {
 showAlert('_generando PDF...', 'success');
 try {
@@ -630,11 +597,14 @@ useCORS: true,
 logging: false,
 backgroundColor: null
 });
-const imgData = canvas.toDataURL('image/png');
-const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
-pdf.addImage(imgData, 'PNG', 0, 0, 25.4, 19.05);
-pdf.save(`ficha_${document.getElementById('searchCedula').value}.pdf`);
-showAlert('✅ PDF generado', 'success');
+const imgData = canvas.toDataURL('image/jpeg', 0.95);
+const { jsPDF } = window.jspdf;
+const pdf = new jsPDF('landscape', 'cm', [25.4, 19.05]);
+pdf.addImage(imgData, 'JPEG', 0, 0, 25.4, 19.05);
+const pdfBlob = pdf.output('blob');
+const pdfUrl = URL.createObjectURL(pdfBlob);
+window.open(pdfUrl, '_blank');
+showAlert('✅ PDF abierto en nueva pestaña', 'success');
 } catch (err) {
 console.error(err);
 showAlert('❌ Error al generar PDF', 'error');
