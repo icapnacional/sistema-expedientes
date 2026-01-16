@@ -85,10 +85,7 @@
   const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
   let currentPage = 1;
   const perPage = 20;
-
-  // ✅ Función para mostrar modal de detalles
   function mostrarDetalles(log) {
-    // Crear overlay y modal si no existen
     let overlay = document.getElementById('logOverlay');
     if (!overlay) {
       overlay = document.createElement('div');
@@ -114,8 +111,6 @@
       year: 'numeric', month: 'long', day: 'numeric',
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
-
-    // Formatear detalles según acción
     let detallesHTML = '<pre style="margin:0; white-space:pre-wrap; word-break:break-word;">' + 
       (log.detalles ? JSON.stringify(log.detalles, null, 2) : '{}') + 
       '</pre>';
@@ -142,8 +137,6 @@
         </div>
       </div>
     `;
-
-    // Eventos
     document.getElementById('btnCerrarModal').onclick = cerrarModal;
     overlay.onclick = (e) => { if (e.target === overlay) cerrarModal(); };
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarModal(); });
@@ -154,8 +147,6 @@
     const overlay = document.getElementById('logOverlay');
     if (overlay) overlay.style.display = 'none';
   }
-
-  // ✅ Modificar renderLogs para añadir evento de clic
   function renderLogs(logs) {
     const tbody = document.getElementById('logsBody');
     if (logs.length === 0) {
@@ -181,8 +172,6 @@
       `;
     }).join('');
   }
-
-  // Resto de funciones (loadLogs, renderPagination, etc.) permanecen igual...
   document.addEventListener('DOMContentLoaded', async () => {
     const sessionResponse = await client.auth.getSession();
     const session = sessionResponse?.data?.session;
