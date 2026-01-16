@@ -61,11 +61,6 @@ const PERMISSIONS = {
 'btnFichasConsulta': {
   roles: ['admin', 'moderador', 'consultor'],
   action: () => window.location.href = 'fichas/consulta.html'
-  // 🔹 Fichas
-'btnFichasModificar': {
-  roles: ['admin', 'moderador'],
-  action: () => window.location.href = 'fichas/modificar-ficha.html',
-  tooltip: '🔒 Solo RRHH autorizado'
 },
   'btnRhObjetivos': { roles: ['admin', 'moderador'], action: () => alert('Módulo en desarrollo'), tooltip: '🔒 Solo RRHH autorizado' },
   'btnRhDesempeno': { roles: ['admin', 'moderador'], action: () => alert('Módulo en desarrollo'), tooltip: '🔒 Solo RRHH autorizado' },
@@ -81,6 +76,11 @@ const PERMISSIONS = {
   'btnDocFormularios': { roles: ['admin', 'moderador', 'consultor'], action: () => alert('Módulo en desarrollo') },
   'btnDocManuales': { roles: ['admin', 'moderador', 'consultor'], action: () => alert('Módulo en desarrollo') }
 };
+  // 🔹 Fichas
+'btnFichasModificar': {
+  roles: ['admin', 'moderador'],
+  action: () => window.location.href = 'fichas/modificar-ficha.html',
+  tooltip: '🔒 Solo RRHH autorizado'
 
 function initRolePermissions(userRol) {
   if (!userRol) return;
