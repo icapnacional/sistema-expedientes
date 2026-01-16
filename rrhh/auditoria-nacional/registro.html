@@ -128,17 +128,13 @@
     }
     .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
     .breadcrumb span { margin: 0 8px; color: #888; }
-    /* Teléfono */
     .phone-group { display: flex; gap: 8px; }
     .phone-group select, .phone-group input { flex: 1; width: auto; }
-    /* Correo */
     .email-group { display: flex; gap: 4px; }
     .email-group input { flex: 1; width: auto; }
     .email-group span { align-self: center; font-weight: bold; color: #555; }
-    /* Edad */
     .age-group { display: flex; align-items: center; gap: 8px; }
     .age-group span { font-weight: 500; color: #555; }
-    /* Foto */
     .photo-section {
       text-align: center;
       margin-bottom: 24px;
@@ -193,10 +189,9 @@
       <strong>Rol:</strong> <span id="userRol">—</span>
     </div>
     <div class="card">
-      <h2>📝 Registro de Personal Auditado</h2>
+      <h2>📝 Registro de Personal</h2>
       <div id="alertMessage" class="alert"></div>
       <form id="registroForm">
-        <!-- ✅ Foto: mantenido y mejorado -->
         <div class="photo-section">
           <div class="photo-placeholder" id="photoContainer">
             🪪
@@ -388,16 +383,14 @@
     </div>
   </div>
   <script>
-    // ✅ Autoresize de textareas
     document.querySelectorAll('textarea.autoresize').forEach(el => {
       const adjust = () => {
         el.style.height = 'auto';
         el.style.height = (el.scrollHeight) + 'px';
       };
       el.addEventListener('input', adjust);
-      adjust(); // inicial
+      adjust();
     });
-    // ✅ Cálculo automático de edad al cambiar la fecha de nacimiento
 document.getElementById('fecha_nacimiento').addEventListener('change', () => {
   const fechaNac = document.getElementById('fecha_nacimiento').value;
   const edadInput = document.getElementById('edad_funcionario');
@@ -422,10 +415,8 @@ document.getElementById('fecha_nacimiento').addEventListener('change', () => {
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const alertDiv = document.getElementById('alertMessage');
-    // ✅ Autenticación robusta: sin errores de 'session' duplicada
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        // ✅ Forma segura y compatible de obtener sesión
         const sessionResponse = await client.auth.getSession();
         const session = sessionResponse?.data?.session;
         const sessionError = sessionResponse?.error;
@@ -433,7 +424,6 @@ document.getElementById('fecha_nacimiento').addEventListener('change', () => {
           console.warn('❌ No hay sesión activa');
           return window.location.href = '../index.html';
         }
-        // ✅ Perfil
         const { data: perfil, error: perfilError } = await client
           .from('perfiles')
           .select('email, rol')
@@ -443,9 +433,7 @@ document.getElementById('fecha_nacimiento').addEventListener('change', () => {
           console.error('Perfil no encontrado', perfilError);
           return window.location.href = '../index.html';
         }
-        // ✅ Solo admin/moderador
        if (perfil.rol !== 'admin' && perfil.rol !== 'moderador') {
-  // ✅ Solo mostrar mensaje y salir sin redirección
   document.getElementById('registroForm').style.display = 'none';
   document.querySelector('.card h2').textContent = '🔒 Acceso Restringido';
   document.querySelector('.card').innerHTML = `
@@ -461,7 +449,6 @@ document.getElementById('fecha_nacimiento').addEventListener('change', () => {
         document.getElementById('userEmail').textContent = perfil.email;
         document.getElementById('userRol').textContent = 
           perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
-        // ✅ Previsualización de foto
         const photoInput = document.getElementById('photoInput');
         const photoContainer = document.getElementById('photoContainer');
         photoInput.addEventListener('change', (e) => {
@@ -486,12 +473,10 @@ document.getElementById('fecha_nacimiento').addEventListener('change', () => {
     document.getElementById('registroForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       showAlert('', '');
-      // ✅ Validar cédula 8 dígitos exactos
       const cedula = document.getElementById('cedula').value.trim();
       if (!/^\d{8}$/.test(cedula)) {
         return showAlert('⚠️ La cédula debe tener exactamente 8 dígitos.', 'error');
       }
-      // ✅ Teléfono
       const op = document.getElementById('operadora').value;
       const num = document.getElementById('telefono_numero').value.trim();
       let telefono = '';
@@ -501,7 +486,6 @@ document.getElementById('fecha_nacimiento').addEventListener('change', () => {
         }
         telefono = op + num;
       }
-      // ✅ Correo
       const local = document.getElementById('correo_local').value.trim();
       const dom = document.getElementById('correo_dominio').value;
       let correo = '';
@@ -533,7 +517,6 @@ document.getElementById('fecha_nacimiento').addEventListener('change', () => {
         direccion: document.getElementById('direccion').value.trim(),
         correo_electronico: correo
       };
-      // ✅ Validar obligatorios
       const required = ['apellidos_nombres', 'rango', 'estado', 'region', 'status'];
       for (let field of required) {
         if (!data[field]) {
@@ -545,7 +528,6 @@ document.getElementById('fecha_nacimiento').addEventListener('change', () => {
           .from('auditoria_personal')
           .insert(data);
         if (error) throw error;
-        // ✅ Subir foto si existe
         const photoInput = document.getElementById('photoInput');
         if (photoInput.files.length > 0) {
           const file = photoInput.files[0];
@@ -556,8 +538,6 @@ document.getElementById('fecha_nacimiento').addEventListener('change', () => {
             .upload(fileName, file, { upsert: true });
           if (upErr) console.warn('Foto subida con advertencia:', upErr.message);
         }
-
-        // ✅ 🔑 REGISTRO DE LOG (ÚNICA MODIFICACIÓN) — justo antes del éxito
         try {
           const sessionResponse = await client.auth.getSession();
           const session = sessionResponse?.data?.session;
