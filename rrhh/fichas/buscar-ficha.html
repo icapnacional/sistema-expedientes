@@ -499,7 +499,7 @@ try {
 const { data } = await client.auth.getSession();
 const session = data?.session;
 if (!session) return window.location.href = '../index.html';
-const { data: perfil } = await client
+const {  perfil } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
@@ -522,7 +522,7 @@ return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
 }
 try {
 // ✅ 1. Cargar datos de FICHAS
-const { data: fichaData, error: fichaError } = await client
+const {  fichaData, error: fichaError } = await client
 .from('fichas')
 .select('*')
 .eq('cedula', cedula)
@@ -531,7 +531,7 @@ if (fichaError || !fichaData) {
 return showAlert(`❌ No se encontró ficha en 'fichas' con cédula ${cedula}`, 'error');
 }
 // ✅ 2. Cargar ESTATUS desde auditoria_personal
-const { data: audData, error: audError } = await client
+const {  audData, error: audError } = await client
 .from('auditoria_personal')
 .select('status')
 .eq('cedula', cedula)
@@ -547,7 +547,7 @@ const setPreview = (id, value) => {
 const el = document.getElementById(id);
 if (el) el.textContent = value || 'SIN DATOS';
 };
-// ✅ Llenar desde FICHAS
+// ✅ Llenar desde FICHAS (incluyendo ESTADO geográfico)
 setPreview('previewNombre', fichaData.nombre_apellidos);
 setPreview('previewCedula', (fichaData.cedula || '').padStart(8, '0'));
 setPreview('previewRango', fichaData.rango);
@@ -558,7 +558,7 @@ setPreview('previewCorreo', fichaData.correo_electronico);
 setPreview('previewNivelAcademico', fichaData.nivel_academico);
 setPreview('previewFechaIngreso', fichaData.fecha_ingreso_cpn ? new Date(fichaData.fecha_ingreso_cpn).toLocaleDateString('es-VE') : '01/01/2020');
 setPreview('previewFechaAscenso', fichaData.fecha_ultimo_ascenso ? new Date(fichaData.fecha_ultimo_ascenso).toLocaleDateString('es-VE') : 'SIN DATOS');
-setPreview('previewEstado', fichaData.estado || '—');
+setPreview('previewEstado', fichaData.estado || 'SIN DATOS'); // ✅ ¡CORREGIDO!
 setPreview('previewServicio', fichaData.servicio);
 setPreview('previewDireccion', fichaData.direccion_habitacion);
 setPreview('previewUltimoCargo', fichaData.ultimo_cargo);
