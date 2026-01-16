@@ -587,19 +587,21 @@ document.getElementById('fecha_nacimiento').addEventListener('change', () => {
           console.warn('⚠️ Log de registro no guardado:', logErr.message);
         }
 
-// ✅ Registro exitoso: limpiar formulario y permanecer en la página
+// ✅ Registro exitoso: limpiar formulario y permanecer en la misma página
 showAlert('✅ Registro exitoso.', 'success');
+
+// Limpiar todos los campos del formulario
 document.getElementById('registroForm').reset();
 
 // Restablecer foto
 document.getElementById('photoContainer').innerHTML = '🪪';
 document.getElementById('photoInput').value = '';
 
-// Opcional: restablecer selects
+// Restablecer selects (opcional pero recomendado)
 const selects = document.querySelectorAll('select');
 selects.forEach(select => select.selectedIndex = 0);
 
-// No redirigir → permite nuevo registro inmediato
+// No redirigir → permite registrar otro funcionario inmediatamente
         setTimeout(() => window.location.href = 'index.html', 1500);
       } catch (err) {
         console.error('Error registro:', err);
