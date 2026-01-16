@@ -277,9 +277,9 @@
         <label for="searchQuery">Buscar por cédula, nombre o apellido:</label>
         <input type="text" id="searchQuery" placeholder="Ej: 25653412, SOTO, JOSE" />
       </div>
-      <button id="btnBuscar" class="btn" style="width:100%;">Buscar</button>
-      <div id="searchMessage" style="margin-top:12px; font-size:14px; min-height:20px;"></div>
-    </div>
+<button id="btnBuscar" class="btn" style="width:100%;">Buscar</button>
+<button id="btnVolver" class="btn btn-volver" style="width:100%; margin-top:12px; background-color: #2e7d32;">← Volver</button>
+<div id="searchMessage" style="margin-top:12px; font-size:14px; min-height:20px;"></div>
     <div id="resultsList" class="results-list">
       <div class="results-header">
         <h3 id="resultsTitle">Resultados encontrados</h3>
@@ -817,7 +817,11 @@ buscarPorNombre = async function(query) {
   await original_buscarPorNombre(query);
   registrarLogConsulta(null, null);
 };
+document.getElementById('btnVolver').addEventListener('click', () => {
+  window.location.href = '../index.html';
+});
 </script>
+  
   </script>
 </body>
 </html>
