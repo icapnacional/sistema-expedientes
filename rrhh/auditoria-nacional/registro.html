@@ -397,6 +397,27 @@
       el.addEventListener('input', adjust);
       adjust(); // inicial
     });
+    // ✅ Cálculo automático de edad al cambiar la fecha de nacimiento
+document.getElementById('fecha_nacimiento').addEventListener('change', () => {
+  const fechaNac = document.getElementById('fecha_nacimiento').value;
+  const edadInput = document.getElementById('edad_funcionario');
+  if (fechaNac) {
+    const hoy = new Date();
+    const nac = new Date(fechaNac);
+    let edad = hoy.getFullYear() - nac.getFullYear();
+    const mesDiff = hoy.getMonth() - nac.getMonth();
+    if (mesDiff < 0 || (mesDiff === 0 && hoy.getDate() < nac.getDate())) {
+      edad--;
+    }
+    if (edad >= 0 && edad <= 120) {
+      edadInput.value = edad;
+    } else {
+      edadInput.value = '';
+    }
+  } else {
+    edadInput.value = '';
+  }
+});
     const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
@@ -566,10 +587,18 @@
           console.warn('⚠️ Log de registro no guardado:', logErr.message);
         }
 
-        // ✅ Mensaje y redirección (sin cambios)
-        showAlert('✅ Registro exitoso. Redirigiendo...', 'success');
-        document.getElementById('registroForm').reset();
-        document.getElementById('photoContainer').innerHTML = '🪪';
+    // ✅ Limpiar formulario y mantenerse en la página
+showAlert('✅ Registro exitoso.', 'success');
+document.getElementById('registroForm').reset();
+document.getElementById('photoContainer').innerHTML = '🪪';
+// Opcional: borrar el archivo seleccionado del input
+document.getElementById('photoInput').value = '';
+
+// Opcional: deseleccionar campos tipo select
+const selects = document.querySelectorAll('select');
+selects.forEach(s => s.selectedIndex = 0);
+
+// No redirigir — solo resetear
         setTimeout(() => window.location.href = 'index.html', 1500);
       } catch (err) {
         console.error('Error registro:', err);
