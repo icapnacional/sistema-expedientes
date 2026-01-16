@@ -150,6 +150,11 @@
       overflow: hidden;
       border: 2px solid #eee;
     }
+    .photo-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
     #photoInput { display: none; }
     .upload-btn {
       background: #722F37;
@@ -397,6 +402,22 @@
       document.getElementById('headerCedula').textContent = f.cedula;
       document.getElementById('headerNombre').textContent = f.nombre_apellidos || '—';
       
+      // ✅ Colorear estatus en el encabezado
+      const statusEl = document.getElementById('headerStatus');
+      const estatusValue = (f.estatus || '').trim();
+      statusEl.textContent = estatusValue || '—';
+      let bgColor = '#9e9e9e'; // gris por defecto
+      if (estatusValue === 'DISPONIBLE') bgColor = '#2e7d32';
+      else if (estatusValue === 'SUSPENDIDO') bgColor = '#ef6c00';
+      else if (estatusValue === 'DESTITUIDO') bgColor = '#c62828';
+      else if (estatusValue === 'ABANDONO DE CARGO') bgColor = '#d32f2f';
+      else if (estatusValue === 'REPOSOS MEDICO') bgColor = '#1976d2';
+      else if (estatusValue === 'VACIONES') bgColor = '#fbc02d';
+      else if (estatusValue === 'PRIVADO DE LIBERTAD') bgColor = '#7b1fa2';
+      else if (estatusValue === 'RENUNCIA') bgColor = '#5d4037';
+      statusEl.style.backgroundColor = bgColor;
+      statusEl.style.color = '#fff';
+
       // ✅ Campos del formulario
       document.getElementById('rango').value = f.rango || '';
       document.getElementById('nombre_apellidos').value = f.nombre_apellidos || '';
@@ -476,7 +497,6 @@
         estatus: document.getElementById('estatus').value
       };
 
-      // Validar campos obligatorios
       const required = ['rango', 'nombre_apellidos', 'sexo', 'region', 'estado', 'estatus'];
       for (let field of required) {
         if (!data[field]) {
