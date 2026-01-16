@@ -586,23 +586,13 @@ document.getElementById('fecha_nacimiento').addEventListener('change', () => {
         } catch (logErr) {
           console.warn('⚠️ Log de registro no guardado:', logErr.message);
         }
-
-// ✅ Registro exitoso: limpiar formulario y permanecer en la misma página
 showAlert('✅ Registro exitoso.', 'success');
-
-// Limpiar todos los campos del formulario
 document.getElementById('registroForm').reset();
-
-// Restablecer foto
 document.getElementById('photoContainer').innerHTML = '🪪';
 document.getElementById('photoInput').value = '';
-
-// Restablecer selects (opcional pero recomendado)
 const selects = document.querySelectorAll('select');
 selects.forEach(select => select.selectedIndex = 0);
-
-// No redirigir → permite registrar otro funcionario inmediatamente
-     setTimeout(() => window.location.href = 'rrhh/index.html', 1500);
+     setTimeout(() => window.location.href = 'index.html', 1500);
       } catch (err) {
         console.error('Error registro:', err);
         showAlert(`❌ Error: ${err.message || 'Verifique que la cédula no exista'}`, 'error');
