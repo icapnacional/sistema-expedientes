@@ -587,18 +587,19 @@ document.getElementById('fecha_nacimiento').addEventListener('change', () => {
           console.warn('⚠️ Log de registro no guardado:', logErr.message);
         }
 
-    // ✅ Limpiar formulario y mantenerse en la página
+// ✅ Registro exitoso: limpiar formulario y permanecer en la página
 showAlert('✅ Registro exitoso.', 'success');
 document.getElementById('registroForm').reset();
+
+// Restablecer foto
 document.getElementById('photoContainer').innerHTML = '🪪';
-// Opcional: borrar el archivo seleccionado del input
 document.getElementById('photoInput').value = '';
 
-// Opcional: deseleccionar campos tipo select
+// Opcional: restablecer selects
 const selects = document.querySelectorAll('select');
-selects.forEach(s => s.selectedIndex = 0);
+selects.forEach(select => select.selectedIndex = 0);
 
-// No redirigir — solo resetear
+// No redirigir → permite nuevo registro inmediato
         setTimeout(() => window.location.href = 'index.html', 1500);
       } catch (err) {
         console.error('Error registro:', err);
