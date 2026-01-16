@@ -47,7 +47,6 @@ font-size: 24px;
 font-weight: 700;
 color: #2d2d2d;
 }
-/* ✅ Subtítulo como en index.html.txt */
 .header .subtitle {
 font-size: 16px;
 color: #722F37;
@@ -104,7 +103,6 @@ display: none;
 }
 .alert-success { background: #e8f5e9; color: #2e7d32; }
 .alert-error { background: #ffebee; color: #c62828; }
-/* ===== FICHA OFICIAL ===== */
 .ficha-oficial {
 font-family: 'Times New Roman', Times, serif;
 line-height: 1.4;
@@ -161,7 +159,6 @@ width: 100%;
 height: 100%;
 object-fit: cover;
 }
-/* ——— CAJA DE ESTATUS (coloreada) ——— */
 .estado-box {
 position: absolute;
 top: 1cm;
@@ -349,10 +346,8 @@ flex-wrap: wrap;
 <div class="header">
 <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
 <h1>Inspectable para el Control de la Actuación Policial</h1>
-<!-- ✅ Subtítulo -->
 <p class="subtitle">• Formato de Datos Personales •</p>
 </div>
-<!-- ✅ Usuario + Rol -->
 <div class="user-info">
 <strong>Usuario:</strong> <span id="userEmail">—</span> | <strong>Rol:</strong> <span id="userRol">—</span>
 </div>
@@ -369,26 +364,21 @@ flex-wrap: wrap;
 <h2>📄 Vista Previa de la Ficha</h2>
 <div id="fichaPreview" class="ficha-oficial" style="display:none;">
 <div class="watermark">FICHA DE DATOS PERSONALES</div>
-<!-- ENCABEZADO -->
 <div class="header-container">
 <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/mp.png" class="logo-izquierda" alt="ICAP Nacional">
 <div>
 <div class="titulo-ficha">FICHA DE FUNCIONARIOS A LA ORDEN DE LA ICAP</div>
 <div style="font-size:10pt; color:#333; text-align:center; margin-top:4px; line-height:1.3;">
-<!-- ✅ SIN "N°: — –" -->
 <div><strong>FICHA</strong> <span id="previewFechaFicha"></span> – ICAP</div>
 <div><strong>ESTADO:</strong> <span id="previewEstadoUsuario">—</span></div>
 </div>
 </div>
 <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/pnb.png" class="logo-derecha" alt="PNB">
 </div>
-<!-- FOTO DEL FUNCIONARIO -->
 <div class="foto-funcionario" id="previewFotoFuncionario">
 <img id="previewFoto" style="width:100%; height:100%; object-fit:cover; display:none;" crossOrigin="anonymous">
 </div>
-<!-- CAJA DE ESTATUS COLOREADA -->
 <div id="estadoBox" class="estado-box" style="display:none;"></div>
-<!-- DATOS PERSONALES -->
 <div class="datos-personales">
 <div class="titulo-datos">DATOS PERSONALES:</div>
 <div class="dato-fila"><strong>APELLIDOS Y NOMBRES:</strong> <span id="previewNombre">SIN DATOS</span></div>
@@ -408,7 +398,6 @@ flex-wrap: wrap;
 <div class="dato-fila" style="max-width: 16cm;"><strong>DIRECCION DE HABITACION:</strong> <span id="previewDireccion">SIN DATOS</span></div>
 <div class="dato-fila"><strong>ULTIMO CARGO:</strong> <span id="previewUltimoCargo">SIN DATOS</span></div>
 </div>
-<!-- CREDENCIAL -->
 <div class="credencial-section">
 <div class="credencial-title">POSEE CREDENCIAL</div>
 <div class="credencial-options">
@@ -423,11 +412,9 @@ flex-wrap: wrap;
 </div>
 <div id="previewNumeroCredencial" class="credencial-input" style="display:none; margin-top:5px; font-weight: bold;"></div>
 </div>
-<!-- FOTO DE LA CÉDULA -->
 <div class="foto-cedula" id="previewFotoCedula">
 <img id="previewCedulaFoto" style="width:100%; height:100%; object-fit:contain; display:none;" crossOrigin="anonymous">
 </div>
-<!-- PIE DE PÁGINA -->
 <div style="position:absolute; bottom:0.5cm; left:0.5cm; right:0.5cm; text-align:center; font-size:8pt; color:#333;">
 <strong>Inspectable para el Control de la Actuación Policial - ICAP Nacional</strong><br>
 Documento confidencial - Uso exclusivo institucional
@@ -437,7 +424,7 @@ Documento confidencial - Uso exclusivo institucional
 Ingrese una cédula y haga clic en "Buscar" para ver la ficha.
 </div>
 </div>
-<!-- ✅ Solo botón de Exportar PDF (sin Imprimir) -->
+<!-- ✅ Solo botón de Exportar PDF -->
 <div class="actions-bar">
 <button id="btnExportarPDF" class="btn" style="display:none;">📄 Exportar PDF</button>
 </div>
@@ -447,194 +434,236 @@ const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
 const alertDiv = document.getElementById('alertMessage');
+
 function showAlert(msg, type) {
-alertDiv.textContent = msg;
-alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
-alertDiv.style.display = 'block';
-setTimeout(() => alertDiv.style.display = 'none', 3000);
+  alertDiv.textContent = msg;
+  alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+  alertDiv.style.display = 'block';
+  setTimeout(() => alertDiv.style.display = 'none', 3000);
 }
-// Formatear fecha actual DD/MM/YYYY
+
 function getTodayFormatted() {
-const now = new Date();
-return `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+  const now = new Date();
+  return `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
 }
-// Calcular edad
+
 function calcularEdad(fechaNac) {
-if (!fechaNac) return null;
-const hoy = new Date();
-const nac = new Date(fechaNac);
-let edad = hoy.getFullYear() - nac.getFullYear();
-const m = hoy.getMonth() - nac.getMonth();
-if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
-return edad;
+  if (!fechaNac) return null;
+  const hoy = new Date();
+  const nac = new Date(fechaNac);
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+  return edad;
 }
-// Calcular antigüedad (en años y meses)
+
 function calcularAntiguedad(fechaIngreso) {
-if (!fechaIngreso) return '00 AÑOS 00 MESES';
-const inicio = new Date(fechaIngreso);
-const hoy = new Date();
-let anos = hoy.getFullYear() - inicio.getFullYear();
-let meses = hoy.getMonth() - inicio.getMonth();
-if (meses < 0) {
-anos--;
-meses += 12;
+  if (!fechaIngreso) return '00 AÑOS 00 MESES';
+  const inicio = new Date(fechaIngreso);
+  const hoy = new Date();
+  let anos = hoy.getFullYear() - inicio.getFullYear();
+  let meses = hoy.getMonth() - inicio.getMonth();
+  if (meses < 0) {
+    anos--;
+    meses += 12;
+  }
+  return `${String(anos).padStart(2, '0')} AÑOS ${String(meses).padStart(2, '0')} MESES`;
 }
-return `${String(anos).padStart(2, '0')} AÑOS ${String(meses).padStart(2, '0')} MESES`;
-}
-// ✅ Estilos para estatus (minúsculas, como en la BD)
+
 function estiloEstado(estatus) {
-const valor = (estatus || '').toLowerCase().trim();
-const estilos = {
-'activo': { bg: '#4CAF50', color: '#FFFFFF' },
-'p': { bg: '#2196F3', color: '#FFFFFF' },
-'destituido': { bg: '#F44336', color: '#FFFFFF' },
-'suspendido': { bg: '#FF9800', color: '#FFFFFF' },
-'da': { bg: '#9C27B0', color: '#FFFFFF' },
-'d': { bg: '#FFEB3B', color: '#000000' }
-};
-return estilos[valor] || { bg: '#ccc', color: '#000' };
+  const valor = (estatus || '').toLowerCase().trim();
+  const estilos = {
+    'activo': { bg: '#4CAF50', color: '#FFFFFF' },
+    'p': { bg: '#2196F3', color: '#FFFFFF' },
+    'destituido': { bg: '#F44336', color: '#FFFFFF' },
+    'suspendido': { bg: '#FF9800', color: '#FFFFFF' },
+    'da': { bg: '#9C27B0', color: '#FFFFFF' },
+    'd': { bg: '#FFEB3B', color: '#000000' }
+  };
+  return estilos[valor] || { bg: '#ccc', color: '#000' };
 }
+
+// ✅ CORRECCIÓN PRINCIPAL: manejo robusto del ROL
 document.addEventListener('DOMContentLoaded', async () => {
-try {
-const { data } = await client.auth.getSession();
-const session = data?.session;
-if (!session) return window.location.href = '../index.html';
-const {  perfil } = await client
-.from('perfiles')
-.select('email, rol')
-.eq('id', session.user.id)
-.single();
-document.getElementById('userEmail').textContent = perfil?.email || '—';
-// ✅ Mostrar rol
-const rolText = perfil?.rol === 'admin' ? 'Administrador' :
-perfil?.rol === 'moderador' ? 'Moderador' :
-'Consultor';
-document.getElementById('userRol').textContent = rolText;
-} catch (err) {
-console.error(err);
-window.location.href = '../index.html';
-}
+  try {
+    const { data } = await client.auth.getSession();
+    const session = data?.session;
+    if (!session) return window.location.href = '../index.html';
+
+    const { data: perfilData, error: perfilError } = await client
+      .from('perfiles')
+      .select('email, rol')
+      .eq('id', session.user.id)
+      .single();
+
+    if (perfilError) {
+      console.error('Error al cargar perfil:', perfilError);
+      return window.location.href = '../index.html';
+    }
+
+    // ✅ Normalizar y validar rol
+    let rolRaw = perfilData?.rol;
+    let rolNormalizado = 'consultor';
+    let rolTexto = 'Consultor';
+
+    if (typeof rolRaw === 'number') {
+      if (rolRaw === 1) rolNormalizado = 'admin';
+      else if (rolRaw === 2) rolNormalizado = 'moderador';
+    } else if (typeof rolRaw === 'string') {
+      const r = rolRaw.toLowerCase().trim();
+      if (r === 'admin' || r === 'administrador' || r === '1') rolNormalizado = 'admin';
+      else if (r === 'moderador' || r === '2') rolNormalizado = 'moderador';
+    }
+
+    if (rolNormalizado === 'admin') rolTexto = 'Administrador';
+    else if (rolNormalizado === 'moderador') rolTexto = 'Moderador';
+
+    document.getElementById('userEmail').textContent = perfilData?.email || '—';
+    document.getElementById('userRol').textContent = rolTexto;
+
+    // Guardar en ventana global para depuración o uso futuro
+    window.usuarioRolActual = rolNormalizado;
+
+    // Opcional: depuración en consola
+    console.log('👤 Usuario:', perfilData?.email, '| Rol detectado:', rolNormalizado);
+
+  } catch (err) {
+    console.error(err);
+    window.location.href = '../index.html';
+  }
 });
+
 document.getElementById('btnBuscar').addEventListener('click', async () => {
-const cedula = document.getElementById('searchCedula').value.trim();
-if (!cedula || cedula.length !== 8 || !/^\d{8}$/.test(cedula)) {
-return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
-}
-try {
-// ✅ 1. Cargar datos de FICHAS
-const {  fichaData, error: fichaError } = await client
-.from('fichas')
-.select('*')
-.eq('cedula', cedula)
-.single();
-if (fichaError || !fichaData) {
-return showAlert(`❌ No se encontró ficha en 'fichas' con cédula ${cedula}`, 'error');
-}
-// ✅ 2. Cargar ESTATUS desde auditoria_personal
-const {  audData, error: audError } = await client
-.from('auditoria_personal')
-.select('status')
-.eq('cedula', cedula)
-.single();
-const estatus = audData?.status || '—';
-// Mostrar ficha
-document.getElementById('fichaPreview').style.display = 'block';
-document.getElementById('mensajeVacio').style.display = 'none';
-document.getElementById('btnExportarPDF').style.display = 'inline-flex'; // ✅ solo este botón
+  const cedula = document.getElementById('searchCedula').value.trim();
+  if (!cedula || cedula.length !== 8 || !/^\d{8}$/.test(cedula)) {
+    return showAlert('⚠️ Ingrese una cédula válida de 8 dígitos', 'error');
+  }
 
-document.getElementById('previewFechaFicha').textContent = getTodayFormatted();
-const setPreview = (id, value) => {
-const el = document.getElementById(id);
-if (el) el.textContent = value || 'SIN DATOS';
-};
-// ✅ Llenar desde FICHAS (incluyendo ESTADO geográfico)
-setPreview('previewNombre', fichaData.nombre_apellidos);
-setPreview('previewCedula', (fichaData.cedula || '').padStart(8, '0'));
-setPreview('previewRango', fichaData.rango);
-setPreview('previewFechaNacimiento', fichaData.fecha_nacimiento ? new Date(fichaData.fecha_nacimiento).toLocaleDateString('es-VE') : '01/01/1990');
-setPreview('previewTelefono', fichaData.telefono_funcionario);
-setPreview('previewTelefonoEmergencia', fichaData.telefono_emergencia);
-setPreview('previewCorreo', fichaData.correo_electronico);
-setPreview('previewNivelAcademico', fichaData.nivel_academico);
-setPreview('previewFechaIngreso', fichaData.fecha_ingreso_cpn ? new Date(fichaData.fecha_ingreso_cpn).toLocaleDateString('es-VE') : '01/01/2020');
-setPreview('previewFechaAscenso', fichaData.fecha_ultimo_ascenso ? new Date(fichaData.fecha_ultimo_ascenso).toLocaleDateString('es-VE') : 'SIN DATOS');
-setPreview('previewEstado', fichaData.estado || 'SIN DATOS'); // ✅ ¡CORREGIDO!
-setPreview('previewServicio', fichaData.servicio);
-setPreview('previewDireccion', fichaData.direccion_habitacion);
-setPreview('previewUltimoCargo', fichaData.ultimo_cargo);
-const edad = calcularEdad(fichaData.fecha_nacimiento);
-setPreview('previewEdad', edad ? `${edad} AÑOS` : 'SIN DATOS');
-const antiguedad = calcularAntiguedad(fichaData.fecha_ingreso_cpn);
-setPreview('previewAntiguedad', antiguedad);
-// ✅ Mostrar ESTATUS en la caja coloreada
-const estadoBox = document.getElementById('estadoBox');
-const estilo = estiloEstado(estatus);
-estadoBox.textContent = estatus.toUpperCase() || '—';
-estadoBox.style.backgroundColor = estilo.bg;
-estadoBox.style.color = estilo.color;
-estadoBox.style.display = 'block';
-// Estado en encabezado (usamos estado geográfico de fichas)
-setPreview('previewEstadoUsuario', fichaData.estado || '—');
-// Credencial
-const tieneCred = fichaData.posee_credencial === true || fichaData.posee_credencial === 'si';
-document.getElementById('previewCredencialSi').checked = tieneCred;
-document.getElementById('previewCredencialNo').checked = !tieneCred;
-if (tieneCred && fichaData.numero_credencial) {
-document.getElementById('previewNumeroCredencial').textContent = fichaData.numero_credencial;
-document.getElementById('previewNumeroCredencial').style.display = 'block';
-} else {
-document.getElementById('previewNumeroCredencial').style.display = 'none';
-}
-// Fotos
-const bucket = client.storage.from('fichas');
-const loadImg = async (filename, imgEl) => {
-try {
-const { data } = bucket.getPublicUrl(filename);
-const publicUrl = data?.publicUrl;
-if (!publicUrl) return;
-imgEl.crossOrigin = "anonymous";
-imgEl.src = publicUrl;
-imgEl.style.display = 'block';
-} catch (e) {}
-};
-loadImg(`foto-${cedula}.jpg`, document.getElementById('previewFoto'));
-loadImg(`cedula-${cedula}.jpg`, document.getElementById('previewCedulaFoto'));
-showAlert(`✅ Ficha encontrada para cédula ${cedula}`, 'success');
-} catch (err) {
-console.error(err);
-showAlert('❌ Error al buscar la ficha', 'error');
-}
+  try {
+    const { data: fichaData, error: fichaError } = await client
+      .from('fichas')
+      .select('*')
+      .eq('cedula', cedula)
+      .single();
+
+    if (fichaError || !fichaData) {
+      return showAlert(`❌ No se encontró ficha en 'fichas' con cédula ${cedula}`, 'error');
+    }
+
+    const { data: audData, error: audError } = await client
+      .from('auditoria_personal')
+      .select('status')
+      .eq('cedula', cedula)
+      .single();
+
+    const estatus = audData?.status || '—';
+
+    document.getElementById('fichaPreview').style.display = 'block';
+    document.getElementById('mensajeVacio').style.display = 'none';
+    document.getElementById('btnExportarPDF').style.display = 'inline-flex';
+
+    document.getElementById('previewFechaFicha').textContent = getTodayFormatted();
+
+    const setPreview = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value || 'SIN DATOS';
+    };
+
+    // ✅ Todos los campos, incluyendo ESTADO geográfico
+    setPreview('previewNombre', fichaData.nombre_apellidos);
+    setPreview('previewCedula', (fichaData.cedula || '').padStart(8, '0'));
+    setPreview('previewRango', fichaData.rango);
+    setPreview('previewFechaNacimiento', fichaData.fecha_nacimiento ? new Date(fichaData.fecha_nacimiento).toLocaleDateString('es-VE') : '01/01/1990');
+    setPreview('previewTelefono', fichaData.telefono_funcionario);
+    setPreview('previewTelefonoEmergencia', fichaData.telefono_emergencia);
+    setPreview('previewCorreo', fichaData.correo_electronico);
+    setPreview('previewNivelAcademico', fichaData.nivel_academico);
+    setPreview('previewFechaIngreso', fichaData.fecha_ingreso_cpn ? new Date(fichaData.fecha_ingreso_cpn).toLocaleDateString('es-VE') : '01/01/2020');
+    setPreview('previewFechaAscenso', fichaData.fecha_ultimo_ascenso ? new Date(fichaData.fecha_ultimo_ascenso).toLocaleDateString('es-VE') : 'SIN DATOS');
+    setPreview('previewEstado', fichaData.estado || 'SIN DATOS'); // ✅ CORREGIDO
+    setPreview('previewServicio', fichaData.servicio);
+    setPreview('previewDireccion', fichaData.direccion_habitacion);
+    setPreview('previewUltimoCargo', fichaData.ultimo_cargo);
+
+    const edad = calcularEdad(fichaData.fecha_nacimiento);
+    setPreview('previewEdad', edad ? `${edad} AÑOS` : 'SIN DATOS');
+
+    const antiguedad = calcularAntiguedad(fichaData.fecha_ingreso_cpn);
+    setPreview('previewAntiguedad', antiguedad);
+
+    // Caja de estatus coloreada
+    const estadoBox = document.getElementById('estadoBox');
+    const estilo = estiloEstado(estatus);
+    estadoBox.textContent = estatus.toUpperCase() || '—';
+    estadoBox.style.backgroundColor = estilo.bg;
+    estadoBox.style.color = estilo.color;
+    estadoBox.style.display = 'block';
+
+    // Estado en encabezado
+    setPreview('previewEstadoUsuario', fichaData.estado || '—');
+
+    // Credencial
+    const tieneCred = fichaData.posee_credencial === true || fichaData.posee_credencial === 'si';
+    document.getElementById('previewCredencialSi').checked = tieneCred;
+    document.getElementById('previewCredencialNo').checked = !tieneCred;
+    if (tieneCred && fichaData.numero_credencial) {
+      document.getElementById('previewNumeroCredencial').textContent = fichaData.numero_credencial;
+      document.getElementById('previewNumeroCredencial').style.display = 'block';
+    } else {
+      document.getElementById('previewNumeroCredencial').style.display = 'none';
+    }
+
+    // Fotos
+    const bucket = client.storage.from('fichas');
+    const loadImg = async (filename, imgEl) => {
+      try {
+        const { data } = bucket.getPublicUrl(filename);
+        const publicUrl = data?.publicUrl;
+        if (!publicUrl) return;
+        imgEl.crossOrigin = "anonymous";
+        imgEl.src = publicUrl;
+        imgEl.style.display = 'block';
+      } catch (e) {}
+    };
+    loadImg(`foto-${cedula}.jpg`, document.getElementById('previewFoto'));
+    loadImg(`cedula-${cedula}.jpg`, document.getElementById('previewCedulaFoto'));
+
+    showAlert(`✅ Ficha encontrada para cédula ${cedula}`, 'success');
+
+  } catch (err) {
+    console.error(err);
+    showAlert('❌ Error al buscar la ficha', 'error');
+  }
 });
 
-// ✅ NUEVA FUNCIÓN: abrir PDF en pestaña (no descargar)
+// ✅ Exportar PDF y abrir en pestaña
 document.getElementById('btnExportarPDF').addEventListener('click', async () => {
-showAlert('Generando PDF...', 'success');
-try {
-const element = document.getElementById('fichaPreview');
-const canvas = await html2canvas(element, {
-scale: 2,
-useCORS: true,
-logging: false,
-backgroundColor: null
-});
-const imgData = canvas.toDataURL('image/png');
-const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
-pdf.addImage(imgData, 'PNG', 0, 0, 25.4, 19.05);
+  showAlert('Generando PDF...', 'success');
+  try {
+    const element = document.getElementById('fichaPreview');
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: null
+    });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jspdf.jsPDF('landscape', 'cm', [25.4, 19.05]);
+    pdf.addImage(imgData, 'PNG', 0, 0, 25.4, 19.05);
 
-// ✅ Convertir a blob y abrir en nueva pestaña
-const pdfBlob = pdf.output('blob');
-const pdfUrl = URL.createObjectURL(pdfBlob);
-window.open(pdfUrl, '_blank');
+    const pdfBlob = pdf.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
 
-showAlert('✅ PDF abierto en nueva pestaña', 'success');
-} catch (err) {
-console.error(err);
-showAlert('❌ Error al generar PDF', 'error');
-}
+    showAlert('✅ PDF abierto en nueva pestaña', 'success');
+  } catch (err) {
+    console.error(err);
+    showAlert('❌ Error al generar PDF', 'error');
+  }
 });
 
 document.getElementById('btnVolver').addEventListener('click', () => {
-window.history.back();
+  window.history.back();
 });
 </script>
 </body>
