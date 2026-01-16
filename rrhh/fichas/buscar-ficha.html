@@ -382,7 +382,6 @@ flex-wrap: wrap;
 <div class="dato-fila"><strong>FECHA DE INGRESO AL CPNB:</strong> <span id="previewFechaIngreso">01/01/2020</span></div>
 <div class="dato-fila"><strong>FECHA DEL ULTIMO ASCENSO:</strong> <span id="previewFechaAscenso">SIN DATOS</span></div>
 <div class="dato-fila"><strong>ANTIGÜEDAD EN LA FUNCIÓN POLICIAL:</strong> <span id="previewAntiguedad">00 AÑOS 00 MESES</span></div>
-<!-- ❌ Este campo "ESTADO" en datos personales NO se usa (comentado en JS) -->
 <div class="dato-fila"><strong>ESTADO:</strong> <span id="previewEstado">SIN DATOS</span></div>
 <div class="dato-fila"><strong>SERVICIO:</strong> <span id="previewServicio">SIN DATOS</span></div>
 <div class="dato-fila" style="max-width: 16cm;"><strong>DIRECCION DE HABITACION:</strong> <span id="previewDireccion">SIN DATOS</span></div>
@@ -418,7 +417,6 @@ Ingrese una cédula y haga clic en "Buscar" para ver la ficha.
 </div>
 </div>
 <div class="actions-bar">
-<!-- ✅ Solo botón de PDF -->
 <button id="btnExportarPDF" class="btn" style="display:none;">👁️ Ver PDF</button>
 </div>
 </div>
@@ -476,12 +474,11 @@ function estiloEstado(estatus) {
   return estilos[valor] || { bg: '#ccc', color: '#000' };
 }
 
-// ✅ Función corregida para mostrar valores
+// Función para campos de datos personales (usa "SIN DATOS")
 const setPreview = (id, value) => {
   const el = document.getElementById(id);
   if (el) {
-    const displayValue = (value != null && value.toString().trim() !== '') ? value : '—';
-    el.textContent = displayValue;
+    el.textContent = (value != null && value.toString().trim() !== '') ? value : 'SIN DATOS';
   }
 };
 
@@ -538,7 +535,7 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
 
     document.getElementById('previewFechaFicha').textContent = getTodayFormatted();
 
-    // ✅ Llenar campos
+    // ✅ Llenar campos de datos personales
     setPreview('previewNombre', fichaData.nombre_apellidos);
     setPreview('previewCedula', (fichaData.cedula || '').padStart(8, '0'));
     setPreview('previewRango', fichaData.rango);
@@ -553,14 +550,20 @@ document.getElementById('btnBuscar').addEventListener('click', async () => {
     setPreview('previewDireccion', fichaData.direccion_habitacion);
     setPreview('previewUltimoCargo', fichaData.ultimo_cargo);
 
-    // ✅ CORREGIDO: cargar estado geográfico en el encabezado
-    setPreview('previewEstadoUsuario', fichaData.estado);
-
+    // ✅ EDAD y ANTIGÜEDAD
     const edad = calcularEdad(fichaData.fecha_nacimiento);
     setPreview('previewEdad', edad ? `${edad} AÑOS` : null);
-
     const antiguedad = calcularAntiguedad(fichaData.fecha_ingreso_cpn);
     setPreview('previewAntiguedad', antiguedad);
+
+    // ✅ ✨ CORRECCIÓN CLAVE: ESTADO EN EL ENCABEZADO
+    const estadoSpan = document.getElementById('previewEstadoUsuario');
+    if (estadoSpan) {
+      const estadoValor = fichaData.estado;
+      estadoSpan.textContent = (estadoValor && estadoValor.toString().trim() !== '')
+        ? estadoValor
+        : '—';
+    }
 
     // ✅ Mostrar ESTATUS en la caja coloreada
     const estadoBox = document.getElementById('estadoBox');
