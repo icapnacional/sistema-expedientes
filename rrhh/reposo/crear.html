@@ -1,449 +1,406 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Crear Reposo | RRHH</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background-color: #fafafa;
-      font-family: 'Inter', sans-serif;
-      color: #2d2d2d;
-      padding: 20px;
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .header img {
-      width: 90px;
-      margin-bottom: 16px;
-    }
-    .header h1 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #2d2d2d;
-    }
-    .header .subtitle {
-      font-size: 16px;
-      color: #722F37;
-      font-weight: 600;
-      margin-top: 8px;
-    }
-    .user-info {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 24px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-      border: 1px solid #eee;
-    }
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      margin-bottom: 24px;
-      border: 1px solid #eee;
-    }
-    .card h2 {
-      font-size: 20px;
-      margin-bottom: 20px;
-      color: #722F37;
-    }
-    .form-group {
-      margin-bottom: 16px;
-    }
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 15px;
-      background: #fdfdfd;
-    }
-    .btn {
-      background-color: #722F37;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 12px 24px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn:hover {
-      background-color: #5e262d;
-    }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #722F37;
-      color: #722F37;
-    }
-    .alert {
-      padding: 12px;
-      border-radius: 8px;
-      margin: 16px 0;
-      display: none;
-    }
-    .alert-success { background: #e8f5e9; color: #2e7d32; }
-    .alert-error { background: #ffebee; color: #c62828; }
-    .breadcrumb {
-      background: #f8f9fa;
-      border-radius: 12px;
-      padding: 12px 20px;
-      margin-bottom: 24px;
-      font-size: 14px;
-      color: #555;
-    }
-    .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
-    .breadcrumb span { margin: 0 8px; color: #888; }
-    .status-indicator {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 13px;
-      margin-left: 8px;
-      color: white;
-    }
-    .photo-placeholder {
-      width: 200px;
-      height: 200px;
-      border-radius: 8px;
-      background: #f0f0f0;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 64px;
-      color: #888;
-      overflow: hidden;
-      border: 2px solid #eee;
-    }
-    .photo-placeholder img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Crear Reposo | RRHH</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+background-color: #fafafa;
+font-family: 'Inter', sans-serif;
+color: #2d2d2d;
+padding: 20px;
+}
+.container {
+max-width: 800px;
+margin: 0 auto;
+}
+.header {
+text-align: center;
+margin-bottom: 24px;
+}
+.header img {
+width: 90px;
+margin-bottom: 16px;
+}
+.header h1 {
+font-size: 24px;
+font-weight: 700;
+color: #2d2d2d;
+}
+.header .subtitle {
+font-size: 16px;
+color: #722F37;
+font-weight: 600;
+margin-top: 8px;
+}
+.user-info {
+background: white;
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 24px;
+box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+border: 1px solid #eee;
+}
+.card {
+background: white;
+border-radius: 12px;
+padding: 24px;
+box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+margin-bottom: 24px;
+border: 1px solid #eee;
+}
+.card h2 {
+font-size: 20px;
+margin-bottom: 20px;
+color: #722F37;
+}
+.form-group {
+margin-bottom: 16px;
+}
+label {
+display: block;
+margin-bottom: 6px;
+font-size: 14px;
+font-weight: 600;
+color: #333;
+}
+input, select, textarea {
+width: 100%;
+padding: 10px 12px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 15px;
+background: #fdfdfd;
+}
+.btn {
+background-color: #722F37;
+color: white;
+border: none;
+border-radius: 10px;
+padding: 12px 24px;
+font-size: 16px;
+font-weight: 600;
+cursor: pointer;
+}
+.btn:hover {
+background-color: #5e262d;
+}
+.btn-outline {
+background: transparent;
+border: 1px solid #722F37;
+color: #722F37;
+}
+.alert {
+padding: 12px;
+border-radius: 8px;
+margin: 16px 0;
+display: none;
+}
+.alert-success { background: #e8f5e9; color: #2e7d32; }
+.alert-error { background: #ffebee; color: #c62828; }
+.breadcrumb {
+background: #f8f9fa;
+border-radius: 12px;
+padding: 12px 20px;
+margin-bottom: 24px;
+font-size: 14px;
+color: #555;
+}
+.breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+.breadcrumb span { margin: 0 8px; color: #888; }
+.status-indicator {
+display: inline-block;
+padding: 4px 12px;
+border-radius: 6px;
+font-weight: 600;
+font-size: 13px;
+margin-left: 8px;
+color: white;
+}
+/* ✅ Estilo para la foto */
+.photo-placeholder {
+width: 200px;
+height: 200px;
+border-radius: 8px;
+background: #f0f0f0;
+margin: 0 auto;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 64px;
+color: #888;
+overflow: hidden;
+border: 2px solid #eee;
+}
+.photo-placeholder img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="breadcrumb">
-      <a href="../../index.html">Inicio</a> <span>›</span>
-      <a href="../index.html">RRHH</a> <span>›</span>
-      <a href="javascript:history.back()">Reposo</a> <span>›</span>
-      <strong>Crear Reposo</strong>
-    </div>
-    <div class="header">
-      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
-      <h1>Inspectable para el Control de la Actuación Policial</h1>
-      <div class="subtitle">• Gestión de Reposos •</div>
-    </div>
-    <div class="user-info">
-      <strong>Usuario:</strong> <span id="userEmail">—</span> |
-      <strong>Rol:</strong> <span id="userRol">—</span>
-    </div>
-    <div class="card">
-      <h2>➕ Crear Nueva Solicitud de Reposo</h2>
-      <div id="alertMessage" class="alert"></div>
+<div class="container">
+<div class="breadcrumb">
+<a href="../../index.html">Inicio</a> <span>›</span>
+<a href="../index.html">RRHH</a> <span>›</span>
+<a href="javascript:history.back()">Reposo</a> <span>›</span>
+<strong>Crear Reposo</strong>
+</div>
+<div class="header">
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+<h1>Inspectable para el Control de la Actuación Policial</h1>
+<div class="subtitle">• Gestión de Reposos •</div>
+</div>
+<div class="user-info">
+<strong>Usuario:</strong> <span id="userEmail">—</span> |
+<strong>Rol:</strong> <span id="userRol">—</span>
+</div>
+<div class="card">
+<h2>➕ Crear Nueva Solicitud de Reposo</h2>
+<div id="alertMessage" class="alert"></div>
+<!-- Búsqueda por cédula -->
+<div class="form-group">
+<label for="cedula_buscar">Cédula del Funcionario (8 dígitos) *</label>
+<input type="text" id="cedula_buscar" inputmode="numeric" maxlength="8" placeholder="Ej: 25275015">
+<button type="button" id="btnBuscarFuncionario" class="btn" style="margin-top:8px; width:100%;">🔍 Buscar en RRHH ICAP</button>
+</div>
+<!-- Datos cargados -->
+<div id="datosFuncionario" style="display:none; margin-top:20px; padding:16px; background:#f9f7f7; border-radius:8px;">
+<strong>C.I. <span id="headerCedula">—</span></strong> •
+<span id="headerNombre">—</span>
+<span id="headerStatus" class="status-indicator" style="background:#ccc;"></span>
+<div style="margin-top:12px;">
+<div><strong>Rango:</strong> <span id="rango_cargado">—</span></div>
+<div><strong>Región:</strong> <span id="region_cargado">—</span></div>
+<div><strong>Estado:</strong> <span id="estado_cargado">—</span></div>
+</div>
+</div>
 
-      <!-- Búsqueda por cédula -->
-      <div class="form-group">
-        <label for="cedula_buscar">Cédula del Funcionario (8 dígitos) *</label>
-        <input type="text" id="cedula_buscar" inputmode="numeric" maxlength="8" placeholder="Ej: 25275015">
-        <button type="button" id="btnBuscarFuncionario" class="btn" style="margin-top:8px; width:100%;">🔍 Buscar en RRHH ICAP</button>
-      </div>
+<!-- ✅ Foto del funcionario -->
+<div style="text-align:center; margin:20px 0; display:none;" id="fotoSection">
+  <div class="photo-placeholder" id="photoContainer">🪪</div>
+</div>
 
-      <!-- Datos cargados -->
-      <div id="datosFuncionario" style="display:none; margin-top:20px; padding:16px; background:#f9f7f7; border-radius:8px;">
-        <strong>C.I. <span id="headerCedula">—</span></strong> • 
-        <span id="headerNombre">—</span>
-        <span id="headerStatus" class="status-indicator" style="background:#ccc;"></span>
-        <div style="margin-top:12px;">
-          <div><strong>Rango:</strong> <span id="rango_cargado">—</span></div>
-          <div><strong>Región:</strong> <span id="region_cargado">—</span></div>
-          <div><strong>Estado:</strong> <span id="estado_cargado">—</span></div>
-        </div>
-      </div>
+<!-- Formulario de reposo -->
+<form id="reposoForm" style="display:none; margin-top:24px;">
+<input type="hidden" id="cedula_hidden">
+<input type="hidden" id="nombre_hidden">
+<input type="hidden" id="rango_hidden">
+<input type="hidden" id="region_hidden">
+<input type="hidden" id="estado_hidden">
+<input type="hidden" id="estatus_hidden">
+<div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+<div class="form-group">
+<label for="fecha_inicio">Fecha de Inicio *</label>
+<input type="date" id="fecha_inicio" required>
+</div>
+<div class="form-group">
+<label for="fecha_fin">Fecha de Finalización *</label>
+<input type="date" id="fecha_fin" required>
+</div>
+</div>
+<div class="form-group">
+<label for="motivo">Motivo del Reposo *</label>
+<textarea id="motivo" rows="3" required placeholder="Ej: Enfermedad, accidente, etc."></textarea>
+</div>
+<div class="form-group">
+<label for="documento">Documento de Soporte (opcional)</label>
+<input type="file" id="documento" accept=".pdf,.jpg,.jpeg,.png">
+<small style="color:#666; display:block; margin-top:4px;">PDF o imagen (máx. 5 MB)</small>
+</div>
+<div style="text-align:right; margin-top:20px;">
+<button type="button" class="btn btn-outline" onclick="history.back()">← Cancelar</button>
+<button type="submit" class="btn">💾 Guardar Solicitud</button>
+</div>
+</form>
+</div>
+</div>
+<script>
+const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+const alertDiv = document.getElementById('alertMessage');
+document.addEventListener('DOMContentLoaded', async () => {
+try {
+const { data: { session }, error } = await client.auth.getSession();
+if (error || !session) return window.location.href = '../../index.html';
+const { data: perfil } = await client
+.from('perfiles')
+.select('email, rol')
+.eq('id', session.user.id)
+.single();
+if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
+alert('🔒 Solo RRHH autorizado puede crear reposos.');
+return window.location.href = '../index.html';
+}
+document.getElementById('userEmail').textContent = perfil.email;
+document.getElementById('userRol').textContent =
+perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
+document.getElementById('btnBuscarFuncionario').addEventListener('click', buscarFuncionario);
+document.getElementById('cedula_buscar').addEventListener('keypress', e => {
+if (e.key === 'Enter') buscarFuncionario();
+});
+document.getElementById('reposoForm').addEventListener('submit', crearReposo);
+} catch (err) {
+console.error(err);
+window.location.href = '../../index.html';
+}
+});
+async function buscarFuncionario() {
+const cedula = document.getElementById('cedula_buscar').value.trim();
+if (!/^\d{8}$/.test(cedula)) {
+showAlert('⚠️ Cédula debe tener 8 dígitos.', 'error');
+return;
+}
+showAlert('🔍 Buscando...', '');
+try {
+// ✅ Verificar si ya tiene un reposo activo
+const { data: repososActivos, error: errReposo } = await client
+.from('reposos')
+.select('id, estado_solicitud')
+.eq('cedula', cedula)
+.in('estado_solicitud', ['pendiente', 'aprobada']);
+if (errReposo) throw errReposo;
+if (repososActivos && repososActivos.length > 0) {
+showAlert('❌ El funcionario ya posee un reposo activo. Debe reintegrarlo antes de crear uno nuevo.', 'error');
+document.getElementById('datosFuncionario').style.display = 'none';
+document.getElementById('fotoSection').style.display = 'none'; // ✅ Ocultar foto
+document.getElementById('reposoForm').style.display = 'none';
+return;
+}
+// ✅ Buscar en rrhh_icap
+const { data, error } = await client
+.from('rrhh_icap')
+.select('*')
+.eq('cedula', cedula)
+.single();
+if (error || !data) throw new Error('No encontrado');
+// Mostrar datos
+document.getElementById('headerCedula').textContent = data.cedula;
+document.getElementById('headerNombre').textContent = data.nombre_apellidos || '—';
+document.getElementById('rango_cargado').textContent = data.rango || '—';
+document.getElementById('region_cargado').textContent = data.region || '—';
+document.getElementById('estado_cargado').textContent = data.estado || '—';
+// Colorear estatus
+const statusEl = document.getElementById('headerStatus');
+const estatusValue = (data.estatus || '').trim();
+statusEl.textContent = estatusValue || '—';
+let bgColor = '#9e9e9e';
+if (estatusValue === 'DISPONIBLE') bgColor = '#2e7d32';
+else if (estatusValue === 'SUSPENDIDO') bgColor = '#ef6c00';
+else if (estatusValue === 'DESTITUIDO') bgColor = '#c62828';
+else if (estatusValue === 'ABANDONO DE CARGO') bgColor = '#d32f2f';
+else if (estatusValue === 'REPOSOS MEDICO') bgColor = '#1976d2';
+else if (estatusValue === 'VACIONES') bgColor = '#fbc02d';
+statusEl.style.backgroundColor = bgColor;
+// Guardar en campos ocultos
+document.getElementById('cedula_hidden').value = data.cedula;
+document.getElementById('nombre_hidden').value = data.nombre_apellidos || '';
+document.getElementById('rango_hidden').value = data.rango || '';
+document.getElementById('region_hidden').value = data.region || '';
+document.getElementById('estado_hidden').value = data.estado || '';
+document.getElementById('estatus_hidden').value = data.estatus || '';
+// ✅ Mostrar secciones
+document.getElementById('datosFuncionario').style.display = 'block';
+document.getElementById('fotoSection').style.display = 'block'; // ✅ Mostrar contenedor de foto
+document.getElementById('reposoForm').style.display = 'block';
+// ✅ Cargar foto
+cargarFotoFuncionario(cedula);
+showAlert('✅ Funcionario encontrado.', 'success');
+} catch (err) {
+showAlert('❌ Cédula no encontrada en RRHH ICAP.', 'error');
+}
+}
 
-      <!-- Foto del funcionario -->
-      <div style="text-align:center; margin:20px 0; display:none;" id="fotoSection">
-        <div class="photo-placeholder" id="photoContainer">🪪</div>
-      </div>
+// ✅ Función para cargar la foto
+async function cargarFotoFuncionario(cedula) {
+const container = document.getElementById('photoContainer');
+container.innerHTML = '🪪';
+const extensions = ['jpeg', 'jpg', 'png'];
+for (const ext of extensions) {
+const path = `foto_${cedula}.${ext}`;
+try {
+const { data, error } = await client.storage
+.from('fotos_funcionarios')
+.createSignedUrl(path, 3600);
+if (error) continue;
+if (data?.signedUrl) {
+const img = new Image();
+img.crossOrigin = 'anonymous';
+img.onload = () => {
+container.innerHTML = '';
+container.appendChild(img);
+};
+img.src = data.signedUrl;
+return;
+}
+} catch (err) {
+continue;
+}
+}
+}
 
-      <!-- Formulario de reposo -->
-      <form id="reposoForm" style="display:none; margin-top:24px;">
-        <input type="hidden" id="cedula_hidden">
-        <input type="hidden" id="nombre_hidden">
-        <input type="hidden" id="rango_hidden">
-        <input type="hidden" id="region_hidden">
-        <input type="hidden" id="estado_hidden">
-        <input type="hidden" id="estatus_hidden">
-
-        <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-          <div class="form-group">
-            <label for="fecha_inicio">Fecha de Inicio *</label>
-            <input type="date" id="fecha_inicio" required>
-          </div>
-          <div class="form-group">
-            <label for="fecha_fin">Fecha de Finalización *</label>
-            <input type="date" id="fecha_fin" required>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="motivo">Motivo del Reposo *</label>
-          <textarea id="motivo" rows="3" required placeholder="Ej: Enfermedad, accidente, etc."></textarea>
-        </div>
-        <div class="form-group">
-          <label for="documento">Documento de Soporte (opcional)</label>
-          <input type="file" id="documento" accept=".pdf,.jpg,.jpeg,.png">
-          <small style="color:#666; display:block; margin-top:4px;">PDF o imagen (máx. 5 MB)</small>
-        </div>
-        <div style="text-align:right; margin-top:20px;">
-          <button type="button" class="btn btn-outline" onclick="history.back()">← Cancelar</button>
-          <button type="submit" class="btn">💾 Guardar Solicitud</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
-    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
-    const alertDiv = document.getElementById('alertMessage');
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const { data, error } = await client.auth.getSession();
-        if (error || !data?.session) return window.location.href = '../../index.html';
-        const session = data.session;
-
-        const {  perfil, error: errPerfil } = await client
-          .from('perfiles')
-          .select('email, rol')
-          .eq('id', session.user.id)
-          .single();
-
-        if (errPerfil || !perfil) {
-          console.error('Perfil no encontrado');
-          alert('🔒 Perfil no encontrado.');
-          return window.location.href = '../../index.html';
-        }
-
-        // ✅ Aceptar cualquier variante de "admin"
-        const rawRole = perfil.rol;
-        const userRole = (rawRole || '').toString().trim().toLowerCase();
-        const isAdmin = userRole.includes('admin') || userRole === 'moderador';
-
-        if (!isAdmin) {
-          alert('🔒 Solo RRHH autorizado puede crear reposos.\nTu rol: "' + rawRole + '"');
-          return window.location.href = '../index.html';
-        }
-
-        document.getElementById('userEmail').textContent = perfil.email;
-        document.getElementById('userRol').textContent = 
-          userRole.includes('admin') ? 'Administrador' : 'Moderador';
-
-        document.getElementById('btnBuscarFuncionario').addEventListener('click', buscarFuncionario);
-        document.getElementById('cedula_buscar').addEventListener('keypress', e => {
-          if (e.key === 'Enter') buscarFuncionario();
-        });
-        document.getElementById('reposoForm').addEventListener('submit', crearReposo);
-
-      } catch (err) {
-        console.error(err);
-        window.location.href = '../../index.html';
-      }
-    });
-
-    async function buscarFuncionario() {
-      const cedula = document.getElementById('cedula_buscar').value.trim();
-      if (!/^\d{8}$/.test(cedula)) {
-        showAlert('⚠️ Cédula debe tener 8 dígitos.', 'error');
-        return;
-      }
-      showAlert('🔍 Buscando...', '');
-
-      try {
-        // ✅ Verificar si ya tiene un reposo activo
-        const {  repososActivos, error: errReposo } = await client
-          .from('reposos')
-          .select('id, estado_solicitud')
-          .eq('cedula', cedula)
-          .in('estado_solicitud', ['pendiente', 'aprobada']);
-
-        if (errReposo) throw errReposo;
-
-        if (repososActivos && repososActivos.length > 0) {
-          showAlert('❌ El funcionario ya posee un reposo activo. Debe reintegrarlo antes de crear uno nuevo.', 'error');
-          document.getElementById('datosFuncionario').style.display = 'none';
-          document.getElementById('fotoSection').style.display = 'none';
-          document.getElementById('reposoForm').style.display = 'none';
-          return;
-        }
-
-        // ✅ Buscar en rrhh_icap
-        const { data, error } = await client
-          .from('rrhh_icap')
-          .select('*')
-          .eq('cedula', cedula)
-          .single();
-
-        if (error || !data) throw new Error('No encontrado');
-
-        // Mostrar datos
-        document.getElementById('headerCedula').textContent = data.cedula;
-        document.getElementById('headerNombre').textContent = data.nombre_apellidos || '—';
-        document.getElementById('rango_cargado').textContent = data.rango || '—';
-        document.getElementById('region_cargado').textContent = data.region || '—';
-        document.getElementById('estado_cargado').textContent = data.estado || '—';
-
-        // Colorear estatus
-        const statusEl = document.getElementById('headerStatus');
-        const estatusValue = (data.estatus || '').trim();
-        statusEl.textContent = estatusValue || '—';
-        let bgColor = '#9e9e9e';
-        if (estatusValue === 'DISPONIBLE') bgColor = '#2e7d32';
-        else if (estatusValue === 'SUSPENDIDO') bgColor = '#ef6c00';
-        else if (estatusValue === 'DESTITUIDO') bgColor = '#c62828';
-        else if (estatusValue === 'ABANDONO DE CARGO') bgColor = '#d32f2f';
-        else if (estatusValue === 'REPOSOS MEDICO') bgColor = '#1976d2';
-        else if (estatusValue === 'VACIONES') bgColor = '#fbc02d';
-        statusEl.style.backgroundColor = bgColor;
-
-        // Guardar en campos ocultos
-        document.getElementById('cedula_hidden').value = data.cedula;
-        document.getElementById('nombre_hidden').value = data.nombre_apellidos || '';
-        document.getElementById('rango_hidden').value = data.rango || '';
-        document.getElementById('region_hidden').value = data.region || '';
-        document.getElementById('estado_hidden').value = data.estado || '';
-        document.getElementById('estatus_hidden').value = data.estatus || '';
-
-        // ✅ Mostrar secciones
-        document.getElementById('datosFuncionario').style.display = 'block';
-        document.getElementById('fotoSection').style.display = 'block';
-        document.getElementById('reposoForm').style.display = 'block';
-
-        // ✅ Cargar foto
-        cargarFotoFuncionario(cedula);
-
-        showAlert('✅ Funcionario encontrado.', 'success');
-
-      } catch (err) {
-        showAlert('❌ Cédula no encontrada en RRHH ICAP.', 'error');
-      }
-    }
-
-    // ✅ Cargar foto desde Supabase Storage
-    async function cargarFotoFuncionario(cedula) {
-      const container = document.getElementById('photoContainer');
-      container.innerHTML = '🪪';
-      const extensions = ['jpeg', 'jpg', 'png'];
-      for (const ext of extensions) {
-        const path = `foto_${cedula}.${ext}`;
-        try {
-          const { data, error } = await client.storage
-            .from('fotos_funcionarios')
-            .createSignedUrl(path, 3600);
-          if (error) continue;
-          if (data?.signedUrl) {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-              container.innerHTML = '';
-              container.appendChild(img);
-            };
-            img.src = data.signedUrl;
-            return;
-          }
-        } catch (err) {
-          continue;
-        }
-      }
-    }
-
-    async function crearReposo(e) {
-      e.preventDefault();
-      showAlert('', '');
-
-      const cedula = document.getElementById('cedula_hidden').value;
-      if (!cedula) {
-        return showAlert('⚠️ Primero busca un funcionario.', 'error');
-      }
-
-      const fechaInicio = document.getElementById('fecha_inicio').value;
-      const fechaFin = document.getElementById('fecha_fin').value;
-      if (!fechaInicio || !fechaFin) {
-        return showAlert('⚠️ Seleccione fechas de inicio y fin.', 'error');
-      }
-      if (new Date(fechaFin) < new Date(fechaInicio)) {
-        return showAlert('⚠️ La fecha de finalización no puede ser anterior a la de inicio.', 'error');
-      }
-
-      const data = {
-        cedula: cedula,
-        nombre: document.getElementById('nombre_hidden').value,
-        rango: document.getElementById('rango_hidden').value,
-        region: document.getElementById('region_hidden').value,
-        estado: document.getElementById('estado_hidden').value,
-        estatus: document.getElementById('estatus_hidden').value,
-        fecha_inicio: fechaInicio,
-        fecha_fin: fechaFin,
-        motivo: document.getElementById('motivo').value.trim(),
-        estado_solicitud: 'pendiente',
-        creado_en: new Date().toISOString()
-      };
-
-      try {
-        const { error } = await client
-          .from('reposos')
-          .insert([data]);
-
-        if (error) throw error;
-
-        // Opcional: subir documento
-        const fileInput = document.getElementById('documento');
-        if (fileInput.files.length > 0) {
-          const file = fileInput.files[0];
-          const ext = file.name.split('.').pop().toLowerCase();
-          const fileName = `reposo_${cedula}_${Date.now()}.${ext}`;
-          const { error: upErr } = await client.storage
-            .from('documentos_reposo')
-            .upload(fileName, file, { upsert: true });
-          if (upErr) console.warn('Documento subido con advertencia:', upErr.message);
-        }
-
-        showAlert('✅ Solicitud de reposo creada exitosamente.', 'success');
-        setTimeout(() => window.location.reload(), 2000); // ✅ Recarga segura
-
-      } catch (err) {
-        console.error(err);
-        showAlert(`❌ Error: ${err.message || 'No se pudo guardar la solicitud'}`, 'error');
-      }
-    }
-
-    function showAlert(msg, type) {
-      alertDiv.textContent = msg;
-      alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
-      alertDiv.style.display = msg ? 'block' : 'none';
-    }
-  </script>
+async function crearReposo(e) {
+e.preventDefault();
+showAlert('', '');
+const cedula = document.getElementById('cedula_hidden').value;
+if (!cedula) {
+return showAlert('⚠️ Primero busca un funcionario.', 'error');
+}
+const fechaInicio = document.getElementById('fecha_inicio').value;
+const fechaFin = document.getElementById('fecha_fin').value;
+if (!fechaInicio || !fechaFin) {
+return showAlert('⚠️ Seleccione fechas de inicio y fin.', 'error');
+}
+if (new Date(fechaFin) < new Date(fechaInicio)) {
+return showAlert('⚠️ La fecha de finalización no puede ser anterior a la de inicio.', 'error');
+}
+const data = {
+cedula: cedula,
+nombre: document.getElementById('nombre_hidden').value,
+rango: document.getElementById('rango_hidden').value,
+region: document.getElementById('region_hidden').value,
+estado: document.getElementById('estado_hidden').value,
+estatus: document.getElementById('estatus_hidden').value,
+fecha_inicio: fechaInicio,
+fecha_fin: fechaFin,
+motivo: document.getElementById('motivo').value.trim(),
+estado_solicitud: 'pendiente',
+creado_en: new Date().toISOString()
+};
+try {
+const { error } = await client
+.from('reposos')
+.insert([data]);
+if (error) throw error;
+// Opcional: subir documento
+const fileInput = document.getElementById('documento');
+if (fileInput.files.length > 0) {
+const file = fileInput.files[0];
+const ext = file.name.split('.').pop().toLowerCase();
+const fileName = `reposo_${cedula}_${Date.now()}.${ext}`;
+const { error: upErr } = await client.storage
+.from('documentos_reposo')
+.upload(fileName, file, { upsert: true });
+if (upErr) console.warn('Documento subido con advertencia:', upErr.message);
+}
+showAlert('✅ Solicitud de reposo creada exitosamente.', 'success');
+setTimeout(() => window.location.reload(), 2000);
+} catch (err) {
+console.error(err);
+showAlert(`❌ Error: ${err.message || 'No se pudo guardar la solicitud'}`, 'error');
+}
+}
+function showAlert(msg, type) {
+alertDiv.textContent = msg;
+alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+alertDiv.style.display = msg ? 'block' : 'none';
+}
+</script>
 </body>
 </html>
