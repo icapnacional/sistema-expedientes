@@ -153,7 +153,6 @@
           <div><strong>Rango:</strong> <span id="rango_cargado">—</span></div>
           <div><strong>Región:</strong> <span id="region_cargado">—</span></div>
           <div><strong>Estado:</strong> <span id="estado_cargado">—</span></div>
-          <div><strong>Servicio:</strong> <span id="servicio_cargado">—</span></div>
         </div>
       </div>
 
@@ -164,7 +163,6 @@
         <input type="hidden" id="rango_hidden">
         <input type="hidden" id="region_hidden">
         <input type="hidden" id="estado_hidden">
-        <input type="hidden" id="servicio_hidden">
         <input type="hidden" id="estatus_hidden">
 
         <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -220,13 +218,10 @@
         document.getElementById('userRol').textContent = 
           perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
 
-        // Evento buscar
         document.getElementById('btnBuscarFuncionario').addEventListener('click', buscarFuncionario);
         document.getElementById('cedula_buscar').addEventListener('keypress', e => {
           if (e.key === 'Enter') buscarFuncionario();
         });
-
-        // Submit
         document.getElementById('reposoForm').addEventListener('submit', crearReposo);
 
       } catch (err) {
@@ -252,13 +247,12 @@
 
         if (error || !data) throw new Error('No encontrado');
 
-        // Mostrar datos
+        // Mostrar datos (sin servicio)
         document.getElementById('headerCedula').textContent = data.cedula;
         document.getElementById('headerNombre').textContent = data.nombre_apellidos || '—';
         document.getElementById('rango_cargado').textContent = data.rango || '—';
         document.getElementById('region_cargado').textContent = data.region || '—';
         document.getElementById('estado_cargado').textContent = data.estado || '—';
-        document.getElementById('servicio_cargado').textContent = data.servicio || '—';
 
         // Colorear estatus
         const statusEl = document.getElementById('headerStatus');
@@ -273,13 +267,12 @@
         else if (estatusValue === 'VACIONES') bgColor = '#fbc02d';
         statusEl.style.backgroundColor = bgColor;
 
-        // Guardar en campos ocultos
+        // Guardar en campos ocultos (sin servicio)
         document.getElementById('cedula_hidden').value = data.cedula;
         document.getElementById('nombre_hidden').value = data.nombre_apellidos || '';
         document.getElementById('rango_hidden').value = data.rango || '';
         document.getElementById('region_hidden').value = data.region || '';
         document.getElementById('estado_hidden').value = data.estado || '';
-        document.getElementById('servicio_hidden').value = data.servicio || '';
         document.getElementById('estatus_hidden').value = data.estatus || '';
 
         document.getElementById('datosFuncionario').style.display = 'block';
@@ -315,7 +308,7 @@
         rango: document.getElementById('rango_hidden').value,
         region: document.getElementById('region_hidden').value,
         estado: document.getElementById('estado_hidden').value,
-        servicio: document.getElementById('servicio_hidden').value,
+        // ⚠️ SERVICIO ELIMINADO
         estatus: document.getElementById('estatus_hidden').value,
         fecha_inicio: fechaInicio,
         fecha_fin: fechaFin,
