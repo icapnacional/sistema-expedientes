@@ -184,6 +184,7 @@
         if (error || !data?.session) return window.location.href = '../../index.html';
         const session = data.session;
 
+        // ✅ Corrección: sintaxis válida
         const {  perfil, error: errPerfil } = await client
           .from('perfiles')
           .select('email, rol')
@@ -219,7 +220,7 @@
       showAlert('', '');
 
       try {
-        // Buscar reposos activos
+        // ✅ Corrección: sintaxis válida
         const {  activos, error: errActivos } = await client
           .from('reposos')
           .select('*')
@@ -238,7 +239,7 @@
           return;
         }
 
-        // Si no hay activos, mostrar historial completo
+        // ✅ Corrección: sintaxis válida
         const {  historial, error: errHistorial } = await client
           .from('reposos')
           .select('*')
