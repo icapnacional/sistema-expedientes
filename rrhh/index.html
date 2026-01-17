@@ -111,13 +111,6 @@
     }
     .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
     .breadcrumb span { margin: 0 8px; color: #888; }
-    .result-section {
-      margin-top: 24px;
-      padding: 16px;
-      background: #f9f7f7;
-      border-radius: 8px;
-      display: none;
-    }
     .repositorio-item {
       padding: 12px;
       border-bottom: 1px solid #eee;
@@ -157,6 +150,20 @@
       margin-top: 20px;
       display: none;
     }
+    .repositorio-detalle {
+      padding: 12px;
+      background: #fff8f8;
+      border-left: 3px solid #c62828;
+      margin: 8px 0;
+      display: none;
+    }
+    .repositorio-detalle h4 {
+      margin: 0 0 8px 0;
+      color: #c62828;
+    }
+    .repositorio-detalle p {
+      margin: 4px 0;
+    }
   </style>
 </head>
 <body>
@@ -185,17 +192,8 @@
       <button id="btnBuscarReposos" class="btn">Buscar Reposos</button>
       <div id="alertMessage" class="alert"></div>
 
-      <!-- Resultado: reposo activo -->
-      <div id="activoSection" class="result-section">
-        <h3 style="color:#c62828;">⚠️ Reposo Activo</h3>
-        <p><strong>Estado:</strong> <span id="estadoActivo">—</span></p>
-        <p><strong>Desde:</strong> <span id="fechaInicioActivo">—</span></p>
-        <p><strong>Hasta:</strong> <span id="fechaFinActivo">—</span></p>
-        <p><strong>Motivo:</strong> <span id="motivoActivo">—</span></p>
-      </div>
-
-      <!-- Resultado: historial -->
-      <div id="historialSection" class="result-section">
+      <!-- Resultado: historial individual -->
+      <div id="historialSection" class="result-section" style="display:none;">
         <h3>📜 Historial de Reposos</h3>
         <div id="historialList"></div>
       </div>
@@ -296,7 +294,7 @@
       showAlert('', '');
 
       try {
-        const { data: repososActivos, error: errReposo } = await client
+        const {  repososActivos, error: errReposo } = await client
           .from('reposos')
           .select('*')
           .eq('cedula', cedula)
@@ -305,13 +303,8 @@
         if (errReposo) throw errReposo;
 
         if (repososActivos && repososActivos.length > 0) {
-          const repo = repososActivos[0];
-          document.getElementById('estadoActivo').textContent = repo.estado || '—';
-          document.getElementById('fechaInicioActivo').textContent = repo.fecha_inicio || '—';
-          document.getElementById('fechaFinActivo').textContent = repo.fecha_fin || '—';
-          document.getElementById('motivoActivo').textContent = repo.motivo || '—';
-          document.getElementById('activoSection').style.display = 'block';
-          document.getElementById('historialSection').style.display = 'none';
+          // No mostramos nada aquí porque ya está en la lista general
+          showAlert('ℹ️ El funcionario tiene un reposo activo. Ver lista general.', 'success');
           return;
         }
 
@@ -341,10 +334,8 @@
 
           document.getElementById('historialList').innerHTML = listHtml;
           document.getElementById('historialSection').style.display = 'block';
-          document.getElementById('activoSection').style.display = 'none';
         } else {
           showAlert('ℹ️ No se encontraron reposos para esta cédula.', 'success');
-          document.getElementById('activoSection').style.display = 'none';
           document.getElementById('historialSection').style.display = 'none';
         }
 
@@ -390,7 +381,7 @@
             else if (repo.estado_solicitud === 'pendiente') badgeColor = '#ef6c00';
 
             return `
-              <tr onclick="mostrarReposoDeFila('${repo.cedula}')">
+              <tr onclick="toggleReposoDetalle(this, '${repo.cedula}')">
                 <td>${repo.cedula || '—'}</td>
                 <td>${repo.nombre || '—'}</td>
                 <td>${repo.rango || '—'}</td>
@@ -401,6 +392,17 @@
                   <span class="status-badge" style="background:${badgeColor};">
                     ${repo.estado_solicitud}
                   </span>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="7" style="padding:0; border:none;">
+                  <div class="repositorio-detalle" id="detalle-${repo.cedula}">
+                    <h4>⚠️ Reposo Activo</h4>
+                    <p><strong>Estado:</strong> ${repo.estado || '—'}</p>
+                    <p><strong>Desde:</strong> ${repo.fecha_inicio || '—'}</p>
+                    <p><strong>Hasta:</strong> ${repo.fecha_fin || '—'}</p>
+                    <p><strong>Motivo:</strong> ${repo.motivo || '—'}</p>
+                  </div>
                 </td>
               </tr>
             `;
@@ -423,34 +425,17 @@
       }
     }
 
-    async function mostrarReposoDeFila(cedula) {
-      try {
-        const { data: reposos, error } = await client
-          .from('reposos')
-          .select('*')
-          .eq('cedula', cedula)
-          .in('estado_solicitud', ['pendiente', 'aprobada'])
-          .order('creado_en', { ascending: false });
-
-        if (error || !reposos || reposos.length === 0) {
-          showAlert('ℹ️ No se encontró un reposo activo para esta cédula.', 'error');
-          return;
-        }
-
-        const repo = reposos[0];
-        document.getElementById('estadoActivo').textContent = repo.estado || '—';
-        document.getElementById('fechaInicioActivo').textContent = repo.fecha_inicio || '—';
-        document.getElementById('fechaFinActivo').textContent = repo.fecha_fin || '—';
-        document.getElementById('motivoActivo').textContent = repo.motivo || '—';
-        document.getElementById('activoSection').style.display = 'block';
-        document.getElementById('historialSection').style.display = 'none';
-
-        // Opcional: desplazar suavemente
-        document.getElementById('activoSection').scrollIntoView({ behavior: 'smooth' });
-
-      } catch (err) {
-        console.error(err);
-        showAlert('❌ Error al cargar el reposo activo.', 'error');
+    function toggleReposoDetalle(fila, cedula) {
+      const detalle = document.getElementById(`detalle-${cedula}`);
+      if (detalle.style.display === 'block') {
+        detalle.style.display = 'none';
+      } else {
+        // Ocultar todos los detalles primero
+        document.querySelectorAll('.repositorio-detalle').forEach(d => {
+          d.style.display = 'none';
+        });
+        // Mostrar solo el seleccionado
+        detalle.style.display = 'block';
       }
     }
 
