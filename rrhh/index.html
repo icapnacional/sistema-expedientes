@@ -111,20 +111,26 @@
     }
     .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
     .breadcrumb span { margin: 0 8px; color: #888; }
-    .repositorio-item {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
+    .result-section {
+      margin-top: 24px;
+      padding: 16px;
+      background: #f9f7f7;
+      border-radius: 8px;
+      display: none;
     }
-    .repositorio-item:last-child {
-      border-bottom: none;
+    .activo-detalle {
+      padding: 16px;
+      background: #fff8f8;
+      border-left: 3px solid #c62828;
+      border-radius: 8px;
     }
-    .status-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 600;
-      color: white;
+    .activo-detalle h3 {
+      margin: 0 0 12px 0;
+      color: #c62828;
+    }
+    .activo-detalle p {
+      margin: 6px 0;
+      font-size: 15px;
     }
     table {
       width: 100%;
@@ -149,20 +155,6 @@
       text-align: center;
       margin-top: 20px;
       display: none;
-    }
-    .repositorio-detalle {
-      padding: 12px;
-      background: #fff8f8;
-      border-left: 3px solid #c62828;
-      margin: 8px 0;
-      display: none;
-    }
-    .repositorio-detalle h4 {
-      margin: 0 0 8px 0;
-      color: #c62828;
-    }
-    .repositorio-detalle p {
-      margin: 4px 0;
     }
   </style>
 </head>
@@ -192,7 +184,18 @@
       <button id="btnBuscarReposos" class="btn">Buscar Reposos</button>
       <div id="alertMessage" class="alert"></div>
 
-      <!-- Resultado: historial individual -->
+      <!-- Resultado: reposo activo -->
+      <div id="activoSection" class="result-section" style="display:none;">
+        <div class="activo-detalle">
+          <h3>⚠️ Reposo Activo</h3>
+          <p><strong>Estado:</strong> <span id="estadoActivo">—</span></p>
+          <p><strong>Desde:</strong> <span id="fechaInicioActivo">—</span></p>
+          <p><strong>Hasta:</strong> <span id="fechaFinActivo">—</span></p>
+          <p><strong>Motivo:</strong> <span id="motivoActivo">—</span></p>
+        </div>
+      </div>
+
+      <!-- Resultado: historial -->
       <div id="historialSection" class="result-section" style="display:none;">
         <h3>📜 Historial de Reposos</h3>
         <div id="historialList"></div>
@@ -294,7 +297,7 @@
       showAlert('', '');
 
       try {
-        const {  repososActivos, error: errReposo } = await client
+        const { data: repososActivos, error: errReposo } = await client
           .from('reposos')
           .select('*')
           .eq('cedula', cedula)
@@ -303,8 +306,13 @@
         if (errReposo) throw errReposo;
 
         if (repososActivos && repososActivos.length > 0) {
-          // No mostramos nada aquí porque ya está en la lista general
-          showAlert('ℹ️ El funcionario tiene un reposo activo. Ver lista general.', 'success');
+          const repo = repososActivos[0];
+          document.getElementById('estadoActivo').textContent = repo.estado || '—';
+          document.getElementById('fechaInicioActivo').textContent = repo.fecha_inicio || '—';
+          document.getElementById('fechaFinActivo').textContent = repo.fecha_fin || '—';
+          document.getElementById('motivoActivo').textContent = repo.motivo || '—';
+          document.getElementById('activoSection').style.display = 'block';
+          document.getElementById('historialSection').style.display = 'none';
           return;
         }
 
@@ -324,9 +332,11 @@
             else if (r.estado_solicitud === 'pendiente') badgeColor = '#ef6c00';
 
             return `
-              <div class="repositorio-item">
+              <div class="repositorio-item" style="padding:12px; border-bottom:1px solid #eee;">
                 <strong>${r.fecha_inicio} → ${r.fecha_fin}</strong>
-                <span class="status-badge" style="background:${badgeColor};">${r.estado_solicitud}</span>
+                <span style="display:inline-block; padding:2px 8px; border-radius:4px; background:${badgeColor}; color:white; font-size:12px; font-weight:600; margin-left:8px;">
+                  ${r.estado_solicitud}
+                </span>
                 <br><small>${r.motivo}</small>
               </div>
             `;
@@ -334,8 +344,10 @@
 
           document.getElementById('historialList').innerHTML = listHtml;
           document.getElementById('historialSection').style.display = 'block';
+          document.getElementById('activoSection').style.display = 'none';
         } else {
           showAlert('ℹ️ No se encontraron reposos para esta cédula.', 'success');
+          document.getElementById('activoSection').style.display = 'none';
           document.getElementById('historialSection').style.display = 'none';
         }
 
@@ -381,7 +393,7 @@
             else if (repo.estado_solicitud === 'pendiente') badgeColor = '#ef6c00';
 
             return `
-              <tr onclick="toggleReposoDetalle(this, '${repo.cedula}')">
+              <tr onclick="mostrarReposoIndividual('${repo.cedula}')">
                 <td>${repo.cedula || '—'}</td>
                 <td>${repo.nombre || '—'}</td>
                 <td>${repo.rango || '—'}</td>
@@ -389,20 +401,9 @@
                 <td>${repo.fecha_inicio || '—'}</td>
                 <td>${repo.fecha_fin || '—'}</td>
                 <td>
-                  <span class="status-badge" style="background:${badgeColor};">
+                  <span style="padding:2px 8px; border-radius:4px; background:${badgeColor}; color:white; font-size:12px; font-weight:600;">
                     ${repo.estado_solicitud}
                   </span>
-                </td>
-              </tr>
-              <tr>
-                <td colspan="7" style="padding:0; border:none;">
-                  <div class="repositorio-detalle" id="detalle-${repo.cedula}">
-                    <h4>⚠️ Reposo Activo</h4>
-                    <p><strong>Estado:</strong> ${repo.estado || '—'}</p>
-                    <p><strong>Desde:</strong> ${repo.fecha_inicio || '—'}</p>
-                    <p><strong>Hasta:</strong> ${repo.fecha_fin || '—'}</p>
-                    <p><strong>Motivo:</strong> ${repo.motivo || '—'}</p>
-                  </div>
                 </td>
               </tr>
             `;
@@ -425,18 +426,12 @@
       }
     }
 
-    function toggleReposoDetalle(fila, cedula) {
-      const detalle = document.getElementById(`detalle-${cedula}`);
-      if (detalle.style.display === 'block') {
-        detalle.style.display = 'none';
-      } else {
-        // Ocultar todos los detalles primero
-        document.querySelectorAll('.repositorio-detalle').forEach(d => {
-          d.style.display = 'none';
-        });
-        // Mostrar solo el seleccionado
-        detalle.style.display = 'block';
-      }
+    async function mostrarReposoIndividual(cedula) {
+      // Simular búsqueda individual
+      document.getElementById('cedulaInput').value = cedula;
+      buscarReposos();
+      // Opcional: desplazar a la sección
+      document.getElementById('activoSection').scrollIntoView({ behavior: 'smooth' });
     }
 
     function showAlert(msg, type) {
