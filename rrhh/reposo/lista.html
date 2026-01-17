@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lista de Reposos | RRHH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header img {
+      width: 90px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+    }
+    .header .subtitle {
+      font-size: 16px;
+      color: #722F37;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .user-info {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      border: 1px solid #eee;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+      border: 1px solid #eee;
+    }
+    .card h2 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #722F37;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    .btn {
+      background-color: #722F37;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #5e262d;
+    }
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      margin: 16px 0;
+      display: none;
+    }
+    .alert-success { background: #e8f5e9; color: #2e7d32; }
+    .alert-error { background: #ffebee; color: #c62828; }
+    .breadcrumb {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 12px 20px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: #555;
+    }
+    .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+    .breadcrumb span { margin: 0 8px; color: #888; }
+    .result-section {
+      margin-top: 24px;
+      padding: 16px;
+      background: #f9f7f7;
+      border-radius: 8px;
+      display: none;
+    }
+    .repositorio-item {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    .repositorio-item:last-child {
+      border-bottom: none;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="../../index.html">Inicio</a> <span>›</span>
+      <a href="../index.html">RRHH</a> <span>›</span>
+      <a href="javascript:history.back()">Reposo</a> <span>›</span>
+      <strong>Lista de Reposos</strong>
+    </div>
+    <div class="header">
+      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+      <h1>Inspectable para el Control de la Actuación Policial</h1>
+      <div class="subtitle">• Lista de Reposos •</div>
+    </div>
+    <div class="user-info">
+      <strong>Usuario:</strong> <span id="userEmail">—</span> |
+      <strong>Rol:</strong> <span id="userRol">—</span>
+    </div>
+    <div class="card">
+      <h2>🔍 Consultar Reposos por Cédula</h2>
+      <div class="form-group">
+        <label for="cedulaInput">Cédula del Funcionario (8 dígitos) *</label>
+        <input type="text" id="cedulaInput" inputmode="numeric" maxlength="8" placeholder="Ej: 25275015">
+      </div>
+      <button id="btnBuscarReposos" class="btn">Buscar Reposos</button>
+      <div id="alertMessage" class="alert"></div>
+
+      <!-- Resultado: reposo activo -->
+      <div id="activoSection" class="result-section">
+        <h3 style="color:#c62828;">⚠️ Reposo Activo</h3>
+        <p><strong>Desde:</strong> <span id="fechaInicioActivo">—</span></p>
+        <p><strong>Hasta:</strong> <span id="fechaFinActivo">—</span></p>
+        <p><strong>Motivo:</strong> <span id="motivoActivo">—</span></p>
+      </div>
+
+      <!-- Resultado: historial -->
+      <div id="historialSection" class="result-section">
+        <h3>📜 Historial de Reposos</h3>
+        <div id="historialList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+    const alertDiv = document.getElementById('alertMessage');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const { data, error } = await client.auth.getSession();
+        if (error || !data?.session) return window.location.href = '../../index.html';
+        const session = data.session;
+
+        const {  perfil } = await client
+          .from('perfiles')
+          .select('email, rol')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
+          alert('🔒 Solo RRHH autorizado puede ver reposos.');
+          return window.location.href = '../index.html';
+        }
+
+        document.getElementById('userEmail').textContent = perfil.email;
+        document.getElementById('userRol').textContent = 
+          perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
+
+        document.getElementById('btnBuscarReposos').addEventListener('click', buscarReposos);
+        document.getElementById('cedulaInput').addEventListener('keypress', e => {
+          if (e.key === 'Enter') buscarReposos();
+        });
+
+      } catch (err) {
+        console.error(err);
+        window.location.href = '../../index.html';
+      }
+    });
+
+    async function buscarReposos() {
+      const cedula = document.getElementById('cedulaInput').value.trim();
+      if (!/^\d{8}$/.test(cedula)) {
+        showAlert('⚠️ Cédula debe tener 8 dígitos.', 'error');
+        return;
+      }
+      showAlert('', '');
+
+      try {
+        // Buscar reposos activos
+        const {  activos } = await client
+          .from('reposos')
+          .select('*')
+          .eq('cedula', cedula)
+          .in('estado_solicitud', ['pendiente', 'aprobada']);
+
+        if (activos && activos.length > 0) {
+          const repo = activos[0];
+          document.getElementById('fechaInicioActivo').textContent = repo.fecha_inicio || '—';
+          document.getElementById('fechaFinActivo').textContent = repo.fecha_fin || '—';
+          document.getElementById('motivoActivo').textContent = repo.motivo || '—';
+          document.getElementById('activoSection').style.display = 'block';
+          document.getElementById('historialSection').style.display = 'none';
+          return;
+        }
+
+        // Si no hay activos, mostrar historial completo
+        const {  historial } = await client
+          .from('reposos')
+          .select('*')
+          .eq('cedula', cedula)
+          .order('creado_en', { ascending: false });
+
+        if (historial && historial.length > 0) {
+          const listHtml = historial.map(r => {
+            let badgeColor = '#9e9e9e';
+            if (r.estado_solicitud === 'aprobada') badgeColor = '#2e7d32';
+            else if (r.estado_solicitud === 'rechazada') badgeColor = '#c62828';
+            else if (r.estado_solicitud === 'pendiente') badgeColor = '#ef6c00';
+
+            return `
+              <div class="repositorio-item">
+                <strong>${r.fecha_inicio} → ${r.fecha_fin}</strong>
+                <span class="status-badge" style="background:${badgeColor};">${r.estado_solicitud}</span>
+                <br><small>${r.motivo}</small>
+              </div>
+            `;
+          }).join('');
+
+          document.getElementById('historialList').innerHTML = listHtml;
+          document.getElementById('historialSection').style.display = 'block';
+          document.getElementById('activoSection').style.display = 'none';
+        } else {
+          showAlert('ℹ️ No se encontraron reposos para esta cédula.', 'success');
+          document.getElementById('activoSection').style.display = 'none';
+          document.getElementById('historialSection').style.display = 'none';
+        }
+
+      } catch (err) {
+        console.error(err);
+        showAlert('❌ Error al consultar reposos.', 'error');
+      }
+    }
+
+    function showAlert(msg, type) {
+      alertDiv.textContent = msg;
+      alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+      alertDiv.style.display = msg ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>
