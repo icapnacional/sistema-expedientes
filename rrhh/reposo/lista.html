@@ -15,7 +15,7 @@
       padding: 20px;
     }
     .container {
-      max-width: 800px;
+      max-width: 1000px;
       margin: 0 auto;
     }
     .header {
@@ -128,6 +128,24 @@
       font-weight: 600;
       color: white;
     }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background: #f9f7f7;
+      font-weight: 600;
+      color: #333;
+    }
+    tr:hover {
+      background: #fdf7f7;
+    }
   </style>
 </head>
 <body>
@@ -170,6 +188,27 @@
         <div id="historialList"></div>
       </div>
     </div>
+
+    <!-- Lista general de reposos activos -->
+    <div class="card">
+      <h2>📋 Lista General de Reposos Activos</h2>
+      <div id="loadingGeneral" style="text-align:center; padding:20px; display:none;">Cargando...</div>
+      <table id="tablaRepososGeneral">
+        <thead>
+          <tr>
+            <th>Cédula</th>
+            <th>Nombre</th>
+            <th>Rango</th>
+            <th>Desde</th>
+            <th>Hasta</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="cuerpoTablaGeneral">
+          <!-- Los datos se cargarán aquí -->
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <script>
@@ -180,7 +219,7 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        // ✅ MISMA LÓGICA QUE EN crear.html
+        // ✅ MISMA LÓGICA QUE EN crear.html (¡funciona!)
         const { data: { session }, error } = await client.auth.getSession();
         if (error || !session) return window.location.href = '../../index.html';
 
@@ -203,6 +242,9 @@
         document.getElementById('cedulaInput').addEventListener('keypress', e => {
           if (e.key === 'Enter') buscarReposos();
         });
+
+        // ✅ Cargar lista general al iniciar
+        cargarListaGeneral();
 
       } catch (err) {
         console.error(err);
@@ -273,6 +315,53 @@
       } catch (err) {
         console.error(err);
         showAlert('❌ Error al consultar reposos.', 'error');
+      }
+    }
+
+    async function cargarListaGeneral() {
+      const loading = document.getElementById('loadingGeneral');
+      const cuerpo = document.getElementById('cuerpoTablaGeneral');
+      loading.style.display = 'block';
+      cuerpo.innerHTML = '';
+
+      try {
+        const { data, error } = await client
+          .from('reposos')
+          .select('*')
+          .in('estado_solicitud', ['pendiente', 'aprobada'])
+          .order('fecha_inicio', { ascending: false });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          cuerpo.innerHTML = data.map(repo => {
+            let badgeColor = '#9e9e9e';
+            if (repo.estado_solicitud === 'aprobada') badgeColor = '#2e7d32';
+            else if (repo.estado_solicitud === 'pendiente') badgeColor = '#ef6c00';
+
+            return `
+              <tr>
+                <td>${repo.cedula || '—'}</td>
+                <td>${repo.nombre || '—'}</td>
+                <td>${repo.rango || '—'}</td>
+                <td>${repo.fecha_inicio || '—'}</td>
+                <td>${repo.fecha_fin || '—'}</td>
+                <td>
+                  <span class="status-badge" style="background:${badgeColor};">
+                    ${repo.estado_solicitud}
+                  </span>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        } else {
+          cuerpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No hay reposos activos.</td></tr>`;
+        }
+      } catch (err) {
+        console.error(err);
+        cuerpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#c62828;">Error al cargar la lista.</td></tr>`;
+      } finally {
+        loading.style.display = 'none';
       }
     }
 
