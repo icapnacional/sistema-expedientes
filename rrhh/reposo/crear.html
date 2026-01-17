@@ -241,14 +241,22 @@
           .eq('id', session.user.id)
           .single();
 
-        if (errPerfil || !perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
+        if (errPerfil || !perfil) {
+          alert('🔒 Perfil no encontrado.');
+          return window.location.href = '../../index.html';
+        }
+
+        // ✅ Normalizar rol (acepta 'admin', 'administrador', etc.)
+        const userRole = (perfil.rol || '').trim().toLowerCase();
+        if (userRole !== 'admin' && userRole !== 'moderador' && userRole !== 'administrador') {
+          console.log('Rol detectado:', perfil.rol); // Para depuración
           alert('🔒 Solo RRHH autorizado puede crear reposos.');
           return window.location.href = '../index.html';
         }
 
         document.getElementById('userEmail').textContent = perfil.email;
         document.getElementById('userRol').textContent = 
-          perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
+          userRole === 'admin' || userRole === 'administrador' ? 'Administrador' : 'Moderador';
 
         document.getElementById('btnBuscarFuncionario').addEventListener('click', buscarFuncionario);
         document.getElementById('cedula_buscar').addEventListener('keypress', e => {
