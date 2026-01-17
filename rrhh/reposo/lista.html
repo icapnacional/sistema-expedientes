@@ -150,6 +150,7 @@
     }
     tr:hover {
       background: #fdf7f7;
+      cursor: pointer;
     }
     #paginationControls {
       text-align: center;
@@ -235,14 +236,12 @@
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const alertDiv = document.getElementById('alertMessage');
     
-    // Variables de paginación
     let currentPage = 1;
     const itemsPerPage = 20;
     let totalItems = 0;
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        // ✅ Sintaxis CORRECTA (igual que en crear.html)
         const { data: { session }, error } = await client.auth.getSession();
         if (error || !session) return window.location.href = '../../index.html';
 
@@ -266,7 +265,6 @@
           if (e.key === 'Enter') buscarReposos();
         });
 
-        // Eventos de paginación
         document.getElementById('btnPrev').addEventListener('click', () => {
           if (currentPage > 1) {
             currentPage--;
@@ -281,7 +279,6 @@
           }
         });
 
-        // Cargar primera página
         cargarListaGeneral();
 
       } catch (err) {
@@ -366,11 +363,9 @@
       pagination.style.display = 'none';
 
       try {
-        // Calcular rango
         const from = (currentPage - 1) * itemsPerPage;
         const to = from + itemsPerPage - 1;
 
-        // Obtener total de items
         const { count, error: countError } = await client
           .from('reposos')
           .select('*', { count: 'exact', head: true })
@@ -379,7 +374,6 @@
         if (countError) throw countError;
         totalItems = count || 0;
 
-        // Obtener datos paginados
         const { data, error } = await client
           .from('reposos')
           .select('*')
@@ -396,7 +390,7 @@
             else if (repo.estado_solicitud === 'pendiente') badgeColor = '#ef6c00';
 
             return `
-              <tr>
+              <tr onclick="window.open('../rrhh-icap/modificar.html?cedula=${repo.cedula}', '_blank')">
                 <td>${repo.cedula || '—'}</td>
                 <td>${repo.nombre || '—'}</td>
                 <td>${repo.rango || '—'}</td>
@@ -415,7 +409,6 @@
           cuerpo.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#666;">No hay reposos activos.</td></tr>`;
         }
 
-        // Actualizar controles de paginación
         const totalPages = Math.ceil(totalItems / itemsPerPage);
         document.getElementById('pageInfo').textContent = `Página ${currentPage} de ${totalPages || 1}`;
         document.getElementById('btnPrev').disabled = currentPage <= 1;
