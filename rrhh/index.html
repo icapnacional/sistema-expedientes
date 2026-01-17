@@ -257,11 +257,13 @@
           .eq('id', session.user.id)
           .single();
 
-        if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
-          alert('🔒 Solo RRHH autorizado puede ver reposos.');
-          return window.location.href = '../index.html';
-        }
+   const userRole = (perfil.rol || '').toString().trim().toLowerCase();
+const isAdmin = userRole.includes('admin') || userRole === 'moderador';
 
+if (!perfil || !isAdmin) {
+  alert('🔒 Solo RRHH autorizado puede ver reposos.');
+  return window.location.href = '../index.html';
+}
         session = sess;
         userRole = perfil.rol;
         userEmail = perfil.email;
