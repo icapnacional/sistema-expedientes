@@ -121,6 +121,25 @@
       margin-left: 8px;
       color: white;
     }
+    .photo-placeholder {
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      background: #f0f0f0;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+      color: #888;
+      overflow: hidden;
+      border: 2px solid #eee;
+    }
+    .photo-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   </style>
 </head>
 <body>
@@ -134,7 +153,7 @@
     <div class="header">
       <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
       <h1>Inspectable para el Control de la Actuación Policial</h1>
-      <div class="subtitle">• Gestión de Reposos •</div> <!-- ✅ Subtítulo agregado -->
+      <div class="subtitle">• Gestión de Reposos •</div>
     </div>
     <div class="user-info">
       <strong>Usuario:</strong> <span id="userEmail">—</span> |
@@ -161,6 +180,11 @@
           <div><strong>Región:</strong> <span id="region_cargado">—</span></div>
           <div><strong>Estado:</strong> <span id="estado_cargado">—</span></div>
         </div>
+      </div>
+
+      <!-- Foto del funcionario -->
+      <div style="text-align:center; margin:20px 0; display:none;" id="fotoSection">
+        <div class="photo-placeholder" id="photoContainer">🪪</div>
       </div>
 
       <!-- Formulario de reposo -->
@@ -207,23 +231,35 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const { data: { session }, error } = await client.auth.getSession();
-        if (error || !session) return window.location.href = '../../index.html';
+        const { data, error } = await client.auth.getSession();
+        if (error || !data?.session) return window.location.href = '../../index.html';
+        const session = data.session;
 
-        const { data: perfil } = await client
+        const {  perfil, error: errPerfil } = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
           .single();
 
-        if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
-          alert('🔒 Solo RRHH autorizado puede crear reposos.');
+        if (errPerfil || !perfil) {
+          console.error('Perfil no encontrado');
+          alert('🔒 Perfil no encontrado.');
+          return window.location.href = '../../index.html';
+        }
+
+        // ✅ Aceptar cualquier variante de "admin"
+        const rawRole = perfil.rol;
+        const userRole = (rawRole || '').toString().trim().toLowerCase();
+        const isAdmin = userRole.includes('admin') || userRole === 'moderador';
+
+        if (!isAdmin) {
+          alert('🔒 Solo RRHH autorizado puede crear reposos.\nTu rol: "' + rawRole + '"');
           return window.location.href = '../index.html';
         }
 
         document.getElementById('userEmail').textContent = perfil.email;
         document.getElementById('userRol').textContent = 
-          perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
+          userRole.includes('admin') ? 'Administrador' : 'Moderador';
 
         document.getElementById('btnBuscarFuncionario').addEventListener('click', buscarFuncionario);
         document.getElementById('cedula_buscar').addEventListener('keypress', e => {
@@ -247,7 +283,7 @@
 
       try {
         // ✅ Verificar si ya tiene un reposo activo
-        const { data: repososActivos, error: errReposo } = await client
+        const {  repososActivos, error: errReposo } = await client
           .from('reposos')
           .select('id, estado_solicitud')
           .eq('cedula', cedula)
@@ -258,6 +294,7 @@
         if (repososActivos && repososActivos.length > 0) {
           showAlert('❌ El funcionario ya posee un reposo activo. Debe reintegrarlo antes de crear uno nuevo.', 'error');
           document.getElementById('datosFuncionario').style.display = 'none';
+          document.getElementById('fotoSection').style.display = 'none';
           document.getElementById('reposoForm').style.display = 'none';
           return;
         }
@@ -299,12 +336,46 @@
         document.getElementById('estado_hidden').value = data.estado || '';
         document.getElementById('estatus_hidden').value = data.estatus || '';
 
+        // ✅ Mostrar secciones
         document.getElementById('datosFuncionario').style.display = 'block';
+        document.getElementById('fotoSection').style.display = 'block';
         document.getElementById('reposoForm').style.display = 'block';
+
+        // ✅ Cargar foto
+        cargarFotoFuncionario(cedula);
+
         showAlert('✅ Funcionario encontrado.', 'success');
 
       } catch (err) {
         showAlert('❌ Cédula no encontrada en RRHH ICAP.', 'error');
+      }
+    }
+
+    // ✅ Cargar foto desde Supabase Storage
+    async function cargarFotoFuncionario(cedula) {
+      const container = document.getElementById('photoContainer');
+      container.innerHTML = '🪪';
+      const extensions = ['jpeg', 'jpg', 'png'];
+      for (const ext of extensions) {
+        const path = `foto_${cedula}.${ext}`;
+        try {
+          const { data, error } = await client.storage
+            .from('fotos_funcionarios')
+            .createSignedUrl(path, 3600);
+          if (error) continue;
+          if (data?.signedUrl) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+              container.innerHTML = '';
+              container.appendChild(img);
+            };
+            img.src = data.signedUrl;
+            return;
+          }
+        } catch (err) {
+          continue;
+        }
       }
     }
 
@@ -360,7 +431,7 @@
         }
 
         showAlert('✅ Solicitud de reposo creada exitosamente.', 'success');
-        setTimeout(() => window.location.reload(), 2000); // ✅ Recarga sin 404
+        setTimeout(() => window.location.reload(), 2000); // ✅ Recarga segura
 
       } catch (err) {
         console.error(err);
