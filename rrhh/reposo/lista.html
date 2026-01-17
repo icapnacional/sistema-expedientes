@@ -15,7 +15,7 @@
       padding: 20px;
     }
     .container {
-      max-width: 1000px;
+      max-width: 800px;
       margin: 0 auto;
     }
     .header {
@@ -88,11 +88,6 @@
     .btn:hover {
       background-color: #5e262d;
     }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #722F37;
-      color: #722F37;
-    }
     .alert {
       padding: 12px;
       border-radius: 8px;
@@ -133,43 +128,6 @@
       font-weight: 600;
       color: white;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 16px;
-    }
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-    }
-    th {
-      background: #f9f7f7;
-      font-weight: 600;
-      color: #333;
-    }
-    tr:hover {
-      background: #fdf7f7;
-    }
-    .tabs-buttons {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .tab-btn {
-      flex: 1;
-      background: #f0f0f0;
-      border: none;
-      border-radius: 8px;
-      padding: 10px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .tab-btn.active {
-      background: #722F37;
-      color: white;
-    }
-    #listaGeneralSection { display: none; }
   </style>
 </head>
 <body>
@@ -189,15 +147,7 @@
       <strong>Usuario:</strong> <span id="userEmail">—</span> |
       <strong>Rol:</strong> <span id="userRol">—</span>
     </div>
-
-    <!-- Selector de vista -->
-    <div class="tabs-buttons">
-      <button class="tab-btn active" id="btnVistaIndividual">🔍 Buscar por Cédula</button>
-      <button class="tab-btn" id="btnVistaGeneral">📋 Lista General de Activos</button>
-    </div>
-
-    <!-- Vista 1: Búsqueda individual -->
-    <div class="card" id="vistaIndividual">
+    <div class="card">
       <h2>🔍 Consultar Reposos por Cédula</h2>
       <div class="form-group">
         <label for="cedulaInput">Cédula del Funcionario (8 dígitos) *</label>
@@ -220,27 +170,6 @@
         <div id="historialList"></div>
       </div>
     </div>
-
-    <!-- Vista 2: Lista general -->
-    <div class="card" id="vistaGeneral" style="display:none;">
-      <h2>📋 Lista General de Reposos Activos</h2>
-      <div id="loadingGeneral" style="text-align:center; padding:20px; display:none;">Cargando...</div>
-      <table id="tablaRepososGeneral">
-        <thead>
-          <tr>
-            <th>Cédula</th>
-            <th>Nombre</th>
-            <th>Rango</th>
-            <th>Desde</th>
-            <th>Hasta</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody id="cuerpoTablaGeneral">
-          <!-- Los datos se cargarán aquí -->
-        </tbody>
-      </table>
-    </div>
   </div>
 
   <script>
@@ -249,27 +178,13 @@
     const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
     const alertDiv = document.getElementById('alertMessage');
 
-    // Cambiar entre vistas
-    document.getElementById('btnVistaIndividual').addEventListener('click', () => {
-      document.getElementById('vistaIndividual').style.display = 'block';
-      document.getElementById('vistaGeneral').style.display = 'none';
-      document.getElementById('btnVistaIndividual').classList.add('active');
-      document.getElementById('btnVistaGeneral').classList.remove('active');
-    });
-    document.getElementById('btnVistaGeneral').addEventListener('click', () => {
-      document.getElementById('vistaIndividual').style.display = 'none';
-      document.getElementById('vistaGeneral').style.display = 'block';
-      document.getElementById('btnVistaGeneral').classList.add('active');
-      document.getElementById('btnVistaIndividual').classList.remove('active');
-      cargarListaGeneral();
-    });
-
     document.addEventListener('DOMContentLoaded', async () => {
       try {
+        // ✅ MISMA LÓGICA QUE EN crear.html
         const { data: { session }, error } = await client.auth.getSession();
         if (error || !session) return window.location.href = '../../index.html';
 
-        const {  perfil } = await client
+        const { data: perfil } = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
@@ -304,16 +219,16 @@
       showAlert('', '');
 
       try {
-        const {  activos, error: errActivos } = await client
+        const { data: repososActivos, error: errReposo } = await client
           .from('reposos')
           .select('*')
           .eq('cedula', cedula)
           .in('estado_solicitud', ['pendiente', 'aprobada']);
 
-        if (errActivos) throw errActivos;
+        if (errReposo) throw errReposo;
 
-        if (activos && activos.length > 0) {
-          const repo = activos[0];
+        if (repososActivos && repososActivos.length > 0) {
+          const repo = repososActivos[0];
           document.getElementById('fechaInicioActivo').textContent = repo.fecha_inicio || '—';
           document.getElementById('fechaFinActivo').textContent = repo.fecha_fin || '—';
           document.getElementById('motivoActivo').textContent = repo.motivo || '—';
@@ -322,7 +237,7 @@
           return;
         }
 
-        const {  historial, error: errHistorial } = await client
+        const { data: historial, error: errHistorial } = await client
           .from('reposos')
           .select('*')
           .eq('cedula', cedula)
@@ -358,53 +273,6 @@
       } catch (err) {
         console.error(err);
         showAlert('❌ Error al consultar reposos.', 'error');
-      }
-    }
-
-    async function cargarListaGeneral() {
-      const loading = document.getElementById('loadingGeneral');
-      const cuerpo = document.getElementById('cuerpoTablaGeneral');
-      loading.style.display = 'block';
-      cuerpo.innerHTML = '';
-
-      try {
-        const {  data, error } = await client
-          .from('reposos')
-          .select('*')
-          .in('estado_solicitud', ['pendiente', 'aprobada'])
-          .order('fecha_inicio', { ascending: false });
-
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-          cuerpo.innerHTML = data.map(repo => {
-            let badgeColor = '#9e9e9e';
-            if (repo.estado_solicitud === 'aprobada') badgeColor = '#2e7d32';
-            else if (repo.estado_solicitud === 'pendiente') badgeColor = '#ef6c00';
-
-            return `
-              <tr>
-                <td>${repo.cedula || '—'}</td>
-                <td>${repo.nombre || '—'}</td>
-                <td>${repo.rango || '—'}</td>
-                <td>${repo.fecha_inicio || '—'}</td>
-                <td>${repo.fecha_fin || '—'}</td>
-                <td>
-                  <span class="status-badge" style="background:${badgeColor};">
-                    ${repo.estado_solicitud}
-                  </span>
-                </td>
-              </tr>
-            `;
-          }).join('');
-        } else {
-          cuerpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No hay reposos activos.</td></tr>`;
-        }
-      } catch (err) {
-        console.error(err);
-        cuerpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#c62828;">Error al cargar la lista.</td></tr>`;
-      } finally {
-        loading.style.display = 'none';
       }
     }
 
