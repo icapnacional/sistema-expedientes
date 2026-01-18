@@ -552,24 +552,31 @@ function cargarDatosFormulario(f) {
   };
 
   setSelectValue('rango', f.rango);
- setSelectValue('rango', f.rango);
+  setSelectValue('rango', f.rango);
 
-// ✅ Carga especial para 'region' con coincidencia flexible
+// 🔁 Mapeo especial para región: convertir "REDIP XXX" → "XXX"
 const regionSelect = document.getElementById('region');
-const dbRegion = (f.region || '').toString().trim();
-let regionMatched = false;
-for (const opt of regionSelect.options) {
-  if (
-    opt.value === dbRegion ||
-    opt.text.trim().toLowerCase() === dbRegion.toLowerCase() ||
-    opt.value.toLowerCase() === dbRegion.toLowerCase()
-  ) {
-    regionSelect.value = opt.value;
-    regionMatched = true;
-    break;
-  }
-}
-if (!regionMatched) {
+const dbRegionRaw = (f.region || '').toString().trim();
+let mappedRegion = '';
+
+// Mapeo directo de valores de BD a valores del select
+const regionMap = {
+  'REDIP CAPITAL': 'Capital',
+  'REDIP GUAYANA': 'Guayana',
+  'REDIP LOS LLANOS': 'Los Llanos',
+  'REDIP CENTRAL': 'Central',
+  'REDIP ORIENTAL': 'Oriental',
+  'REDIP LOS ANDES': 'Los Andes',
+  'REDIP OCCIDENTAL': 'Occidental'
+};
+
+// Buscar el valor mapeado
+mappedRegion = regionMap[dbRegionRaw] || '';
+
+// Asignar al select
+if (mappedRegion) {
+  regionSelect.value = mappedRegion;
+} else {
   regionSelect.value = '';
 }
 
