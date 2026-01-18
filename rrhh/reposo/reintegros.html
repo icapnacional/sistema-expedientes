@@ -4,94 +4,314 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Reintegros - ICAP RRHH</title>
-  <link rel="stylesheet" href="../styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
     .header {
       text-align: center;
       margin-bottom: 24px;
+      padding: 20px 0;
+    }
+    .header img {
+      width: 90px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+    }
+    .header .subtitle {
+      font-size: 16px;
+      color: #722F37;
+      font-weight: 600;
+    }
+    .user-info {
+      background: white;
+      border-radius: 12px;
       padding: 16px;
-      background: #f8f9fa;
+      margin-bottom: 24px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      border: 1px solid #eee;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+      border: 1px solid #eee;
+    }
+    .card h2 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #722F37;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    th, td {
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: #333;
+    }
+    tr.vencido {
+      background-color: #ffebee;
+    }
+    tr.vencido td:first-child::before {
+      content: "⚠️ ";
+      color: #c62828;
+    }
+    .btn {
+      background-color: #722F37;
+      color: white;
+      border: none;
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 6px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
     }
-    .content {
-      max-width: 900px;
-      margin: 0 auto;
+    .btn:hover {
+      background-color: #5e262d;
     }
+    .btn-reintegrar {
+      background-color: #c62828;
+    }
+    .btn-reintegrar:hover {
+      background-color: #b71c1c;
+    }
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      margin: 16px 0;
+      display: none;
+    }
+    .alert-success { background: #e8f5e9; color: #2e7d32; }
+    .alert-error { background: #ffebee; color: #c62828; }
+    .breadcrumb {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 12px 20px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: #555;
+    }
+    .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+    .breadcrumb span { margin: 0 8px; color: #888; }
   </style>
 </head>
 <body>
-  <div class="content">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="../../index.html">Inicio</a> <span>›</span>
+      <a href="../index.html">RRHH</a> <span>›</span>
+      <strong>Reintegros</strong>
+    </div>
     <div class="header">
-      <h2>🔁 Gestión de Reintegros</h2>
-      <p>Historial y procesamiento de reintegros de personal en reposo</p>
+      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+      <h1>Inspectable para el Control de la Actuación Policial</h1>
+      <div class="subtitle">🔁 Gestión de Reintegros</div>
+    </div>
+    <div class="user-info">
+      <strong>Usuario:</strong> <span id="userEmail">—</span> |
+      <strong>Rol:</strong> <span id="userRol">—</span>
     </div>
 
-    <!-- Aquí irá la funcionalidad: tabla, filtros, botones, etc. -->
-    <div id="reintegrosContainer">
-      <p>Cargando datos...</p>
+    <div class="card">
+      <h2>📋 Listado de Reposos Activos</h2>
+      <div id="alertMessage" class="alert"></div>
+      <div id="loading" style="text-align:center; padding:20px;">Cargando reposos...</div>
+      <table id="repososTable" style="display:none;">
+        <thead>
+          <tr>
+            <th>Cédula</th>
+            <th>Nombre</th>
+            <th>Estado</th>
+            <th>Rango</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="repososBody"></tbody>
+      </table>
     </div>
 
-    <!-- Botón Volver (igual que en otros módulos) -->
-    <div style="text-align: center; margin-top: 24px;">
-      <a href="../index.html" class="btn" style="text-decoration: none; display: inline-block;">
-        ← Volver
-      </a>
+    <div style="text-align:center; margin-top:24px;">
+      <a href="../index.html" class="btn" style="text-decoration:none; display:inline-block;">← Volver</a>
     </div>
   </div>
 
   <script type="module">
-    // Importar cliente Supabase
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Configuración
-    const supabaseUrl = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
-    const client = createClient(supabaseUrl, supabaseAnonKey);
+    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+    const client = createClient(SUPABASE_URL, ANON_KEY);
 
-    // Función para redirigir si no tiene acceso
-    function redirectToHome() {
-      alert('🔒 Acceso restringido');
-      window.location.href = '../index.html';
+    const alertDiv = document.getElementById('alertMessage');
+    const loadingEl = document.getElementById('loading');
+    const tableEl = document.getElementById('repososTable');
+    const tbody = document.getElementById('repososBody');
+
+    function showAlert(msg, type) {
+      alertDiv.textContent = msg;
+      alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+      alertDiv.style.display = 'block';
+      setTimeout(() => alertDiv.style.display = 'none', 5000);
     }
 
-    // Verificar sesión y rol
     async function checkAccess() {
       try {
-        const { data: { session } } = await client.auth.getSession();
-        if (!session) return redirectToHome();
+        const { data: { session }, error } = await client.auth.getSession();
+        if (error || !session) return window.location.href = '../index.html';
 
-        const userId = session.user.id;
-        const { data: perfil, error } = await client
+        const { data: perfil, error: pErr } = await client
           .from('perfiles')
-          .select('rol')
-          .eq('id', userId)
+          .select('email, rol')
+          .eq('id', session.user.id)
           .single();
 
-        if (error || !perfil) return redirectToHome();
+        if (pErr || !perfil) return window.location.href = '../index.html';
 
-        const allowedRoles = ['admin', 'administrador', 'consultor'];
-        if (!allowedRoles.includes(perfil.rol)) return redirectToHome();
+        const allowed = ['admin', 'consultor'];
+        if (!allowed.includes(perfil.rol)) {
+          alert('🔒 Acceso restringido');
+          return window.location.href = '../index.html';
+        }
 
-        // ✅ Acceso permitido → cargar contenido
-        loadContent();
+        document.getElementById('userEmail').textContent = perfil.email;
+        document.getElementById('userRol').textContent =
+          perfil.rol === 'admin' ? 'Administrador' : 'Consultor';
+
+        loadReposos();
       } catch (err) {
-        console.error('Error al verificar acceso:', err);
-        redirectToHome();
+        console.error(err);
+        window.location.href = '../index.html';
       }
     }
 
-    // Cargar contenido del módulo
-    function loadContent() {
-      document.getElementById('reintegrosContainer').innerHTML = `
-        <div style="background:#e8f5e9; padding:16px; border-radius:8px; text-align:center;">
-          <h3>✅ Bienvenido al módulo de Reintegros</h3>
-          <p>Próximamente: lista de reposos activos pendientes de reintegro.</p>
-        </div>
-      `;
+    async function loadReposos() {
+      try {
+        // Obtener reposos activos (sin fecha_reintegro)
+        const { data, error } = await client
+          .from('reposos')
+          .select('cedula, fecha_inicio, fecha_fin, created_at')
+          .is('fecha_reintegro', null)
+          .order('fecha_fin', { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          loadingEl.textContent = 'No hay reposos activos.';
+          return;
+        }
+
+        // Obtener datos de personal en bloque
+        const cedulas = data.map(r => r.cedula);
+        const { data: personal, error: pErr } = await client
+          .from('auditoria_personal')
+          .select('cedula, apellidos_nombres, estado, rango')
+          .in('cedula', cedulas);
+
+        if (pErr) throw pErr;
+
+        const personalMap = {};
+        personal.forEach(p => {
+          personalMap[p.cedula] = p;
+        });
+
+        const today = new Date();
+        tbody.innerHTML = '';
+        data.forEach(repo => {
+          const pers = personalMap[repo.cedula] || {};
+          const fin = repo.fecha_fin ? new Date(repo.fecha_fin) : null;
+          const isVencido = fin && fin < today;
+
+          const row = document.createElement('tr');
+          if (isVencido) row.classList.add('vencido');
+
+          row.innerHTML = `
+            <td>${repo.cedula}</td>
+            <td>${pers.apellidos_nombres || '—'}</td>
+            <td>${pers.estado || '—'}</td>
+            <td>${pers.rango || '—'}</td>
+            <td>${repo.fecha_inicio ? new Date(repo.fecha_inicio).toLocaleDateString('es-VE') : '—'}</td>
+            <td>${fin ? fin.toLocaleDateString('es-VE') : '—'}</td>
+            <td>
+              ${isVencido ? `<button class="btn btn-reintegrar" data-cedula="${repo.cedula}">Reintegrar</button>` : '—'}
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        loadingEl.style.display = 'none';
+        tableEl.style.display = 'table';
+
+        // Agregar eventos a botones
+        document.querySelectorAll('.btn-reintegrar').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const cedula = e.target.dataset.cedula;
+            reintegrar(cedula);
+          });
+        });
+
+      } catch (err) {
+        console.error('Error al cargar reposos:', err);
+        loadingEl.textContent = '❌ Error al cargar los datos.';
+      }
     }
 
-    // Iniciar verificación
+    async function reintegrar(cedula) {
+      if (!confirm(`¿Reintegrar al funcionario con cédula ${cedula}?`)) return;
+
+      try {
+        // 1. Actualizar status en auditoria_personal → "activo"
+        const { error: err1 } = await client
+          .from('auditoria_personal')
+          .update({ status: 'activo' })
+          .eq('cedula', cedula);
+
+        if (err1) throw new Error('Error al actualizar status: ' + err1.message);
+
+        // 2. Marcar reposo como reintegrado (fecha_reintegro = ahora)
+        const { error: err2 } = await client
+          .from('reposos')
+          .update({ fecha_reintegro: new Date().toISOString() })
+          .eq('cedula', cedula)
+          .is('fecha_reintegro', null);
+
+        if (err2) throw new Error('Error al cerrar reposo: ' + err2.message);
+
+        showAlert(`✅ Funcionario ${cedula} reintegrado exitosamente.`, 'success');
+        loadReposos(); // Recargar lista
+
+      } catch (err) {
+        console.error(err);
+        showAlert(`❌ Error: ${err.message}`, 'error');
+      }
+    }
+
+    // Iniciar
     checkAccess();
   </script>
 </body>
