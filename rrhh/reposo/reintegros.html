@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reintegros - ICAP RRHH</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <div class="header">
+      <h2>🔁 Gestión de Reintegros</h2>
+      <p>Historial y procesamiento de reintegros de personal en reposo</p>
+    </div>
+
+    <!-- Aquí irá la funcionalidad: tabla, filtros, botones, etc. -->
+    <div id="reintegrosContainer">
+      <p>Cargando datos...</p>
+    </div>
+
+    <!-- Botón Volver (igual que en otros módulos) -->
+    <div style="text-align: center; margin-top: 24px;">
+      <a href="../index.html" class="btn" style="text-decoration: none; display: inline-block;">
+        ← Volver
+      </a>
+    </div>
+  </div>
+
+  <script type="module">
+    // Importar cliente Supabase
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    // Configuración
+    const supabaseUrl = 'https://your-project.supabase.co';
+    const supabaseAnonKey = 'tu-clave-anónima-aquí';
+    const client = createClient(supabaseUrl, supabaseAnonKey);
+
+    // Función para redirigir si no tiene acceso
+    function redirectToHome() {
+      alert('🔒 Acceso restringido');
+      window.location.href = '../index.html';
+    }
+
+    // Verificar sesión y rol
+    async function checkAccess() {
+      try {
+        const { data: { session } } = await client.auth.getSession();
+        if (!session) return redirectToHome();
+
+        const userId = session.user.id;
+        const { data: perfil, error } = await client
+          .from('perfiles')
+          .select('rol')
+          .eq('id', userId)
+          .single();
+
+        if (error || !perfil) return redirectToHome();
+
+        const allowedRoles = ['admin', 'administrador', 'consultor'];
+        if (!allowedRoles.includes(perfil.rol)) return redirectToHome();
+
+        // ✅ Acceso permitido → cargar contenido
+        loadContent();
+      } catch (err) {
+        console.error('Error al verificar acceso:', err);
+        redirectToHome();
+      }
+    }
+
+    // Cargar contenido del módulo
+    function loadContent() {
+      document.getElementById('reintegrosContainer').innerHTML = `
+        <div style="background:#e8f5e9; padding:16px; border-radius:8px; text-align:center;">
+          <h3>✅ Bienvenido al módulo de Reintegros</h3>
+          <p>Próximamente: lista de reposos activos pendientes de reintegro.</p>
+        </div>
+      `;
+    }
+
+    // Iniciar verificación
+    checkAccess();
+  </script>
+</body>
+</html>
