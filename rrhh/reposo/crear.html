@@ -9,117 +9,134 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-background-color: #fafafa;
-font-family: 'Inter', sans-serif;
-color: #2d2d2d;
-padding: 20px;
+  background-color: #fafafa;
+  font-family: 'Inter', sans-serif;
+  color: #2d2d2d;
+  padding: 20px;
 }
 .container {
-max-width: 800px;
-margin: 0 auto;
+  max-width: 800px;
+  margin: 0 auto;
 }
 .header {
-text-align: center;
-margin-bottom: 24px;
+  text-align: center;
+  margin-bottom: 24px;
 }
 .header img {
-width: 90px;
-margin-bottom: 16px;
+  width: 90px;
+  margin-bottom: 16px;
 }
 .header h1 {
-font-size: 24px;
-font-weight: 700;
-color: #2d2d2d;
+  font-size: 24px;
+  font-weight: 700;
+  color: #2d2d2d;
 }
 .header .subtitle {
-font-size: 16px;
-color: #722F37;
-font-weight: 600;
-margin-top: 8px;
+  font-size: 16px;
+  color: #722F37;
+  font-weight: 600;
+  margin-top: 8px;
 }
 .user-info {
-background: white;
-border-radius: 12px;
-padding: 16px;
-margin-bottom: 24px;
-box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-border: 1px solid #eee;
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  border: 1px solid #eee;
 }
 .card {
-background: white;
-border-radius: 12px;
-padding: 24px;
-box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-margin-bottom: 24px;
-border: 1px solid #eee;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  margin-bottom: 24px;
+  border: 1px solid #eee;
 }
 .card h2 {
-font-size: 20px;
-margin-bottom: 20px;
-color: #722F37;
+  font-size: 20px;
+  margin-bottom: 20px;
+  color: #722F37;
 }
 .form-group {
-margin-bottom: 16px;
+  margin-bottom: 16px;
 }
 label {
-display: block;
-margin-bottom: 6px;
-font-size: 14px;
-font-weight: 600;
-color: #333;
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
 }
 input, select, textarea {
-width: 100%;
-padding: 10px 12px;
-border: 1px solid #ddd;
-border-radius: 8px;
-font-size: 15px;
-background: #fdfdfd;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  background: #fdfdfd;
 }
 .btn {
-background-color: #722F37;
-color: white;
-border: none;
-border-radius: 10px;
-padding: 12px 24px;
-font-size: 16px;
-font-weight: 600;
-cursor: pointer;
+  background-color: #722F37;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
 }
 .btn:hover {
-background-color: #5e262d;
+  background-color: #5e262d;
 }
 .btn-outline {
-background: transparent;
-border: 1px solid #722F37;
-color: #722F37;
+  background: transparent;
+  border: 1px solid #722F37;
+  color: #722F37;
 }
 .alert {
-padding: 12px;
-border-radius: 8px;
-margin: 16px 0;
-display: none;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 16px 0;
+  display: none;
 }
 .alert-success { background: #e8f5e9; color: #2e7d32; }
 .alert-error { background: #ffebee; color: #c62828; }
 .breadcrumb {
-background: #f8f9fa;
-border-radius: 12px;
-padding: 12px 20px;
-margin-bottom: 24px;
-font-size: 14px;
-color: #555;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  color: #555;
 }
 .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
 .breadcrumb span { margin: 0 8px; color: #888; }
 .status-indicator {
-display: inline-block;
-padding: 4px 12px;
-border-radius: 6px;
-font-weight: 600;
-font-size: 13px;
-margin-left: 8px;
-color: white;
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  margin-left: 8px;
+  color: white;
+}
+.photo-container {
+  width: 120px;
+  height: 150px;
+  margin: 0 auto 16px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #f9f9f9;
+}
+.photo-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>
 </head>
@@ -150,14 +167,17 @@ color: white;
 <button type="button" id="btnBuscarFuncionario" class="btn" style="margin-top:8px; width:100%;">🔍 Buscar en RRHH ICAP</button>
 </div>
 <!-- Datos cargados -->
-<div id="datosFuncionario" style="display:none; margin-top:20px; padding:16px; background:#f9f7f7; border-radius:8px;">
+<div id="datosFuncionario" style="display:none; margin-top:20px;">
+<div style="text-align:center; margin-bottom:16px;">
+  <div class="photo-container" id="photoContainer">🪪</div>
+</div>
 <strong>C.I. <span id="headerCedula">—</span></strong> •
 <span id="headerNombre">—</span>
 <span id="headerStatus" class="status-indicator" style="background:#ccc;"></span>
 <div style="margin-top:12px;">
-<div><strong>Rango:</strong> <span id="rango_cargado">—</span></div>
-<div><strong>Región:</strong> <span id="region_cargado">—</span></div>
-<div><strong>Estado:</strong> <span id="estado_cargado">—</span></div>
+  <div><strong>Rango:</strong> <span id="rango_cargado">—</span></div>
+  <div><strong>Región:</strong> <span id="region_cargado">—</span></div>
+  <div><strong>Estado:</strong> <span id="estado_cargado">—</span></div>
 </div>
 </div>
 <!-- Formulario de reposo -->
@@ -168,28 +188,29 @@ color: white;
 <input type="hidden" id="region_hidden">
 <input type="hidden" id="estado_hidden">
 <input type="hidden" id="estatus_hidden">
+<input type="hidden" id="foto_url_hidden">
 <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-<div class="form-group">
-<label for="fecha_inicio">Fecha de Inicio *</label>
-<input type="date" id="fecha_inicio" required>
+  <div class="form-group">
+    <label for="fecha_inicio">Fecha de Inicio *</label>
+    <input type="date" id="fecha_inicio" required>
+  </div>
+  <div class="form-group">
+    <label for="fecha_fin">Fecha de Finalización *</label>
+    <input type="date" id="fecha_fin" required>
+  </div>
 </div>
 <div class="form-group">
-<label for="fecha_fin">Fecha de Finalización *</label>
-<input type="date" id="fecha_fin" required>
-</div>
-</div>
-<div class="form-group">
-<label for="motivo">Motivo del Reposo *</label>
-<textarea id="motivo" rows="3" required placeholder="Ej: Enfermedad, accidente, etc."></textarea>
+  <label for="motivo">Motivo del Reposo *</label>
+  <textarea id="motivo" rows="3" required placeholder="Ej: Enfermedad, accidente, etc."></textarea>
 </div>
 <div class="form-group">
-<label for="documento">Documento de Soporte (opcional)</label>
-<input type="file" id="documento" accept=".pdf,.jpg,.jpeg,.png">
-<small style="color:#666; display:block; margin-top:4px;">PDF o imagen (máx. 5 MB)</small>
+  <label for="documento">Documento de Soporte (opcional)</label>
+  <input type="file" id="documento" accept=".pdf,.jpg,.jpeg,.png">
+  <small style="color:#666; display:block; margin-top:4px;">PDF o imagen (máx. 5 MB)</small>
 </div>
 <div style="text-align:right; margin-top:20px;">
-<button type="button" class="btn btn-outline" onclick="history.back()">← Cancelar</button>
-<button type="submit" class="btn">💾 Guardar Solicitud</button>
+  <button type="button" class="btn btn-outline" onclick="history.back()">← Cancelar</button>
+  <button type="submit" class="btn">💾 Guardar Solicitud</button>
 </div>
 </form>
 </div>
@@ -271,6 +292,16 @@ async function buscarFuncionario() {
       .single();
     if (error || !data) throw new Error('No encontrado');
 
+    // Mostrar foto
+    const photoContainer = document.getElementById('photoContainer');
+    const fotoUrl = data.foto_url;
+    if (fotoUrl) {
+      const publicUrl = client.storage.from('fotos_perfil').getPublicUrl(fotoUrl).data.publicUrl;
+      photoContainer.innerHTML = `<img src="${publicUrl}" alt="Foto del funcionario">`;
+    } else {
+      photoContainer.innerHTML = '🪪';
+    }
+
     // Mostrar datos
     document.getElementById('headerCedula').textContent = data.cedula;
     document.getElementById('headerNombre').textContent = data.nombre_apellidos || '—';
@@ -298,6 +329,7 @@ async function buscarFuncionario() {
     document.getElementById('region_hidden').value = data.region || '';
     document.getElementById('estado_hidden').value = data.estado || '';
     document.getElementById('estatus_hidden').value = data.estatus || '';
+    document.getElementById('foto_url_hidden').value = data.foto_url || '';
 
     document.getElementById('datosFuncionario').style.display = 'block';
     document.getElementById('reposoForm').style.display = 'block';
