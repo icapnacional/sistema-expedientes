@@ -261,7 +261,7 @@ Dejar sin archivo para conservar foto actual.
 <label for="dependencia">Dependencia</label>
 <textarea id="dependencia" class="autoresize" rows="1"></textarea>
 </div>
-<!-- ✅ REGIÓN: SELECT PERO CON CARGA ROBUSTA -->
+<!-- ✅ REGIÓN -->
 <div class="form-group">
 <label for="region">Región *</label>
 <select id="region" required>
@@ -372,10 +372,21 @@ Dejar sin archivo para conservar foto actual.
 <label for="direccion">Dirección</label>
 <textarea id="direccion" class="autoresize"></textarea>
 </div>
+<!-- ✅ CORREO ELECTRÓNICO: DOS CAMPOS (como en tu diseño actual), pero seguro -->
 <div class="form-group">
-<div class="form-group">
-<label for="correo_electronico">Correo Electrónico</label>
-<input type="email" id="correo_electronico" placeholder="ejemplo@dominio.com">
+<label for="correo_local">Correo Electrónico</label>
+<div style="display:flex; gap:4px;">
+<input type="text" id="correo_local" placeholder="nombre">
+<span style="align-self:center; font-weight:bold; color:#555;">@</span>
+<select id="correo_dominio">
+<option value="gmail.com">@gmail.com</option>
+<option value="hotmail.com">@hotmail.com</option>
+<option value="outlook.com">@outlook.com</option>
+<option value="yahoo.com">@yahoo.com</option>
+<option value="">— Otro —</option>
+</select>
+</div>
+</div>
 </div>
 <div style="text-align:right; margin-top:20px;">
 <button type="button" class="btn btn-outline" onclick="history.back()">← Cancelar</button>
@@ -423,7 +434,7 @@ edadInput.value = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-  // ✅ CORRECCIÓN: Sintaxis válida para getSession()
+  // ✅ Sintaxis válida
   const { data, error } = await client.auth.getSession();
   const session = data?.session;
   if (error || !session) return window.location.href = '../index.html';
@@ -501,12 +512,11 @@ document.getElementById('observaciones').value = f.observaciones || '';
 document.getElementById('fechas_egreso').value = f.fechas_egreso || '';
 document.getElementById('direccion').value = f.direccion || '';
 document.getElementById('telefono').value = f.telefono || '';
-document.getElementById('correo_electronico').value = f.correo_electronico || '';
 
-// ✅ RANGO: asignación directa
+// ✅ RANGO
 document.getElementById('rango').value = f.rango || '';
 
-// ✅ REGIÓN: carga robusta
+// ✅ REGIÓN
 const regionSelect = document.getElementById('region');
 const dbRegionRaw = (f.region || '').toString().trim();
 let regionValue = '';
@@ -528,7 +538,7 @@ if (validRegions.includes(dbRegionRaw)) {
 }
 regionSelect.value = regionValue;
 
-// Función auxiliar para otros selects
+// ✅ ESTADO Y STATUS
 const setSelectValue = (id, valueFromDB) => {
 const select = document.getElementById(id);
 if (!select) return;
@@ -557,7 +567,7 @@ select.value = '';
 setSelectValue('estado', f.estado);
 setSelectValue('status', f.status);
 
-// Cabecera de status
+// ✅ CABECERA STATUS
 document.getElementById('headerNombre').textContent = f.apellidos_nombres || '—';
 const statusEl = document.getElementById('headerStatus');
 const rawStatus = (f.status || '').toString().trim();
@@ -570,42 +580,61 @@ else if (rawStatus.toLowerCase() === 'suspendido') bgColor = '#ef6c00';
 else if (rawStatus === 'DA') bgColor = '#7b1fa2';
 statusEl.style.backgroundColor = bgColor;
 
-// ✅ Correo: manejo seguro de null, undefined o string vacío
+// ✅ CORREO: MANEJO SEGURO (no falla si es null)
 const email = f.correo_electronico;
-if (typeof email === 'string' && email.includes('@')) {
-  const parts = email.split('@');
-  if (parts.length === 2) {
-    const localEl = document.getElementById('correo_local');
-    const dominioEl = document.getElementById('correo_dominio');
-    if (localEl) localEl.value = parts[0];
-    if (dominioEl) dominioEl.value = parts[1];
+const localEl = document.getElementById('correo_local');
+const dominioEl = document.getElementById('correo_dominio');
+if (localEl && dominioEl) {
+  if (typeof email === 'string' && email.includes('@')) {
+    const parts = email.split('@');
+    if (parts.length === 2) {
+      localEl.value = parts[0];
+      dominioEl.value = parts[1];
+    } else {
+      localEl.value = '';
+      dominioEl.value = '';
+    }
+  } else {
+    localEl.value = '';
+    dominioEl.value = '';
   }
-} else {
-  // Limpiar campos si no hay correo válido
-  const localEl = document.getElementById('correo_local');
-  const dominioEl = document.getElementById('correo_dominio');
-  if (localEl) localEl.value = '';
-  if (dominioEl) dominioEl.value = '';
 }
+
+// ✅ FOTO Y AUTO-RESIZE
+cargarFotoActual(f.cedula);
+document.querySelectorAll('textarea.autoresize').forEach(el => {
+el.style.height = 'auto';
+el.style.height = el.scrollHeight + 'px';
+});
+calcularEdad();
+}
+
 async function cargarFotoActual(cedula) {
-  const container = document.getElementById('photoContainer');
-  container.innerHTML = '🪪';
-  const path = `foto_${cedula}.jpg`; // ← solo .jpg
-  try {
-    const { data, error } = await client.storage
-      .from('fotos_funcionarios')
-      .createSignedUrl(path, 3600);
-    if (error || !data?.signedUrl) return;
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      container.innerHTML = '';
-      container.appendChild(img);
-    };
-    img.src = data.signedUrl;
-  } catch (err) {
-    // opcional: console.log('Foto no encontrada');
-  }
+const container = document.getElementById('photoContainer');
+container.innerHTML = '🪪';
+const extensions = ['jpeg', 'jpg', 'png'];
+for (const ext of extensions) {
+const path = `foto_${cedula}.${ext}`;
+try {
+const { data, error } = await client.storage
+.from('fotos_funcionarios')
+.createSignedUrl(path, 3600);
+if (error) continue;
+if (data?.signedUrl) {
+const img = new Image();
+img.crossOrigin = 'anonymous';
+img.onload = () => {
+container.innerHTML = '';
+container.appendChild(img);
+};
+img.onerror = () => {};
+img.src = data.signedUrl;
+return;
+}
+} catch (err) {
+continue;
+}
+}
 }
 
 function previsualizarFoto(e) {
@@ -632,10 +661,13 @@ const telefono = document.getElementById('telefono').value.trim();
 if (telefono && !/^04\d{9}$/.test(telefono)) {
 return showAlert('⚠️ El teléfono debe ser venezolano válido (ej: 04121234567).', 'error');
 }
+
+// ✅ Construir correo desde los dos campos
 const local = document.getElementById('correo_local').value.trim();
 const dom = document.getElementById('correo_dominio').value;
 let correo = '';
 if (local && dom) correo = `${local}@${dom}`;
+
 calcularEdad();
 
 const data = {
@@ -689,10 +721,10 @@ if (upErr) console.warn('Foto subida con advertencia:', upErr.message);
 
 // Registrar log
 try {
-const { data: sessionData } = await client.auth.getSession();
+const {  sessionData } = await client.auth.getSession();
 const session = sessionData?.session;
 if (session) {
-const { data: perfilLog, error: logErr } = await client
+const {  perfilLog, error: logErr } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
