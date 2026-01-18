@@ -188,7 +188,6 @@ input, select, textarea {
 <input type="hidden" id="region_hidden">
 <input type="hidden" id="estado_hidden">
 <input type="hidden" id="estatus_hidden">
-<input type="hidden" id="foto_url_hidden">
 <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
   <div class="form-group">
     <label for="fecha_inicio">Fecha de Inicio *</label>
@@ -234,7 +233,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data: { session }, error } = await client.auth.getSession();
     if (error || !session) return window.location.href = '../../index.html';
     
-    const { data: perfil } = await client
+    const {  perfil } = await client
       .from('perfiles')
       .select('email, rol')
       .eq('id', session.user.id)
@@ -271,7 +270,7 @@ async function buscarFuncionario() {
 
   try {
     // Verificar reposo activo
-    const { data: repososActivos, error: errReposo } = await client
+    const {  repososActivos, error: errReposo } = await client
       .from('reposos')
       .select('id, estado_solicitud')
       .eq('cedula', cedula)
@@ -284,7 +283,7 @@ async function buscarFuncionario() {
       return;
     }
 
-    // Buscar en rrhh_icap
+    // Buscar en rrhh_icap (para datos básicos)
     const { data, error } = await client
       .from('rrhh_icap')
       .select('*')
@@ -292,14 +291,31 @@ async function buscarFuncionario() {
       .single();
     if (error || !data) throw new Error('No encontrado');
 
-    // Mostrar foto
+    // ✅ Cargar foto desde bucket (como en consulta.html)
     const photoContainer = document.getElementById('photoContainer');
-    const fotoUrl = data.foto_url;
-    if (fotoUrl) {
-      const publicUrl = client.storage.from('fotos_perfil').getPublicUrl(fotoUrl).data.publicUrl;
-      photoContainer.innerHTML = `<img src="${publicUrl}" alt="Foto del funcionario">`;
-    } else {
-      photoContainer.innerHTML = '🪪';
+    photoContainer.innerHTML = '🪪';
+    const extensions = ['jpeg', 'jpg', 'png'];
+    let fotoCargada = false;
+    for (const ext of extensions) {
+      const path = `foto_${cedula}.${ext}`;
+      try {
+        const {  signedData, error: urlError } = await client.storage
+          .from('fotos_funcionarios')
+          .createSignedUrl(path, 3600);
+        if (!urlError && signedData?.signedUrl) {
+          const img = document.createElement('img');
+          img.src = signedData.signedUrl;
+          img.style.width = '100%';
+          img.style.height = '100%';
+          img.style.objectFit = 'cover';
+          photoContainer.innerHTML = '';
+          photoContainer.appendChild(img);
+          fotoCargada = true;
+          break;
+        }
+      } catch (err) {
+        continue;
+      }
     }
 
     // Mostrar datos
@@ -329,7 +345,6 @@ async function buscarFuncionario() {
     document.getElementById('region_hidden').value = data.region || '';
     document.getElementById('estado_hidden').value = data.estado || '';
     document.getElementById('estatus_hidden').value = data.estatus || '';
-    document.getElementById('foto_url_hidden').value = data.foto_url || '';
 
     document.getElementById('datosFuncionario').style.display = 'block';
     document.getElementById('reposoForm').style.display = 'block';
