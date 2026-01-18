@@ -240,24 +240,10 @@ Dejar sin archivo para conservar foto actual.
 <label for="cedula">Cédula *</label>
 <input type="text" id="cedula" readonly style="background:#f0f0f0; cursor:not-allowed;">
 </div>
+<!-- ✅ CAMPO RANGO CONVERTIDO A INPUT DE TEXTO -->
 <div class="form-group">
 <label for="rango">Rango *</label>
-<select id="rango" required>
-<option value="">— Seleccione —</option>
-<option value="Comisario Superior">Comisario Superior</option>
-<option value="Comisario General">Comisario General</option>
-<option value="Comisario Mayor">Comisario Mayor</option>
-<option value="Comisario Jefe">Comisario Jefe</option>
-<option value="Primer Comisario">Primer Comisario</option>
-<option value="Comisario">Comisario</option>
-<option value="Inspector Jefe">Inspector Jefe</option>
-<option value="Primer Inspector">Primer Inspector</option>
-<option value="Inspector">Inspector</option>
-<option value="Oficial Jefe">Oficial Jefe</option>
-<option value="Primer Oficial">Primer Oficial</option>
-<option value="Oficial">Oficial</option>
-<option value="Personal Contratado">Personal Contratado</option>
-</select>
+<input type="text" id="rango" required>
 </div>
 <div class="form-group">
 <label for="apellidos_nombres">Apellidos y Nombres *</label>
@@ -357,7 +343,7 @@ Dejar sin archivo para conservar foto actual.
 <div class="form-group">
 <label for="edad_funcionario">Edad</label>
 <div style="display:flex; align-items:center; gap:8px;">
-<input type="number" id="edad_funcionario" min="18" max="99" placeholder="25">
+<input type="number" id="edad_funcionario" min="18" max="99" placeholder="25" readonly>
 <span style="font-weight:500; color:#555;">años</span>
 </div>
 </div>
@@ -421,18 +407,40 @@ const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
 const alertDiv = document.getElementById('searchMessage');
 let currentCedula = null;
+// ✅ Función para calcular edad
+function calcularEdad() {
+const fechaNacInput = document.getElementById('fecha_nacimiento');
+const edadInput = document.getElementById('edad_funcionario');
+if (!fechaNacInput || !edadInput) return;
+const fechaNac = new Date(fechaNacInput.value);
+const hoy = new Date();
+if (fechaNacInput.value && !isNaN(fechaNac.getTime())) {
+let edad = hoy.getFullYear() - fechaNac.getFullYear();
+const mesDiff = hoy.getMonth() - fechaNac.getMonth();
+if (mesDiff < 0 || (mesDiff === 0 && hoy.getDate() < fechaNac.getDate())) {
+edad--;
+}
+if (edad >= 0 && edad <= 99) {
+edadInput.value = edad;
+} else {
+edadInput.value = '';
+}
+} else {
+edadInput.value = '';
+}
+}
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const {  { session }, error } = await client.auth.getSession();
+const { data: { session }, error } = await client.auth.getSession();
 if (error || !session) return window.location.href = '../index.html';
-const {  perfil } = await client
+const { data: perfil } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
 .single();
 if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
 alert('🔒 Solo administradores y moderadores pueden modificar.');
-return window.location.href = '../index.html'; // ✅ Corregido
+return window.location.href = 'auditoria-nacional.html';
 }
 document.getElementById('userEmail').textContent = perfil.email;
 document.getElementById('userRol').textContent =
@@ -443,6 +451,8 @@ if (e.key === 'Enter') buscarPorCedula();
 });
 document.getElementById('modificarForm').addEventListener('submit', actualizarRegistro);
 document.getElementById('photoInput').addEventListener('change', previsualizarFoto);
+// ✅ Vincular recálculo al cambio de fecha
+document.getElementById('fecha_nacimiento').addEventListener('change', calcularEdad);
 } catch (err) {
 console.error(err);
 window.location.href = '../index.html';
@@ -484,7 +494,7 @@ document.getElementById('cohorte_promocion').value = f.cohorte_promocion || '';
 document.getElementById('institucion_origen').value = f.institucion_origen || '';
 document.getElementById('fecha_ingreso').value = f.fecha_ingreso || '';
 document.getElementById('fecha_nacimiento').value = f.fecha_nacimiento || '';
-document.getElementById('edad_funcionario').value = f.edad_funcionario || '';
+// ⚠️ NO se asigna edad_funcionario desde la BD
 document.getElementById('fecha_oficio').value = f.fecha_oficio || '';
 document.getElementById('fecha_transferencia_normalizacion').value = f.fecha_transferencia_normalizacion || '';
 document.getElementById('tipo_movimiento').value = f.tipo_movimiento || '';
@@ -492,64 +502,13 @@ document.getElementById('observaciones').value = f.observaciones || '';
 document.getElementById('fechas_egreso').value = f.fechas_egreso || '';
 document.getElementById('direccion').value = f.direccion || '';
 document.getElementById('telefono').value = f.telefono || '';
-// ✅ Función mejorada para selects
-const setSelectValue = (id, valueFromDB) => {
-const select = document.getElementById(id);
-if (!select) return;
-const cleanDB = (valueFromDB || '').toString().trim();
-let found = false;
-// Buscar por valor exacto (sin normalizar)
-for (let opt of select.options) {
-if (opt.value === cleanDB) {
-select.value = cleanDB;
-found = true;
-break;
-}
-}
-// Si no se encuentra, buscar por texto visible ignorando mayúsculas/minúsculas
-if (!found) {
-for (let opt of select.options) {
-if (opt.text.trim().toLowerCase() === cleanDB.toLowerCase()) {
-select.value = opt.value;
-found = true;
-break;
-}
-}
-}
-// Si sigue sin coincidir, intentar normalizar el valor de la BD
-if (!found) {
-const normalizedDB = cleanDB
-.toLowerCase()
-.replace(/á/g, 'a')
-.replace(/é/g, 'e')
-.replace(/í/g, 'i')
-.replace(/ó/g, 'o')
-.replace(/ú/g, 'u');
-for (let opt of select.options) {
-const normalizedOpt = opt.text.trim().toLowerCase()
-.replace(/á/g, 'a')
-.replace(/é/g, 'e')
-.replace(/í/g, 'i')
-.replace(/ó/g, 'o')
-.replace(/ú/g, 'u');
-if (normalizedOpt === normalizedDB) {
-select.value = opt.value;
-found = true;
-break;
-}
-}
-}
-// Si nada funciona, dejar vacío
-if (!found) {
-select.value = '';
-}
-};
-setSelectValue('rango', f.rango);
-// 🔁 Mapeo especial para región: convertir "REDIP XXX" → "XXX"
+
+// ✅ ASIGNACIÓN DIRECTA DEL RANGO COMO TEXTO
+document.getElementById('rango').value = f.rango || '';
+
+// 🔁 Mapeo especial para región
 const regionSelect = document.getElementById('region');
 const dbRegionRaw = (f.region || '').toString().trim();
-let mappedRegion = '';
-// Mapeo directo de valores de BD a valores del select
 const regionMap = {
 'REDIP CAPITAL': 'Capital',
 'REDIP GUAYANA': 'Guayana',
@@ -559,17 +518,37 @@ const regionMap = {
 'REDIP LOS ANDES': 'Los Andes',
 'REDIP OCCIDENTAL': 'Occidental'
 };
-// Buscar el valor mapeado
-mappedRegion = regionMap[dbRegionRaw] || '';
-// Asignar al select
-if (mappedRegion) {
-regionSelect.value = mappedRegion;
-} else {
-regionSelect.value = '';
+regionSelect.value = regionMap[dbRegionRaw] || '';
+
+// ✅ Función auxiliar para selects (usada solo para estado y status)
+const setSelectValue = (id, valueFromDB) => {
+const select = document.getElementById(id);
+if (!select) return;
+const cleanDB = (valueFromDB || '').toString().trim();
+let found = false;
+for (let opt of select.options) {
+if (opt.value === cleanDB) {
+select.value = cleanDB;
+found = true;
+break;
 }
-// ✅ ¡ESTA LÍNEA YA NO EXISTE! (era la que rompía todo)
+}
+if (!found) {
+for (let opt of select.options) {
+if (opt.text.trim().toLowerCase() === cleanDB.toLowerCase()) {
+select.value = opt.value;
+found = true;
+break;
+}
+}
+}
+if (!found) {
+select.value = '';
+}
+};
 setSelectValue('estado', f.estado);
 setSelectValue('status', f.status);
+
 // Cabecera
 document.getElementById('headerNombre').textContent = f.apellidos_nombres || '—';
 const statusEl = document.getElementById('headerStatus');
@@ -582,6 +561,7 @@ else if (rawStatus.toLowerCase() === 'destituido') bgColor = '#c62828';
 else if (rawStatus.toLowerCase() === 'suspendido') bgColor = '#ef6c00';
 else if (rawStatus === 'DA') bgColor = '#7b1fa2';
 statusEl.style.backgroundColor = bgColor;
+
 // Correo
 if (f.correo_electronico) {
 const parts = f.correo_electronico.split('@');
@@ -590,12 +570,16 @@ document.getElementById('correo_local').value = parts[0];
 document.getElementById('correo_dominio').value = parts[1];
 }
 }
+
 // Foto y autoresize
 cargarFotoActual(f.cedula);
 document.querySelectorAll('textarea.autoresize').forEach(el => {
 el.style.height = 'auto';
 el.style.height = el.scrollHeight + 'px';
 });
+
+// ✅ Calcular edad tras cargar la fecha
+calcularEdad();
 }
 async function cargarFotoActual(cedula) {
 const container = document.getElementById('photoContainer');
@@ -651,8 +635,12 @@ const local = document.getElementById('correo_local').value.trim();
 const dom = document.getElementById('correo_dominio').value;
 let correo = '';
 if (local && dom) correo = `${local}@${dom}`;
+
+// ✅ Asegurar que la edad se calcule antes de enviar
+calcularEdad();
+
 const data = {
-rango: document.getElementById('rango').value,
+rango: document.getElementById('rango').value.trim(), // ✅ ahora es input de texto
 apellidos_nombres: document.getElementById('apellidos_nombres').value.trim(),
 sexo: document.getElementById('sexo').value,
 dependencia: document.getElementById('dependencia').value.trim(),
@@ -674,18 +662,21 @@ fechas_egreso: document.getElementById('fechas_egreso').value.trim(),
 direccion: document.getElementById('direccion').value.trim(),
 correo_electronico: correo
 };
+
 const required = ['apellidos_nombres', 'rango', 'estado', 'region', 'status'];
 for (let field of required) {
 if (!data[field]) {
 return showAlert(`⚠️ El campo "${field}" es obligatorio.`, 'error');
 }
 }
+
 try {
 const { error } = await client
 .from('auditoria_personal')
 .update(data)
 .eq('cedula', currentCedula);
 if (error) throw error;
+
 const photoInput = document.getElementById('photoInput');
 if (photoInput.files.length > 0) {
 const file = photoInput.files[0];
@@ -696,11 +687,12 @@ const { error: upErr } = await client.storage
 .upload(fileName, file, { upsert: true });
 if (upErr) console.warn('Foto subida con advertencia:', upErr.message);
 }
+
 try {
 const sessionResponse = await client.auth.getSession();
 const session = sessionResponse?.data?.session;
 if (session) {
-const {  perfil } = await client
+const { data: perfil } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
@@ -723,6 +715,7 @@ nuevo_telefono: data.telefono
 } catch (logErr) {
 console.warn('⚠️ Log de edición no guardado:', logErr.message);
 }
+
 showAlert('✅ Ficha actualizada exitosamente.', 'success');
 setTimeout(() => location.reload(), 1500);
 } catch (err) {
