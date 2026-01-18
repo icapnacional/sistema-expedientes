@@ -310,7 +310,7 @@ input[type="number"]::-webkit-inner-spin-button {
             <option value="Miranda">Miranda</option>
             <option value="Monagas">Monagas</option>
             <option value="Nueva Esparta">Nueva Esparta</option>
-            <option value="Portuguesa">Portuguesa</option>
+            <option value="Portuguesava">Portuguesa</option>
             <option value="Sucre">Sucre</option>
             <option value="Táchira">Táchira</option>
             <option value="Trujillo">Trujillo</option>
@@ -452,7 +452,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const { data: { session }, error } = await client.auth.getSession();
     if (error || !session) return window.location.href = '../index.html';
-    const { data: perfil } = await client
+    const {  perfil } = await client
       .from('perfiles')
       .select('email, rol')
       .eq('id', session.user.id)
@@ -525,7 +525,7 @@ function cargarDatosFormulario(f) {
   document.getElementById('direccion').value = f.direccion || '';
   document.getElementById('telefono').value = f.telefono || '';
 
-  // ✅ Función auxiliar para selects
+  // ✅ Cargar selects
   const setSelectValue = (id, valueFromDB) => {
     const select = document.getElementById(id);
     if (!select) return;
@@ -552,9 +552,10 @@ function cargarDatosFormulario(f) {
     }
   };
 
+  // Rango
   setSelectValue('rango', f.rango);
 
-  // 🔁 Mapeo especial para región
+  // Región (mapeo especial)
   const regionSelect = document.getElementById('region');
   const dbRegionRaw = (f.region || '').toString().trim();
   const regionMap = {
@@ -568,6 +569,7 @@ function cargarDatosFormulario(f) {
   };
   regionSelect.value = regionMap[dbRegionRaw] || '';
 
+  // Estado y Status
   setSelectValue('estado', f.estado);
   setSelectValue('status', f.status);
 
@@ -717,7 +719,7 @@ async function actualizarRegistro(e) {
       const sessionResponse = await client.auth.getSession();
       const session = sessionResponse?.data?.session;
       if (session) {
-        const { data: perfil } = await client
+        const {  perfil } = await client
           .from('perfiles')
           .select('email, rol')
           .eq('id', session.user.id)
