@@ -360,7 +360,7 @@ Dejar sin archivo para conservar foto actual.
 </div>
 <div class="form-group">
 <label for="fecha_nacimiento">Fecha de Nacimiento</label>
-<input type="date" id="fecha_nacimiento">
+<input type="date" id="fecha_nacimiento" name="fecha_nacimiento" onchange="calcularEdad()">
 </div>
 <div class="form-group">
 <label for="edad_funcionario">Edad</label>
@@ -493,6 +493,7 @@ function cargarDatosFormulario(f) {
   document.getElementById('institucion_origen').value = f.institucion_origen || '';
   document.getElementById('fecha_ingreso').value = f.fecha_ingreso || '';
   document.getElementById('fecha_nacimiento').value = f.fecha_nacimiento || '';
+  calcularEdad();
   document.getElementById('edad_funcionario').value = f.edad_funcionario || '';
   document.getElementById('fecha_oficio').value = f.fecha_oficio || '';
   document.getElementById('fecha_transferencia_normalizacion').value = f.fecha_transferencia_normalizacion || '';
@@ -759,6 +760,28 @@ function showAlert(msg, type) {
 alertDiv.textContent = msg;
 alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
 alertDiv.style.display = msg ? 'block' : 'none';
+}
+  function calcularEdad() {
+  const fechaNacInput = document.getElementById('fecha_nacimiento');
+  const edadInput = document.getElementById('edad');
+  const fechaNac = new Date(fechaNacInput.value);
+  const hoy = new Date();
+
+  if (fechaNacInput.value && !isNaN(fechaNac.getTime())) {
+    let edad = hoy.getFullYear() - fechaNac.getFullYear();
+    const mesDiff = hoy.getMonth() - fechaNac.getMonth();
+    if (mesDiff < 0 || (mesDiff === 0 && hoy.getDate() < fechaNac.getDate())) {
+      edad--;
+    }
+    // Asegurar que solo sean números y máximo 2 dígitos
+    if (edad >= 0 && edad <= 99) {
+      edadInput.value = edad;
+    } else {
+      edadInput.value = '';
+    }
+  } else {
+    edadInput.value = '';
+  }
 }
   document.getElementById('btnVolver').addEventListener('click', () => {
   window.location.href = '../index.html';
