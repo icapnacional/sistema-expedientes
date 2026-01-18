@@ -567,31 +567,109 @@ el.style.height = el.scrollHeight + 'px';
 calcularEdad();
 }
 async function cargarFotoActual(cedula) {
-const container = document.getElementById('photoContainer');
-container.innerHTML = '🪪';
-const extensions = ['jpeg', 'jpg', 'png'];
-for (const ext of extensions) {
-const path = `foto_${cedula}.${ext}`;
-try {
-const { data, error } = await client.storage
-.from('fotos_funcionarios')
-.createSignedUrl(path, 3600);
-if (error) continue;
-if (data?.signedUrl) {
-const img = new Image();
-img.crossOrigin = 'anonymous';
-img.onload = () => {
-container.innerHTML = '';
-container.appendChild(img);
-};
-img.onerror = () => {};
-img.src = data.signedUrl;
-return;
-}
-} catch (err) {
-continue;
-}
-}
+  const container = document.getElementById('photoContainer');
+  
+  // Mostrar placeholder inmediatamente
+  container.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100%;width:100%;font-size:48px;">🪪</div>';
+  
+  // Verificar si ya tenemos una foto en caché
+  const cachedPhoto = localStorage.getItem(`foto_cache_${cedula}`);
+  if (cachedPhoto) {
+    const img = new Image();
+    img.src = cachedPhoto;
+    img.onload = () => {
+      container.innerHTML = '';
+      container.appendChild(img);
+    };
+    return;
+  }
+  
+  // Creer un array de promesas para cargar todas las extensiones simultáneamente
+  const extensions = ['jpg', 'jpeg', 'png'];
+  const loadingPromises = [];
+  
+  // Obtener sesión una sola vez
+  const { data: { session } } = await client.auth.getSession();
+  
+  for (const ext of extensions) {
+    const path = `foto_${cedula}.${ext}`;
+    loadingPromises.push(
+      new Promise(async (resolve) => {
+        try {
+          let imageUrl = '';
+          
+          // Intentar URL pública primero (más rápida)
+          const { data: publicData } = client.storage
+            .from('fotos_funcionarios')
+            .getPublicUrl(path);
+            
+          if (publicData?.publicUrl) {
+            imageUrl = publicData.publicUrl;
+          } 
+          // Si no funciona la pública y tenemos sesión, intentar URL firmada
+          else if (session) {
+            const { data: signedData, error } = await client.storage
+              .from('fotos_funcionarios')
+              .createSignedUrl(path, 3600);
+              
+            if (!error && signedData?.signedUrl) {
+              imageUrl = signedData.signedUrl;
+            }
+          }
+          
+          if (imageUrl) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+              resolve({ success: true, img, ext });
+            };
+            img.onerror = () => {
+              resolve({ success: false, ext });
+            };
+            img.src = imageUrl;
+          } else {
+            resolve({ success: false, ext });
+          }
+        } catch (err) {
+          resolve({ success: false, ext, error: err.message });
+        }
+      })
+    );
+  }
+  
+  // Esperar a que alguna promesa se resuelva con éxito
+  const results = await Promise.race([
+    Promise.all(loadingPromises),
+    new Promise(resolve => setTimeout(resolve, 3000, 'timeout')) // Timeout de 3 segundos
+  ]);
+  
+  if (Array.isArray(results)) {
+    // Buscar el primer resultado exitoso
+    const successfulResult = results.find(r => r.success);
+    
+    if (successfulResult) {
+      // Mostrar la foto encontrada
+      container.innerHTML = '';
+      container.appendChild(successfulResult.img);
+      
+      // Guardar en caché por 1 hora
+      successfulResult.img.onload = () => {
+        canvas = document.createElement('canvas');
+        canvas.width = successfulResult.img.width;
+        canvas.height = successfulResult.img.height;
+        ctx = canvas.getContext('2d');
+        ctx.drawImage(successfulResult.img, 0, 0);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        localStorage.setItem(`foto_cache_${cedula}`, dataUrl);
+        setTimeout(() => localStorage.removeItem(`foto_cache_${cedula}`), 3600000);
+      };
+      return;
+    }
+  }
+  
+  // Si ninguna foto se cargó, mantener el placeholder
+  container.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100%;width:100%;font-size:48px;">🪪</div>';
+  console.log(`No se encontró foto para la cédula ${cedula}`);
 }
 function previsualizarFoto(e) {
 const file = e.target.files[0];
