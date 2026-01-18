@@ -76,7 +76,6 @@ const PERMISSIONS = {
     roles: ['admin', 'moderador', 'consultor'],
     action: () => { alert('Módulo en desarrollo'); }
   },
-  },
 'btnReintegros': {
   roles: ['admin', 'consultor'],
   action: () => { window.location.href = 'reposo/reintegros.html'; }
