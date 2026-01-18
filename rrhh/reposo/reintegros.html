@@ -282,11 +282,11 @@
       if (!confirm(`¿Reintegrar al funcionario con cédula ${cedula}?`)) return;
 
       try {
-        // 1. Actualizar status en rrhh_icap → "activo"
-        const { error: err1 } = await client
-          .from('rrhh_icap')
-          .update({ status: 'activo' })
-          .eq('cedula', cedula);
+       // 1. Actualizar estatus en rrhh_icap → "DISPONIBLE"
+const { error: err1 } = await client
+  .from('rrhh_icap')
+  .update({ estatus: 'DISPONIBLE' })
+  .eq('cedula', cedula);
 
         if (err1) throw new Error('No se pudo actualizar el status del funcionario.');
 
