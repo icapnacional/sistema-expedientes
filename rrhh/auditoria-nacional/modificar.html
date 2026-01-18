@@ -189,14 +189,6 @@ font-weight: 600;
 font-size: 13px;
 margin-left: 8px;
 }
-.loading {
-display: flex;
-justify-content: center;
-align-items: center;
-height: 100%;
-color: #722F37;
-font-size: 14px;
-}
 </style>
 </head>
 <body>
@@ -248,25 +240,10 @@ Dejar sin archivo para conservar foto actual.
 <label for="cedula">Cédula *</label>
 <input type="text" id="cedula" readonly style="background:#f0f0f0; cursor:not-allowed;">
 </div>
-<!-- ✅ RANGO COMO SELECT CON RANGOS POLICIALES -->
+<!-- ✅ RANGO COMO INPUT DE TEXTO -->
 <div class="form-group">
 <label for="rango">Rango *</label>
-<select id="rango" required>
-<option value="">— Seleccione un rango —</option>
-<option value="Comisario Superior">Comisario Superior</option>
-<option value="Comisario General">Comisario General</option>
-<option value="Comisario Mayor">Comisario Mayor</option>
-<option value="Comisario Jefe">Comisario Jefe</option>
-<option value="Primer Comisario">Primer Comisario</option>
-<option value="Comisario">Comisario</option>
-<option value="Inspector Jefe">Inspector Jefe</option>
-<option value="Primer Inspector">Primer Inspector</option>
-<option value="Inspector">Inspector</option>
-<option value="Oficial Jefe">Oficial Jefe</option>
-<option value="Primer Oficial">Primer Oficial</option>
-<option value="Oficial">Oficial</option>
-<option value="Personal Contratado">Personal Contratado</option>
-</select>
+<input type="text" id="rango" required>
 </div>
 <div class="form-group">
 <label for="apellidos_nombres">Apellidos y Nombres *</label>
@@ -284,7 +261,7 @@ Dejar sin archivo para conservar foto actual.
 <label for="dependencia">Dependencia</label>
 <textarea id="dependencia" class="autoresize" rows="1"></textarea>
 </div>
-<!-- ✅ REGIÓN: SELECT -->
+<!-- ✅ REGIÓN: SELECT PERO CON CARGA ROBUSTA -->
 <div class="form-group">
 <label for="region">Región *</label>
 <select id="region" required>
@@ -445,6 +422,7 @@ edadInput.value = '';
 }
 document.addEventListener('DOMContentLoaded', async () => {
 try {
+// ✅ CORRECCIÓN: Sintaxis válida para getSession()
 const { data, error } = await client.auth.getSession();
 const session = data?.session;
 if (error || !session) return window.location.href = '../index.html';
@@ -515,36 +493,8 @@ document.getElementById('observaciones').value = f.observaciones || '';
 document.getElementById('fechas_egreso').value = f.fechas_egreso || '';
 document.getElementById('direccion').value = f.direccion || '';
 document.getElementById('telefono').value = f.telefono || '';
-// ✅ RANGO: asignación correcta al select
-const rangoSelect = document.getElementById('rango');
-const valorRango = (f.rango || '').trim();
-let valorEncontrado = false;
-
-// Buscar coincidencia exacta
-for (let i = 0; i < rangoSelect.options.length; i++) {
-if (rangoSelect.options[i].value === valorRango) {
-rangoSelect.value = valorRango;
-valorEncontrado = true;
-break;
-}
-}
-
-// Si no hay coincidencia exacta, buscar coincidencia insensible a mayúsculas/minúsculas
-if (!valorEncontrado) {
-for (let i = 0; i < rangoSelect.options.length; i++) {
-if (rangoSelect.options[i].value.toLowerCase() === valorRango.toLowerCase()) {
-rangoSelect.value = rangoSelect.options[i].value;
-valorEncontrado = true;
-break;
-}
-}
-}
-
-// Si sigue sin encontrar, dejar el primer valor vacío seleccionado
-if (!valorEncontrado && valorRango) {
-console.warn(`Rango no reconocido: "${valorRango}"`);
-}
-
+// ✅ RANGO: asignación directa
+document.getElementById('rango').value = f.rango || '';
 // ✅ REGIÓN: carga robusta
 const regionSelect = document.getElementById('region');
 const dbRegionRaw = (f.region || '').toString().trim();
@@ -617,99 +567,31 @@ el.style.height = el.scrollHeight + 'px';
 calcularEdad();
 }
 async function cargarFotoActual(cedula) {
-  const container = document.getElementById('photoContainer');
-  container.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100%;color:#722F37;font-size:14px;">Buscando foto...</div>';
-  
-  // Verificar si hay sesión activa primero
-  const { data: { session } } = await client.auth.getSession();
-  
-  const extensions = ['jpg', 'jpeg', 'png'];
-  let fotoEncontrada = false;
-  
-  // Si tenemos sesión, intentar primero con URLs firmadas
-  if (session) {
-    for (const ext of extensions) {
-      const path = `foto_${cedula}.${ext}`;
-      try {
-        const { data, error } = await client.storage
-          .from('fotos_funcionarios')
-          .createSignedUrl(path, 3600);
-          
-        if (error) {
-          console.debug(`URL firmada falló para ${path}:`, error.message);
-          continue;
-        }
-        
-        if (data?.signedUrl) {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.onload = () => {
-            container.innerHTML = '';
-            container.appendChild(img);
-            fotoEncontrada = true;
-          };
-          img.onerror = () => {
-            console.debug(`Error al cargar foto firmada: ${path}`);
-          };
-          img.src = data.signedUrl;
-          
-          // Dar tiempo para que la imagen se cargue
-          await new Promise(resolve => setTimeout(resolve, 300));
-          if (fotoEncontrada) return;
-        }
-      } catch (err) {
-        console.debug(`Error procesando ${path}:`, err.message);
-        continue;
-      }
-    }
-  }
-  
-  // Si no hay sesión o las URLs firmadas fallan, intentar con URLs públicas
-  if (!fotoEncontrada) {
-    for (const ext of extensions) {
-      const path = `foto_${cedula}.${ext}`;
-      try {
-        const { data } = client.storage
-          .from('fotos_funcionarios')
-          .getPublicUrl(path);
-          
-        if (data?.publicUrl) {
-          // Verificar si la URL es accesible
-          try {
-            const response = await fetch(data.publicUrl, { method: 'HEAD', mode: 'no-cors' });
-            // No podemos verificar response.ok con no-cors, pero intentamos cargar la imagen
-          } catch (accessError) {
-            console.debug(`No se pudo acceder a URL pública ${path}:`, accessError.message);
-            continue;
-          }
-          
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.onload = () => {
-            container.innerHTML = '';
-            container.appendChild(img);
-            fotoEncontrada = true;
-          };
-          img.onerror = () => {
-            console.debug(`Error al cargar foto pública: ${path}`);
-          };
-          img.src = data.publicUrl;
-          
-          await new Promise(resolve => setTimeout(resolve, 300));
-          if (fotoEncontrada) return;
-        }
-      } catch (err) {
-        console.debug(`Error con URL pública ${path}:`, err.message);
-        continue;
-      }
-    }
-  }
-  
-  // Si ninguna estrategia funcionó, mostrar el placeholder
-  if (!fotoEncontrada) {
-    container.innerHTML = '🪪';
-    console.log(`No se encontró foto para la cédula ${cedula}`);
-  }
+const container = document.getElementById('photoContainer');
+container.innerHTML = '🪪';
+const extensions = ['jpeg', 'jpg', 'png'];
+for (const ext of extensions) {
+const path = `foto_${cedula}.${ext}`;
+try {
+const { data, error } = await client.storage
+.from('fotos_funcionarios')
+.createSignedUrl(path, 3600);
+if (error) continue;
+if (data?.signedUrl) {
+const img = new Image();
+img.crossOrigin = 'anonymous';
+img.onload = () => {
+container.innerHTML = '';
+container.appendChild(img);
+};
+img.onerror = () => {};
+img.src = data.signedUrl;
+return;
+}
+} catch (err) {
+continue;
+}
+}
 }
 function previsualizarFoto(e) {
 const file = e.target.files[0];
