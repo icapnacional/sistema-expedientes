@@ -3,52 +3,199 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Historial de Actividades | RRHH</title>
+<title>Modificar Personal | RRHH</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Inter', sans-serif; background: #fafafa; padding: 20px; }
-.container { max-width: 1200px; margin: 0 auto; }
-.header img { width: 90px; margin-bottom: 16px; }
-.card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); margin-bottom: 24px; }
-.filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-input, select, button { padding: 10px 16px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; }
-button { background: #722F37; color: white; cursor: pointer; }
-table { width: 100%; border-collapse: collapse; }
-th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #eee; }
-th { background: #f8f9fa; font-weight: 600; }
-.rol-admin { color: #c62828; font-weight: 600; }
-.rol-moderador { color: #2e7d32; font-weight: 600; }
-.rol-consultor { color: #1565c0; font-weight: 600; }
-.accion-consulta { background: #e3f2fd; color: #0d47a1; padding: 4px 8px; border-radius: 4px; }
-.accion-registro { background: #e8f5e9; color: #1b5e20; padding: 4px 8px; border-radius: 4px; }
-.accion-edicion { background: #fff8e1; color: #e65100; padding: 4px 8px; border-radius: 4px; }
-.pagination { display: flex; justify-content: center; gap: 6px; margin-top: 24px; }
-.page-btn { width: 36px; height: 36px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; }
-.page-btn.active { background: #722F37; color: white; }
-#logOverlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.6); z-index: 1000; display: none;
-  align-items: center; justify-content: center; padding: 20px;
+body {
+background-color: #fafafa;
+font-family: 'Inter', sans-serif;
+color: #2d2d2d;
+padding: 20px;
 }
-#logModal {
-  background: white; border-radius: 16px; width: 100%; max-width: 800px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow: hidden;
+.container {
+max-width: 1000px;
+margin: 0 auto;
+}
+.header {
+text-align: center;
+margin-bottom: 24px;
+}
+.header img {
+width: 90px;
+margin-bottom: 16px;
+}
+.header h1 {
+font-size: 24px;
+font-weight: 700;
+color: #2d2d2d;
+}
+.user-info {
+background: white;
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 24px;
+box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+border: 1px solid #eee;
+}
+.card {
+background: white;
+border-radius: 12px;
+padding: 24px;
+box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+margin-bottom: 24px;
+border: 1px solid #eee;
+}
+.card h2 {
+font-size: 20px;
+margin-bottom: 20px;
+color: #722F37;
+}
+.search-section {
+background: #f8f9fa;
+border-radius: 12px;
+padding: 20px;
+margin-bottom: 24px;
+border: 1px solid #eee;
+}
+.form-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 20px;
+}
+.form-group {
+margin-bottom: 16px;
+}
+label {
+display: block;
+margin-bottom: 6px;
+font-size: 14px;
+font-weight: 600;
+color: #333;
+}
+input, select, textarea {
+width: 100%;
+padding: 10px 12px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 15px;
+background: #fdfdfd;
+}
+textarea.autoresize {
+resize: none;
+overflow: hidden;
+min-height: 44px;
+line-height: 1.5;
+padding: 10px 12px;
+}
+#direccion {
+min-height: 60px !important;
+}
+input[type="number"] {
+-moz-appearance: textfield;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+.btn {
+background-color: #722F37;
+color: white;
+border: none;
+border-radius: 10px;
+padding: 12px 24px;
+font-size: 16px;
+font-weight: 600;
+cursor: pointer;
+display: inline-flex;
+align-items: center;
+gap: 8px;
+}
+.btn:hover {
+background-color: #5e262d;
+}
+.btn-outline {
+background: transparent;
+border: 1px solid #722F37;
+color: #722F37;
+}
+.btn-update {
+background-color: #2e7d32;
+}
+.btn-update:hover {
+background-color: #1b5e20;
+}
+.alert {
+padding: 12px;
+border-radius: 8px;
+margin: 16px 0;
+display: none;
+}
+.alert-success { background: #e8f5e9; color: #2e7d32; }
+.alert-error { background: #ffebee; color: #c62828; }
+.breadcrumb {
+background: #f8f9fa;
+border-radius: 12px;
+padding: 12px 20px;
+margin-bottom: 24px;
+font-size: 14px;
+color: #555;
+}
+.breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+.breadcrumb span { margin: 0 8px; color: #888; }
+.photo-section {
+text-align: center;
+margin-bottom: 24px;
+}
+.photo-placeholder {
+width: 200px;
+height: 200px;
+border-radius: 8px;
+background: #f0f0f0;
+margin: 0 auto 16px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 64px;
+color: #888;
+overflow: hidden;
+border: 2px solid #eee;
+position: relative;
+}
+.photo-placeholder img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+#photoInput { display: none; }
+.upload-btn {
+background: #722F37;
+color: white;
+border: none;
+padding: 6px 12px;
+border-radius: 6px;
+font-size: 12px;
+cursor: pointer;
+margin-top: 8px;
+}
+.upload-btn:hover { background: #5e262d; }
+.status-indicator {
+display: inline-block;
+padding: 4px 12px;
+border-radius: 6px;
+font-weight: 600;
+font-size: 13px;
+margin-left: 8px;
 }
 .loading {
-  text-align: center;
-  padding: 40px;
-  color: #722F37;
-  font-weight: 500;
-}
-.error {
-  text-align: center;
-  padding: 20px;
-  color: #c62828;
-  background-color: #ffebee;
-  border-radius: 8px;
-  margin: 10px 0;
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100%;
+color: #722F37;
+font-size: 14px;
 }
 </style>
 </head>
@@ -57,306 +204,563 @@ th { background: #f8f9fa; font-weight: 600; }
 <div class="breadcrumb">
 <a href="../../index.html">Inicio</a> <span>›</span>
 <a href="../index.html">RRHH</a> <span>›</span>
-<strong>Historial</strong>
+<strong>Registro</strong>
 </div>
-<div class="header" style="text-align:center; margin-bottom:24px;">
-<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional" />
-<h1>📜 Historial de Actividades — RRHH</h1>
+<div class="header">
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+<h1>Inspectoria para el Control de la Actuación Policial</h1>
+</div>
+<div class="user-info">
+<strong>Usuario:</strong> <span id="userEmail">—</span> |
+<strong>Rol:</strong> <span id="userRol">—</span>
 </div>
 <div class="card">
-<div class="filters">
-<input type="text" id="searchLogs" placeholder="Buscar por cédula, nombre o email" />
-<select id="filterAccion">
-<option value="">Todas las acciones</option>
-<option value="consulta">Consulta</option>
-<option value="registro">Registro</option>
-<option value="edicion">Edición</option>
+<h2>🔍 Buscar Personal por Cédula</h2>
+<div class="search-section">
+<div class="form-group">
+<label for="searchCedula">Cédula (8 dígitos) *</label>
+<input type="text" id="searchCedula" inputmode="numeric" maxlength="8" pattern="\d{8}" placeholder="Ej: 25653412">
+</div>
+<button id="btnBuscar" class="btn" style="width:100%;">Buscar</button>
+<div id="searchMessage" class="alert" style="margin-top:12px;"></div>
+</div>
+<form id="modificarForm" style="display:none;">
+<h2>✏️ Modificar Ficha de Personal</h2>
+<div id="fichaHeader" style="margin-bottom:16px; padding:12px; background:#f9f7f7; border-radius:8px;">
+<strong>C.I. <span id="headerCedula">—</span></strong> •
+<span id="headerNombre">—</span>
+<span id="headerStatus" class="status-indicator" style="background:#ccc;"></span>
+</div>
+<div class="photo-section">
+<div class="photo-placeholder" id="photoContainer">
+🪪
+</div>
+<input type="file" id="photoInput" accept="image/*">
+<button type="button" class="upload-btn" onclick="document.getElementById('photoInput').click()">
+📷 Cambiar Foto (opcional)
+</button>
+<div style="font-size:12px; color:#666; margin-top:6px;">
+Dejar sin archivo para conservar foto actual.
+</div>
+</div>
+<div class="form-grid">
+<div class="form-group">
+<label for="cedula">Cédula *</label>
+<input type="text" id="cedula" readonly style="background:#f0f0f0; cursor:not-allowed;">
+</div>
+<!-- ✅ RANGO COMO SELECT CON RANGOS POLICIALES -->
+<div class="form-group">
+<label for="rango">Rango *</label>
+<select id="rango" required>
+<option value="">— Seleccione un rango —</option>
+<option value="Comisario Superior">Comisario Superior</option>
+<option value="Comisario General">Comisario General</option>
+<option value="Comisario Mayor">Comisario Mayor</option>
+<option value="Comisario Jefe">Comisario Jefe</option>
+<option value="Primer Comisario">Primer Comisario</option>
+<option value="Comisario">Comisario</option>
+<option value="Inspector Jefe">Inspector Jefe</option>
+<option value="Primer Inspector">Primer Inspector</option>
+<option value="Inspector">Inspector</option>
+<option value="Oficial Jefe">Oficial Jefe</option>
+<option value="Primer Oficial">Primer Oficial</option>
+<option value="Oficial">Oficial</option>
+<option value="Personal Contratado">Personal Contratado</option>
 </select>
-<select id="filterRol">
-<option value="">Todos los roles</option>
-<option value="admin">Administrador</option>
-<option value="moderador">Moderador</option>
-<option value="consultor">Consultor</option>
+</div>
+<div class="form-group">
+<label for="apellidos_nombres">Apellidos y Nombres *</label>
+<textarea id="apellidos_nombres" class="autoresize" rows="1" required></textarea>
+</div>
+<div class="form-group">
+<label for="sexo">Sexo</label>
+<select id="sexo">
+<option value="">—</option>
+<option value="M">Masculino</option>
+<option value="F">Femenino</option>
 </select>
-<button id="btnFiltrar">🔍 Filtrar</button>
-<button id="btnExportar" style="background:#1976d2;">📥 Exportar CSV</button>
 </div>
-<div id="logsTable">
-<table>
-<thead>
-<tr>
-<th>Fecha y Hora</th>
-<th>Usuario</th>
-<th>Rol</th>
-<th>Acción</th>
-<th>Cédula</th>
-<th>Funcionario</th>
-<th>Detalles</th>
-</tr>
-</thead>
-<tbody id="logsBody">
-<tr>
-  <td colspan="7" class="loading">
-    <div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
-      <div style="width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #722F37; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-      Cargando historial de actividades...
-    </div>
-    <style>
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    </style>
-  </td>
-</tr>
-</tbody>
-</table>
+<div class="form-group">
+<label for="dependencia">Dependencia</label>
+<textarea id="dependencia" class="autoresize" rows="1"></textarea>
 </div>
-<div id="errorContainer" style="display: none;" class="error"></div>
-<div class="pagination" id="pagination"></div>
+<!-- ✅ REGIÓN: SELECT -->
+<div class="form-group">
+<label for="region">Región *</label>
+<select id="region" required>
+<option value="">— Seleccione —</option>
+<option value="Capital">Capital</option>
+<option value="Occidental">Occidental</option>
+<option value="Los Llanos">Los Llanos</option>
+<option value="Los Andes">Los Andes</option>
+<option value="Guayana">Guayana</option>
+<option value="Insular">Insular</option>
+<option value="Central">Central</option>
+<option value="Oriental">Oriental</option>
+</select>
+</div>
+<div class="form-group">
+<label for="estado">Estado *</label>
+<select id="estado" required>
+<option value="">— Seleccione —</option>
+<option value="Amazonas">Amazonas</option>
+<option value="Anzoátegui">Anzoátegui</option>
+<option value="Apure">Apure</option>
+<option value="Aragua">Aragua</option>
+<option value="Barinas">Barinas</option>
+<option value="Bolívar">Bolívar</option>
+<option value="Carabobo">Carabobo</option>
+<option value="Cojedes">Cojedes</option>
+<option value="Delta Amacuro">Delta Amacuro</option>
+<option value="Distrito Capital">Distrito Capital</option>
+<option value="Falcón">Falcón</option>
+<option value="Guárico">Guárico</option>
+<option value="Lara">Lara</option>
+<option value="Mérida">Mérida</option>
+<option value="Miranda">Miranda</option>
+<option value="Monagas">Monagas</option>
+<option value="Nueva Esparta">Nueva Esparta</option>
+<option value="Portuguesa">Portuguesa</option>
+<option value="Sucre">Sucre</option>
+<option value="Táchira">Táchira</option>
+<option value="Trujillo">Trujillo</option>
+<option value="Vargas">Vargas</option>
+<option value="Yaracuy">Yaracuy</option>
+<option value="Zulia">Zulia</option>
+</select>
+</div>
+<div class="form-group">
+<label for="servicio">Servicio</label>
+<textarea id="servicio" class="autoresize" rows="1"></textarea>
+</div>
+<div class="form-group">
+<label for="cohorte_promocion">Cohorte / Promoción</label>
+<textarea id="cohorte_promocion" class="autoresize" rows="1"></textarea>
+</div>
+<div class="form-group">
+<label for="institucion_origen">Institución de Origen</label>
+<textarea id="institucion_origen" class="autoresize" rows="1"></textarea>
+</div>
+<div class="form-group">
+<label for="fecha_ingreso">Fecha de Ingreso</label>
+<input type="date" id="fecha_ingreso">
+</div>
+<div class="form-group">
+<label for="telefono">Teléfono</label>
+<input type="tel" id="telefono" placeholder="Ej: 04121234567">
+</div>
+<div class="form-group">
+<label for="status">Status *</label>
+<select id="status" required>
+<option value="">— Seleccione —</option>
+<option value="activo">Activo</option>
+<option value="suspendido">Suspendido</option>
+<option value="destituido">Destituido</option>
+<option value="DA">DA</option>
+<option value="P">P</option>
+</select>
+</div>
+<div class="form-group">
+<label for="fecha_nacimiento">Fecha de Nacimiento</label>
+<input type="date" id="fecha_nacimiento">
+</div>
+<div class="form-group">
+<label for="edad_funcionario">Edad</label>
+<div style="display:flex; align-items:center; gap:8px;">
+<input type="number" id="edad_funcionario" min="18" max="99" placeholder="25" readonly>
+<span style="font-weight:500; color:#555;">años</span>
 </div>
 </div>
-<div id="logOverlay">
-  <div id="logModal"></div>
+<div class="form-group">
+<label for="fecha_oficio">Fecha de Oficio</label>
+<input type="date" id="fecha_oficio">
+</div>
+<div class="form-group">
+<label for="fecha_transferencia_normalizacion">Fecha Transferencia/Normalización</label>
+<input type="date" id="fecha_transferencia_normalizacion">
+</div>
+<div class="form-group">
+<label for="tipo_movimiento">Tipo de Movimiento</label>
+<textarea id="tipo_movimiento" class="autoresize" rows="1"></textarea>
+</div>
+<div class="form-group" style="grid-column:1/-1;">
+<label for="observaciones">Observaciones</label>
+<textarea id="observaciones" class="autoresize" rows="3"></textarea>
+</div>
+<div class="form-group">
+<label for="fechas_egreso">Fechas de Egreso</label>
+<input type="text" id="fechas_egreso" placeholder="Ej: 2025-01-10">
+</div>
+<div class="form-group" style="grid-column:1/-1;">
+<label for="direccion">Dirección</label>
+<textarea id="direccion" class="autoresize"></textarea>
+</div>
+<!-- Campo unificado de correo electrónico -->
+<div class="form-group" style="grid-column:1/-1;">
+<label for="correo_electronico">Correo Electrónico</label>
+<input type="email" id="correo_electronico" placeholder="ejemplo@dominio.com">
+</div>
+</div>
+<div style="text-align:right; margin-top:20px;">
+<button type="button" class="btn btn-outline" onclick="history.back()">← Cancelar</button>
+<button type="submit" class="btn btn-update">💾 Actualizar</button>
+</div>
+</form>
+</div>
 </div>
 <script>
+document.querySelectorAll('textarea.autoresize').forEach(el => {
+const adjust = () => {
+el.style.height = 'auto';
+el.style.height = (el.scrollHeight) + 'px';
+};
+el.addEventListener('input', adjust);
+adjust();
+});
 const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
-let currentPage = 1;
-const perPage = 20;
-let allLogs = [];
-
-function mostrarDetalles(index) {
-  const log = allLogs[index];
-  
-  if (!log) return;
-  
-  const modal = document.getElementById('logModal');
-  const overlay = document.getElementById('logOverlay');
-  
-  const fecha = new Date(log.created_at).toLocaleString('es-VE', {
-    year: 'numeric', month: 'long', day: 'numeric',
-    hour: '2-digit', minute: '2-digit', second: '2-digit'
-  });
-  
-  let detallesHTML = '<pre style="margin:0; white-space:pre-wrap; word-break:break-word;">' +
-    (log.detalles ? JSON.stringify(log.detalles, null, 2) : '{}') +
-    '</pre>';
-  
-  modal.innerHTML = `
-  <div style="background:#722F37; color:white; padding:16px 24px; display:flex; justify-content:space-between; align-items:center;">
-    <h2 style="margin:0; font-size:20px;">🔍 Detalles del Registro</h2>
-    <button id="btnCerrarModal" style="background:#c62828; border:none; width:32px; height:32px; border-radius:50%; font-weight:bold; cursor:pointer;">×</button>
-  </div>
-  <div style="padding:24px; max-height:70vh; overflow:auto;">
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
-      <div><strong>📅 Fecha y Hora:</strong><br><span style="color:#2d2d2d;">${fecha}</span></div>
-      <div><strong>👤 Usuario:</strong><br><span style="color:#2d2d2d;">${log.email || '—'}</span></div>
-      <div><strong>🛡️ Rol:</strong><br><span style="color:#2d2d2d; font-weight:600;">${log.rol || '—'}</span></div>
-      <div><strong>🔧 Acción:</strong><br><span style="color:#2d2d2d; font-weight:600;">${log.accion || '—'}</span></div>
-      <div><strong>🆔 Cédula afectada:</strong><br><span style="color:#2d2d2d;">${log.cedula_afectada || '—'}</span></div>
-      <div><strong>📛 Funcionario:</strong><br><span style="color:#2d2d2d;">${log.nombre_afectado || '—'}</span></div>
-    </div>
-    <div style="margin-top:24px;">
-      <h3 style="margin:0 0 12px; color:#722F37;">📝 Detalles completos</h3>
-      <div style="background:#f8f9fa; padding:16px; border-radius:8px; font-family:monospace; font-size:14px;">
-        ${detallesHTML}
-      </div>
-    </div>
-  </div>
-  `;
-  
-  document.getElementById('btnCerrarModal').onclick = cerrarModal;
-  overlay.onclick = (e) => { 
-    if (e.target === overlay) cerrarModal(); 
-  };
-  document.addEventListener('keydown', (e) => { 
-    if (e.key === 'Escape') cerrarModal(); 
-  });
-  
-  overlay.style.display = 'flex';
+const alertDiv = document.getElementById('searchMessage');
+let currentCedula = null;
+function calcularEdad() {
+const fechaNacInput = document.getElementById('fecha_nacimiento');
+const edadInput = document.getElementById('edad_funcionario');
+if (!fechaNacInput || !edadInput) return;
+const fechaNac = new Date(fechaNacInput.value);
+const hoy = new Date();
+if (fechaNacInput.value && !isNaN(fechaNac.getTime())) {
+let edad = hoy.getFullYear() - fechaNac.getFullYear();
+const mesDiff = hoy.getMonth() - fechaNac.getMonth();
+if (mesDiff < 0 || (mesDiff === 0 && hoy.getDate() < fechaNac.getDate())) {
+edad--;
 }
-
-function cerrarModal() {
-  document.getElementById('logOverlay').style.display = 'none';
+if (edad >= 0 && edad <= 99) {
+edadInput.value = edad;
+} else {
+edadInput.value = '';
 }
-
-function renderLogs(logs) {
-  allLogs = logs; // Guardamos los logs para acceder a ellos después
-  const tbody = document.getElementById('logsBody');
-  const errorContainer = document.getElementById('errorContainer');
-  errorContainer.style.display = 'none';
-  
-  if (logs.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px;">No se encontraron registros que coincidan con los criterios de búsqueda.</td></tr>';
-    return;
-  }
-  
-  tbody.innerHTML = logs.map((log, i) => {
-    const fecha = new Date(log.created_at).toLocaleString('es-VE');
-    const rolClass = `rol-${String(log.rol || 'unknown').toLowerCase()}`;
-    const accionClass = `accion-${String(log.accion || 'unknown').toLowerCase()}`;
-    return `
-    <tr style="cursor:pointer; transition:background 0.2s;" onclick="mostrarDetalles(${i})">
-      <td>${fecha}</td>
-      <td>${log.email || '—'}</td>
-      <td><span class="${rolClass}">${log.rol || '—'}</span></td>
-      <td><span class="${accionClass}">${log.accion || '—'}</span></td>
-      <td>${log.cedula_afectada || '—'}</td>
-      <td>${log.nombre_afectado || '—'}</td>
-      <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">
-        ${log.detalles ? JSON.stringify(log.detalles).substring(0,50) + '…' : '—'}
-      </td>
-    </tr>
-    `;
-  }).join('');
+} else {
+edadInput.value = '';
 }
-
-function mostrarError(mensaje) {
-  const errorContainer = document.getElementById('errorContainer');
-  errorContainer.textContent = mensaje;
-  errorContainer.style.display = 'block';
-  
-  document.getElementById('logsBody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px;">Error al cargar los registros. Por favor, intente nuevamente.</td></tr>';
 }
-
 document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const { data: sessionData, error: sessionError } = await client.auth.getSession();
-    
-    if (sessionError || !sessionData?.session) {
-      console.error('Error de autenticación:', sessionError);
-      mostrarError('No se pudo autenticar. Por favor, inicia sesión nuevamente.');
-      setTimeout(() => {
-        window.location.href = '../index.html';
-      }, 3000);
-      return;
-    }
-    
-    const session = sessionData.session;
-    const { data: perfil, error: perfilError } = await client
-      .from('perfiles')
-      .select('rol')
-      .eq('id', session.user.id)
-      .single();
-      
-    if (perfilError || !perfil) {
-      console.error('Error al obtener perfil:', perfilError);
-      mostrarError('❌ Error al cargar tu perfil. Por favor, inicia sesión nuevamente.');
-      setTimeout(() => {
-        window.location.href = '../index.html';
-      }, 3000);
-      return;
-    }
-    
-    const userRol = String(perfil?.rol || '').trim();
-    if (userRol !== 'admin') {
-      mostrarError('🔒 Acceso denegado: solo el Administrador puede ver el historial.');
-      setTimeout(() => {
-        window.location.href = '../index.html';
-      }, 3000);
-      return;
-    }
-    
-    // Cargar logs inicialmente
-    await loadLogs();
-    
-    document.getElementById('btnFiltrar').addEventListener('click', loadLogs);
-    document.getElementById('searchLogs').addEventListener('keypress', e => {
-      if (e.key === 'Enter') loadLogs();
-    });
-    
-    document.getElementById('btnExportar').addEventListener('click', exportarCSV);
-    
-  } catch (err) {
-    console.error('Error crítico:', err);
-    mostrarError(`Error crítico: ${err.message || 'No se pudo cargar la página. Por favor, inténtalo nuevamente.'}`);
-  }
+try {
+const { data, error } = await client.auth.getSession();
+const session = data?.session;
+if (error || !session) return window.location.href = '../index.html';
+const { data: perfilData, error: perfilError } = await client
+.from('perfiles')
+.select('email, rol')
+.eq('id', session.user.id)
+.single();
+if (perfilError || !perfilData || (perfilData.rol !== 'admin' && perfilData.rol !== 'moderador')) {
+alert('🔒 Solo administradores y moderadores pueden modificar.');
+return window.location.href = 'auditoria-nacional.html';
+}
+document.getElementById('userEmail').textContent = perfilData.email;
+document.getElementById('userRol').textContent =
+perfilData.rol === 'admin' ? 'Administrador' : 'Moderador';
+document.getElementById('btnBuscar').addEventListener('click', buscarPorCedula);
+document.getElementById('searchCedula').addEventListener('keypress', e => {
+if (e.key === 'Enter') buscarPorCedula();
 });
+document.getElementById('modificarForm').addEventListener('submit', actualizarRegistro);
+document.getElementById('photoInput').addEventListener('change', previsualizarFoto);
+document.getElementById('fecha_nacimiento').addEventListener('change', calcularEdad);
+} catch (err) {
+console.error(err);
+window.location.href = '../index.html';
+}
+});
+async function buscarPorCedula() {
+const cedula = document.getElementById('searchCedula').value.trim();
+if (!/^\d{8}$/.test(cedula)) {
+showAlert('⚠️ Ingresa una cédula válida de 8 dígitos.', 'error');
+return;
+}
+showAlert('🔍 Buscando...', '');
+try {
+const { data, error } = await client
+.from('auditoria_personal')
+.select('*')
+.eq('cedula', cedula)
+.single();
+if (error || !data) {
+showAlert(`❌ Cédula ${cedula} no encontrada en auditoría.`, 'error');
+return;
+}
+cargarDatosFormulario(data);
+document.getElementById('modificarForm').style.display = 'block';
+showAlert('✅ Datos cargados. Puedes editarlos.', 'success');
+} catch (err) {
+showAlert('❌ Error al buscar: ' + (err.message || 'intente nuevamente'), 'error');
+}
+}
+function cargarDatosFormulario(f) {
+currentCedula = f.cedula;
+document.getElementById('headerCedula').textContent = f.cedula;
+document.getElementById('cedula').value = f.cedula || '';
+document.getElementById('apellidos_nombres').value = f.apellidos_nombres || '';
+document.getElementById('sexo').value = f.sexo || '';
+document.getElementById('dependencia').value = f.dependencia || '';
+document.getElementById('servicio').value = f.servicio || '';
+document.getElementById('cohorte_promocion').value = f.cohorte_promocion || '';
+document.getElementById('institucion_origen').value = f.institucion_origen || '';
+document.getElementById('fecha_ingreso').value = f.fecha_ingreso || '';
+document.getElementById('fecha_nacimiento').value = f.fecha_nacimiento || '';
+document.getElementById('fecha_oficio').value = f.fecha_oficio || '';
+document.getElementById('fecha_transferencia_normalizacion').value = f.fecha_transferencia_normalizacion || '';
+document.getElementById('tipo_movimiento').value = f.tipo_movimiento || '';
+document.getElementById('observaciones').value = f.observaciones || '';
+document.getElementById('fechas_egreso').value = f.fechas_egreso || '';
+document.getElementById('direccion').value = f.direccion || '';
+document.getElementById('telefono').value = f.telefono || '';
+// ✅ RANGO: asignación correcta al select
+const rangoSelect = document.getElementById('rango');
+const valorRango = (f.rango || '').trim();
+let valorEncontrado = false;
 
-async function loadLogs() {
-  const search = document.getElementById('searchLogs').value.trim();
-  const accion = document.getElementById('filterAccion').value;
-  const rol = document.getElementById('filterRol').value;
-  
-  try {
-    let query = client
-      .from('rrhh_logs')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false });
-      
-    if (search) {
-      query = query.or(`cedula_afectada.ilike.%${search}%,nombre_afectado.ilike.%${search}%,email.ilike.%${search}%`);
-    }
-    
-    if (accion) query = query.eq('accion', accion);
-    if (rol) query = query.eq('rol', rol);
-    
-    const from = (currentPage - 1) * perPage;
-    const to = from + perPage - 1;
-    
-    const { data, error, count } = await query.range(from, to);
-    
-    if (error) {
-      console.error('Error en consulta:', error);
-      throw error;
-    }
-    
-    renderLogs(data || []);
-    renderPagination(count ? Math.ceil(count / perPage) : 0);
-    
-  } catch (err) {
-    console.error('❌ Error al cargar logs:', err);
-    mostrarError(`Error al cargar los registros: ${err.message || 'Verifica tu conexión a internet.'}`);
-    renderPagination(0);
-  }
+// Buscar coincidencia exacta
+for (let i = 0; i < rangoSelect.options.length; i++) {
+if (rangoSelect.options[i].value === valorRango) {
+rangoSelect.value = valorRango;
+valorEncontrado = true;
+break;
+}
 }
 
-function renderPagination(totalPages) {
-  const div = document.getElementById('pagination');
-  div.innerHTML = '';
-  if (totalPages <= 1) return;
-  
-  const maxButtons = 5;
-  let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-  let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-  
-  if (endPage - startPage + 1 < maxButtons) {
-    startPage = Math.max(1, endPage - maxButtons + 1);
-  }
-  
-  // Botón anterior
-  const prevBtn = document.createElement('button');
-  prevBtn.className = 'page-btn' + (currentPage === 1 ? ' disabled' : '');
-  prevBtn.innerHTML = '«';
-  if (currentPage > 1) {
-    prevBtn.onclick = () => { currentPage--; loadLogs(); };
-  }
-  div.appendChild(prevBtn);
-  
-  // Botones de página
-  for (let i = startPage; i <= endPage; i++) {
-    const btn = document.createElement('button');
-    btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
-    btn.textContent = i;
-    btn.onclick = () => { currentPage = i; loadLogs(); };
-    div.appendChild(btn);
-  }
-  
-  // Botón siguiente
-  const nextBtn = document.createElement('button');
-  nextBtn.className = 'page-btn' + (currentPage === totalPages ? ' disabled' : '');
-  nextBtn.innerHTML = '»';
-  if (currentPage < totalPages) {
-    nextBtn.onclick = () => { currentPage++; loadLogs(); };
-  }
-  div.appendChild(nextBtn);
+// Si no hay coincidencia exacta, buscar coincidencia insensible a mayúsculas/minúsculas
+if (!valorEncontrado) {
+for (let i = 0; i < rangoSelect.options.length; i++) {
+if (rangoSelect.options[i].value.toLowerCase() === valorRango.toLowerCase()) {
+rangoSelect.value = rangoSelect.options[i].value;
+valorEncontrado = true;
+break;
+}
+}
 }
 
-function exportarCSV() {
-  alert('Función de exportación aún en desarrollo');
-  // Implementación futura para exportar logs a CSV
+// Si sigue sin encontrar, dejar el primer valor vacío seleccionado
+if (!valorEncontrado && valorRango) {
+console.warn(`Rango no reconocido: "${valorRango}"`);
+}
+
+// ✅ REGIÓN: carga robusta
+const regionSelect = document.getElementById('region');
+const dbRegionRaw = (f.region || '').toString().trim();
+let regionValue = '';
+const validRegions = ['Capital', 'Occidental', 'Los Llanos', 'Los Andes', 'Guayana', 'Insular', 'Central', 'Oriental'];
+if (validRegions.includes(dbRegionRaw)) {
+regionValue = dbRegionRaw;
+} else {
+const regionMap = {
+'REDIP CAPITAL': 'Capital',
+'REDIP OCCIDENTAL': 'Occidental',
+'REDIP LOS LLANOS': 'Los Llanos',
+'REDIP LOS ANDES': 'Los Andes',
+'REDIP GUAYANA': 'Guayana',
+'REDIP INSULAR': 'Insular',
+'REDIP CENTRAL': 'Central',
+'REDIP ORIENTAL': 'Oriental'
+};
+regionValue = regionMap[dbRegionRaw] || '';
+}
+regionSelect.value = regionValue;
+// Función auxiliar para otros selects
+const setSelectValue = (id, valueFromDB) => {
+const select = document.getElementById(id);
+if (!select) return;
+const cleanDB = (valueFromDB || '').toString().trim();
+let found = false;
+for (let opt of select.options) {
+if (opt.value === cleanDB) {
+select.value = cleanDB;
+found = true;
+break;
+}
+}
+if (!found) {
+for (let opt of select.options) {
+if (opt.text.trim().toLowerCase() === cleanDB.toLowerCase()) {
+select.value = opt.value;
+found = true;
+break;
+}
+}
+}
+if (!found) {
+select.value = '';
+}
+};
+setSelectValue('estado', f.estado);
+setSelectValue('status', f.status);
+// Cabecera de status
+document.getElementById('headerNombre').textContent = f.apellidos_nombres || '—';
+const statusEl = document.getElementById('headerStatus');
+const rawStatus = (f.status || '').toString().trim();
+statusEl.textContent = rawStatus || '—';
+let bgColor = '#9e9e9e';
+if (rawStatus.toLowerCase() === 'activo') bgColor = '#2e7d32';
+else if (rawStatus === 'P') bgColor = '#1976d2';
+else if (rawStatus.toLowerCase() === 'destituido') bgColor = '#c62828';
+else if (rawStatus.toLowerCase() === 'suspendido') bgColor = '#ef6c00';
+else if (rawStatus === 'DA') bgColor = '#7b1fa2';
+statusEl.style.backgroundColor = bgColor;
+// Correo unificado
+document.getElementById('correo_electronico').value = f.correo_electronico || '';
+// Foto y autoresize
+cargarFotoActual(f.cedula);
+document.querySelectorAll('textarea.autoresize').forEach(el => {
+el.style.height = 'auto';
+el.style.height = el.scrollHeight + 'px';
+});
+calcularEdad();
+}
+async function cargarFotoActual(cedula) {
+  const container = document.getElementById('photoContainer');
+  container.innerHTML = '🪪'; // Mostrar placeholder inmediatamente
+  
+  // Intentar cargar foto solo si hay sesión activa
+  const { data: { session } } = await client.auth.getSession();
+  if (!session) return; // No intentar cargar fotos sin autenticación
+  
+  const extensions = ['jpg', 'jpeg', 'png'];
+  
+  for (const ext of extensions) {
+    const path = `foto_${cedula}.${ext}`;
+    try {
+      const { data, error } = await client.storage
+        .from('fotos_funcionarios')
+        .createSignedUrl(path, 3600); // URL válida por 1 hora
+        
+      if (!error && data?.signedUrl) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          container.innerHTML = '';
+          container.appendChild(img);
+        };
+        img.onerror = () => {
+          // Si hay error al cargar la imagen, mantener el placeholder
+          container.innerHTML = '🪪';
+        };
+        img.src = data.signedUrl;
+        return;
+      }
+    } catch (err) {
+      // No mostrar errores en consola
+      continue;
+    }
+  }
+}
+function previsualizarFoto(e) {
+const file = e.target.files[0];
+if (!file) return;
+const reader = new FileReader();
+reader.onload = (ev) => {
+const img = new Image();
+img.src = ev.target.result;
+img.onload = () => {
+const container = document.getElementById('photoContainer');
+container.innerHTML = '';
+container.appendChild(img);
+};
+};
+reader.readAsDataURL(file);
+}
+async function actualizarRegistro(e) {
+e.preventDefault();
+showAlert('', '');
+if (!currentCedula) return showAlert('⚠️ Primero busca una cédula.', 'error');
+const telefono = document.getElementById('telefono').value.trim();
+if (telefono && !/^04\d{9}$/.test(telefono)) {
+return showAlert('⚠️ El teléfono debe ser venezolano válido (ej: 04121234567).', 'error');
+}
+calcularEdad();
+const data = {
+rango: document.getElementById('rango').value.trim(),
+apellidos_nombres: document.getElementById('apellidos_nombres').value.trim(),
+sexo: document.getElementById('sexo').value,
+dependencia: document.getElementById('dependencia').value.trim(),
+region: document.getElementById('region').value,
+estado: document.getElementById('estado').value,
+servicio: document.getElementById('servicio').value.trim(),
+cohorte_promocion: document.getElementById('cohorte_promocion').value.trim(),
+institucion_origen: document.getElementById('institucion_origen').value.trim(),
+fecha_ingreso: document.getElementById('fecha_ingreso').value || null,
+telefono: telefono,
+status: document.getElementById('status').value,
+fecha_nacimiento: document.getElementById('fecha_nacimiento').value || null,
+edad_funcionario: parseInt(document.getElementById('edad_funcionario').value) || null,
+fecha_oficio: document.getElementById('fecha_oficio').value || null,
+fecha_transferencia_normalizacion: document.getElementById('fecha_transferencia_normalizacion').value || null,
+tipo_movimiento: document.getElementById('tipo_movimiento').value.trim(),
+observaciones: document.getElementById('observaciones').value.trim(),
+fechas_egreso: document.getElementById('fechas_egreso').value.trim(),
+direccion: document.getElementById('direccion').value.trim(),
+correo_electronico: document.getElementById('correo_electronico').value.trim() || null
+};
+const required = ['apellidos_nombres', 'rango', 'estado', 'region', 'status'];
+for (let field of required) {
+if (!data[field]) {
+return showAlert(`⚠️ El campo "${field}" es obligatorio.`, 'error');
+}
+}
+try {
+const { error } = await client
+.from('auditoria_personal')
+.update(data)
+.eq('cedula', currentCedula);
+if (error) throw error;
+const photoInput = document.getElementById('photoInput');
+if (photoInput.files.length > 0) {
+const file = photoInput.files[0];
+const ext = file.name.split('.').pop().toLowerCase();
+const fileName = `foto_${currentCedula}.${ext}`;
+const { error: upErr } = await client.storage
+.from('fotos_funcionarios')
+.upload(fileName, file, { upsert: true });
+if (upErr) console.warn('Foto subida con advertencia:', upErr.message);
+}
+// Registrar log
+try {
+const { data: sessionData } = await client.auth.getSession();
+const session = sessionData?.session;
+if (session) {
+const { data: perfilLog, error: logErr } = await client
+.from('perfiles')
+.select('email, rol')
+.eq('id', session.user.id)
+.single();
+if (!logErr && perfilLog) {
+await client.from('rrhh_logs').insert({
+user_id: session.user.id,
+email: perfilLog.email,
+rol: perfilLog.rol,
+accion: 'edicion',
+cedula_afectada: currentCedula,
+nombre_afectado: data.apellidos_nombres,
+detalles: {
+nuevo_status: data.status,
+nuevo_telefono: data.telefono
+}
+});
+}
+}
+} catch (logErr) {
+console.warn('⚠️ Log de edición no guardado:', logErr.message);
+}
+showAlert('✅ Ficha actualizada exitosamente.', 'success');
+setTimeout(() => location.reload(), 1500);
+} catch (err) {
+console.error('Error actualizando:', err);
+showAlert(`❌ Error: ${err.message || 'verifique los datos'}`, 'error');
+}
+}
+function showAlert(msg, type) {
+alertDiv.textContent = msg;
+alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+alertDiv.style.display = msg ? 'block' : 'none';
 }
 </script>
 </body>
