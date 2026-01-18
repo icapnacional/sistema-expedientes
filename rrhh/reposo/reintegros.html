@@ -76,10 +76,6 @@
     tr.vencido {
       background-color: #ffebee;
     }
-    tr.vencido td:first-child::before {
-      content: "⚠️ ";
-      color: #c62828;
-    }
     .btn {
       background-color: #722F37;
       color: white;
@@ -212,49 +208,50 @@
 
     async function loadReposos() {
       try {
-        // 1. Obtener reposos activos (sin reintegro)
+        // Cargar todos los reposos (no hay fecha_reintegro)
         const { data: reposos, error: rErr } = await client
           .from('reposos')
-          .select('cedula, fecha_inicio, fecha_fin, created_at')
-          .is('fecha_reintegro', null)
-          .order('fecha_fin', { ascending: true });
+          .select('cedula, nombre, rango, region, estado, estatus, fecha_inicio, fecha_fin');
 
         if (rErr) throw rErr;
 
         if (!reposos || reposos.length === 0) {
-          loadingEl.textContent = 'No hay reposos activos.';
+          loadingEl.textContent = 'No hay reposos registrados.';
           return;
         }
 
-        // 2. Obtener datos de rrhh_icap (NO auditoria_personal)
+        // Obtener datos de rrhh_icap para validar existencia
         const cedulas = reposos.map(r => r.cedula);
         const { data: personal, error: pErr } = await client
           .from('rrhh_icap')
-          .select('cedula, nombres_apellidos, estado, rango')
+          .select('cedula, nombres_apellidos, estado, rango, status')
           .in('cedula', cedulas);
 
-        if (pErr) throw pErr;
-
         const personalMap = {};
-        personal.forEach(p => {
+        (personal || []).forEach(p => {
           personalMap[p.cedula] = p;
         });
 
         const today = new Date();
         tbody.innerHTML = '';
         reposos.forEach(repo => {
-          const pers = personalMap[repo.cedula] || {};
           const fin = repo.fecha_fin ? new Date(repo.fecha_fin) : null;
           const isVencido = fin && fin < today;
+
+          const pers = personalMap[repo.cedula] || {
+            nombres_apellidos: repo.nombre || '—',
+            estado: repo.estado || '—',
+            rango: repo.rango || '—'
+          };
 
           const row = document.createElement('tr');
           if (isVencido) row.classList.add('vencido');
 
           row.innerHTML = `
             <td>${repo.cedula}</td>
-            <td>${pers.nombres_apellidos || '—'}</td>
-            <td>${pers.estado || '—'}</td>
-            <td>${pers.rango || '—'}</td>
+            <td>${pers.nombres_apellidos}</td>
+            <td>${pers.estado}</td>
+            <td>${pers.rango}</td>
             <td>${repo.fecha_inicio ? new Date(repo.fecha_inicio).toLocaleDateString('es-VE') : '—'}</td>
             <td>${fin ? fin.toLocaleDateString('es-VE') : '—'}</td>
             <td>
@@ -285,25 +282,25 @@
       if (!confirm(`¿Reintegrar al funcionario con cédula ${cedula}?`)) return;
 
       try {
-        // ✅ ACTUALIZAR EN rrhh_icap → status = 'activo'
+        // 1. Actualizar status en rrhh_icap → "activo"
         const { error: err1 } = await client
           .from('rrhh_icap')
           .update({ status: 'activo' })
           .eq('cedula', cedula);
 
-        if (err1) throw new Error('Error al actualizar status en rrhh_icap: ' + err1.message);
+        if (err1) throw new Error('No se pudo actualizar el status del funcionario.');
 
-        // ✅ MARCAR REPOSO COMO REINTEGRADO
+        // 2. Opcional: marcar reposo como reintegrado
         const { error: err2 } = await client
           .from('reposos')
-          .update({ fecha_reintegro: new Date().toISOString() })
+          .update({ estatus: 'REINTEGRADO' })
           .eq('cedula', cedula)
-          .is('fecha_reintegro', null);
+          .eq('estatus', 'PROCESO DE RENUNCIA ');
 
-        if (err2) throw new Error('Error al cerrar reposo: ' + err2.message);
+        // No fallamos si err2 existe
 
         showAlert(`✅ Funcionario ${cedula} reintegrado exitosamente.`, 'success');
-        loadReposos(); // Recargar
+        loadReposos(); // Recargar lista
 
       } catch (err) {
         console.error(err);
