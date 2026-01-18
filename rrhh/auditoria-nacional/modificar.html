@@ -579,13 +579,25 @@ else if (rawStatus.toLowerCase() === 'suspendido') bgColor = '#ef6c00';
 else if (rawStatus === 'DA') bgColor = '#7b1fa2';
 statusEl.style.backgroundColor = bgColor;
 
-// Correo
-if (f.correo_electronico) {
-const parts = f.correo_electronico.split('@');
-if (parts.length === 2) {
-document.getElementById('correo_local').value = parts[0];
-document.getElementById('correo_dominio').value = parts[1];
-}
+// ✅ Carga segura del correo (maneja null, undefined, y formatos inválidos)
+const email = f.correo_electronico;
+const localEl = document.getElementById('correo_local');
+const dominioEl = document.getElementById('correo_dominio');
+
+if (localEl && dominioEl) {
+  if (typeof email === 'string' && email.trim() !== '' && email.includes('@')) {
+    const parts = email.split('@');
+    if (parts.length === 2) {
+      localEl.value = parts[0];
+      dominioEl.value = parts[1];
+    } else {
+      localEl.value = '';
+      dominioEl.value = '';
+    }
+  } else {
+    localEl.value = '';
+    dominioEl.value = '';
+  }
 }
 
 // Foto y autoresize
