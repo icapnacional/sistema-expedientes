@@ -240,7 +240,7 @@ Dejar sin archivo para conservar foto actual.
 <label for="cedula">Cédula *</label>
 <input type="text" id="cedula" readonly style="background:#f0f0f0; cursor:not-allowed;">
 </div>
-<!-- ✅ CAMPO RANGO CONVERTIDO A INPUT DE TEXTO -->
+<!-- ✅ RANGO COMO INPUT DE TEXTO -->
 <div class="form-group">
 <label for="rango">Rango *</label>
 <input type="text" id="rango" required>
@@ -261,6 +261,7 @@ Dejar sin archivo para conservar foto actual.
 <label for="dependencia">Dependencia</label>
 <textarea id="dependencia" class="autoresize" rows="1"></textarea>
 </div>
+<!-- ✅ REGIÓN SIGUE SIENDO SELECT, PERO SE CARGA CORRECTAMENTE -->
 <div class="form-group">
 <label for="region">Región *</label>
 <select id="region" required>
@@ -431,9 +432,9 @@ edadInput.value = '';
 }
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const { data: { session }, error } = await client.auth.getSession();
+const {  { session }, error } = await client.auth.getSession();
 if (error || !session) return window.location.href = '../index.html';
-const { data: perfil } = await client
+const {  perfil } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
@@ -494,7 +495,6 @@ document.getElementById('cohorte_promocion').value = f.cohorte_promocion || '';
 document.getElementById('institucion_origen').value = f.institucion_origen || '';
 document.getElementById('fecha_ingreso').value = f.fecha_ingreso || '';
 document.getElementById('fecha_nacimiento').value = f.fecha_nacimiento || '';
-// ⚠️ NO se asigna edad_funcionario desde la BD
 document.getElementById('fecha_oficio').value = f.fecha_oficio || '';
 document.getElementById('fecha_transferencia_normalizacion').value = f.fecha_transferencia_normalizacion || '';
 document.getElementById('tipo_movimiento').value = f.tipo_movimiento || '';
@@ -503,22 +503,35 @@ document.getElementById('fechas_egreso').value = f.fechas_egreso || '';
 document.getElementById('direccion').value = f.direccion || '';
 document.getElementById('telefono').value = f.telefono || '';
 
-// ✅ ASIGNACIÓN DIRECTA DEL RANGO COMO TEXTO
+// ✅ ASIGNACIÓN DIRECTA DEL RANGO
 document.getElementById('rango').value = f.rango || '';
 
-// 🔁 Mapeo especial para región
+// 🔧 CARGA ROBUSTA DE REGIÓN
 const regionSelect = document.getElementById('region');
 const dbRegionRaw = (f.region || '').toString().trim();
-const regionMap = {
-'REDIP CAPITAL': 'Capital',
-'REDIP GUAYANA': 'Guayana',
-'REDIP LOS LLANOS': 'Los Llanos',
-'REDIP CENTRAL': 'Central',
-'REDIP ORIENTAL': 'Oriental',
-'REDIP LOS ANDES': 'Los Andes',
-'REDIP OCCIDENTAL': 'Occidental'
-};
-regionSelect.value = regionMap[dbRegionRaw] || '';
+let regionValue = '';
+
+const validRegions = [
+  'Capital', 'Occidental', 'Los Llanos', 'Los Andes',
+  'Guayana', 'Insular', 'Central', 'Oriental'
+];
+
+if (validRegions.includes(dbRegionRaw)) {
+  regionValue = dbRegionRaw;
+} else {
+  const regionMap = {
+    'REDIP CAPITAL': 'Capital',
+    'REDIP OCCIDENTAL': 'Occidental',
+    'REDIP LOS LLANOS': 'Los Llanos',
+    'REDIP LOS ANDES': 'Los Andes',
+    'REDIP GUAYANA': 'Guayana',
+    'REDIP INSULAR': 'Insular',
+    'REDIP CENTRAL': 'Central',
+    'REDIP ORIENTAL': 'Oriental'
+  };
+  regionValue = regionMap[dbRegionRaw] || '';
+}
+regionSelect.value = regionValue;
 
 // ✅ Función auxiliar para selects (usada solo para estado y status)
 const setSelectValue = (id, valueFromDB) => {
@@ -640,11 +653,11 @@ if (local && dom) correo = `${local}@${dom}`;
 calcularEdad();
 
 const data = {
-rango: document.getElementById('rango').value.trim(), // ✅ ahora es input de texto
+rango: document.getElementById('rango').value.trim(), // ✅ ahora es texto
 apellidos_nombres: document.getElementById('apellidos_nombres').value.trim(),
 sexo: document.getElementById('sexo').value,
 dependencia: document.getElementById('dependencia').value.trim(),
-region: document.getElementById('region').value,
+region: document.getElementById('region').value, // ✅ ahora se guarda correctamente
 estado: document.getElementById('estado').value,
 servicio: document.getElementById('servicio').value.trim(),
 cohorte_promocion: document.getElementById('cohorte_promocion').value.trim(),
@@ -692,7 +705,7 @@ try {
 const sessionResponse = await client.auth.getSession();
 const session = sessionResponse?.data?.session;
 if (session) {
-const { data: perfil } = await client
+const {  perfil } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
