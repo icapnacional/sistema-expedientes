@@ -240,25 +240,10 @@ Dejar sin archivo para conservar foto actual.
 <label for="cedula">Cédula *</label>
 <input type="text" id="cedula" readonly style="background:#f0f0f0; cursor:not-allowed;">
 </div>
-<!-- ✅ RANGO: lo dejamos como <select> por ahora (puedes cambiarlo después si quieres) -->
+<!-- ✅ RANGO COMO INPUT DE TEXTO -->
 <div class="form-group">
 <label for="rango">Rango *</label>
-<select id="rango" required>
-<option value="">— Seleccione —</option>
-<option value="Comisario Superior">Comisario Superior</option>
-<option value="Comisario General">Comisario General</option>
-<option value="Comisario Mayor">Comisario Mayor</option>
-<option value="Comisario Jefe">Comisario Jefe</option>
-<option value="Primer Comisario">Primer Comisario</option>
-<option value="Comisario">Comisario</option>
-<option value="Inspector Jefe">Inspector Jefe</option>
-<option value="Primer Inspector">Primer Inspector</option>
-<option value="Inspector">Inspector</option>
-<option value="Oficial Jefe">Oficial Jefe</option>
-<option value="Primer Oficial">Primer Oficial</option>
-<option value="Oficial">Oficial</option>
-<option value="Personal Contratado">Personal Contratado</option>
-</select>
+<input type="text" id="rango" required>
 </div>
 <div class="form-group">
 <label for="apellidos_nombres">Apellidos y Nombres *</label>
@@ -276,6 +261,7 @@ Dejar sin archivo para conservar foto actual.
 <label for="dependencia">Dependencia</label>
 <textarea id="dependencia" class="autoresize" rows="1"></textarea>
 </div>
+<!-- ✅ REGIÓN: SELECT PERO CON CARGA ROBUSTA -->
 <div class="form-group">
 <label for="region">Región *</label>
 <select id="region" required>
@@ -386,10 +372,19 @@ Dejar sin archivo para conservar foto actual.
 <label for="direccion">Dirección</label>
 <textarea id="direccion" class="autoresize"></textarea>
 </div>
-<!-- ✅ CAMPO ÚNICO DE CORREO -->
 <div class="form-group">
-<label for="correo_electronico">Correo Electrónico</label>
-<input type="email" id="correo_electronico" placeholder="ejemplo@dominio.com">
+<label for="correo_local">Correo Electrónico</label>
+<div style="display:flex; gap:4px;">
+<input type="text" id="correo_local" placeholder="nombre">
+<span style="align-self:center; font-weight:bold; color:#555;">@</span>
+<select id="correo_dominio">
+<option value="gmail.com">@gmail.com</option>
+<option value="hotmail.com">@hotmail.com</option>
+<option value="outlook.com">@outlook.com</option>
+<option value="yahoo.com">@yahoo.com</option>
+<option value="">— Otro —</option>
+</select>
+</div>
 </div>
 </div>
 <div style="text-align:right; margin-top:20px;">
@@ -438,25 +433,25 @@ edadInput.value = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-  // ✅ Corrección de sintaxis
+  // ✅ CORRECCIÓN: Sintaxis válida para getSession()
   const { data, error } = await client.auth.getSession();
   const session = data?.session;
   if (error || !session) return window.location.href = '../index.html';
 
-  const { data: perfil } = await client
+  const { data: perfilData, error: perfilError } = await client
     .from('perfiles')
     .select('email, rol')
     .eq('id', session.user.id)
     .single();
 
-  if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
+  if (perfilError || !perfilData || (perfilData.rol !== 'admin' && perfilData.rol !== 'moderador')) {
     alert('🔒 Solo administradores y moderadores pueden modificar.');
     return window.location.href = 'auditoria-nacional.html';
   }
 
-  document.getElementById('userEmail').textContent = perfil.email;
+  document.getElementById('userEmail').textContent = perfilData.email;
   document.getElementById('userRol').textContent =
-    perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
+    perfilData.rol === 'admin' ? 'Administrador' : 'Moderador';
 
   document.getElementById('btnBuscar').addEventListener('click', buscarPorCedula);
   document.getElementById('searchCedula').addEventListener('keypress', e => {
@@ -517,10 +512,32 @@ document.getElementById('fechas_egreso').value = f.fechas_egreso || '';
 document.getElementById('direccion').value = f.direccion || '';
 document.getElementById('telefono').value = f.telefono || '';
 
-// ✅ Correo: asignación directa y segura
-document.getElementById('correo_electronico').value = f.correo_electronico || '';
+// ✅ RANGO: asignación directa
+document.getElementById('rango').value = f.rango || '';
 
-// Función auxiliar para selects
+// ✅ REGIÓN: carga robusta
+const regionSelect = document.getElementById('region');
+const dbRegionRaw = (f.region || '').toString().trim();
+let regionValue = '';
+const validRegions = ['Capital', 'Occidental', 'Los Llanos', 'Los Andes', 'Guayana', 'Insular', 'Central', 'Oriental'];
+if (validRegions.includes(dbRegionRaw)) {
+  regionValue = dbRegionRaw;
+} else {
+  const regionMap = {
+    'REDIP CAPITAL': 'Capital',
+    'REDIP OCCIDENTAL': 'Occidental',
+    'REDIP LOS LLANOS': 'Los Llanos',
+    'REDIP LOS ANDES': 'Los Andes',
+    'REDIP GUAYANA': 'Guayana',
+    'REDIP INSULAR': 'Insular',
+    'REDIP CENTRAL': 'Central',
+    'REDIP ORIENTAL': 'Oriental'
+  };
+  regionValue = regionMap[dbRegionRaw] || '';
+}
+regionSelect.value = regionValue;
+
+// Función auxiliar para otros selects
 const setSelectValue = (id, valueFromDB) => {
 const select = document.getElementById(id);
 if (!select) return;
@@ -546,26 +563,10 @@ if (!found) {
 select.value = '';
 }
 };
-setSelectValue('rango', f.rango);
-
-// 🔁 Mapeo especial para región
-const regionSelect = document.getElementById('region');
-const dbRegionRaw = (f.region || '').toString().trim();
-const regionMap = {
-'REDIP CAPITAL': 'Capital',
-'REDIP GUAYANA': 'Guayana',
-'REDIP LOS LLANOS': 'Los Llanos',
-'REDIP CENTRAL': 'Central',
-'REDIP ORIENTAL': 'Oriental',
-'REDIP LOS ANDES': 'Los Andes',
-'REDIP OCCIDENTAL': 'Occidental'
-};
-regionSelect.value = regionMap[dbRegionRaw] || '';
-
 setSelectValue('estado', f.estado);
 setSelectValue('status', f.status);
 
-// Cabecera
+// Cabecera de status
 document.getElementById('headerNombre').textContent = f.apellidos_nombres || '—';
 const statusEl = document.getElementById('headerStatus');
 const rawStatus = (f.status || '').toString().trim();
@@ -577,6 +578,15 @@ else if (rawStatus.toLowerCase() === 'destituido') bgColor = '#c62828';
 else if (rawStatus.toLowerCase() === 'suspendido') bgColor = '#ef6c00';
 else if (rawStatus === 'DA') bgColor = '#7b1fa2';
 statusEl.style.backgroundColor = bgColor;
+
+// Correo
+if (f.correo_electronico) {
+const parts = f.correo_electronico.split('@');
+if (parts.length === 2) {
+document.getElementById('correo_local').value = parts[0];
+document.getElementById('correo_dominio').value = parts[1];
+}
+}
 
 // Foto y autoresize
 cargarFotoActual(f.cedula);
@@ -639,14 +649,14 @@ const telefono = document.getElementById('telefono').value.trim();
 if (telefono && !/^04\d{9}$/.test(telefono)) {
 return showAlert('⚠️ El teléfono debe ser venezolano válido (ej: 04121234567).', 'error');
 }
-
-// ✅ Correo: obtener valor directo
-const correo = document.getElementById('correo_electronico').value.trim();
-
+const local = document.getElementById('correo_local').value.trim();
+const dom = document.getElementById('correo_dominio').value;
+let correo = '';
+if (local && dom) correo = `${local}@${dom}`;
 calcularEdad();
 
 const data = {
-rango: document.getElementById('rango').value,
+rango: document.getElementById('rango').value.trim(),
 apellidos_nombres: document.getElementById('apellidos_nombres').value.trim(),
 sexo: document.getElementById('sexo').value,
 dependencia: document.getElementById('dependencia').value.trim(),
@@ -694,20 +704,21 @@ const { error: upErr } = await client.storage
 if (upErr) console.warn('Foto subida con advertencia:', upErr.message);
 }
 
+// Registrar log
 try {
-const sessionResponse = await client.auth.getSession();
-const session = sessionResponse?.data?.session;
+const { data: sessionData } = await client.auth.getSession();
+const session = sessionData?.session;
 if (session) {
-const { data: perfil } = await client
+const { data: perfilLog, error: logErr } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
 .single();
-if (perfil) {
+if (!logErr && perfilLog) {
 await client.from('rrhh_logs').insert({
 user_id: session.user.id,
-email: perfil.email,
-rol: perfil.rol,
+email: perfilLog.email,
+rol: perfilLog.rol,
 accion: 'edicion',
 cedula_afectada: currentCedula,
 nombre_afectado: data.apellidos_nombres,
