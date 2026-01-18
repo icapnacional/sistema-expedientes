@@ -76,6 +76,11 @@ const PERMISSIONS = {
     roles: ['admin', 'moderador', 'consultor'],
     action: () => { alert('Módulo en desarrollo'); }
   },
+  },
+'btnReintegros': {
+  roles: ['admin', 'consultor'],
+  action: () => { window.location.href = 'reposo/reintegros.html'; }
+},
   // 🔹 Vacaciones
   'btnVacacionesPlan': { 
     roles: ['admin', 'moderador', 'consultor'], 
