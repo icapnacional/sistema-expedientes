@@ -567,31 +567,84 @@ el.style.height = el.scrollHeight + 'px';
 calcularEdad();
 }
 async function cargarFotoActual(cedula) {
-const container = document.getElementById('photoContainer');
-container.innerHTML = '🪪';
-const extensions = ['jpeg', 'jpg', 'png'];
-for (const ext of extensions) {
-const path = `foto_${cedula}.${ext}`;
-try {
-const { data, error } = await client.storage
-.from('fotos_funcionarios')
-.createSignedUrl(path, 3600);
-if (error) continue;
-if (data?.signedUrl) {
-const img = new Image();
-img.crossOrigin = 'anonymous';
-img.onload = () => {
-container.innerHTML = '';
-container.appendChild(img);
-};
-img.onerror = () => {};
-img.src = data.signedUrl;
-return;
-}
-} catch (err) {
-continue;
-}
-}
+    const container = document.getElementById('photoContainer');
+    container.innerHTML = '🪪';
+    
+    // Obtener la sesión actual para usar sus credenciales
+    const { data: { session } } = await client.auth.getSession();
+    
+    const extensions = ['jpeg', 'jpg', 'png'];
+    for (const ext of extensions) {
+        const path = `foto_${cedula}.${ext}`;
+        try {
+            // Verificar primero si el archivo existe usando list
+            const { data: listData, error: listError } = await client.storage
+                .from('fotos_funcionarios')
+                .list('', {
+                    search: `foto_${cedula}`
+                });
+            
+            if (listError) {
+                console.warn('Error al listar archivos:', listError);
+                continue;
+            }
+            
+            // Verificar si el archivo específico existe en la lista
+            const fileExists = listData.some(file => file.name === `foto_${cedula}.${ext}`);
+            if (!fileExists) continue;
+            
+            // Intentar obtener la URL pública primero (para buckets públicos)
+            const publicUrl = client.storage
+                .from('fotos_funcionarios')
+                .getPublicUrl(path);
+            
+            if (publicUrl.data.publicUrl) {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                };
+                img.onerror = () => {
+                    console.warn(`Error al cargar foto pública: ${path}`);
+                };
+                img.src = publicUrl.data.publicUrl;
+                return;
+            }
+            
+            // Si no funciona la URL pública, intentar con URL firmada (requiere autenticación)
+            if (session) {
+                const { data, error } = await client.storage
+                    .from('fotos_funcionarios')
+                    .createSignedUrl(path, 3600);
+                
+                if (error) {
+                    console.warn(`Error con URL firmada para ${path}:`, error);
+                    continue;
+                }
+                
+                if (data?.signedUrl) {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                    };
+                    img.onerror = () => {
+                        console.warn(`Error al cargar foto firmada: ${path}`);
+                    };
+                    img.src = data.signedUrl;
+                    return;
+                }
+            }
+        } catch (err) {
+            console.warn(`Error procesando ${path}:`, err);
+            continue;
+        }
+    }
+    
+    // Si no se encuentra ninguna foto, mantener el placeholder
+    console.log(`No se encontró foto para la cédula ${cedula}`);
 }
 function previsualizarFoto(e) {
 const file = e.target.files[0];
