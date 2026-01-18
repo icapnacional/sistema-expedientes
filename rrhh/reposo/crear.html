@@ -353,64 +353,74 @@ continue;
 }
 
 async function crearReposo(e) {
-e.preventDefault();
-showAlert('', '');
-const cedula = document.getElementById('cedula_hidden').value;
-if (!cedula) {
-return showAlert('⚠️ Primero busca un funcionario.', 'error');
+  e.preventDefault();
+  showAlert('', '');
+  const cedula = document.getElementById('cedula_hidden').value;
+  if (!cedula) {
+    return showAlert('⚠️ Primero busca un funcionario.', 'error');
+  }
+  const fechaInicio = document.getElementById('fecha_inicio').value;
+  const fechaFin = document.getElementById('fecha_fin').value;
+  if (!fechaInicio || !fechaFin) {
+    return showAlert('⚠️ Seleccione fechas de inicio y fin.', 'error');
+  }
+  if (new Date(fechaFin) < new Date(fechaInicio)) {
+    return showAlert('⚠️ La fecha de finalización no puede ser anterior a la de inicio.', 'error');
+  }
+
+  // Datos del reposo
+  const data = {
+    cedula: cedula,
+    nombre: document.getElementById('nombre_hidden').value,
+    rango: document.getElementById('rango_hidden').value,
+    region: document.getElementById('region_hidden').value,
+    estado: document.getElementById('estado_hidden').value,
+    estatus: document.getElementById('estatus_hidden').value,
+    fecha_inicio: fechaInicio,
+    fecha_fin: fechaFin,
+    motivo: document.getElementById('motivo').value.trim(),
+    estado_solicitud: 'pendiente',
+    creado_en: new Date().toISOString()
+  };
+
+  try {
+    // 1. Insertar el reposo
+    const { error: errInsert } = await client
+      .from('reposos')
+      .insert([data]);
+    if (errInsert) throw errInsert;
+
+    // 2. ✅ ACTUALIZAR ESTADO EN rrhh_icap → "REPOSOS MEDICO"
+    const { error: errUpdate } = await client
+      .from('rrhh_icap')
+      .update({ estatus: 'REPOSOS MEDICO' })
+      .eq('cedula', cedula);
+    if (errUpdate) {
+      console.warn('⚠️ Reposo creado, pero no se pudo actualizar rrhh_icap:', errUpdate.message);
+      // No detenemos el flujo, solo advertimos
+    }
+
+    // 3. Opcional: subir documento
+    const fileInput = document.getElementById('documento');
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const ext = file.name.split('.').pop().toLowerCase();
+      const fileName = `reposo_${cedula}_${Date.now()}.${ext}`;
+      const { error: upErr } = await client.storage
+        .from('documentos_reposo')
+        .upload(fileName, file, { upsert: true });
+      if (upErr) console.warn('Documento subido con advertencia:', upErr.message);
+    }
+
+    // 4. Éxito
+    showAlert('✅ Solicitud de reposo creada y estatus actualizado.', 'success');
+    setTimeout(() => window.location.reload(), 2000);
+
+  } catch (err) {
+    console.error(err);
+    showAlert(`❌ Error: ${err.message || 'No se pudo guardar la solicitud'}`, 'error');
+  }
 }
-const fechaInicio = document.getElementById('fecha_inicio').value;
-const fechaFin = document.getElementById('fecha_fin').value;
-if (!fechaInicio || !fechaFin) {
-return showAlert('⚠️ Seleccione fechas de inicio y fin.', 'error');
-}
-if (new Date(fechaFin) < new Date(fechaInicio)) {
-return showAlert('⚠️ La fecha de finalización no puede ser anterior a la de inicio.', 'error');
-}
-const data = {
-cedula: cedula,
-nombre: document.getElementById('nombre_hidden').value,
-rango: document.getElementById('rango_hidden').value,
-region: document.getElementById('region_hidden').value,
-estado: document.getElementById('estado_hidden').value,
-estatus: document.getElementById('estatus_hidden').value,
-fecha_inicio: fechaInicio,
-fecha_fin: fechaFin,
-motivo: document.getElementById('motivo').value.trim(),
-estado_solicitud: 'pendiente',
-creado_en: new Date().toISOString()
-};
-try {
-const { error } = await client
-.from('reposos')
-.insert([data]);
-if (error) throw error;
-// Opcional: subir documento
-const fileInput = document.getElementById('documento');
-if (fileInput.files.length > 0) {
-const file = fileInput.files[0];
-const ext = file.name.split('.').pop().toLowerCase();
-const fileName = `reposo_${cedula}_${Date.now()}.${ext}`;
-const { error: upErr } = await client.storage
-.from('documentos_reposo')
-.upload(fileName, file, { upsert: true });
-if (upErr) console.warn('Documento subido con advertencia:', upErr.message);
-}
-showAlert('✅ Solicitud de reposo creada exitosamente.', 'success');
-setTimeout(() => window.location.reload(), 2000);
-} catch (err) {
-console.error(err);
-showAlert(`❌ Error: ${err.message || 'No se pudo guardar la solicitud'}`, 'error');
-}
-}
-function showAlert(msg, type) {
-alertDiv.textContent = msg;
-alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
-alertDiv.style.display = msg ? 'block' : 'none';
-}
-  document.getElementById('btnVolver').addEventListener('click', () => {
-  window.location.href = '../index.html';
-});
 </script>
 </body>
 </html>
