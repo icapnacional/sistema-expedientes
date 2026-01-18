@@ -509,7 +509,35 @@ document.getElementById('fechas_egreso').value = f.fechas_egreso || '';
 document.getElementById('direccion').value = f.direccion || '';
 document.getElementById('telefono').value = f.telefono || '';
 // ✅ RANGO: asignación directa al select de rangos policiales
-document.getElementById('rango').value = f.rango || '';
+const rangoSelect = document.getElementById('rango');
+const valorRango = (f.rango || '').trim();
+let valorEncontrado = false;
+
+// Buscar coincidencia exacta
+for (let i = 0; i < rangoSelect.options.length; i++) {
+if (rangoSelect.options[i].value === valorRango) {
+rangoSelect.value = valorRango;
+valorEncontrado = true;
+break;
+}
+}
+
+// Si no hay coincidencia exacta, buscar coincidencia insensible a mayúsculas/minúsculas
+if (!valorEncontrado) {
+for (let i = 0; i < rangoSelect.options.length; i++) {
+if (rangoSelect.options[i].value.toLowerCase() === valorRango.toLowerCase()) {
+rangoSelect.value = rangoSelect.options[i].value;
+valorEncontrado = true;
+break;
+}
+}
+}
+
+// Si sigue sin encontrar, dejar el primer valor vacío seleccionado
+if (!valorEncontrado && valorRango) {
+console.warn(`Rango no reconocido: "${valorRango}"`);
+}
+
 // ✅ REGIÓN: carga robusta
 const regionSelect = document.getElementById('region');
 const dbRegionRaw = (f.region || '').toString().trim();
