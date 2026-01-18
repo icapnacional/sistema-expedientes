@@ -261,7 +261,7 @@ Dejar sin archivo para conservar foto actual.
 <label for="dependencia">Dependencia</label>
 <textarea id="dependencia" class="autoresize" rows="1"></textarea>
 </div>
-<!-- ✅ REGIÓN SIGUE SIENDO SELECT, PERO SE CARGA CORRECTAMENTE -->
+<!-- ✅ REGIÓN: SELECT PERO CON CARGA ROBUSTA -->
 <div class="form-group">
 <label for="region">Región *</label>
 <select id="region" required>
@@ -408,7 +408,7 @@ const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
 const alertDiv = document.getElementById('searchMessage');
 let currentCedula = null;
-// ✅ Función para calcular edad
+
 function calcularEdad() {
 const fechaNacInput = document.getElementById('fecha_nacimiento');
 const edadInput = document.getElementById('edad_funcionario');
@@ -430,35 +430,43 @@ edadInput.value = '';
 edadInput.value = '';
 }
 }
+
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const {  { session }, error } = await client.auth.getSession();
-if (error || !session) return window.location.href = '../index.html';
-const {  perfil } = await client
-.from('perfiles')
-.select('email, rol')
-.eq('id', session.user.id)
-.single();
-if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
-alert('🔒 Solo administradores y moderadores pueden modificar.');
-return window.location.href = 'auditoria-nacional.html';
-}
-document.getElementById('userEmail').textContent = perfil.email;
-document.getElementById('userRol').textContent =
-perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
-document.getElementById('btnBuscar').addEventListener('click', buscarPorCedula);
-document.getElementById('searchCedula').addEventListener('keypress', e => {
-if (e.key === 'Enter') buscarPorCedula();
-});
-document.getElementById('modificarForm').addEventListener('submit', actualizarRegistro);
-document.getElementById('photoInput').addEventListener('change', previsualizarFoto);
-// ✅ Vincular recálculo al cambio de fecha
-document.getElementById('fecha_nacimiento').addEventListener('change', calcularEdad);
+  // ✅ CORRECCIÓN: Sintaxis válida para getSession()
+  const { data, error } = await client.auth.getSession();
+  const session = data?.session;
+  if (error || !session) return window.location.href = '../index.html';
+
+  const { data: perfilData, error: perfilError } = await client
+    .from('perfiles')
+    .select('email, rol')
+    .eq('id', session.user.id)
+    .single();
+
+  if (perfilError || !perfilData || (perfilData.rol !== 'admin' && perfilData.rol !== 'moderador')) {
+    alert('🔒 Solo administradores y moderadores pueden modificar.');
+    return window.location.href = 'auditoria-nacional.html';
+  }
+
+  document.getElementById('userEmail').textContent = perfilData.email;
+  document.getElementById('userRol').textContent =
+    perfilData.rol === 'admin' ? 'Administrador' : 'Moderador';
+
+  document.getElementById('btnBuscar').addEventListener('click', buscarPorCedula);
+  document.getElementById('searchCedula').addEventListener('keypress', e => {
+    if (e.key === 'Enter') buscarPorCedula();
+  });
+  document.getElementById('modificarForm').addEventListener('submit', actualizarRegistro);
+  document.getElementById('photoInput').addEventListener('change', previsualizarFoto);
+  document.getElementById('fecha_nacimiento').addEventListener('change', calcularEdad);
+
 } catch (err) {
-console.error(err);
-window.location.href = '../index.html';
+  console.error(err);
+  window.location.href = '../index.html';
 }
 });
+
 async function buscarPorCedula() {
 const cedula = document.getElementById('searchCedula').value.trim();
 if (!/^\d{8}$/.test(cedula)) {
@@ -483,6 +491,7 @@ showAlert('✅ Datos cargados. Puedes editarlos.', 'success');
 showAlert('❌ Error al buscar: ' + (err.message || 'intente nuevamente'), 'error');
 }
 }
+
 function cargarDatosFormulario(f) {
 currentCedula = f.cedula;
 document.getElementById('headerCedula').textContent = f.cedula;
@@ -503,19 +512,14 @@ document.getElementById('fechas_egreso').value = f.fechas_egreso || '';
 document.getElementById('direccion').value = f.direccion || '';
 document.getElementById('telefono').value = f.telefono || '';
 
-// ✅ ASIGNACIÓN DIRECTA DEL RANGO
+// ✅ RANGO: asignación directa
 document.getElementById('rango').value = f.rango || '';
 
-// 🔧 CARGA ROBUSTA DE REGIÓN
+// ✅ REGIÓN: carga robusta
 const regionSelect = document.getElementById('region');
 const dbRegionRaw = (f.region || '').toString().trim();
 let regionValue = '';
-
-const validRegions = [
-  'Capital', 'Occidental', 'Los Llanos', 'Los Andes',
-  'Guayana', 'Insular', 'Central', 'Oriental'
-];
-
+const validRegions = ['Capital', 'Occidental', 'Los Llanos', 'Los Andes', 'Guayana', 'Insular', 'Central', 'Oriental'];
 if (validRegions.includes(dbRegionRaw)) {
   regionValue = dbRegionRaw;
 } else {
@@ -533,7 +537,7 @@ if (validRegions.includes(dbRegionRaw)) {
 }
 regionSelect.value = regionValue;
 
-// ✅ Función auxiliar para selects (usada solo para estado y status)
+// Función auxiliar para otros selects
 const setSelectValue = (id, valueFromDB) => {
 const select = document.getElementById(id);
 if (!select) return;
@@ -562,7 +566,7 @@ select.value = '';
 setSelectValue('estado', f.estado);
 setSelectValue('status', f.status);
 
-// Cabecera
+// Cabecera de status
 document.getElementById('headerNombre').textContent = f.apellidos_nombres || '—';
 const statusEl = document.getElementById('headerStatus');
 const rawStatus = (f.status || '').toString().trim();
@@ -590,10 +594,9 @@ document.querySelectorAll('textarea.autoresize').forEach(el => {
 el.style.height = 'auto';
 el.style.height = el.scrollHeight + 'px';
 });
-
-// ✅ Calcular edad tras cargar la fecha
 calcularEdad();
 }
+
 async function cargarFotoActual(cedula) {
 const container = document.getElementById('photoContainer');
 container.innerHTML = '🪪';
@@ -621,6 +624,7 @@ continue;
 }
 }
 }
+
 function previsualizarFoto(e) {
 const file = e.target.files[0];
 if (!file) return;
@@ -636,6 +640,7 @@ container.appendChild(img);
 };
 reader.readAsDataURL(file);
 }
+
 async function actualizarRegistro(e) {
 e.preventDefault();
 showAlert('', '');
@@ -648,16 +653,14 @@ const local = document.getElementById('correo_local').value.trim();
 const dom = document.getElementById('correo_dominio').value;
 let correo = '';
 if (local && dom) correo = `${local}@${dom}`;
-
-// ✅ Asegurar que la edad se calcule antes de enviar
 calcularEdad();
 
 const data = {
-rango: document.getElementById('rango').value.trim(), // ✅ ahora es texto
+rango: document.getElementById('rango').value.trim(),
 apellidos_nombres: document.getElementById('apellidos_nombres').value.trim(),
 sexo: document.getElementById('sexo').value,
 dependencia: document.getElementById('dependencia').value.trim(),
-region: document.getElementById('region').value, // ✅ ahora se guarda correctamente
+region: document.getElementById('region').value,
 estado: document.getElementById('estado').value,
 servicio: document.getElementById('servicio').value.trim(),
 cohorte_promocion: document.getElementById('cohorte_promocion').value.trim(),
@@ -701,20 +704,21 @@ const { error: upErr } = await client.storage
 if (upErr) console.warn('Foto subida con advertencia:', upErr.message);
 }
 
+// Registrar log
 try {
-const sessionResponse = await client.auth.getSession();
-const session = sessionResponse?.data?.session;
+const { data: sessionData } = await client.auth.getSession();
+const session = sessionData?.session;
 if (session) {
-const {  perfil } = await client
+const { data: perfilLog, error: logErr } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
 .single();
-if (perfil) {
+if (!logErr && perfilLog) {
 await client.from('rrhh_logs').insert({
 user_id: session.user.id,
-email: perfil.email,
-rol: perfil.rol,
+email: perfilLog.email,
+rol: perfilLog.rol,
 accion: 'edicion',
 cedula_afectada: currentCedula,
 nombre_afectado: data.apellidos_nombres,
@@ -736,6 +740,7 @@ console.error('Error actualizando:', err);
 showAlert(`❌ Error: ${err.message || 'verifique los datos'}`, 'error');
 }
 }
+
 function showAlert(msg, type) {
 alertDiv.textContent = msg;
 alertDiv.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
