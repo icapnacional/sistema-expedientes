@@ -598,31 +598,24 @@ calcularEdad();
 }
 
 async function cargarFotoActual(cedula) {
-const container = document.getElementById('photoContainer');
-container.innerHTML = '🪪';
-const extensions = ['jpeg', 'jpg', 'png'];
-for (const ext of extensions) {
-const path = `foto_${cedula}.${ext}`;
-try {
-const { data, error } = await client.storage
-.from('fotos_funcionarios')
-.createSignedUrl(path, 3600);
-if (error) continue;
-if (data?.signedUrl) {
-const img = new Image();
-img.crossOrigin = 'anonymous';
-img.onload = () => {
-container.innerHTML = '';
-container.appendChild(img);
-};
-img.onerror = () => {};
-img.src = data.signedUrl;
-return;
-}
-} catch (err) {
-continue;
-}
-}
+  const container = document.getElementById('photoContainer');
+  container.innerHTML = '🪪';
+  const path = `foto_${cedula}.jpg`; // ← solo .jpg
+  try {
+    const { data, error } = await client.storage
+      .from('fotos_funcionarios')
+      .createSignedUrl(path, 3600);
+    if (error || !data?.signedUrl) return;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      container.innerHTML = '';
+      container.appendChild(img);
+    };
+    img.src = data.signedUrl;
+  } catch (err) {
+    // opcional: console.log('Foto no encontrada');
+  }
 }
 
 function previsualizarFoto(e) {
