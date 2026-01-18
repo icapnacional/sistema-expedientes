@@ -423,16 +423,16 @@ const alertDiv = document.getElementById('searchMessage');
 let currentCedula = null;
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const { data: { session }, error } = await client.auth.getSession();
+const {  { session }, error } = await client.auth.getSession();
 if (error || !session) return window.location.href = '../index.html';
-const { data: perfil } = await client
+const {  perfil } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
 .single();
 if (!perfil || (perfil.rol !== 'admin' && perfil.rol !== 'moderador')) {
 alert('🔒 Solo administradores y moderadores pueden modificar.');
-return window.location.href = '../index.html'; // ✅ CORREGIDO: redirección válida
+return window.location.href = '../index.html'; // ✅ Corregido
 }
 document.getElementById('userEmail').textContent = perfil.email;
 document.getElementById('userRol').textContent =
@@ -492,7 +492,7 @@ document.getElementById('observaciones').value = f.observaciones || '';
 document.getElementById('fechas_egreso').value = f.fechas_egreso || '';
 document.getElementById('direccion').value = f.direccion || '';
 document.getElementById('telefono').value = f.telefono || '';
-// ✅ CORRECCIÓN: Función mejorada para selects
+// ✅ Función mejorada para selects
 const setSelectValue = (id, valueFromDB) => {
 const select = document.getElementById(id);
 if (!select) return;
@@ -567,7 +567,7 @@ regionSelect.value = mappedRegion;
 } else {
 regionSelect.value = '';
 }
-// ✅ Eliminada la línea problemática: setSelectValue('region', f.region);
+// ✅ ¡ESTA LÍNEA YA NO EXISTE! (era la que rompía todo)
 setSelectValue('estado', f.estado);
 setSelectValue('status', f.status);
 // Cabecera
@@ -700,7 +700,7 @@ try {
 const sessionResponse = await client.auth.getSession();
 const session = sessionResponse?.data?.session;
 if (session) {
-const { data: perfil } = await client
+const {  perfil } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
