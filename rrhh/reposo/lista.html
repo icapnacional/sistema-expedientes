@@ -118,20 +118,19 @@
       border-radius: 8px;
       display: none;
     }
-    .repositorio-item {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
+    .activo-detalle {
+      padding: 16px;
+      background: #fff8f8;
+      border-left: 3px solid #c62828;
+      border-radius: 8px;
     }
-    .repositorio-item:last-child {
-      border-bottom: none;
+    .activo-detalle h3 {
+      margin: 0 0 12px 0;
+      color: #c62828;
     }
-    .status-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 600;
-      color: white;
+    .activo-detalle p {
+      margin: 6px 0;
+      font-size: 15px;
     }
     table {
       width: 100%;
@@ -186,16 +185,19 @@
       <div id="alertMessage" class="alert"></div>
 
       <!-- Resultado: reposo activo -->
-      <div id="activoSection" class="result-section">
-        <h3 style="color:#c62828;">⚠️ Reposo Activo</h3>
-        <p><strong>Estado:</strong> <span id="estadoActivo">—</span></p>
-        <p><strong>Desde:</strong> <span id="fechaInicioActivo">—</span></p>
-        <p><strong>Hasta:</strong> <span id="fechaFinActivo">—</span></p>
-        <p><strong>Motivo:</strong> <span id="motivoActivo">—</span></p>
+      <div id="activoSection" class="result-section" style="display:none;">
+        <div class="activo-detalle">
+          <h3>⚠️ Reposo Activo</h3>
+          <p><strong>Estado:</strong> <span id="estadoActivo">—</span></p>
+          <p><strong>Desde:</strong> <span id="fechaInicioActivo">—</span></p>
+          <p><strong>Hasta:</strong> <span id="fechaFinActivo">—</span></p>
+          <p><strong>Motivo:</strong> <span id="motivoActivo">—</span></p>
+          <button id="btnReintegrar" class="btn" style="margin-top:16px; width:100%;">🔄 Reintegrar</button>
+        </div>
       </div>
 
       <!-- Resultado: historial -->
-      <div id="historialSection" class="result-section">
+      <div id="historialSection" class="result-section" style="display:none;">
         <h3>📜 Historial de Reposos</h3>
         <div id="historialList"></div>
       </div>
@@ -240,14 +242,18 @@
     const itemsPerPage = 20;
     let totalItems = 0;
 
+    // Variables globales de usuario
+    let session, userRole, userEmail, userEstados;
+
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const { data: { session }, error } = await client.auth.getSession();
-        if (error || !session) return window.location.href = '../../index.html';
+        const { data: { session: sess }, error } = await client.auth.getSession();
+        if (error || !sess) return window.location.href = '../../index.html';
+        session = sess;
 
-        const { data: perfil } = await client
+        const {  perfil } = await client
           .from('perfiles')
-          .select('email, rol')
+          .select('email, rol, estados_asignados')
           .eq('id', session.user.id)
           .single();
 
@@ -256,14 +262,22 @@
           return window.location.href = '../index.html';
         }
 
-        document.getElementById('userEmail').textContent = perfil.email;
+        session = sess;
+        userRole = perfil.rol;
+        userEmail = perfil.email;
+        userEstados = perfil.estados_asignados || [];
+
+        document.getElementById('userEmail').textContent = userEmail;
         document.getElementById('userRol').textContent = 
-          perfil.rol === 'admin' ? 'Administrador' : 'Moderador';
+          userRole === 'admin' ? 'Administrador' : 'Moderador';
 
         document.getElementById('btnBuscarReposos').addEventListener('click', buscarReposos);
         document.getElementById('cedulaInput').addEventListener('keypress', e => {
           if (e.key === 'Enter') buscarReposos();
         });
+
+        // ✅ Evento para el botón Reintegrar
+        document.getElementById('btnReintegrar').addEventListener('click', reintegrarFuncionario);
 
         document.getElementById('btnPrev').addEventListener('click', () => {
           if (currentPage > 1) {
@@ -296,7 +310,7 @@
       showAlert('', '');
 
       try {
-        const { data: repososActivos, error: errReposo } = await client
+        const {  repososActivos, error: errReposo } = await client
           .from('reposos')
           .select('*')
           .eq('cedula', cedula)
@@ -315,7 +329,7 @@
           return;
         }
 
-        const { data: historial, error: errHistorial } = await client
+        const {  historial, error: errHistorial } = await client
           .from('reposos')
           .select('*')
           .eq('cedula', cedula)
@@ -331,9 +345,11 @@
             else if (r.estado_solicitud === 'pendiente') badgeColor = '#ef6c00';
 
             return `
-              <div class="repositorio-item">
+              <div class="repositorio-item" style="padding:12px; border-bottom:1px solid #eee;">
                 <strong>${r.fecha_inicio} → ${r.fecha_fin}</strong>
-                <span class="status-badge" style="background:${badgeColor};">${r.estado_solicitud}</span>
+                <span style="display:inline-block; padding:2px 8px; border-radius:4px; background:${badgeColor}; color:white; font-size:12px; font-weight:600; margin-left:8px;">
+                  ${r.estado_solicitud}
+                </span>
                 <br><small>${r.motivo}</small>
               </div>
             `;
@@ -390,7 +406,7 @@
             else if (repo.estado_solicitud === 'pendiente') badgeColor = '#ef6c00';
 
             return `
-              <tr onclick="window.open('../rrhh-icap/modificar.html?cedula=${repo.cedula}', '_blank')">
+              <tr onclick="mostrarReposoIndividual('${repo.cedula}')">
                 <td>${repo.cedula || '—'}</td>
                 <td>${repo.nombre || '—'}</td>
                 <td>${repo.rango || '—'}</td>
@@ -398,7 +414,7 @@
                 <td>${repo.fecha_inicio || '—'}</td>
                 <td>${repo.fecha_fin || '—'}</td>
                 <td>
-                  <span class="status-badge" style="background:${badgeColor};">
+                  <span style="padding:2px 8px; border-radius:4px; background:${badgeColor}; color:white; font-size:12px; font-weight:600;">
                     ${repo.estado_solicitud}
                   </span>
                 </td>
@@ -420,6 +436,78 @@
         cuerpo.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#c62828;">Error al cargar la lista.</td></tr>`;
       } finally {
         loading.style.display = 'none';
+      }
+    }
+
+    async function mostrarReposoIndividual(cedula) {
+      document.getElementById('cedulaInput').value = cedula;
+      buscarReposos();
+      document.getElementById('activoSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function reintegrarFuncionario() {
+      const cedula = document.getElementById('cedulaInput').value.trim();
+      if (!cedula) return showAlert('⚠️ Primero busca una cédula.', 'error');
+
+      try {
+        const {  reposos, error: errReposo } = await client
+          .from('reposos')
+          .select('*')
+          .eq('cedula', cedula)
+          .in('estado_solicitud', ['pendiente', 'aprobada'])
+          .single();
+
+        if (errReposo || !reposos) {
+          return showAlert('❌ No se encontró un reposo activo para esta cédula.', 'error');
+        }
+
+        // ✅ Verificación por estado (solo moderadores)
+        if (userRole === 'moderador') {
+          const estadoFuncionario = reposos.estado;
+          if (!userEstados.includes(estadoFuncionario)) {
+            return showAlert('🔒 No tienes permiso para reintegrar funcionarios de este estado.', 'error');
+          }
+        }
+
+        // ✅ Actualizar estatus en rrhh_icap
+        const { error: errUpdate } = await client
+          .from('rrhh_icap')
+          .update({ estatus: 'DISPONIBLE' })
+          .eq('cedula', cedula);
+
+        if (errUpdate) throw errUpdate;
+
+        // ✅ Registrar en historial_reposos
+        const historialData = {
+          cedula: reposos.cedula,
+          nombre: reposos.nombre,
+          estado_funcionario: reposos.estado,
+          fecha_inicio: reposos.fecha_inicio,
+          fecha_fin: reposos.fecha_fin,
+          motivo: reposos.motivo,
+          reingresado_por: session.user.id,
+          email_usuario: userEmail,
+          rol_usuario: userRole
+        };
+
+        const { error: errHistorial } = await client
+          .from('historial_reposos')
+          .insert([historialData]);
+
+        if (errHistorial) console.warn('Historial guardado con advertencia:', errHistorial.message);
+
+        // ✅ Marcar reposo como finalizado
+        await client
+          .from('reposos')
+          .update({ estado_solicitud: 'finalizado' })
+          .eq('cedula', cedula);
+
+        showAlert('✅ Funcionario reintegrado exitosamente.', 'success');
+        setTimeout(() => location.reload(), 2000);
+
+      } catch (err) {
+        console.error(err);
+        showAlert(`❌ Error al reintegrar: ${err.message}`, 'error');
       }
     }
 
