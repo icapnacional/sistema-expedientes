@@ -570,24 +570,23 @@ else if (rawStatus.toLowerCase() === 'suspendido') bgColor = '#ef6c00';
 else if (rawStatus === 'DA') bgColor = '#7b1fa2';
 statusEl.style.backgroundColor = bgColor;
 
-// Correo
-if (f.correo_electronico) {
-const parts = f.correo_electronico.split('@');
-if (parts.length === 2) {
-document.getElementById('correo_local').value = parts[0];
-document.getElementById('correo_dominio').value = parts[1];
+// ✅ Correo: manejo seguro de null, undefined o string vacío
+const email = f.correo_electronico;
+if (typeof email === 'string' && email.includes('@')) {
+  const parts = email.split('@');
+  if (parts.length === 2) {
+    const localEl = document.getElementById('correo_local');
+    const dominioEl = document.getElementById('correo_dominio');
+    if (localEl) localEl.value = parts[0];
+    if (dominioEl) dominioEl.value = parts[1];
+  }
+} else {
+  // Limpiar campos si no hay correo válido
+  const localEl = document.getElementById('correo_local');
+  const dominioEl = document.getElementById('correo_dominio');
+  if (localEl) localEl.value = '';
+  if (dominioEl) dominioEl.value = '';
 }
-}
-
-// Foto y autoresize
-cargarFotoActual(f.cedula);
-document.querySelectorAll('textarea.autoresize').forEach(el => {
-el.style.height = 'auto';
-el.style.height = el.scrollHeight + 'px';
-});
-calcularEdad();
-}
-
 async function cargarFotoActual(cedula) {
   const container = document.getElementById('photoContainer');
   container.innerHTML = '🪪';
