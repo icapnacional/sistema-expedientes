@@ -575,36 +575,35 @@ async function cargarFotoActual(cedula) {
   let found = false;
 
   for (const ext of extensions) {
-    const path = `foto_${cedula}.${ext}`;
-    try {
-      const { data, error } = await client.storage
-        .from('fotos_funcionarios')
-        .createSignedUrl(path, 3600);
+    const publicUrl = `https://xvqcgdbdwrocfcdfqpxv.supabase.co/storage/v1/object/public/fotos_funcionarios/foto_${cedula}.${ext}`;
+    
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
 
-      if (error) continue;
-      if (data?.signedUrl) {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-          container.innerHTML = '';
-          container.appendChild(img);
-          found = true;
-        };
-        img.onerror = () => {};
-        img.src = data.signedUrl;
-        return; // Salir apenas se encuentre una
+    img.onload = () => {
+      if (!found) { // Evitar múltiples cargas si varias extensiones existen
+        container.innerHTML = '';
+        container.appendChild(img);
+        found = true;
       }
-    } catch (err) {
-      continue;
-    }
+    };
+
+    img.onerror = () => {
+      // Si falla, sigue probando con la siguiente extensión
+    };
+
+    img.src = publicUrl;
+
+    // Esperar un poco antes de probar la siguiente (opcional, pero ayuda a evitar parpadeos)
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
 
-  // Si termina el bucle sin encontrar ninguna foto
+  // Si ninguna imagen se cargó tras probar todas las extensiones
   setTimeout(() => {
     if (!found) {
       container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;font-size:14px;text-align:center;">No hay foto<br>disponible en la<br>base de datos</div>';
     }
-  }, 800); // Pequeño retraso para evitar parpadeo si carga muy rápido
+  }, 500); // Tiempo suficiente para que al menos una imagen intente cargarse
 }
 function previsualizarFoto(e) {
 const file = e.target.files[0];
