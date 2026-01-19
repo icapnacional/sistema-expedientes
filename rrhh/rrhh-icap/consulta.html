@@ -272,7 +272,8 @@ background-color: #1565c0 !important;
 </div>
 <div class="user-info">
 <strong>Usuario:</strong> <span id="userEmail">—</span> |
-<strong>Rol:</strong> <span id="userRol">—</span>
+<strong>Rol:</strong> <span id="userRol">—</span> |
+<strong>Estado(s):</strong> <span id="userEstados">—</span>
 </div>
 <div class="search-section">
 <h2 style="font-size: 20px; margin-bottom: 16px; color: #2d2d2d;">🔍 Consulta de Personal ICAP</h2>
@@ -355,8 +356,6 @@ const { jsPDF } = window.jspdf;
 let currentPage = 1;
 const RESULTS_PER_PAGE = 15;
 let currentFotoURL = null;
-
-// ✅ Variables globales para rol y estados
 let userRol = null;
 let userEstados = [];
 
@@ -373,7 +372,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!perfil) return window.location.href = '../../index.html';
 
-    // ✅ Asignación correcta aquí
     userRol = perfil.rol || 'consultor';
     userEstados = perfil.estados_asignados || [];
 
@@ -386,6 +384,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('userRol').textContent =
       userRol === 'admin' ? 'Administrador' :
       userRol === 'moderador' ? 'Moderador' : 'Consultor';
+    document.getElementById('userEstados').textContent = userEstados.join(', ') || '—';
 
     document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
     document.getElementById('searchQuery').addEventListener('keypress', e => {
@@ -423,7 +422,7 @@ async function iniciarBusqueda() {
         .select('*')
         .eq('cedula', query);
 
-      // ✅ Aplicar filtro por estado si NO es admin
+      // ✅ Filtrar por estado si NO es admin
       if (userRol !== 'admin') {
         queryBuilder = queryBuilder.in('estado', userEstados);
       }
@@ -476,7 +475,7 @@ async function buscarPorNombre(query) {
       .range((currentPage - 1) * RESULTS_PER_PAGE, currentPage * RESULTS_PER_PAGE - 1)
       .order('nombre_apellidos', { ascending: true });
 
-    // ✅ Filtrar por estado si no es admin
+    // ✅ Filtrar por estado si NO es admin
     if (userRol !== 'admin') {
       queryBuilder = queryBuilder.in('estado', userEstados);
     }
