@@ -417,26 +417,35 @@ async function iniciarBusqueda() {
     msg.style.color = '#1976d2';
 
     try {
-      let queryBuilder = client
-        .from('rrhh_icap')
-        .select('*')
-        .eq('cedula', query);
+      let data = null;
 
-      // ✅ Filtrar por estado si NO es admin
-      if (userRol !== 'admin') {
-        queryBuilder = queryBuilder.in('estado', userEstados);
-      }
+      if (userRol === 'admin') {
+        // Admin: buscar directamente
+        const { data: d, error } = await client
+          .from('rrhh_icap')
+          .select('*')
+          .eq('cedula', query)
+          .single();
+        if (error) throw new Error('No encontrado');
+        data = d;
+      } else {
+        // Moderador/Consultor: traer solo sus estados y luego filtrar
+        const { data: records, error } = await client
+          .from('rrhh_icap')
+          .select('*')
+          .in('estado', userEstados); // Esto sigue siendo sensible a mayúsculas
 
-      const { data, error } = await queryBuilder.single();
+        if (error || !records) throw new Error('No encontrado');
 
-      if (error || !data) {
-        if (userRol === 'admin') {
-          msg.textContent = `❌ Cédula ${query} no encontrada.`;
-        } else {
-          msg.textContent = '❌ Funcionario no encontrado en su estado.';
-        }
-        msg.style.color = '#c62828';
-        return;
+        // 🔥 Normalización segura: comparar en minúsculas y trim
+        const normalizedUserEstados = userEstados.map(e => e.trim().toLowerCase());
+        const found = records.find(r => 
+          r.cedula === query && 
+          normalizedUserEstados.includes((r.estado || '').trim().toLowerCase())
+        );
+
+        if (!found) throw new Error('No encontrado en su estado');
+        data = found;
       }
 
       mostrarFichaCompleta(data);
@@ -445,9 +454,9 @@ async function iniciarBusqueda() {
       registrarLogConsulta(data.cedula, data.nombre_apellidos);
       msg.textContent = '';
     } catch (err) {
-      console.error('Error en búsqueda por cédula:', err);
+      console.error('Error en búsqueda:', err);
       if (userRol === 'admin') {
-        msg.textContent = '❌ Error al buscar cédula.';
+        msg.textContent = `❌ Cédula ${query} no encontrada.`;
       } else {
         msg.textContent = '❌ Funcionario no encontrado en su estado.';
       }
@@ -459,7 +468,6 @@ async function iniciarBusqueda() {
   currentPage = 1;
   buscarPorNombre(query);
 }
-
 async function buscarPorNombre(query) {
   const msg = document.getElementById('searchMessage');
   msg.textContent = '🔍 Buscando coincidencias...';
