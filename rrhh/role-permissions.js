@@ -40,22 +40,26 @@ const PERMISSIONS = {
     action: () => { alert('⚠️ Módulo en desarrollo'); },
     tooltip: '🔒 Solo Administrador'
   },
-  // 🔹 RRHH ICAP
-  'btnRhObjetivos': {
-    roles: ['admin', 'moderador'],
-    action: () => { alert('Módulo en desarrollo'); },
-    tooltip: '🔒 Solo RRHH autorizado'
-  },
-  'btnRhDesempeno': {
-    roles: ['admin', 'moderador'],
-    action: () => { alert('Módulo en desarrollo'); },
-    tooltip: '🔒 Solo RRHH autorizado'
-  },
-  'btnRhCapacitacion': {
-    roles: ['admin', 'moderador'],
-    action: () => { alert('Módulo en desarrollo'); },
-    tooltip: '🔒 Solo RRHH autorizado'
-  },
+ // 🔹 RRHH ICAP — NUEVOS BOTONES
+'btnRrhhConsulta': {
+  roles: ['admin', 'moderador', 'consultor'],
+  action: () => { window.location.href = 'rrhh-icap/consulta.html'; }
+},
+'btnRrhhRegistro': {
+  roles: ['admin', 'moderador'],
+  action: () => { window.location.href = 'rrhh-icap/registro.html'; },
+  tooltip: '🔒 Solo RRHH autorizado'
+},
+'btnRrhhModificar': {
+  roles: ['admin', 'moderador'],
+  action: () => { window.location.href = 'rrhh-icap/modificar.html'; },
+  tooltip: '🔒 Solo RRHH autorizado'
+},
+'btnRrhhHistorial': {
+  roles: ['admin'],
+  action: () => { window.location.href = 'rrhh-icap/historial-logs.html'; },
+  tooltip: '🔒 Solo Administrador'
+},
   // 🔹 Orden de Servicio
   'btnOrdenNueva': {
     roles: ['admin', 'moderador'],
