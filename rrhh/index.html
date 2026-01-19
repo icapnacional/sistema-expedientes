@@ -515,6 +515,71 @@ if (typeof initRolePermissions === 'function') {
         location.href = '../index.html';
       }
     });
+function initRolePermissions(userRol, buttonIds = []) {
+  // Si no se proporcionan botones, usar los de Auditoría Nacional por defecto
+  if (!buttonIds || buttonIds.length === 0) {
+    buttonIds = [
+      'btnAuditoriaRegistro',
+      'btnAuditoriaModificar',
+      'btnAuditoriaHistorial'
+    ];
+  }
+
+  // Solo administradores y moderadores pueden acceder a estos botones
+  const allowedRoles = ['admin', 'moderador'];
+
+  buttonIds.forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) {
+      if (!allowedRoles.includes(userRol)) {
+        // Deshabilitar y mostrar tooltip
+        btn.setAttribute('disabled', true);
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+
+        // Crear tooltip si no existe
+        let tooltip = document.getElementById(`tooltip-${id}`);
+        if (!tooltip) {
+          tooltip = document.createElement('div');
+          tooltip.id = `tooltip-${id}`;
+          tooltip.textContent = '🔒 Solo RRHH autorizado';
+          tooltip.style.cssText = `
+            position: absolute;
+            background: #c62828;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+            display: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            pointer-events: none;
+          `;
+          btn.parentElement.appendChild(tooltip);
+
+          // Mostrar tooltip al pasar el ratón
+          btn.addEventListener('mouseenter', () => {
+            tooltip.style.display = 'block';
+          });
+          btn.addEventListener('mouseleave', () => {
+            tooltip.style.display = 'none';
+          });
+        }
+      } else {
+        // Habilitar si es admin o moderador
+        btn.removeAttribute('disabled');
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        // Quitar tooltip si existe
+        const existingTooltip = document.getElementById(`tooltip-${id}`);
+        if (existingTooltip) {
+          existingTooltip.remove();
+        }
+      }
+    }
+  });
+}
   </script>
 </body>
 </html>
