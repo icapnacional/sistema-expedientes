@@ -567,31 +567,44 @@ el.style.height = el.scrollHeight + 'px';
 calcularEdad();
 }
 async function cargarFotoActual(cedula) {
-const container = document.getElementById('photoContainer');
-container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;font-size:14px;">Buscando...<br>espere</div>';
-const extensions = ['jpeg', 'jpg', 'png'];
-for (const ext of extensions) {
-const path = `foto_${cedula}.${ext}`;
-try {
-const { data, error } = await client.storage
-.from('fotos_funcionarios')
-.createSignedUrl(path, 3600);
-if (error) continue;
-if (data?.signedUrl) {
-const img = new Image();
-img.crossOrigin = 'anonymous';
-img.onload = () => {
-container.innerHTML = '';
-container.appendChild(img);
-};
-img.onerror = () => {};
-img.src = data.signedUrl;
-return;
-}
-} catch (err) {
-continue;
-}
-}
+  const container = document.getElementById('photoContainer');
+  // Mostrar mensaje de "buscando..." mientras se intenta cargar
+  container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;font-size:14px;text-align:center;">Buscando...<br>espere</div>';
+
+  const extensions = ['jpeg', 'jpg', 'png'];
+  let found = false;
+
+  for (const ext of extensions) {
+    const path = `foto_${cedula}.${ext}`;
+    try {
+      const { data, error } = await client.storage
+        .from('fotos_funcionarios')
+        .createSignedUrl(path, 3600);
+
+      if (error) continue;
+      if (data?.signedUrl) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          container.innerHTML = '';
+          container.appendChild(img);
+          found = true;
+        };
+        img.onerror = () => {};
+        img.src = data.signedUrl;
+        return; // Salir apenas se encuentre una
+      }
+    } catch (err) {
+      continue;
+    }
+  }
+
+  // Si termina el bucle sin encontrar ninguna foto
+  setTimeout(() => {
+    if (!found) {
+      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;font-size:14px;text-align:center;">No hay foto<br>disponible en la<br>base de datos</div>';
+    }
+  }, 800); // Pequeño retraso para evitar parpadeo si carga muy rápido
 }
 function previsualizarFoto(e) {
 const file = e.target.files[0];
