@@ -359,58 +359,33 @@ let currentFotoURL = null;
 let userRol = null;
 let userEstados = [];
 
-// Normaliza texto: quita tildes, espacios, y pasa a minúsculas
-function normalizeText(str) {
-  return (str || '').toString().trim().toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const { data, error } = await client.auth.getSession();
-    const session = data?.session;
+    const { data: { session }, error } = await client.auth.getSession();
+    if (error || !session) return window.location.href = '../../index.html';
 
-    if (error || !session) {
-      console.error('Sesión no encontrada');
-      return window.location.href = '../../index.html';
-    }
-
-    const {  perfil, error: perfilError } = await client
+    const { data: perfil } = await client
       .from('perfiles')
       .select('email, rol, estados_asignados')
       .eq('id', session.user.id)
       .single();
 
-    if (perfilError || !perfil) {
-      console.error('Perfil no encontrado:', perfilError);
-      alert('❌ No se pudo cargar tu perfil. Contacta al administrador.');
-      return window.location.href = '../index.html';
-    }
+    if (!perfil) return window.location.href = '../../index.html';
 
-    userRol = (perfil.rol || 'consultor').trim();
-    userEstados = Array.isArray(perfil.estados_asignados) ? perfil.estados_asignados : [];
+    userRol = perfil.rol || 'consultor';
+    userEstados = perfil.estados_asignados || [];
 
-    // Validación de roles permitidos
-    if (!['admin', 'moderador', 'consultor'].includes(userRol)) {
+    if (userRol !== 'admin' && userRol !== 'moderador' && userRol !== 'consultor') {
       alert('🔒 Acceso denegado');
-      return window.location.href = '../index.html';
+      return window.location.href = '../../index.html';
     }
 
-    // Si es moderador/consultor y no tiene estados, advertir
-    if (userRol !== 'admin' && userEstados.length === 0) {
-      alert('⚠️ Tu cuenta no tiene estados asignados. Contacta al administrador.');
-      return window.location.href = '../index.html';
-    }
-
-    // Mostrar info del usuario
-    document.getElementById('userEmail').textContent = perfil.email || '—';
+    document.getElementById('userEmail').textContent = perfil.email;
     document.getElementById('userRol').textContent =
       userRol === 'admin' ? 'Administrador' :
       userRol === 'moderador' ? 'Moderador' : 'Consultor';
     document.getElementById('userEstados').textContent = userEstados.join(', ') || '—';
 
-    // Eventos
     document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
     document.getElementById('searchQuery').addEventListener('keypress', e => {
       if (e.key === 'Enter') iniciarBusqueda();
@@ -424,7 +399,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   } catch (err) {
     console.error('Error en autenticación:', err);
-    alert('❌ Error al iniciar sesión. Redirigiendo...');
     window.location.href = '../../index.html';
   }
 });
@@ -446,7 +420,8 @@ async function iniciarBusqueda() {
       let data = null;
 
       if (userRol === 'admin') {
-        const {  d, error } = await client
+        // Admin: buscar directamente
+        const { data: d, error } = await client
           .from('rrhh_icap')
           .select('*')
           .eq('cedula', query)
@@ -454,23 +429,20 @@ async function iniciarBusqueda() {
         if (error) throw new Error('No encontrado');
         data = d;
       } else {
-        // Validar que tenga estados
-        if (userEstados.length === 0) {
-          throw new Error('Sin estados asignados');
-        }
-
-        const {  records, error } = await client
+        // Moderador/Consultor: traer solo sus estados y luego filtrar
+        const { data: records, error } = await client
           .from('rrhh_icap')
           .select('*')
-          .eq('cedula', query);
+          .in('estado', userEstados); // Esto sigue siendo sensible a mayúsculas
 
-        if (error || !records || records.length === 0) throw new Error('No encontrado');
+        if (error || !records) throw new Error('No encontrado');
 
-        const normalizedUserEstados = userEstados.map(e => normalizeText(e));
-        const found = records.find(r => {
-          const recordEstado = normalizeText(r.estado);
-          return normalizedUserEstados.includes(recordEstado);
-        });
+        // 🔥 Normalización segura: comparar en minúsculas y trim
+        const normalizedUserEstados = userEstados.map(e => e.trim().toLowerCase());
+        const found = records.find(r => 
+          r.cedula === query && 
+          normalizedUserEstados.includes((r.estado || '').trim().toLowerCase())
+        );
 
         if (!found) throw new Error('No encontrado en su estado');
         data = found;
@@ -482,7 +454,7 @@ async function iniciarBusqueda() {
       registrarLogConsulta(data.cedula, data.nombre_apellidos);
       msg.textContent = '';
     } catch (err) {
-      console.error('Error en búsqueda:', err.message);
+      console.error('Error en búsqueda:', err);
       if (userRol === 'admin') {
         msg.textContent = `❌ Cédula ${query} no encontrada.`;
       } else {
@@ -505,53 +477,32 @@ async function buscarPorNombre(query) {
   document.getElementById('resultCard').style.display = 'none';
 
   try {
-    if (userRol !== 'admin' && userEstados.length === 0) {
-      msg.textContent = '❌ No tienes estados asignados para consultar.';
+    let queryBuilder = client
+      .from('rrhh_icap')
+      .select('*', { count: 'exact' })
+      .ilike('nombre_apellidos', `%${query}%`)
+      .range((currentPage - 1) * RESULTS_PER_PAGE, currentPage * RESULTS_PER_PAGE - 1)
+      .order('nombre_apellidos', { ascending: true });
+
+    // ✅ Filtrar por estado si NO es admin
+    if (userRol !== 'admin') {
+      queryBuilder = queryBuilder.in('estado', userEstados);
+    }
+
+    const { data, error, count } = await queryBuilder;
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      if (userRol === 'admin') {
+        msg.textContent = `❌ No se encontraron coincidencias para "${query}"`;
+      } else {
+        msg.textContent = '❌ No hay resultados en su estado asignado.';
+      }
       msg.style.color = '#c62828';
       return;
     }
 
-    let records = null;
-
-    if (userRol === 'admin') {
-      const {  data, error, count } = await client
-        .from('rrhh_icap')
-        .select('*', { count: 'exact' })
-        .ilike('nombre_apellidos', `%${query}%`)
-        .range((currentPage - 1) * RESULTS_PER_PAGE, currentPage * RESULTS_PER_PAGE - 1)
-        .order('nombre_apellidos', { ascending: true });
-      if (error) throw error;
-      renderResults(data, count, query);
-    } else {
-      const {  allRecords, error: fetchError } = await client
-        .from('rrhh_icap')
-        .select('*')
-        .ilike('nombre_apellidos', `%${query}%`);
-
-      if (fetchError) throw fetchError;
-      if (!allRecords || allRecords.length === 0) {
-        msg.textContent = '❌ No hay resultados en su estado asignado.';
-        msg.style.color = '#c62828';
-        return;
-      }
-
-      const normalizedUserEstados = userEstados.map(e => normalizeText(e));
-      const filtered = allRecords.filter(r => {
-        const recordEstado = normalizeText(r.estado);
-        return normalizedUserEstados.includes(recordEstado);
-      });
-
-      if (filtered.length === 0) {
-        msg.textContent = '❌ No hay resultados en su estado asignado.';
-        msg.style.color = '#c62828';
-        return;
-      }
-
-      const startIndex = (currentPage - 1) * RESULTS_PER_PAGE;
-      const paginated = filtered.slice(startIndex, startIndex + RESULTS_PER_PAGE);
-      renderResults(paginated, filtered.length, query);
-    }
-
+    renderResults(data, count, query);
     document.getElementById('resultsList').style.display = 'block';
     registrarLogConsulta(null, null);
     msg.textContent = '';
@@ -608,33 +559,17 @@ function renderPagination(totalPages) {
 
 async function mostrarFichaPorCedula(cedula) {
   try {
-    let data = null;
+    let queryBuilder = client
+      .from('rrhh_icap')
+      .select('*')
+      .eq('cedula', cedula);
 
-    if (userRol === 'admin') {
-      const {  d, error } = await client
-        .from('rrhh_icap')
-        .select('*')
-        .eq('cedula', cedula)
-        .single();
-      if (error) throw new Error('No encontrado');
-      data = d;
-    } else {
-      if (userEstados.length === 0) throw new Error('Sin estados');
-
-      const {  records, error } = await client
-        .from('rrhh_icap')
-        .select('*')
-        .eq('cedula', cedula);
-      if (error || !records) throw new Error('No encontrado');
-
-      const normalizedUserEstados = userEstados.map(e => normalizeText(e));
-      const found = records.find(r => {
-        const recordEstado = normalizeText(r.estado);
-        return normalizedUserEstados.includes(recordEstado);
-      });
-      if (!found) throw new Error('No encontrado en su estado');
-      data = found;
+    if (userRol !== 'admin') {
+      queryBuilder = queryBuilder.in('estado', userEstados);
     }
+
+    const { data, error } = await queryBuilder.single();
+    if (error || !data) throw new Error('No encontrado');
 
     mostrarFichaCompleta(data);
     document.getElementById('resultsList').style.display = 'none';
