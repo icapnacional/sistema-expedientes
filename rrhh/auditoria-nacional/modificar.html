@@ -568,42 +568,40 @@ calcularEdad();
 }
 async function cargarFotoActual(cedula) {
   const container = document.getElementById('photoContainer');
-  // Mostrar mensaje de "buscando..." mientras se intenta cargar
+  // Mostrar mensaje de carga
   container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;font-size:14px;text-align:center;">Buscando...<br>espere</div>';
 
   const extensions = ['jpeg', 'jpg', 'png'];
   let found = false;
 
+  // Probar cada extensión
   for (const ext of extensions) {
+    if (found) return; // Salir si ya se encontró
+
     const publicUrl = `https://xvqcgdbdwrocfcdfqpxv.supabase.co/storage/v1/object/public/fotos_funcionarios/foto_${cedula}.${ext}`;
-    
     const img = new Image();
     img.crossOrigin = 'anonymous';
 
-    img.onload = () => {
-      if (!found) { // Evitar múltiples cargas si varias extensiones existen
-        container.innerHTML = '';
-        container.appendChild(img);
-        found = true;
-      }
-    };
-
-    img.onerror = () => {
-      // Si falla, sigue probando con la siguiente extensión
-    };
-
-    img.src = publicUrl;
-
-    // Esperar un poco antes de probar la siguiente (opcional, pero ayuda a evitar parpadeos)
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => {
+      img.onload = () => {
+        if (!found) {
+          container.innerHTML = '';
+          container.appendChild(img);
+          found = true;
+        }
+        resolve();
+      };
+      img.onerror = () => {
+        resolve(); // Continuar con la siguiente extensión
+      };
+      img.src = publicUrl;
+    });
   }
 
-  // Si ninguna imagen se cargó tras probar todas las extensiones
-  setTimeout(() => {
-    if (!found) {
-      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;font-size:14px;text-align:center;">No hay foto<br>disponible en la<br>base de datos</div>';
-    }
-  }, 500); // Tiempo suficiente para que al menos una imagen intente cargarse
+  // Si tras probar todo no se encontró nada
+  if (!found) {
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;font-size:14px;text-align:center;">No hay foto<br>disponible en la<br>base de datos</div>';
+  }
 }
 function previsualizarFoto(e) {
 const file = e.target.files[0];
