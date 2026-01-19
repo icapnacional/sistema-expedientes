@@ -444,12 +444,28 @@
           userRolSpan.innerHTML += ' <span title="Administrador" style="color:#c62828; cursor:help;">ⓘ</span>';
         }
 
-        // ✅ Aplicar permisos SOLO a los botones (no a las pestañas)
-        if (typeof initRolePermissions === 'function') {
-          initRolePermissions(userRol);
-        } else {
-          console.error('❌ role-permissions.js no cargado');
-        }
+       // ✅ Aplicar permisos a los botones de Auditoría Nacional y RRHH ICAP
+if (typeof initRolePermissions === 'function') {
+  // Botones de Auditoría Nacional
+  const auditoriaButtons = [
+    'btnAuditoriaRegistro',
+    'btnAuditoriaModificar',
+    'btnAuditoriaHistorial'
+  ];
+  // Botones de RRHH ICAP
+  const rrhhIcapButtons = [
+    'btnRrhhRegistro',
+    'btnRrhhModificar',
+    'btnRrhhHistorial'
+  ];
+
+  // Aplicar permisos a ambos conjuntos
+  initRolePermissions(userRol, auditoriaButtons);
+  initRolePermissions(userRol, rrhhIcapButtons);
+
+} else {
+  console.error('❌ role-permissions.js no cargado');
+}
 
     const mappings = {
   'btnAuditoriaConsulta': 'auditoria-nacional/consulta.html',
