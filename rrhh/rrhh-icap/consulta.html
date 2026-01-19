@@ -1,693 +1,720 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Consulta | RRHH ICAP</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background-color: #fafafa;
-      font-family: 'Inter', sans-serif;
-      color: #2d2d2d;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 24px;
-      padding: 20px 0;
-    }
-    .header img {
-      width: 90px;
-      margin-bottom: 16px;
-    }
-    .header h1 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #2d2d2d;
-      margin-bottom: 8px;
-    }
-    .header .subtitle {
-      font-size: 16px;
-      color: #722F37;
-      font-weight: 600;
-    }
-    .user-info {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 24px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-      border: 1px solid #eee;
-    }
-    .search-section {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      margin-bottom: 24px;
-      border: 1px solid #eee;
-    }
-    .search-group {
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #333;
-    }
-    input, button {
-      padding: 12px 16px;
-      font-size: 15px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-    }
-    input {
-      width: 100%;
-      background: #fdfdfd;
-    }
-    .btn {
-      background-color: #722F37;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-    .btn:hover {
-      background-color: #5e262d;
-      transform: translateY(-1px);
-    }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #722F37;
-      color: #722F37;
-    }
-    .btn-outline:hover {
-      background: #fdf7f7;
-    }
-    .btn-pdf {
-      background-color: #1976d2;
-      margin-top: 16px;
-    }
-    .btn-pdf:hover {
-      background-color: #1565c0;
-    }
-    .results-list {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      border: 1px solid #eee;
-      margin-bottom: 24px;
-      display: none;
-    }
-    .results-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .result-item {
-      padding: 14px;
-      border-bottom: 1px solid #f0f0f0;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .result-item:hover {
-      background: #f9f7f7;
-    }
-    .result-item:last-child {
-      border-bottom: none;
-    }
-    .result-name {
-      font-weight: 600;
-      color: #2d2d2d;
-    }
-    .result-id {
-      font-size: 13px;
-      color: #666;
-    }
-    .pagination {
-      display: flex;
-      justify-content: center;
-      gap: 6px;
-      margin-top: 16px;
-      flex-wrap: wrap;
-    }
-    .pagination button,
-    .pagination span {
-      min-width: 32px;
-      height: 32px;
-      padding: 0 4px;
-      border-radius: 6px;
-      background: #f5f5f5;
-      border: 1px solid #ddd;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .pagination button.active {
-      background: #722F37;
-      color: white;
-      border-color: #722F37;
-    }
-    .pagination button:hover:not(.active) {
-      background: #eaeaea;
-    }
-    .pagination span {
-      cursor: default;
-      background: transparent;
-      border: none;
-      color: #888;
-    }
-    .result-card {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      border: 1px solid #eee;
-      display: none;
-    }
-    .photo-section {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .photo-placeholder {
-      width: 200px;
-      height: 200px;
-      border-radius: 8px;
-      background: #f0f0f0;
-      margin: 0 auto 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 64px;
-      color: #888;
-      overflow: hidden;
-      border: 2px solid #eee;
-    }
-    .photo-placeholder img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    #statusBox {
-      margin-top: 12px;
-      padding: 6px 16px;
-      border-radius: 6px;
-      font-weight: 600;
-      text-align: center;
-      font-size: 14px;
-      display: block;
-      color: white;
-    }
-    .fields-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-    .field {
-      margin-bottom: 10px;
-    }
-    .field-label {
-      font-weight: 600;
-      color: #555;
-      font-size: 13px;
-    }
-    .field-value {
-      font-size: 14px;
-      color: #2d2d2d;
-    }
-    .breadcrumb {
-      background: #f8f9fa;
-      border-radius: 12px;
-      padding: 12px 20px;
-      margin-bottom: 24px;
-      font-size: 14px;
-      color: #555;
-    }
-    .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
-    .breadcrumb span { margin: 0 8px; color: #888; }
-    #btnDescargarFoto {
-      background: #e3f2fd;
-      color: #1976d2;
-      border: 1px solid #1976d2;
-    }
-    #btnDescargarFoto:hover {
-      background: #bbdefb;
-    }
-    .btn-azul {
-  background-color: #1976d2 !important;
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Consulta | RRHH ICAP</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+background-color: #fafafa;
+font-family: 'Inter', sans-serif;
+color: #2d2d2d;
+min-height: 100vh;
+padding: 20px;
+}
+.container {
+max-width: 1200px;
+margin: 0 auto;
+}
+.header {
+text-align: center;
+margin-bottom: 24px;
+padding: 20px 0;
+}
+.header img {
+width: 90px;
+margin-bottom: 16px;
+}
+.header h1 {
+font-size: 24px;
+font-weight: 700;
+color: #2d2d2d;
+margin-bottom: 8px;
+}
+.header .subtitle {
+font-size: 16px;
+color: #722F37;
+font-weight: 600;
+}
+.user-info {
+background: white;
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 24px;
+box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+border: 1px solid #eee;
+}
+.search-section {
+background: white;
+border-radius: 12px;
+padding: 24px;
+box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+margin-bottom: 24px;
+border: 1px solid #eee;
+}
+.search-group {
+margin-bottom: 20px;
+}
+label {
+display: block;
+margin-bottom: 8px;
+font-weight: 600;
+color: #333;
+}
+input, button {
+padding: 12px 16px;
+font-size: 15px;
+border-radius: 8px;
+border: 1px solid #ddd;
+}
+input {
+width: 100%;
+background: #fdfdfd;
+}
+.btn {
+background-color: #722F37;
+color: white;
+border: none;
+cursor: pointer;
+font-weight: 600;
+transition: all 0.3s;
+}
+.btn:hover {
+background-color: #5e262d;
+transform: translateY(-1px);
+}
+.btn-outline {
+background: transparent;
+border: 1px solid #722F37;
+color: #722F37;
+}
+.btn-outline:hover {
+background: #fdf7f7;
+}
+.btn-pdf {
+background-color: #1976d2;
+margin-top: 16px;
+}
+.btn-pdf:hover {
+background-color: #1565c0;
+}
+.results-list {
+background: white;
+border-radius: 12px;
+padding: 20px;
+box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+border: 1px solid #eee;
+margin-bottom: 24px;
+display: none;
+}
+.results-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 16px;
+}
+.result-item {
+padding: 14px;
+border-bottom: 1px solid #f0f0f0;
+cursor: pointer;
+transition: background 0.2s;
+}
+.result-item:hover {
+background: #f9f7f7;
+}
+.result-item:last-child {
+border-bottom: none;
+}
+.result-name {
+font-weight: 600;
+color: #2d2d2d;
+}
+.result-id {
+font-size: 13px;
+color: #666;
+}
+.pagination {
+display: flex;
+justify-content: center;
+gap: 6px;
+margin-top: 16px;
+flex-wrap: wrap;
+}
+.pagination button,
+.pagination span {
+min-width: 32px;
+height: 32px;
+padding: 0 4px;
+border-radius: 6px;
+background: #f5f5f5;
+border: 1px solid #ddd;
+font-weight: 600;
+font-size: 14px;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+.pagination button.active {
+background: #722F37;
+color: white;
+border-color: #722F37;
+}
+.pagination button:hover:not(.active) {
+background: #eaeaea;
+}
+.pagination span {
+cursor: default;
+background: transparent;
+border: none;
+color: #888;
+}
+.result-card {
+background: white;
+border-radius: 12px;
+padding: 24px;
+box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+border: 1px solid #eee;
+display: none;
+}
+.photo-section {
+text-align: center;
+margin-bottom: 24px;
+}
+.photo-placeholder {
+width: 200px;
+height: 200px;
+border-radius: 8px;
+background: #f0f0f0;
+margin: 0 auto 16px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 64px;
+color: #888;
+overflow: hidden;
+border: 2px solid #eee;
+}
+.photo-placeholder img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+#statusBox {
+margin-top: 12px;
+padding: 6px 16px;
+border-radius: 6px;
+font-weight: 600;
+text-align: center;
+font-size: 14px;
+display: block;
+color: white;
+}
+.fields-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 16px;
+}
+.field {
+margin-bottom: 10px;
+}
+.field-label {
+font-weight: 600;
+color: #555;
+font-size: 13px;
+}
+.field-value {
+font-size: 14px;
+color: #2d2d2d;
+}
+.breadcrumb {
+background: #f8f9fa;
+border-radius: 12px;
+padding: 12px 20px;
+margin-bottom: 24px;
+font-size: 14px;
+color: #555;
+}
+.breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+.breadcrumb span { margin: 0 8px; color: #888; }
+#btnDescargarFoto {
+background: #e3f2fd;
+color: #1976d2;
+border: 1px solid #1976d2;
+}
+#btnDescargarFoto:hover {
+background: #bbdefb;
+}
+.btn-azul {
+background-color: #1976d2 !important;
 }
 .btn-azul:hover {
-  background-color: #1565c0 !important;
+background-color: #1565c0 !important;
 }
-  </style>
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="breadcrumb">
-      <a href="../../index.html">Inicio</a> <span>›</span>
-      <a href="../index.html">RRHH</a> <span>›</span>
-      <strong>Consulta</strong>
-    </div>
-    <div class="header">
-      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
-      <h1>Inspectoria para el Control de la Actuación Policial</h1>
-      <div class="subtitle">• Relación de Personal de la ICAP Nacional •</div>
-    </div>
-    <div class="user-info">
-      <strong>Usuario:</strong> <span id="userEmail">—</span> |
-      <strong>Rol:</strong> <span id="userRol">—</span>
-    </div>
-    <div class="search-section">
-      <h2 style="font-size: 20px; margin-bottom: 16px; color: #2d2d2d;">🔍 Consulta de Personal ICAP</h2>
-      <div class="search-group">
-        <label for="searchQuery">Buscar por cédula o nombre:</label>
-        <input type="text" id="searchQuery" placeholder="Ej: 12345678 o Juan Pérez" />
-      </div>
- <button id="btnBuscar" class="btn" style="width:100%;">Buscar</button>
-<button id="btnVolver" class="btn" style="width:100%; margin-top:12px; background-color: #1976d2;">← Volver</button>
+<div class="container">
+<div class="breadcrumb">
+<a href="../../index.html">Inicio</a> <span>›</span>
+<a href="../index.html">RRHH</a> <span>›</span>
+<strong>Consulta</strong>
+</div>
+<div class="header">
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+<h1>Inspectoria para el Control de la Actuación Policial</h1>
+<div class="subtitle">• Relación de Personal de la ICAP Nacional •</div>
+</div>
+<div class="user-info">
+<strong>Usuario:</strong> <span id="userEmail">—</span> |
+<strong>Rol:</strong> <span id="userRol">—</span>
+</div>
+<div class="search-section">
+<h2 style="font-size: 20px; margin-bottom: 16px; color: #2d2d2d;">🔍 Consulta de Personal ICAP</h2>
+<div class="search-group">
+<label for="searchQuery">Buscar por cédula o nombre:</label>
+<input type="text" id="searchQuery" placeholder="Ej: 12345678 o Juan Pérez" />
+</div>
+<button id="btnBuscar" class="btn" style="width:100%;">Buscar</button>
+<button id="btnVolver" class="btn btn-azul" style="width:100%; margin-top:12px;">← Volver</button>
 <div id="searchMessage" style="margin-top:12px; font-size:14px; min-height:20px;"></div>
-    <div id="resultsList" class="results-list">
-      <div class="results-header">
-        <h3 id="resultsTitle">Resultados encontrados</h3>
-        <span id="resultsCount"></span>
-      </div>
-      <div id="resultsContainer"></div>
-      <div class="pagination" id="pagination"></div>
-    </div>
-    <div id="resultCard" class="result-card">
-      <div class="photo-section">
-        <div class="photo-placeholder" id="photoContainer">🪪</div>
-        <div id="statusBox"></div>
-        <button id="btnDescargarFoto" class="btn btn-outline" style="margin-top:12px; display:none; width:180px; margin:12px auto 0; font-size:14px;">
-          📥 Descargar Foto
-        </button>
-      </div>
-      <h3 style="font-size:18px; margin-bottom:16px; color:#722F37;">
-        🪪 Ficha del Funcionario ICAP
-        <button id="btnCerrarFicha" style="float:right; background:#eee; border:none; width:24px; height:24px; border-radius:50%; font-weight:bold;">✕</button>
-      </h3>
-      <div id="fichaContent">
-        <div class="fields-grid">
-          <div class="field">
-            <div class="field-label">RANGO</div>
-            <div class="field-value" id="rango">—</div>
-          </div>
-          <div class="field">
-            <div class="field-label">NOMBRE Y APELLIDOS</div>
-            <div class="field-value" id="nombre_apellidos">—</div>
-          </div>
-          <div class="field">
-            <div class="field-label">C.I.</div>
-            <div class="field-value" id="cedula">—</div>
-          </div>
-          <div class="field">
-            <div class="field-label">SEXO</div>
-            <div class="field-value" id="sexo">—</div>
-          </div>
-          <div class="field">
-            <div class="field-label">REGIÓN</div>
-            <div class="field-value" id="region">—</div>
-          </div>
-          <div class="field">
-            <div class="field-label">ESTADO</div>
-            <div class="field-value" id="estado">—</div>
-          </div>
-          <div class="field">
-            <div class="field-label">DIRECCIÓN</div>
-            <div class="field-value" id="direccion">—</div>
-          </div>
-          <div class="field">
-            <div class="field-label">CARGO</div>
-            <div class="field-value" id="cargo">—</div>
-          </div>
-          <div class="field">
-            <div class="field-label">ESTATUS</div>
-            <div class="field-value" id="estatus">—</div>
-          </div>
-        </div>
-      </div>
-      <button id="btnExportPDF" class="btn btn-pdf" style="width:100%;">📄 Exportar Ficha a PDF</button>
-    </div>
-  </div>
+<div id="resultsList" class="results-list">
+<div class="results-header">
+<h3 id="resultsTitle">Resultados encontrados</h3>
+<span id="resultsCount"></span>
+</div>
+<div id="resultsContainer"></div>
+<div class="pagination" id="pagination"></div>
+</div>
+<div id="resultCard" class="result-card">
+<div class="photo-section">
+<div class="photo-placeholder" id="photoContainer">🪪</div>
+<div id="statusBox"></div>
+<button id="btnDescargarFoto" class="btn btn-outline" style="margin-top:12px; display:none; width:180px; margin:12px auto 0; font-size:14px;">
+📥 Descargar Foto
+</button>
+</div>
+<h3 style="font-size:18px; margin-bottom:16px; color:#722F37;">
+🪪 Ficha del Funcionario ICAP
+<button id="btnCerrarFicha" style="float:right; background:#eee; border:none; width:24px; height:24px; border-radius:50%; font-weight:bold;">✕</button>
+</h3>
+<div id="fichaContent">
+<div class="fields-grid">
+<div class="field">
+<div class="field-label">RANGO</div>
+<div class="field-value" id="rango">—</div>
+</div>
+<div class="field">
+<div class="field-label">NOMBRE Y APELLIDOS</div>
+<div class="field-value" id="nombre_apellidos">—</div>
+</div>
+<div class="field">
+<div class="field-label">C.I.</div>
+<div class="field-value" id="cedula">—</div>
+</div>
+<div class="field">
+<div class="field-label">SEXO</div>
+<div class="field-value" id="sexo">—</div>
+</div>
+<div class="field">
+<div class="field-label">REGIÓN</div>
+<div class="field-value" id="region">—</div>
+</div>
+<div class="field">
+<div class="field-label">ESTADO</div>
+<div class="field-value" id="estado">—</div>
+</div>
+<div class="field">
+<div class="field-label">DIRECCIÓN</div>
+<div class="field-value" id="direccion">—</div>
+</div>
+<div class="field">
+<div class="field-label">CARGO</div>
+<div class="field-value" id="cargo">—</div>
+</div>
+<div class="field">
+<div class="field-label">ESTATUS</div>
+<div class="field-value" id="estatus">—</div>
+</div>
+</div>
+</div>
+<button id="btnExportPDF" class="btn btn-pdf" style="width:100%;">📄 Exportar Ficha a PDF</button>
+</div>
+</div>
+<script>
+const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+const { jsPDF } = window.jspdf;
 
-  <script>
-    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
-    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
-    const { jsPDF } = window.jspdf;
-    let currentPage = 1;
-    const RESULTS_PER_PAGE = 15;
-    let currentFotoURL = null;
+let currentPage = 1;
+const RESULTS_PER_PAGE = 15;
+let currentFotoURL = null;
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const { data: { session }, error } = await client.auth.getSession();
-        if (error || !session) return window.location.href = '../../index.html';
+// ✅ Variables globales para rol y estados
+let userRol = null;
+let userEstados = [];
 
-        const { data: perfil } = await client
-          .from('perfiles')
-          .select('email, rol, modulos_asignados')
-          .eq('id', session.user.id)
-          .single();
-        if (!perfil) return window.location.href = '../../index.html';
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const { data: { session }, error } = await client.auth.getSession();
+    if (error || !session) return window.location.href = '../../index.html';
 
-        const userRol = perfil.rol || 'consultor';
-        if (userRol !== 'admin' && userRol !== 'moderador' && userRol !== 'consultor') {
-          alert('🔒 Acceso denegado');
-          return window.location.href = '../../index.html';
-        }
+    const { data: perfil } = await client
+      .from('perfiles')
+      .select('email, rol, estados_asignados')
+      .eq('id', session.user.id)
+      .single();
 
-        document.getElementById('userEmail').textContent = perfil.email;
-        document.getElementById('userRol').textContent = 
-          userRol === 'admin' ? 'Administrador' :
-          userRol === 'moderador' ? 'Moderador' : 'Consultor';
+    if (!perfil) return window.location.href = '../../index.html';
 
-        document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
-        document.getElementById('searchQuery').addEventListener('keypress', e => {
-          if (e.key === 'Enter') iniciarBusqueda();
-        });
-        document.getElementById('btnCerrarFicha').addEventListener('click', cerrarFicha);
-        document.getElementById('btnExportPDF').addEventListener('click', exportarPDF);
-        document.getElementById('btnDescargarFoto')?.addEventListener('click', descargarFoto);
+    // ✅ Asignación correcta aquí
+    userRol = perfil.rol || 'consultor';
+    userEstados = perfil.estados_asignados || [];
 
-      } catch (err) {
-        console.error('Error en autenticación:', err);
-        window.location.href = '../../index.html';
-      }
+    if (userRol !== 'admin' && userRol !== 'moderador' && userRol !== 'consultor') {
+      alert('🔒 Acceso denegado');
+      return window.location.href = '../../index.html';
+    }
+
+    document.getElementById('userEmail').textContent = perfil.email;
+    document.getElementById('userRol').textContent =
+      userRol === 'admin' ? 'Administrador' :
+      userRol === 'moderador' ? 'Moderador' : 'Consultor';
+
+    document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
+    document.getElementById('searchQuery').addEventListener('keypress', e => {
+      if (e.key === 'Enter') iniciarBusqueda();
+    });
+    document.getElementById('btnCerrarFicha').addEventListener('click', cerrarFicha);
+    document.getElementById('btnExportPDF').addEventListener('click', exportarPDF);
+    document.getElementById('btnDescargarFoto')?.addEventListener('click', descargarFoto);
+    document.getElementById('btnVolver').addEventListener('click', () => {
+      window.location.href = '../index.html';
     });
 
-    async function iniciarBusqueda() {
-      const query = document.getElementById('searchQuery').value.trim();
-      const msg = document.getElementById('searchMessage');
-      if (!query) {
-        msg.textContent = '⚠️ Ingresa un término de búsqueda.';
+  } catch (err) {
+    console.error('Error en autenticación:', err);
+    window.location.href = '../../index.html';
+  }
+});
+
+async function iniciarBusqueda() {
+  const query = document.getElementById('searchQuery').value.trim();
+  const msg = document.getElementById('searchMessage');
+  if (!query) {
+    msg.textContent = '⚠️ Ingresa un término de búsqueda.';
+    msg.style.color = '#c62828';
+    return;
+  }
+
+  if (/^\d{7,8}$/.test(query)) {
+    msg.textContent = '🔍 Buscando por cédula...';
+    msg.style.color = '#1976d2';
+
+    try {
+      let queryBuilder = client
+        .from('rrhh_icap')
+        .select('*')
+        .eq('cedula', query);
+
+      // ✅ Aplicar filtro por estado si NO es admin
+      if (userRol !== 'admin') {
+        queryBuilder = queryBuilder.in('estado', userEstados);
+      }
+
+      const { data, error } = await queryBuilder.single();
+
+      if (error || !data) {
+        if (userRol === 'admin') {
+          msg.textContent = `❌ Cédula ${query} no encontrada.`;
+        } else {
+          msg.textContent = '❌ Funcionario no encontrado en su estado.';
+        }
         msg.style.color = '#c62828';
         return;
       }
 
-      if (/^\d{7,8}$/.test(query)) {
-        msg.textContent = '🔍 Buscando por cédula...';
-        msg.style.color = '#1976d2';
-        try {
-          const { data, error } = await client
-            .from('rrhh_icap')
-            .select('*')
-            .eq('cedula', query)
-            .single();
-          if (error || !data) {
-            msg.textContent = `❌ Cédula ${query} no encontrada.`;
-            msg.style.color = '#c62828';
-            return;
-          }
-          mostrarFichaCompleta(data);
-          document.getElementById('resultsList').style.display = 'none';
-          document.getElementById('resultCard').style.display = 'block';
-          registrarLogConsulta(data.cedula, data.nombre_apellidos);
-          msg.textContent = '';
-        } catch (err) {
-          msg.textContent = '❌ Error al buscar cédula.';
-          msg.style.color = '#c62828';
-        }
-        return;
-      }
-
-      currentPage = 1;
-      buscarPorNombre(query);
-    }
-
-    async function buscarPorNombre(query) {
-      const msg = document.getElementById('searchMessage');
-      msg.textContent = '🔍 Buscando coincidencias...';
-      msg.style.color = '#1976d2';
+      mostrarFichaCompleta(data);
       document.getElementById('resultsList').style.display = 'none';
-      document.getElementById('resultCard').style.display = 'none';
-
-      try {
-        const { data, error, count } = await client
-          .from('rrhh_icap')
-          .select('*', { count: 'exact' })
-          .ilike('nombre_apellidos', `%${query}%`)
-          .range((currentPage - 1) * RESULTS_PER_PAGE, currentPage * RESULTS_PER_PAGE - 1)
-          .order('nombre_apellidos', { ascending: true });
-
-        if (error) throw error;
-        if (!data || data.length === 0) {
-          msg.textContent = `❌ No se encontraron coincidencias para "${query}"`;
-          msg.style.color = '#c62828';
-          return;
-        }
-
-        renderResults(data, count, query);
-        document.getElementById('resultsList').style.display = 'block';
-        registrarLogConsulta(null, null);
-        msg.textContent = '';
-      } catch (err) {
-        console.error('Error en búsqueda:', err);
-        msg.textContent = '❌ Error al consultar la base de datos.';
-        msg.style.color = '#c62828';
+      document.getElementById('resultCard').style.display = 'block';
+      registrarLogConsulta(data.cedula, data.nombre_apellidos);
+      msg.textContent = '';
+    } catch (err) {
+      console.error('Error en búsqueda por cédula:', err);
+      if (userRol === 'admin') {
+        msg.textContent = '❌ Error al buscar cédula.';
+      } else {
+        msg.textContent = '❌ Funcionario no encontrado en su estado.';
       }
+      msg.style.color = '#c62828';
     }
+    return;
+  }
 
-    function renderResults(data, total, query) {
-      const container = document.getElementById('resultsContainer');
-      const title = document.getElementById('resultsTitle');
-      const countEl = document.getElementById('resultsCount');
-      title.textContent = `Resultados para: "${query}"`;
-      countEl.textContent = `(${data.length} de ${total})`;
+  currentPage = 1;
+  buscarPorNombre(query);
+}
 
-      container.innerHTML = data.map(f => `
-        <div class="result-item" onclick="mostrarFichaPorCedula('${f.cedula}')">
-          <div class="result-name">${f.nombre_apellidos || '—'}</div>
-          <div class="result-id">C.I. ${f.cedula || '—'}</div>
-        </div>
-      `).join('');
+async function buscarPorNombre(query) {
+  const msg = document.getElementById('searchMessage');
+  msg.textContent = '🔍 Buscando coincidencias...';
+  msg.style.color = '#1976d2';
+  document.getElementById('resultsList').style.display = 'none';
+  document.getElementById('resultCard').style.display = 'none';
 
-      const totalPages = Math.ceil(total / RESULTS_PER_PAGE);
-      renderPagination(totalPages);
-    }
-
-    function renderPagination(totalPages) {
-      const el = document.getElementById('pagination');
-      el.innerHTML = '';
-
-      if (totalPages <= 1) return;
-
-      const addBtn = (text, page, active = false, disabled = false) => {
-        const btn = document.createElement('button');
-        btn.className = 'page-btn' + (active ? ' active' : '') + (disabled ? ' disabled' : '');
-        btn.textContent = text;
-        if (!disabled && page !== undefined) {
-          btn.onclick = () => { currentPage = page; buscarPorNombre(document.getElementById('searchQuery').value); };
-        }
-        el.appendChild(btn);
-      };
-
-      addBtn('◀', currentPage - 1, false, currentPage === 1);
-
-      let start = Math.max(1, currentPage - 2);
-      let end = Math.min(totalPages, currentPage + 2);
-      if (end - start < 4) {
-        if (start > 1) start--;
-        if (end < totalPages) end++;
-      }
-
-      if (start > 1) addBtn('1', 1);
-      if (start > 2) addBtn('…', null, false, true);
-
-      for (let i = start; i <= end; i++) addBtn(i, i, i === currentPage);
-
-      if (end < totalPages - 1) addBtn('…', null, false, true);
-      if (end < totalPages) addBtn(totalPages, totalPages);
-
-      addBtn('▶', currentPage + 1, false, currentPage === totalPages);
-    }
-
-    async function mostrarFichaPorCedula(cedula) {
-      try {
-        const { data, error } = await client
-          .from('rrhh_icap')
-          .select('*')
-          .eq('cedula', cedula)
-          .single();
-        if (error || !data) throw new Error('No encontrado');
-        mostrarFichaCompleta(data);
-        document.getElementById('resultsList').style.display = 'none';
-        document.getElementById('resultCard').style.display = 'block';
-        registrarLogConsulta(data.cedula, data.nombre_apellidos);
-      } catch (err) {
-        alert(`❌ No se pudo cargar la ficha: ${err.message}`);
-      }
-    }
-
-    function mostrarFichaCompleta(f) {
-      document.getElementById('rango').textContent = f.rango || '—';
-      document.getElementById('nombre_apellidos').textContent = f.nombre_apellidos || '—';
-      document.getElementById('cedula').textContent = f.cedula || '—';
-      document.getElementById('sexo').textContent = f.sexo || '—';
-      document.getElementById('region').textContent = f.region || '—';
-      document.getElementById('estado').textContent = f.estado || '—';
-      document.getElementById('direccion').textContent = f.direccion || '—';
-      document.getElementById('cargo').textContent = f.cargo || '—';
-      document.getElementById('estatus').textContent = f.estatus || '—';
-
-      // ✅ Colorear status
-      const statusEl = document.getElementById('statusBox');
-      let bgColor = '#9e9e9e', textColor = 'white';
-      let statusText = (f.estatus || '').toUpperCase();
-
-      if (f.estatus === 'activo') {
-        bgColor = '#2e7d32'; statusText = 'ACTIVO';
-      } else if (f.estatus === 'suspendido') {
-        bgColor = '#ef6c00'; statusText = 'SUSPENDIDO';
-      } else if (f.estatus === 'destituido') {
-        bgColor = '#c62828'; statusText = 'DESTITUIDO';
-      } else if (f.estatus === 'DA') {
-        bgColor = '#7b1fa2'; statusText = 'DA';
-      } else if (f.estatus === 'P') {
-        bgColor = '#1976d2'; statusText = 'P';
-      }
-
-      statusEl.textContent = statusText;
-      statusEl.style.backgroundColor = bgColor;
-      statusEl.style.color = textColor;
-
-      cargarFoto(f.cedula);
-    }
-
-    async function cargarFoto(cedula) {
-      const container = document.getElementById('photoContainer');
-      const btn = document.getElementById('btnDescargarFoto');
-      container.innerHTML = '🪪';
-      btn.style.display = 'none';
-      currentFotoURL = null;
-
-      for (const ext of ['jpg', 'jpeg', 'png']) {
-        try {
-          const { data, error } = await client.storage
-            .from('fotos_funcionarios')
-            .createSignedUrl(`foto_${cedula}.${ext}`, 3600);
-          if (error) continue;
-          if (data?.signedUrl) {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-              container.innerHTML = '';
-              container.appendChild(img);
-              const userRol = document.getElementById('userRol')?.textContent;
-              if (['Administrador', 'Moderador'].includes(userRol)) {
-                btn.style.display = 'inline-block';
-              }
-              currentFotoURL = data.signedUrl;
-            };
-            img.src = data.signedUrl;
-            return;
-          }
-        } catch (e) { continue; }
-      }
-    }
-
-    function cerrarFicha() {
-      document.getElementById('resultCard').style.display = 'none';
-      document.getElementById('resultsList').style.display = 'block';
-    }
-
-    async function exportarPDF() {
-      const card = document.getElementById('resultCard');
-      if (!card || card.style.display === 'none') {
-        alert('⚠️ Primero selecciona un funcionario.');
-        return;
-      }
-
-      const nombre = document.getElementById('nombre_apellidos').textContent.trim() || 'funcionario';
-      const filename = `ficha_icap_${nombre.replace(/\s+/g, '_')}.pdf`;
-
-      const clone = card.cloneNode(true);
-      clone.style.position = 'fixed';
-      clone.style.top = '20px';
-      clone.style.left = '50%';
-      clone.style.transform = 'translateX(-50%)';
-      clone.style.width = '680px';
-      clone.style.padding = '24px';
-      clone.style.background = 'white';
-      clone.style.display = 'block';
-      clone.style.fontSize = '13px';
-
-      document.body.appendChild(clone);
-
-      try {
-        const canvas = await html2canvas(clone, { scale: 2, useCORS: true });
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(filename);
-      } catch (e) {
-        console.error('Error PDF:', e);
-        alert('❌ Error al generar PDF');
-      } finally {
-        document.body.removeChild(clone);
-      }
-    }
-
-    function descargarFoto() {
-      if (!currentFotoURL) {
-        alert('❌ No hay foto disponible.');
-        return;
-      }
-      const url = new URL(currentFotoURL);
-      const filename = url.pathname.split('/').pop() || 'foto_icap.jpg';
-      const a = document.createElement('a');
-      a.href = currentFotoURL;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-
-async function registrarLogConsulta(cedula = null, nombre = null) {
   try {
-    // ✅ Seguro: sin destructuring anidado
-    const sessionRes = await client.auth.getSession();
-    const session = sessionRes?.data?.session;
-    if (!session) {
-      console.warn('⚠️ Log: sin sesión');
+    let queryBuilder = client
+      .from('rrhh_icap')
+      .select('*', { count: 'exact' })
+      .ilike('nombre_apellidos', `%${query}%`)
+      .range((currentPage - 1) * RESULTS_PER_PAGE, currentPage * RESULTS_PER_PAGE - 1)
+      .order('nombre_apellidos', { ascending: true });
+
+    // ✅ Filtrar por estado si no es admin
+    if (userRol !== 'admin') {
+      queryBuilder = queryBuilder.in('estado', userEstados);
+    }
+
+    const { data, error, count } = await queryBuilder;
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      if (userRol === 'admin') {
+        msg.textContent = `❌ No se encontraron coincidencias para "${query}"`;
+      } else {
+        msg.textContent = '❌ No hay resultados en su estado asignado.';
+      }
+      msg.style.color = '#c62828';
       return;
     }
 
+    renderResults(data, count, query);
+    document.getElementById('resultsList').style.display = 'block';
+    registrarLogConsulta(null, null);
+    msg.textContent = '';
+  } catch (err) {
+    console.error('Error en búsqueda por nombre:', err);
+    msg.textContent = '❌ Error al consultar la base de datos.';
+    msg.style.color = '#c62828';
+  }
+}
+
+function renderResults(data, total, query) {
+  const container = document.getElementById('resultsContainer');
+  const title = document.getElementById('resultsTitle');
+  const countEl = document.getElementById('resultsCount');
+  title.textContent = `Resultados para: "${query}"`;
+  countEl.textContent = `(${data.length} de ${total})`;
+  container.innerHTML = data.map(f => `
+    <div class="result-item" onclick="mostrarFichaPorCedula('${f.cedula}')">
+      <div class="result-name">${f.nombre_apellidos || '—'}</div>
+      <div class="result-id">C.I. ${f.cedula || '—'}</div>
+    </div>
+  `).join('');
+  const totalPages = Math.ceil(total / RESULTS_PER_PAGE);
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+  const el = document.getElementById('pagination');
+  el.innerHTML = '';
+  if (totalPages <= 1) return;
+  const addBtn = (text, page, active = false, disabled = false) => {
+    const btn = document.createElement('button');
+    btn.className = 'page-btn' + (active ? ' active' : '') + (disabled ? ' disabled' : '');
+    btn.textContent = text;
+    if (!disabled && page !== undefined) {
+      btn.onclick = () => { currentPage = page; buscarPorNombre(document.getElementById('searchQuery').value); };
+    }
+    el.appendChild(btn);
+  };
+  addBtn('◀', currentPage - 1, false, currentPage === 1);
+  let start = Math.max(1, currentPage - 2);
+  let end = Math.min(totalPages, currentPage + 2);
+  if (end - start < 4) {
+    if (start > 1) start--;
+    if (end < totalPages) end++;
+  }
+  if (start > 1) addBtn('1', 1);
+  if (start > 2) addBtn('…', null, false, true);
+  for (let i = start; i <= end; i++) addBtn(i, i, i === currentPage);
+  if (end < totalPages - 1) addBtn('…', null, false, true);
+  if (end < totalPages) addBtn(totalPages, totalPages);
+  addBtn('▶', currentPage + 1, false, currentPage === totalPages);
+}
+
+async function mostrarFichaPorCedula(cedula) {
+  try {
+    let queryBuilder = client
+      .from('rrhh_icap')
+      .select('*')
+      .eq('cedula', cedula);
+
+    if (userRol !== 'admin') {
+      queryBuilder = queryBuilder.in('estado', userEstados);
+    }
+
+    const { data, error } = await queryBuilder.single();
+    if (error || !data) throw new Error('No encontrado');
+
+    mostrarFichaCompleta(data);
+    document.getElementById('resultsList').style.display = 'none';
+    document.getElementById('resultCard').style.display = 'block';
+    registrarLogConsulta(data.cedula, data.nombre_apellidos);
+  } catch (err) {
+    alert(`❌ No se pudo cargar la ficha.`);
+  }
+}
+
+function mostrarFichaCompleta(f) {
+  document.getElementById('rango').textContent = f.rango || '—';
+  document.getElementById('nombre_apellidos').textContent = f.nombre_apellidos || '—';
+  document.getElementById('cedula').textContent = f.cedula || '—';
+  document.getElementById('sexo').textContent = f.sexo || '—';
+  document.getElementById('region').textContent = f.region || '—';
+  document.getElementById('estado').textContent = f.estado || '—';
+  document.getElementById('direccion').textContent = f.direccion || '—';
+  document.getElementById('cargo').textContent = f.cargo || '—';
+  document.getElementById('estatus').textContent = f.estatus || '—';
+
+  const statusEl = document.getElementById('statusBox');
+  let bgColor = '#9e9e9e', textColor = 'white';
+  let statusText = (f.estatus || '').toUpperCase();
+  if (f.estatus === 'activo') {
+    bgColor = '#2e7d32'; statusText = 'ACTIVO';
+  } else if (f.estatus === 'suspendido') {
+    bgColor = '#ef6c00'; statusText = 'SUSPENDIDO';
+  } else if (f.estatus === 'destituido') {
+    bgColor = '#c62828'; statusText = 'DESTITUIDO';
+  } else if (f.estatus === 'DA') {
+    bgColor = '#7b1fa2'; statusText = 'DA';
+  } else if (f.estatus === 'P') {
+    bgColor = '#1976d2'; statusText = 'P';
+  }
+  statusEl.textContent = statusText;
+  statusEl.style.backgroundColor = bgColor;
+  statusEl.style.color = textColor;
+  cargarFoto(f.cedula);
+}
+
+async function cargarFoto(cedula) {
+  const container = document.getElementById('photoContainer');
+  const btn = document.getElementById('btnDescargarFoto');
+  container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;font-size:14px;text-align:center;">Buscando...<br>espere</div>';
+  btn.style.display = 'none';
+  currentFotoURL = null;
+
+  const extensions = ['jpeg', 'jpg', 'png'];
+  let found = false;
+
+  for (const ext of extensions) {
+    if (found) return;
+    const publicUrl = `https://xvqcgdbdwrocfcdfqpxv.supabase.co/storage/v1/object/public/fotos_funcionarios/foto_${cedula}.${ext}`;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    await new Promise((resolve) => {
+      img.onload = () => {
+        if (!found) {
+          container.innerHTML = '';
+          container.appendChild(img);
+          const userRoleDisplay = document.getElementById('userRol')?.textContent;
+          if (['Administrador', 'Moderador'].includes(userRoleDisplay)) {
+            btn.style.display = 'inline-block';
+          }
+          found = true;
+        }
+        resolve();
+      };
+      img.onerror = () => resolve();
+      img.src = publicUrl;
+    });
+  }
+
+  if (!found) {
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;font-size:14px;text-align:center;">No hay foto<br>disponible en la<br>base de datos</div>';
+  }
+}
+
+function cerrarFicha() {
+  document.getElementById('resultCard').style.display = 'none';
+  document.getElementById('resultsList').style.display = 'block';
+}
+
+async function exportarPDF() {
+  const card = document.getElementById('resultCard');
+  if (!card || card.style.display === 'none') {
+    alert('⚠️ Primero selecciona un funcionario.');
+    return;
+  }
+  const nombre = document.getElementById('nombre_apellidos').textContent.trim() || 'funcionario';
+  const filename = `ficha_icap_${nombre.replace(/\s+/g, '_')}.pdf`;
+  const clone = card.cloneNode(true);
+  clone.style.position = 'fixed';
+  clone.style.top = '20px';
+  clone.style.left = '50%';
+  clone.style.transform = 'translateX(-50%)';
+  clone.style.width = '680px';
+  clone.style.padding = '24px';
+  clone.style.background = 'white';
+  clone.style.display = 'block';
+  clone.style.fontSize = '13px';
+  document.body.appendChild(clone);
+  try {
+    const canvas = await html2canvas(clone, { scale: 2, useCORS: true });
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(filename);
+  } catch (e) {
+    console.error('Error PDF:', e);
+    alert('❌ Error al generar PDF');
+  } finally {
+    document.body.removeChild(clone);
+  }
+}
+
+function descargarFoto() {
+  if (!currentFotoURL) {
+    alert('❌ No hay foto disponible.');
+    return;
+  }
+  const url = new URL(currentFotoURL);
+  const filename = url.pathname.split('/').pop() || 'foto_icap.jpg';
+  const a = document.createElement('a');
+  a.href = currentFotoURL;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+async function registrarLogConsulta(cedula = null, nombre = null) {
+  try {
+    const sessionRes = await client.auth.getSession();
+    const session = sessionRes?.data?.session;
+    if (!session) return;
     const perfilRes = await client
       .from('perfiles')
       .select('email, rol')
       .eq('id', session.user.id)
       .single();
     const perfil = perfilRes?.data;
-    if (!perfil) {
-      console.warn('⚠️ Log: perfil no encontrado');
-      return;
-    }
+    if (!perfil) return;
     await client.from('rrhh_logs').insert({
       user_id: session.user.id,
       email: perfil.email,
       rol: perfil.rol,
-      accion: 'consulta',       
+      accion: 'consulta',
       cedula_afectada: cedula,
       nombre_afectado: nombre,
       detalles: { modulo: 'rrhh_icap' }
@@ -696,9 +723,6 @@ async function registrarLogConsulta(cedula = null, nombre = null) {
     console.warn('⚠️ Log no registrado:', err.message);
   }
 }
-    document.getElementById('btnVolver').addEventListener('click', () => {
-  window.location.href = '../index.html';
-});
-  </script>
+</script>
 </body>
 </html>
