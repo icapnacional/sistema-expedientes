@@ -368,7 +368,9 @@ function normalizeText(str) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const {  { session }, error } = await client.auth.getSession();
+    const { data, error } = await client.auth.getSession();
+    const session = data?.session;
+
     if (error || !session) {
       console.error('Sesión no encontrada');
       return window.location.href = '../../index.html';
