@@ -77,46 +77,52 @@
       }
     });
 
-    async function iniciarBusqueda() {
-      const rawQuery = document.getElementById('searchQuery').value.trim();
-      const msg = document.getElementById('searchMessage');
-      if (!rawQuery) {
-        msg.textContent = '⚠️ Ingresa un término de búsqueda.';
+ async function iniciarBusqueda() {
+  const rawInput = document.getElementById('searchQuery').value.trim();
+  const msg = document.getElementById('searchMessage');
+  if (!rawInput) {
+    msg.textContent = '⚠️ Ingresa un término de búsqueda.';
+    return;
+  }
+
+  // Extraer solo los dígitos de la entrada
+  const cleanDigits = rawInput.replace(/\D/g, '');
+
+  // Si hay al menos 6 dígitos, intentamos buscar por cédula
+  if (cleanDigits.length >= 6) {
+    msg.textContent = '🔍 Buscando por cédula...';
+    msg.style.color = '#1976d2';
+    try {
+      const { data, error } = await client
+        .from('auditoria_personal')
+        .select('*')
+        .eq('cedula', cleanDigits) // ← Usa la versión limpia
+        .single();
+
+      if (error || !data) {
+        // Opcional: si no se encuentra por cédula, ¿intentar por nombre?
+        // Pero según tu flujo, mejor no. Solo mostrar error.
+        msg.textContent = `❌ Cédula ${cleanDigits} no encontrada.`;
+        msg.style.color = '#c62828';
         return;
       }
 
-      // Normalizar cédula: solo dígitos
-      const cleanCedula = rawQuery.replace(/[^0-9]/g, '');
-
-      if (/^\d{7,9}$/.test(cleanCedula)) {
-        msg.textContent = '🔍 Buscando por cédula...';
-        try {
-          const { data, error } = await client
-            .from('auditoria_personal')
-            .select('*')
-            .eq('cedula', cleanCedula)
-            .single();
-
-          if (error || !data) {
-            msg.textContent = `❌ Cédula ${cleanCedula} no encontrada.`;
-            return;
-          }
-
-          mostrarFichaCompleta(data);
-          document.getElementById('resultsList').style.display = 'none';
-          document.getElementById('resultCard').style.display = 'block';
-          msg.textContent = '';
-          return;
-        } catch (err) {
-          msg.textContent = '❌ Error al buscar cédula.';
-          return;
-        }
-      }
-
-      currentPage = 1;
-      buscarPorNombre(rawQuery);
+      mostrarFichaCompleta(data);
+      document.getElementById('resultsList').style.display = 'none';
+      document.getElementById('resultCard').style.display = 'block';
+      msg.textContent = '';
+      return;
+    } catch (err) {
+      msg.textContent = '❌ Error al buscar cédula.';
+      msg.style.color = '#c62828';
+      return;
     }
+  }
 
+  // Si no hay suficientes dígitos, buscar por nombre/apellido
+  currentPage = 1;
+  buscarPorNombre(rawInput); // ← usa el input original para nombres
+}
     async function buscarPorNombre(query) {
       const msg = document.getElementById('searchMessage');
       msg.textContent = '🔍 Buscando coincidencias...';
