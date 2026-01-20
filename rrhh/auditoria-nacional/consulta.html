@@ -398,7 +398,7 @@
       <button id="btnExportPDF" class="btn btn-pdf" style="width:100%;">📄 Exportar Ficha a PDF</button>
     </div>
   </div>
- <script>
+<script>
 // Configuración de Supabase
 const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
@@ -412,7 +412,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     const session = sessionResponse.data.session;
 
-    // ✅ Corrección clave: asegurar que las consultas usen el rol "authenticated"
+    // ✅ Actualizar cliente con sesión autenticada
     await client.auth.setSession(session);
 
     const perfilResponse = await client
@@ -453,66 +453,120 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function iniciarBusqueda() {
-  const query = document.getElementById('searchQuery').value.trim();
+  const rawQuery = document.getElementById('searchQuery').value.trim();
   const msg = document.getElementById('searchMessage');
-  msg.textContent = '';
-
-  if (!query) {
-    msg.textContent = '⚠️ Ingrese cédula o nombre.';
+  if (!rawQuery) {
+    msg.textContent = '⚠️ Ingresa un término de búsqueda.';
     return;
   }
 
-  const cleanCedula = query.replace(/[^0-9]/g, '');
-  if (/^\d{7,9}$/.test(cleanCedula)) {
-    msg.textContent = 'Buscando...';
-    const { data, error } = await client
-      .from('auditoria_personal')
-      .select('*')
-      .eq('cedula', cleanCedula)
-      .single();
+  // Normalizar cédula: solo dígitos
+  const cleanCedula = rawQuery.replace(/[^0-9]/g, '');
 
-    if (error || !data) {
+  // Si parece una cédula válida
+  if (/^\d{7,9}$/.test(cleanCedula)) {
+    msg.textContent = '🔍 Buscando...';
+    msg.style.color = '#1976d2';
+
+    let data = null;
+    let error = null;
+
+    try {
+      // Buscar EXACTAMENTE con la cédula limpia
+      const res = await client
+        .from('auditoria_personal')
+        .select('*')
+        .eq('cedula', cleanCedula)
+        .single();
+
+      if (res.data) {
+        data = res.data;
+      }
+    } catch (err) {
+      error = err;
+    }
+
+    if (!data) {
+      // Opcional: intentar búsqueda flexible
+      try {
+        const res = await client
+          .from('auditoria_personal')
+          .select('*')
+          .ilike('cedula', `%${cleanCedula}%`)
+          .limit(1)
+          .single();
+        if (res.data) data = res.data;
+      } catch (e) {}
+    }
+
+    if (!data) {
       msg.textContent = `❌ Cédula ${cleanCedula} no encontrada.`;
+      msg.style.color = '#c62828';
       return;
     }
 
     mostrarResultado(data);
+    document.getElementById('resultsList').style.display = 'none';
+    document.getElementById('resultCard').style.display = 'block';
+    msg.textContent = '';
     return;
   }
 
-  msg.textContent = 'Buscando...';
-  const { data, error } = await client
-    .from('auditoria_personal')
-    .select('*')
-    .or(`apellidos_nombres.ilike.%${query}%`)
-    .limit(10);
-
-  if (error || !data || data.length === 0) {
-    msg.textContent = '❌ No se encontraron resultados.';
-    return;
-  }
-
-  mostrarListaResultados(data);
+  // Si no es cédula, buscar por nombre
+  currentPage = 1;
+  buscarPorNombre(rawQuery);
 }
 
 function mostrarResultado(data) {
   let html = `
     <div class="field"><strong>Cédula:</strong> ${data.cedula}</div>
-    <div class="field"><strong>Nombre:</strong> ${data.apellidos_nombres}</div>
-    <div class="field"><strong>Rango:</strong> ${data.rango || ''}</div>
-    <div class="field"><strong>Estado:</strong> ${data.estado || ''}</div>
-    <div class="field"><strong>Estatus:</strong> ${data.estatus || ''}</div>
-    <div class="field"><strong>Teléfono:</strong> ${data.telefono_funcionario || ''}</div>
-    <div class="field"><strong>Correo:</strong> ${data.correo_electronico || ''}</div>
+    <div class="field"><strong>Nombre y Apellidos:</strong> ${data.apellidos_nombres}</div>
+    <div class="field"><strong>Rango:</strong> ${data.rango}</div>
+    <div class="field"><strong>Sexo:</strong> ${data.sexo}</div>
+    <div class="field"><strong>Estado:</strong> ${data.estado}</div>
+    <div class="field"><strong>Estatus:</strong> ${data.estatus}</div>
+    <div class="field"><strong>Teléfono:</strong> ${data.telefono_funcionario}</div>
+    <div class="field"><strong>Correo:</strong> ${data.correo_electronico}</div>
   `;
   document.getElementById('fichaContenido').innerHTML = html;
-  document.getElementById('resultsList').style.display = 'none';
-  document.getElementById('resultCard').style.display = 'block';
   document.getElementById('searchMessage').textContent = '';
 }
 
+function buscarPorNombre(searchTerm) {
+  const msg = document.getElementById('searchMessage');
+  msg.textContent = '🔍 Buscando...';
+  msg.style.color = '#1976d2';
+
+  client
+    .from('auditoria_personal')
+    .select('*')
+    .ilike('apellidos_nombres', `%${searchTerm}%`)
+    .limit(10)
+    .then(({ data, error }) => {
+      if (error) {
+        msg.textContent = '❌ Error al buscar.';
+        msg.style.color = '#c62828';
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        msg.textContent = '❌ No se encontraron resultados.';
+        msg.style.color = '#c62828';
+        return;
+      }
+
+      mostrarListaResultados(data);
+      msg.textContent = '';
+    })
+    .catch(err => {
+      console.error(err);
+      msg.textContent = '❌ Error inesperado.';
+      msg.style.color = '#c62828';
+    });
+}
+
 function mostrarListaResultados(data) {
-  let html = '<table class="results-table" style="width:100%; border-collapse:collapse;"><tr style="background:#f0f0f0;"><th style="border:1px solid #ccc; padding:8px;">Cédula</th><th style="border:1px solid #ccc; padding:8px;">Nombre</th><th style="border:1px solid #ccc; padding:8px;">Acción</th></tr>';
+  let html = '<table style="width:100%; border-collapse:collapse;"><tr style="background:#f0f0f0;"><th style="border:1px solid #ccc; padding:8px;">Cédula</th><th style="border:1px solid #ccc; padding:8px;">Nombre</th><th style="border:1px solid #ccc; padding:8px;">Acción</th></tr>';
   data.forEach(row => {
     html += `
       <tr>
@@ -526,7 +580,6 @@ function mostrarListaResultados(data) {
   document.getElementById('resultsList').innerHTML = html;
   document.getElementById('resultsList').style.display = 'block';
   document.getElementById('resultCard').style.display = 'none';
-  document.getElementById('searchMessage').textContent = '';
 }
 
 async function verDetalle(cedula) {
