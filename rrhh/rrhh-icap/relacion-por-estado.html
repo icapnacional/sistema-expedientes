@@ -197,42 +197,34 @@
       renderTable(filtered);
     }
 
-    async function loadUserData() {
-      try {
-        // ✅ CORRECCIÓN FINAL: sintaxis válida
-        const {  { session } } = await client.auth.getSession();
-        
-        if (!session) {
-          window.location.href = '../index.html';
-          return;
-        }
-
-        // ✅ CORRECCIÓN FINAL: desestructuración correcta
-        const {  perfil } = await client
-          .from('perfiles')
-          .select('rol, estados_asignados')
-          .eq('id', session.user.id)
-          .single();
-
-        if (!perfil) {
-          alert('No se encontró tu perfil. Contacta al administrador.');
-          window.location.href = '../index.html';
-          return;
-        }
-
-        userRole = perfil.rol || 'consultor';
-        userEstados = perfil.estados_asignados || [];
-
-        document.getElementById('userEstados').textContent =
-          userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
-
-        fetchPersonalData();
-      } catch (err) {
-        console.error('Error en loadUserData:', err);
-        document.getElementById('tableContainer').innerHTML = '<div class="loading">Error al cargar tu información.</div>';
-      }
+   async function loadUserData() {
+  try {
+    // ✅ CORRECTO — línea 203 corregida
+    const {  { session } } = await client.auth.getSession();
+    
+    if (!session) {
+      window.location.href = '../index.html';
+      return;
     }
 
+    // ✅ CORRECTO
+    const { data: perfil } = await client
+      .from('perfiles')
+      .select('rol, estados_asignados')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!perfil) {
+      alert('Perfil no encontrado.');
+      window.location.href = '../index.html';
+      return;
+    }
+
+    // ... resto del código
+  } catch (err) {
+    console.error(err);
+  }
+}
     async function fetchPersonalData() {
       try {
         let query = client.from('rrhh_icap').select('*');
