@@ -199,27 +199,26 @@
       renderTable(filtered);
     }
 
-    async function loadUserData() {
-     const { data: { session } } = await client.auth.getSession();
-      if (!session) return window.location.href = '../index.html';
+async function loadUserData() {
+  const { data: { session } } = await client.auth.getSession();
+  if (!session) return window.location.href = '../index.html';
 
-      const {  perfil } = await client
-        .from('perfiles')
-        .select('rol, estados_asignados')
-        .eq('id', session.user.id)
-        .single();
+  const { data: perfil } = await client
+    .from('perfiles')
+    .select('rol, estados_asignados')
+    .eq('id', session.user.id)
+    .single();
 
-      if (!perfil) return window.location.href = '../index.html';
+  if (!perfil) return window.location.href = '../index.html';
 
-      userRole = perfil.rol || 'consultor';
-      userEstados = perfil.estados_asignados || [];
+  userRole = perfil.rol || 'consultor';
+  userEstados = perfil.estados_asignados || [];
 
-      document.getElementById('userEstados').textContent =
-        userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
+  document.getElementById('userEstados').textContent =
+    userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
 
-      fetchPersonalData();
-    }
-
+  fetchPersonalData();
+}
     async function fetchPersonalData() {
       let query = client.from('rrhh_icap').select('*');
 
