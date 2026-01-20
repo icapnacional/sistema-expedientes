@@ -10,7 +10,7 @@ const PERMISSIONS = {
     action: () => { window.location.href = 'auditoria-nacional/consulta.html'; }
   },
   'btnAuditoriaRegistro': {
-    roles: ['admin', 'moderador'],
+    roles: ['admin'],
     action: () => { window.location.href = 'auditoria-nacional/registro.html'; },
     tooltip: '🔒 Solo RRHH autorizado'
   },
