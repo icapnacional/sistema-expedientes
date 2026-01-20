@@ -272,11 +272,10 @@
       <h1>Inspectoria para el Control de la Actuación Policial</h1>
       <div class="subtitle">• Consulta de Personal Nomina Nacional •</div>
     </div>
-   <div class="user-info">
-<strong>Usuario:</strong> <span id="userEmail">—</span> |
-<strong>Rol:</strong> <span id="userRol">—</span> |
-<strong>Estado(s):</strong> <span id="userEstados">—</span>
-</div>
+    <div class="user-info">
+      <strong>Usuario:</strong> <span id="userEmail">—</span> |
+      <strong>Rol:</strong> <span id="userRol">—</span>
+    </div>
     <div class="search-section">
       <h2 style="font-size: 20px; margin-bottom: 16px; color: #2d2d2d;">🔍 Consulta de Personal</h2>
       <div class="search-group">
@@ -415,11 +414,11 @@
 
     if (sessionError || !session) return window.location.href = '../index.html';
 
-const { data: perfil } = await client
-  .from('perfiles')
-  .select('email, rol, modulos_asignados, estados_asignados')
-  .eq('id', session.user.id)
-  .single();
+    const { data: perfil } = await client
+      .from('perfiles')
+      .select('email, rol, modulos_asignados')
+      .eq('id', session.user.id)
+      .single();
 
    if (!perfil) {
   alert('⚠️ Perfil no encontrado. Redirigiendo...');
@@ -434,7 +433,7 @@ const { data: perfil } = await client
         document.getElementById('userRol').textContent = 
           userRol === 'admin' ? 'Administrador' :
           userRol === 'moderador' ? 'Moderador' : 'Consultor';
-    
+
         document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
         document.getElementById('searchQuery').addEventListener('keypress', e => e.key === 'Enter' && iniciarBusqueda());
         document.getElementById('btnCerrarFicha').addEventListener('click', cerrarFicha);
@@ -780,13 +779,11 @@ async function registrarLogConsulta(cedula = null, nombre = null) {
     const sessionResponse = await client.auth.getSession();
     const session = sessionResponse?.data?.session;
     if (!session) return;
-    
- const { data: perfil } = await client
-  .from('perfiles')
-  .select('email, rol, modulos_asignados')
-  .eq('id', session.user.id)
-  .single();;
-    
+    const { data: perfil } = await client
+      .from('perfiles')
+      .select('email, rol')
+      .eq('id', session.user.id)
+      .single();
     if (!perfil) return;
     await client.from('rrhh_logs').insert({
       user_id: session.user.id,
