@@ -3,596 +3,268 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Auditoría Nacional | RRHH</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Consulta de Personal - ICAP</title>
+  <link rel="stylesheet" href="../css/estilos.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background-color: #fafafa;
-      font-family: 'Inter', sans-serif;
-      color: #2d2d2d;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 24px;
-      padding: 20px 0;
-    }
-    .header img {
-      width: 90px;
-      margin-bottom: 16px;
-    }
-    .header h1 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #2d2d2d;
-      margin-bottom: 8px;
-    }
-    .header .subtitle {
-      font-size: 16px;
-      color: #722F37;
-      font-weight: 600;
-    }
-    .user-info {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 24px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-      border: 1px solid #eee;
-    }
-    .search-section {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      margin-bottom: 24px;
-      border: 1px solid #eee;
-    }
-    .search-group {
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #333;
-    }
-    input, button {
-      padding: 12px 16px;
-      font-size: 15px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-    }
-    input {
-      width: 100%;
-      background: #fdfdfd;
-    }
-    .btn {
-      background-color: #722F37;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-    .btn:hover {
-      background-color: #5e262d;
-      transform: translateY(-1px);
-    }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #722F37;
-      color: #722F37;
-    }
-    .btn-outline:hover {
-      background: #fdf7f7;
-    }
-    .btn-pdf {
-      background-color: #1976d2;
-      margin-top: 16px;
-    }
-    .btn-pdf:hover {
-      background-color: #1565c0;
-    }
-    .results-list {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      border: 1px solid #eee;
-      margin-bottom: 24px;
-      display: none;
-    }
-    .results-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .result-item {
-      padding: 14px;
-      border-bottom: 1px solid #f0f0f0;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .result-item:hover {
-      background: #f9f7f7;
-    }
-    .result-item:last-child {
-      border-bottom: none;
-    }
-    .result-name {
-      font-weight: 600;
-      color: #2d2d2d;
-    }
-    .result-id {
-      font-size: 13px;
-      color: #666;
-    }
-    .pagination {
-      display: flex;
-      justify-content: center;
-      gap: 6px;
-      margin-top: 16px;
-      flex-wrap: wrap;
-    }
-    .pagination button,
-    .pagination span {
-      min-width: 32px;
-      height: 32px;
-      padding: 0 4px;
-      border-radius: 6px;
-      background: #f5f5f5;
-      border: 1px solid #ddd;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .pagination button.active {
-      background: #722F37;
-      color: white;
-      border-color: #722F37;
-    }
-    .pagination button:hover:not(.active) {
-      background: #eaeaea;
-    }
-    .pagination span {
-      cursor: default;
-      background: transparent;
-      border: none;
-      color: #888;
-    }
-    .result-card {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      border: 1px solid #eee;
-      display: none;
-    }
-    .photo-section {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .photo-placeholder {
-      width: 200px;
-      height: 200px;
-      border-radius: 8px;
-      background: #f0f0f0;
-      margin: 0 auto 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 64px;
-      color: #888;
-      overflow: hidden;
-      border: 2px solid #eee;
-    }
-    .photo-placeholder img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    #statusBox {
-      margin-top: 12px;
-      padding: 6px 16px;
-      border-radius: 6px;
-      font-weight: 600;
-      text-align: center;
-      font-size: 14px;
-      display: block;
-      color: white;
-      background-color: #ccc;
-    }
-    .fields-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-    .field {
-      margin-bottom: 10px;
-    }
-    .field-label {
-      font-weight: 600;
-      color: #555;
-      font-size: 13px;
-    }
-    .field-value {
-      font-size: 14px;
-      color: #2d2d2d;
-    }
-    .breadcrumb {
-      background: #f8f9fa;
-      border-radius: 12px;
-      padding: 12px 20px;
-      margin-bottom: 24px;
-      font-size: 14px;
-      color: #555;
-    }
-    .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
-    .breadcrumb a:hover { text-decoration: underline; }
-    .breadcrumb span { margin: 0 8px; color: #888; }
-#btnDescargarFoto {
-  background: #e3f2fd;
-  color: #1976d2;
-  border: 1px solid #1976d2;
-}
-#btnDescargarFoto:hover {
-  background: #bbdefb;
-}
-.btn-azul {
-  background-color: #1976d2 !important;
-}
-.btn-azul:hover {
-  background-color: #1565c0 !important;
-}
-  </style>
 </head>
 <body>
-  <div class="container">
-<div class="breadcrumb">
-  <a href="../../index.html">Inicio</a> <span>›</span>
-  <a href="../index.html">RRHH</a> <span>›</span>
-  <strong>Consulta</strong>
-</div>
-    <div class="header">
-      <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
-      <h1>Inspectoria para el Control de la Actuación Policial</h1>
-      <div class="subtitle">• Consulta de Personal Nomina Nacional •</div>
-    </div>
-    <div class="user-info">
-      <strong>Usuario:</strong> <span id="userEmail">—</span> |
-      <strong>Rol:</strong> <span id="userRol">—</span>
-    </div>
-    <div class="search-section">
-      <h2 style="font-size: 20px; margin-bottom: 16px; color: #2d2d2d;">🔍 Consulta de Personal</h2>
-      <div class="search-group">
-        <label for="searchQuery">Buscar por cédula, nombre o apellido:</label>
-        <input type="text" id="searchQuery" placeholder="Ej: 25653412, SOTO, JOSE" />
-      </div>
-<button id="btnBuscar" class="btn" style="width:100%;">Buscar</button>
-<button id="btnVolver" class="btn btn-azul" style="width:100%; margin-top:12px;">← Volver</button>
-<div id="searchMessage" style="margin-top:12px; font-size:14px; min-height:20px;"></div>
-    <div id="resultsList" class="results-list">
-      <div class="results-header">
-        <h3 id="resultsTitle">Resultados encontrados</h3>
-        <span id="resultsCount"></span>
-      </div>
-      <div id="resultsContainer"></div>
-      <div class="pagination" id="pagination"></div>
-    </div>
-    <div id="resultCard" class="result-card">
- <div class="photo-section">
-  <div class="photo-placeholder" id="photoContainer">
-    🪪
+  <div class="header">
+    <h2>Inspectable para el Control de la Actuación Policial</h2>
+    <p><strong>Usuario:</strong> <span id="userEmail">Cargando...</span> | <strong>Rol:</strong> <span id="userRol">Cargando...</span></p>
+    <button onclick="window.location.href='../index.html'" class="btn btn-secondary">Volver</button>
   </div>
-  <div id="statusBox"></div>
-  <button id="btnDescargarFoto" class="btn btn-outline" style="margin-top:12px; display:none; width:180px; margin:12px auto 0; font-size:14px;">
-    📥 Descargar Foto
-  </button>
-</div>>
-      <h3 style="font-size:18px; margin-bottom:16px; color:#722F37;">
-        🪪 Ficha del Funcionario
-        <button id="btnCerrarFicha" style="float:right; background:#eee; border:none; width:24px; height:24px; border-radius:50%; font-weight:bold;">✕</button>
-      </h3>
-      <div id="fichaContent">
-        <div class="fields-grid">
-          <div class="field">
-            <div class="field-label">Cédula</div>
-            <div class="field-value" id="cedula"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Rango</div>
-            <div class="field-value" id="rango"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Apellidos y Nombres</div>
-            <div class="field-value" id="apellidos_nombres"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Sexo</div>
-            <div class="field-value" id="sexo"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Dependencia</div>
-            <div class="field-value" id="dependencia"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Región</div>
-            <div class="field-value" id="region"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Estado</div>
-            <div class="field-value" id="estado"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Servicio</div>
-            <div class="field-value" id="servicio"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Cohorte / Promoción</div>
-            <div class="field-value" id="cohorte_promocion"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Institución de Origen</div>
-            <div class="field-value" id="institucion_origen"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Fecha de Ingreso</div>
-            <div class="field-value" id="fecha_ingreso"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Teléfono</div>
-            <div class="field-value" id="telefono"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Fecha de Nacimiento</div>
-            <div class="field-value" id="fecha_nacimiento"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Edad</div>
-            <div class="field-value" id="edad_funcionario"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Fecha de Oficio</div>
-            <div class="field-value" id="fecha_oficio"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Fecha Transferencia/Normalización</div>
-            <div class="field-value" id="fecha_transferencia_normalizacion"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Tipo de Movimiento</div>
-            <div class="field-value" id="tipo_movimiento"></div>
-          </div>
-          <div class="field" style="grid-column:1/-1;">
-            <div class="field-label">Observaciones</div>
-            <div class="field-value" id="observaciones" style="background:#f9f9f9; padding:8px; border-radius:6px; font-size:13px;"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Fechas de Egreso</div>
-            <div class="field-value" id="fechas_egreso"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Dirección</div>
-            <div class="field-value" id="direccion"></div>
-          </div>
-          <div class="field">
-            <div class="field-label">Correo Electrónico</div>
-            <div class="field-value" id="correo_electronico"></div>
-          </div>
-        </div>
-      </div>
-      <button id="btnExportPDF" class="btn btn-pdf" style="width:100%;">📄 Exportar Ficha a PDF</button>
-    </div>
+
+  <div class="search-container">
+    <input type="text" id="searchQuery" placeholder="Buscar por cédula o nombre..." />
+    <button id="btnBuscar" class="btn btn-primary">Buscar</button>
+    <div id="searchMessage"></div>
   </div>
-<script>
-// Configuración de Supabase
-const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const sessionResponse = await client.auth.getSession();
-    if (sessionResponse.error || !sessionResponse.data.session) {
-      return window.location.href = '../index.html';
-    }
-    const session = sessionResponse.data.session;
+  <div id="resultsList" style="display:none;">
+    <h3>Resultados</h3>
+    <div id="resultsTable"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
 
-    // ✅ Actualizar cliente con sesión autenticada
-    await client.auth.setSession(session);
+  <div id="resultCard" class="result-card" style="display:none;">
+    <h3>Ficha de Personal</h3>
+    <div id="fichaContenido"></div>
+    <button id="btnExportPDF" class="btn btn-primary">Exportar PDF</button>
+    <button id="btnCerrarFicha" class="btn btn-secondary">Cerrar</button>
+  </div>
 
-    const perfilResponse = await client
-      .from('perfiles')
-      .select('email, rol, modulos_asignados')
-      .eq('id', session.user.id)
-      .single();
+  <script>
+    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+    const { jsPDF } = window.jspdf;
+    let currentPage = 1;
+    const RESULTS_PER_PAGE = 15;
 
-    if (perfilResponse.error || !perfilResponse.data) {
-      alert('⚠️ Perfil no encontrado.');
-      return window.location.href = '../index.html';
-    }
-    const perfil = perfilResponse.data;
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const sessionResponse = await client.auth.getSession();
+        const session = sessionResponse?.data?.session;
+        if (!session) return window.location.href = '../index.html';
 
-    const userRol = perfil.rol || 'consultor';
-    if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
-      alert('🔒 Acceso denegado.');
-      return window.location.href = '../index.html';
-    }
+        // ✅ CORRECCIÓN CLAVE: Activar sesión autenticada
+        await client.auth.setSession(session);
 
-    document.getElementById('userEmail').textContent = perfil.email;
-    document.getElementById('userRol').textContent =
-      userRol === 'admin' ? 'Administrador' :
-      userRol === 'moderador' ? 'Moderador' : 'Consultor';
+        const {  perfil } = await client
+          .from('perfiles')
+          .select('email, rol, modulos_asignados')
+          .eq('id', session.user.id)
+          .single();
 
-    document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
-    document.getElementById('searchQuery').addEventListener('keypress', e => {
-      if (e.key === 'Enter') iniciarBusqueda();
-    });
-    document.getElementById('btnCerrarFicha').addEventListener('click', () => {
-      document.getElementById('resultCard').style.display = 'none';
+        if (!perfil || (perfil.rol !== 'admin' && !perfil.modulos_asignados?.includes('rh'))) {
+          alert('🔒 Acceso denegado.');
+          return window.location.href = '../index.html';
+        }
+
+        document.getElementById('userEmail').textContent = perfil.email;
+        document.getElementById('userRol').textContent =
+          perfil.rol === 'admin' ? 'Administrador' :
+          perfil.rol === 'moderador' ? 'Moderador' : 'Consultor';
+
+        document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
+        document.getElementById('searchQuery').addEventListener('keypress', e => e.key === 'Enter' && iniciarBusqueda());
+        document.getElementById('btnCerrarFicha').addEventListener('click', cerrarFicha);
+        document.getElementById('btnExportPDF').addEventListener('click', exportarPDF);
+      } catch (err) {
+        console.error(err);
+        window.location.href = '../index.html';
+      }
     });
 
-  } catch (err) {
-    console.error(err);
-    window.location.href = '../index.html';
-  }
-});
+    async function iniciarBusqueda() {
+      const rawQuery = document.getElementById('searchQuery').value.trim();
+      const msg = document.getElementById('searchMessage');
+      if (!rawQuery) {
+        msg.textContent = '⚠️ Ingresa un término de búsqueda.';
+        return;
+      }
 
-async function iniciarBusqueda() {
-  const rawQuery = document.getElementById('searchQuery').value.trim();
-  const msg = document.getElementById('searchMessage');
-  if (!rawQuery) {
-    msg.textContent = '⚠️ Ingresa un término de búsqueda.';
-    return;
-  }
+      // Normalizar cédula: solo dígitos
+      const cleanCedula = rawQuery.replace(/[^0-9]/g, '');
 
-  // Normalizar cédula: solo dígitos
-  const cleanCedula = rawQuery.replace(/[^0-9]/g, '');
+      if (/^\d{7,9}$/.test(cleanCedula)) {
+        msg.textContent = '🔍 Buscando por cédula...';
+        try {
+          const { data, error } = await client
+            .from('auditoria_personal')
+            .select('*')
+            .eq('cedula', cleanCedula)
+            .single();
 
-  // Si parece una cédula válida
-  if (/^\d{7,9}$/.test(cleanCedula)) {
-    msg.textContent = '🔍 Buscando...';
-    msg.style.color = '#1976d2';
+          if (error || !data) {
+            msg.textContent = `❌ Cédula ${cleanCedula} no encontrada.`;
+            return;
+          }
 
-    let data = null;
-    let error = null;
+          mostrarFichaCompleta(data);
+          document.getElementById('resultsList').style.display = 'none';
+          document.getElementById('resultCard').style.display = 'block';
+          msg.textContent = '';
+          return;
+        } catch (err) {
+          msg.textContent = '❌ Error al buscar cédula.';
+          return;
+        }
+      }
 
-    try {
-      // Buscar EXACTAMENTE con la cédula limpia
-      const res = await client
+      currentPage = 1;
+      buscarPorNombre(rawQuery);
+    }
+
+    async function buscarPorNombre(query) {
+      const msg = document.getElementById('searchMessage');
+      msg.textContent = '🔍 Buscando coincidencias...';
+      try {
+        const { data, error, count } = await client
+          .from('auditoria_personal')
+          .select('*', { count: 'exact' })
+          .or(`apellidos_nombres.ilike.%${query.toLowerCase()}%`)
+          .range((currentPage - 1) * RESULTS_PER_PAGE, currentPage * RESULTS_PER_PAGE - 1)
+          .order('apellidos_nombres', { ascending: true });
+
+        if (error || !data || data.length === 0) {
+          msg.textContent = `❌ No se encontraron coincidencias.`;
+          return;
+        }
+
+        renderResults(data, count, query);
+        document.getElementById('resultsList').style.display = 'block';
+        msg.textContent = '';
+      } catch (err) {
+        msg.textContent = '❌ Error en la búsqueda.';
+      }
+    }
+
+    function renderResults(data, total, searchTerm) {
+      const container = document.getElementById('resultsTable');
+      container.innerHTML = '';
+
+      const table = document.createElement('table');
+      table.className = 'results-table';
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Cédula</th>
+            <th>Nombre y Apellidos</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      `;
+      container.appendChild(table);
+
+      const tbody = document.getElementById('resultsBody');
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.cedula}</td>
+          <td>${row.apellidos_nombres}</td>
+          <td><button class="btn btn-primary" onclick="mostrarFichaPorCedula('${row.cedula}')">Ver Ficha</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const totalPages = Math.ceil(total / RESULTS_PER_PAGE);
+      let paginationHTML = '';
+      if (currentPage > 1) {
+        paginationHTML += `<button class="btn btn-secondary" onclick="cambiarPagina(${currentPage - 1}, '${searchTerm}')">← Anterior</button>`;
+      }
+      paginationHTML += `<span>Página ${currentPage} de ${totalPages}</span>`;
+      if (currentPage < totalPages) {
+        paginationHTML += `<button class="btn btn-secondary" onclick="cambiarPagina(${currentPage + 1}, '${searchTerm}')">Siguiente →</button>`;
+      }
+      document.getElementById('pagination').innerHTML = paginationHTML;
+    }
+
+    async function mostrarFichaPorCedula(cedula) {
+      const { data, error } = await client
         .from('auditoria_personal')
         .select('*')
-        .eq('cedula', cleanCedula)
+        .eq('cedula', cedula)
         .single();
 
-      if (res.data) {
-        data = res.data;
+      if (!error && data) {
+        mostrarFichaCompleta(data);
+        document.getElementById('resultsList').style.display = 'none';
+        document.getElementById('resultCard').style.display = 'block';
       }
-    } catch (err) {
-      error = err;
     }
 
-    if (!data) {
-      // Opcional: intentar búsqueda flexible
-      try {
-        const res = await client
-          .from('auditoria_personal')
-          .select('*')
-          .ilike('cedula', `%${cleanCedula}%`)
-          .limit(1)
-          .single();
-        if (res.data) data = res.data;
-      } catch (e) {}
+    function mostrarFichaCompleta(data) {
+      const contenido = document.getElementById('fichaContenido');
+      contenido.innerHTML = '';
+
+      const campos = [
+        { label: 'Cédula', value: data.cedula },
+        { label: 'Nombre y Apellidos', value: data.apellidos_nombres },
+        { label: 'Rango', value: data.rango },
+        { label: 'Sexo', value: data.sexo },
+        { label: 'Región', value: data.region },
+        { label: 'Estado', value: data.estado },
+        { label: 'Dirección', value: data.direccion },
+        { label: 'Cargo', value: data.cargo },
+        { label: 'Estatus', value: data.estatus },
+        { label: 'Edad', value: data.edad },
+        { label: 'Fecha de Nacimiento', value: data.fecha_nacimiento },
+        { label: 'Teléfono del Funcionario', value: data.telefono_funcionario },
+        { label: 'Teléfono de Emergencia', value: data.telefono_emergencia },
+        { label: 'Correo Electrónico', value: data.correo_electronico },
+        { label: 'Nivel Académico', value: data.nivel_academico },
+        { label: 'Fecha de Ingreso al CPNB', value: data.fecha_ingreso_cpn },
+        { label: 'Fecha del Último Ascenso', value: data.fecha_ultimo_ascenso },
+        { label: 'Antigüedad en la Función Policial', value: data.antiguedad },
+        { label: 'Servicio', value: data.servicio },
+        { label: 'Dirección de Habitación', value: data.direccion_habitacion },
+        { label: 'Último Cargo', value: data.ultimo_cargo }
+      ];
+
+      campos.forEach(campo => {
+        if (campo.value) {
+          const div = document.createElement('div');
+          div.className = 'field';
+          div.innerHTML = `<strong>${campo.label}:</strong> ${campo.value}`;
+          contenido.appendChild(div);
+        }
+      });
     }
 
-    if (!data) {
-      msg.textContent = `❌ Cédula ${cleanCedula} no encontrada.`;
-      msg.style.color = '#c62828';
-      return;
+    function cerrarFicha() {
+      document.getElementById('resultCard').style.display = 'none';
+      document.getElementById('searchQuery').value = '';
+      document.getElementById('searchMessage').textContent = '';
     }
 
-    mostrarResultado(data);
-    document.getElementById('resultsList').style.display = 'none';
-    document.getElementById('resultCard').style.display = 'block';
-    msg.textContent = '';
-    return;
-  }
+    async function cambiarPagina(page, searchTerm) {
+      currentPage = page;
+      await buscarPorNombre(searchTerm);
+    }
 
-  // Si no es cédula, buscar por nombre
-  currentPage = 1;
-  buscarPorNombre(rawQuery);
-}
+    function exportarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(16);
+      doc.text('Ficha de Personal - ICAP', 105, 15, null, null, 'center');
+      doc.setFontSize(12);
 
-function mostrarResultado(data) {
-  let html = `
-    <div class="field"><strong>Cédula:</strong> ${data.cedula}</div>
-    <div class="field"><strong>Nombre y Apellidos:</strong> ${data.apellidos_nombres}</div>
-    <div class="field"><strong>Rango:</strong> ${data.rango}</div>
-    <div class="field"><strong>Sexo:</strong> ${data.sexo}</div>
-    <div class="field"><strong>Estado:</strong> ${data.estado}</div>
-    <div class="field"><strong>Estatus:</strong> ${data.estatus}</div>
-    <div class="field"><strong>Teléfono:</strong> ${data.telefono_funcionario}</div>
-    <div class="field"><strong>Correo:</strong> ${data.correo_electronico}</div>
-  `;
-  document.getElementById('fichaContenido').innerHTML = html;
-  document.getElementById('searchMessage').textContent = '';
-}
+      const fields = document.querySelectorAll('.field');
+      let y = 30;
+      fields.forEach(field => {
+        doc.text(field.textContent, 20, y);
+        y += 7;
+        if (y > 280) {
+          doc.addPage();
+          y = 20;
+        }
+      });
 
-function buscarPorNombre(searchTerm) {
-  const msg = document.getElementById('searchMessage');
-  msg.textContent = '🔍 Buscando...';
-  msg.style.color = '#1976d2';
-
-  client
-    .from('auditoria_personal')
-    .select('*')
-    .ilike('apellidos_nombres', `%${searchTerm}%`)
-    .limit(10)
-    .then(({ data, error }) => {
-      if (error) {
-        msg.textContent = '❌ Error al buscar.';
-        msg.style.color = '#c62828';
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        msg.textContent = '❌ No se encontraron resultados.';
-        msg.style.color = '#c62828';
-        return;
-      }
-
-      mostrarListaResultados(data);
-      msg.textContent = '';
-    })
-    .catch(err => {
-      console.error(err);
-      msg.textContent = '❌ Error inesperado.';
-      msg.style.color = '#c62828';
-    });
-}
-
-function mostrarListaResultados(data) {
-  let html = '<table style="width:100%; border-collapse:collapse;"><tr style="background:#f0f0f0;"><th style="border:1px solid #ccc; padding:8px;">Cédula</th><th style="border:1px solid #ccc; padding:8px;">Nombre</th><th style="border:1px solid #ccc; padding:8px;">Acción</th></tr>';
-  data.forEach(row => {
-    html += `
-      <tr>
-        <td style="border:1px solid #ccc; padding:8px;">${row.cedula}</td>
-        <td style="border:1px solid #ccc; padding:8px;">${row.apellidos_nombres}</td>
-        <td style="border:1px solid #ccc; padding:8px;"><button onclick="verDetalle('${row.cedula}')">Ver</button></td>
-      </tr>
-    `;
-  });
-  html += '</table>';
-  document.getElementById('resultsList').innerHTML = html;
-  document.getElementById('resultsList').style.display = 'block';
-  document.getElementById('resultCard').style.display = 'none';
-}
-
-async function verDetalle(cedula) {
-  const { data, error } = await client
-    .from('auditoria_personal')
-    .select('*')
-    .eq('cedula', cedula)
-    .single();
-
-  if (!error && data) {
-    mostrarResultado(data);
-  }
-}
-</script>
+      doc.save(`ficha_${new Date().getTime()}.pdf`);
+    }
+  </script>
 </body>
 </html>
