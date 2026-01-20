@@ -444,40 +444,69 @@
       }
     });
 
-    async function iniciarBusqueda() {
-      const query = document.getElementById('searchQuery').value.trim();
-      const msg = document.getElementById('searchMessage');
-      if (!query) {
-        msg.textContent = '⚠️ Ingresa un término de búsqueda.';
-        return;
-      }
-      if (/^\d{6,}$/.test(query)) {
-        msg.textContent = '🔍 Buscando por cédula...';
-        msg.style.color = '#1976d2';
-        try {
-          const { data, error } = await client
-            .from('auditoria_personal')
-            .select('*')
-            .eq('cedula', query)
-            .single();
-          if (error || !data) {
-            msg.textContent = `❌ Cédula ${query} no encontrada.`;
-            msg.style.color = '#c62828';
-            return;
-          }
-          mostrarFichaCompleta(data);
-          document.getElementById('resultsList').style.display = 'none';
-          document.getElementById('resultCard').style.display = 'block';
-          msg.textContent = '';
-        } catch (err) {
-          msg.textContent = '❌ Error al buscar cédula.';
+  async function iniciarBusqueda() {
+  const rawQuery = document.getElementById('searchQuery').value.trim();
+  const msg = document.getElementById('searchMessage');
+
+  if (!rawQuery) {
+    msg.textContent = '⚠️ Ingresa un término de búsqueda.';
+    return;
+  }
+
+  // Normalizar cédula: eliminar puntos, guiones, espacios
+  const cleanCedula = rawQuery.replace(/[^0-9]/g, '');
+
+  // Si parece una cédula (6-9 dígitos)
+  if (/^\d{6,9}$/.test(cleanCedula)) {
+    msg.textContent = '🔍 Buscando por cédula...';
+    msg.style.color = '#1976d2';
+
+    try {
+      // Buscar EXACTAMENTE con la cédula limpia
+      const { data, error } = await client
+        .from('auditoria_personal')
+        .select('*')
+        .eq('cedula', cleanCedula)
+        .single();
+
+      if (error || !data) {
+        // Opcional: intentar búsqueda flexible (solo si es necesario)
+        const { data: dataFuzzy } = await client
+          .from('auditoria_personal')
+          .select('*')
+          .ilike('cedula', `%${cleanCedula}%`)
+          .limit(1)
+          .single();
+
+        if (dataFuzzy) {
+          // Mostrar advertencia y continuar
+          msg.textContent = '⚠️ Formato de cédula inconsistente. Mostrando resultado aproximado.';
+          msg.style.color = '#ff9800';
+          mostrarFichaCompleta(dataFuzzy);
+        } else {
+          msg.textContent = `❌ Cédula ${cleanCedula} no encontrada.`;
           msg.style.color = '#c62828';
+          return;
         }
-        return;
+      } else {
+        mostrarFichaCompleta(data);
+        msg.textContent = '';
       }
-      currentPage = 1;
-      buscarPorNombre(query);
+
+      document.getElementById('resultsList').style.display = 'none';
+      document.getElementById('resultCard').style.display = 'block';
+      return;
+    } catch (err) {
+      msg.textContent = '❌ Error al buscar cédula.';
+      msg.style.color = '#c62828';
+      return;
     }
+  }
+
+  // Si no es cédula, buscar por nombre
+  currentPage = 1;
+  buscarPorNombre(rawQuery);
+}
 
     async function buscarPorNombre(query) {
       const msg = document.getElementById('searchMessage');
