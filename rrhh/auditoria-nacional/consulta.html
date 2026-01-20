@@ -179,18 +179,25 @@
         msg.style.color = '#1976d2';
         try {
           const cleanQuery = query.trim(); // ← asegura comparación como string
-          const { data, error } = await client
-            .from('auditoria_personal')
-            .select('*')
-            .eq('cedula', cleanQuery)
-            .single();
+    let { data, error } = await client
+.from('auditoria_personal')
+.select('*')
+.eq('cedula', query)
+.single();
 
-          if (error || !data) {
-            msg.textContent = `❌ Cédula ${cleanQuery} no encontrada.`;
-            msg.style.color = '#c62828';
-            return;
-          }
-
+// Si el usuario NO es admin, verificar estado
+if (userRol !== 'admin' && data) {
+  if (!userEstado) {
+    msg.textContent = '❌ No tienes un estado asignado. Contacta al administrador.';
+    msg.style.color = '#c62828';
+    return;
+  }
+  if (data.estado !== userEstado) {
+    msg.textContent = '❌ funcionario no encontrado en su estado';
+    msg.style.color = '#c62828';
+    return;
+  }
+}
           mostrarFichaCompleta(data);
           document.getElementById('resultsList').style.display = 'none';
           document.getElementById('resultCard').style.display = 'block';
