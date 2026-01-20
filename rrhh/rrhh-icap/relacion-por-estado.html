@@ -29,11 +29,59 @@
       color: #722F37;
     }
     .header-info {
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       padding: 12px;
       background: #f9f9f9;
       border-radius: 8px;
       font-size: 15px;
+    }
+    .filters-section {
+      display: none; /* Oculto por defecto */
+      background: #f5f5f5;
+      padding: 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .filters-section.active {
+      display: block;
+    }
+    .filter-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .filter-group {
+      flex: 1;
+      min-width: 180px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: #444;
+    }
+    select, button {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    button.btn {
+      background: #722F37;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 16px;
+      width: auto;
+    }
+    button.btn:hover {
+      background: #5e262d;
     }
     table {
       width: 100%;
@@ -54,19 +102,6 @@
     tr:hover {
       background: #fdf7f7;
     }
-    .btn {
-      background: #722F37;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      margin-top: 16px;
-    }
-    .btn:hover {
-      background: #5e262d;
-    }
     .loading {
       text-align: center;
       padding: 40px;
@@ -81,115 +116,193 @@
     <div class="header-info">
       <strong>Estados asignados:</strong> <span id="userEstados">Cargando...</span>
     </div>
+
+    <!-- Filtros (solo admin) -->
+    <div id="filtersSection" class="filters-section">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="filtroSexo">Sexo</label>
+          <select id="filtroSexo">
+            <option value="">Todos</option>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filtroRegion">Región</label>
+          <select id="filtroRegion">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filtroEstado">Estado</label>
+          <select id="filtroEstado">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filtroEstatus">Estatus</label>
+          <select id="filtroEstatus">
+            <option value="">Todos</option>
+            <option value="activo">Activo</option>
+            <option value="reposo">Reposo</option>
+            <option value="suspendido">Suspendido</option>
+            <option value="destituido">Destituido</option>
+            <option value="DA">DA</option>
+            <option value="D">D</option>
+            <option value="P">P</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <button class="btn" id="exportBtn" disabled>📥 Exportar a Excel</button>
     <div id="tableContainer">
       <div class="loading">Cargando datos...</div>
     </div>
   </div>
 
-<script>
-  const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
-  const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+  <script>
+    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
 
-  let userRole = '';
-  let userEstados = [];
+    let userRole = '';
+    let userEstados = [];
+    let fullData = [];
 
-  async function loadUserData() {
-    const { data: { session }, error } = await client.auth.getSession();
-    if (!session) return window.location.href = '../index.html';
+    // Llenar selects únicos
+    function fillUniqueOptions(field, selectorId, data) {
+      const values = [...new Set(data.map(item => item[field]).filter(v => v))];
+      const select = document.getElementById(selectorId);
+      select.innerHTML = '<option value="">Todos</option>';
+      values.sort().forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        select.appendChild(opt);
+      });
+    }
 
-    const { data: perfil } = await client
-      .from('perfiles')
-      .select('rol, estados_asignados')
-      .eq('id', session.user.id)
-      .single();
+    // Aplicar filtros
+    function applyFilters() {
+      let filtered = fullData;
 
-    if (!perfil) return window.location.href = '../index.html';
+      const sexo = document.getElementById('filtroSexo').value;
+      const region = document.getElementById('filtroRegion').value;
+      const estado = document.getElementById('filtroEstado').value;
+      const estatus = document.getElementById('filtroEstatus').value;
 
-    userRole = perfil.rol || 'consultor';
-    userEstados = perfil.estados_asignados || [];
+      if (sexo) filtered = filtered.filter(r => r.sexo === sexo);
+      if (region) filtered = filtered.filter(r => r.region === region);
+      if (estado) filtered = filtered.filter(r => r.estado === estado);
+      if (estatus) filtered = filtered.filter(r => r.estatus === estatus);
 
-    // Mostrar info al usuario
-    document.getElementById('userEstados').textContent =
-      userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
+      renderTable(filtered);
+    }
 
-    fetchPersonalData();
-  }
+    async function loadUserData() {
+      const { data: { session } } = await client.auth.getSession();
+      if (!session) return window.location.href = '../index.html';
 
-  async function fetchPersonalData() {
-    let query = client.from('rrhh_icap').select('*');
+      const { data: perfil } = await client
+        .from('perfiles')
+        .select('rol, estados_asignados')
+        .eq('id', session.user.id)
+        .single();
 
-    // Solo filtrar por estado si NO es admin
-    if (userRole !== 'admin') {
-      if (!userEstados.length) {
-        document.getElementById('tableContainer').innerHTML = '<div class="loading">No tiene estados asignados.</div>';
+      if (!perfil) return window.location.href = '../index.html';
+
+      userRole = perfil.rol || 'consultor';
+      userEstados = perfil.estados_asignados || [];
+
+      document.getElementById('userEstados').textContent =
+        userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
+
+      fetchPersonalData();
+    }
+
+    async function fetchPersonalData() {
+      let query = client.from('rrhh_icap').select('*');
+
+      if (userRole !== 'admin') {
+        if (!userEstados.length) {
+          document.getElementById('tableContainer').innerHTML = '<div class="loading">No tiene estados asignados.</div>';
+          return;
+        }
+        query = query.in('estado', userEstados);
+      }
+
+      const { data, error } = await query.order('nombre_apellidos', { ascending: true });
+
+      if (error) {
+        console.error('Error:', error);
+        document.getElementById('tableContainer').innerHTML = '<div class="loading">Error al cargar los datos.</div>';
         return;
       }
-      // Supabase requiere pasar un array directamente a .in()
-      query = query.in('estado', userEstados);
+
+      fullData = data;
+
+      // Mostrar filtros solo si es admin
+      if (userRole === 'admin') {
+        document.getElementById('filtersSection').classList.add('active');
+        fillUniqueOptions('region', 'filtroRegion', fullData);
+        fillUniqueOptions('estado', 'filtroEstado', fullData);
+      }
+
+      // Añadir listeners a los filtros
+      ['filtroSexo', 'filtroRegion', 'filtroEstado', 'filtroEstatus'].forEach(id => {
+        document.getElementById(id).addEventListener('change', applyFilters);
+      });
+
+      applyFilters(); // Render inicial
     }
 
-    // Ordenar por el campo correcto
-    query = query.order('nombre_apellidos', { ascending: true });
+    function renderTable(rows) {
+      if (!rows.length) {
+        document.getElementById('tableContainer').innerHTML = '<div class="loading">No hay personal disponible.</div>';
+        document.getElementById('exportBtn').disabled = true;
+        return;
+      }
 
-    const { data, error } = await query;
+      const headers = [
+        'RANGO', 'NOMBRE Y APELLIDOS', 'C.I', 'SEXO', 'REGION', 'ESTADO',
+        'DIRECCION', 'CARGO', 'ESTATUS'
+      ];
 
-    if (error) {
-      console.error('Error:', error);
-      document.getElementById('tableContainer').innerHTML = '<div class="loading">Error al cargar los datos.</div>';
-      return;
+      let html = '<table><thead><tr>';
+      headers.forEach(h => html += `<th>${h}</th>`);
+      html += '</tr></thead><tbody>';
+
+      rows.forEach(row => {
+        html += `<tr>
+          <td>${row.rango || ''}</td>
+          <td>${row.nombre_apellidos || ''}</td>
+          <td>${row.cedula || ''}</td>
+          <td>${row.sexo || ''}</td>
+          <td>${row.region || ''}</td>
+          <td>${row.estado || ''}</td>
+          <td>${row.direccion || ''}</td>
+          <td>${row.cargo || ''}</td>
+          <td>${row.estatus || ''}</td>
+        </tr>`;
+      });
+
+      html += '</tbody></table>';
+      document.getElementById('tableContainer').innerHTML = html;
+      document.getElementById('exportBtn').disabled = false;
     }
 
-    renderTable(data);
-  }
-
-  function renderTable(rows) {
-    if (!rows.length) {
-      document.getElementById('tableContainer').innerHTML = '<div class="loading">No hay personal disponible.</div>';
-      return;
+    function exportToExcel() {
+      const ws = XLSX.utils.table_to_sheet(document.querySelector('table'));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Relación por Estado");
+      XLSX.writeFile(wb, `relacion_personal_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
-    // Ajusta los nombres de columnas según tu tabla real
-    const headers = [
-      'RANGO', 'NOMBRE Y APELLIDOS', 'C.I', 'SEXO', 'REGION', 'ESTADO',
-      'DIRECCION', 'CARGO', 'ESTATUS'
-    ];
+    document.getElementById('exportBtn').addEventListener('click', exportToExcel);
 
-    let html = '<table><thead><tr>';
-    headers.forEach(h => html += `<th>${h}</th>`);
-    html += '</tr></thead><tbody>';
-
-    rows.forEach(row => {
-      html += `<tr>
-        <td>${row.rango || ''}</td>
-        <td>${row.nombre_apellidos || ''}</td>
-        <td>${row.cedula || ''}</td>
-        <td>${row.sexo || ''}</td>
-        <td>${row.region || ''}</td>
-        <td>${row.estado || ''}</td>
-        <td>${row.direccion || ''}</td>
-        <td>${row.cargo || ''}</td>
-        <td>${row.estatus || ''}</td>
-      </tr>`;
-    });
-
-    html += '</tbody></table>';
-    document.getElementById('tableContainer').innerHTML = html;
-    document.getElementById('exportBtn').disabled = false;
-  }
-
-  function exportToExcel() {
-    const ws = XLSX.utils.table_to_sheet(document.querySelector('table'));
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Relación por Estado");
-    XLSX.writeFile(wb, `relacion_personal_${new Date().toISOString().slice(0,10)}.xlsx`);
-  }
-
-  document.getElementById('exportBtn').addEventListener('click', exportToExcel);
-
-  // Iniciar
-  loadUserData();
-</script>
+    loadUserData();
+  </script>
 </body>
 </html>
