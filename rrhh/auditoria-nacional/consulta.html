@@ -451,30 +451,63 @@
         msg.textContent = '⚠️ Ingresa un término de búsqueda.';
         return;
       }
-      if (/^\d{6,}$/.test(query)) {
-        msg.textContent = '🔍 Buscando por cédula...';
-        msg.style.color = '#1976d2';
-        try {
-          const { data, error } = await client
-            .from('auditoria_personal')
-            .select('*')
-           .eq('cedula', query.toString())
-            .single();
-          if (error || !data) {
-            msg.textContent = `❌ Cédula ${query} no encontrada.`;
-            msg.style.color = '#c62828';
-            return;
-          }
-          mostrarFichaCompleta(data);
-          document.getElementById('resultsList').style.display = 'none';
-          document.getElementById('resultCard').style.display = 'block';
-          msg.textContent = '';
-        } catch (err) {
-          msg.textContent = '❌ Error al buscar cédula.';
-          msg.style.color = '#c62828';
-        }
+     if (/^\d{6,}$/.test(query)) {
+  msg.textContent = '🔍 Buscando por cédula...';
+  msg.style.color = '#1976d2';
+  try {
+    // Obtener el perfil del usuario (ya lo tienes en memoria desde el inicio)
+    const sessionResponse = await client.auth.getSession();
+    const session = sessionResponse?.data?.session;
+    if (!session) throw new Error('Sesión inválida');
+    
+    const { data: perfil } = await client
+      .from('perfiles')
+      .select('rol, estados_asignados')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!perfil) throw new Error('Perfil no encontrado');
+
+    const userRol = perfil.rol || 'consultor';
+    const estadosAsignados = perfil.estados_asignados || [];
+
+    // Buscar el funcionario
+    const { data: funcionario, error } = await client
+      .from('auditoria_personal')
+      .select('*')
+      .eq('cedula', query)
+      .single();
+
+    if (error || !funcionario) {
+      msg.textContent = `❌ Cédula ${query} no encontrada.`;
+      msg.style.color = '#c62828';
+      return;
+    }
+
+    // Verificar acceso por estado si es consultor o moderador
+    if (userRol === 'consultor' || userRol === 'moderador') {
+      const estadoFuncionario = (funcionario.estado || '').trim();
+      const tieneAcceso = estadosAsignados.some(e => e.trim().toLowerCase() === estadoFuncionario.toLowerCase());
+
+      if (!tieneAcceso) {
+        msg.textContent = '❌ funcionario no encontrado en su estado';
+        msg.style.color = '#c62828';
         return;
       }
+    }
+
+    // Si pasa las validaciones, mostrar la ficha
+    mostrarFichaCompleta(funcionario);
+    document.getElementById('resultsList').style.display = 'none';
+    document.getElementById('resultCard').style.display = 'block';
+    msg.textContent = '';
+  } catch (err) {
+    console.error('Error en búsqueda por cédula:', err);
+    msg.textContent = '❌ Error al buscar cédula.';
+    msg.style.color = '#c62828';
+  }
+  return;
+}
       currentPage = 1;
       buscarPorNombre(query);
     }
