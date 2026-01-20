@@ -6,7 +6,6 @@
   <title>Consulta de Personal</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" />
   <style>
-    /* Estilos originales sin cambios */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Roboto', sans-serif;
@@ -106,17 +105,14 @@
 
   <script type="module">
     // --- Configuración de Supabase ---
-    const SUPABASE_URL = 'https://your-project.supabase.co'; // ← ¡REEMPLAZA!
-    const SUPABASE_ANON_KEY = 'your-anon-key'; // ← ¡REEMPLAZA!
+    const SUPABASE_URL = 'https://your-project.supabase.co'; // ← ¡REEMPLAZA CON TU URL!
+    const SUPABASE_ANON_KEY = 'your-anon-key'; // ← ¡REEMPLAZA CON TU KEY!
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // --- Variables globales ---
-    let userProfile = null; // ← Almacena el perfil del usuario (incluyendo estados_asignados)
     const RESULTS_PER_PAGE = 10;
     let currentPage = 1;
 
-    // --- Función para mostrar la ficha completa ---
     function mostrarFichaCompleta(data) {
       const card = document.getElementById('resultCard');
       card.innerHTML = `
@@ -131,7 +127,6 @@
       `;
     }
 
-    // --- Búsqueda por nombre (con filtro por estado si aplica) ---
     async function buscarPorNombre(query) {
       const msg = document.getElementById('searchMessage');
       msg.textContent = '🔍 Buscando coincidencias...';
@@ -141,23 +136,12 @@
 
       try {
         const searchTerm = query.toLowerCase();
-        let queryBuilder = client
+        const { data, error, count } = await client
           .from('auditoria_personal')
           .select('*', { count: 'exact' })
           .or(`apellidos_nombres.ilike.%${searchTerm}%`)
           .range((currentPage - 1) * RESULTS_PER_PAGE, currentPage * RESULTS_PER_PAGE - 1)
           .order('apellidos_nombres', { ascending: true });
-
-        // Aplicar filtro por estado si es consultor o moderador
-        const userRol = userProfile?.rol;
-        if (userRol === 'consultor' || userRol === 'moderador') {
-          const estados = userProfile?.estados_asignados || [];
-          if (estados.length > 0) {
-            queryBuilder = queryBuilder.in('estado', estados);
-          }
-        }
-
-        const { data, error, count } = await queryBuilder;
 
         if (error) throw error;
         if (!data || data.length === 0) {
@@ -181,7 +165,7 @@
       }
     }
 
-    // --- Búsqueda principal (por cédula o nombre) ---
+    // ✅ FUNCIÓN ACTUALIZADA: permite búsqueda libre sin restricciones
     async function iniciarBusqueda() {
       const query = document.getElementById('searchQuery').value.trim();
       const msg = document.getElementById('searchMessage');
@@ -194,30 +178,17 @@
         msg.textContent = '🔍 Buscando por cédula...';
         msg.style.color = '#1976d2';
         try {
+          const cleanQuery = query.trim(); // ← asegura comparación como string
           const { data, error } = await client
             .from('auditoria_personal')
             .select('*')
-            .eq('cedula', query)
+            .eq('cedula', cleanQuery)
             .single();
 
           if (error || !data) {
-            msg.textContent = `❌ Cédula ${query} no encontrada.`;
+            msg.textContent = `❌ Cédula ${cleanQuery} no encontrada.`;
             msg.style.color = '#c62828';
             return;
-          }
-
-          // Verificación de estado para consultores y moderadores
-          const userRol = userProfile?.rol || 'consultor';
-          if (userRol === 'consultor' || userRol === 'moderador') {
-            const estadosAsignados = userProfile?.estados_asignados || [];
-            const estadoFuncionario = (data.estado || '').trim().toLowerCase();
-            const tieneAcceso = estadosAsignados.some(e => e.trim().toLowerCase() === estadoFuncionario);
-
-            if (!tieneAcceso) {
-              msg.textContent = '❌ funcionario no encontrado en su estado';
-              msg.style.color = '#c62828';
-              return;
-            }
           }
 
           mostrarFichaCompleta(data);
@@ -236,7 +207,6 @@
       buscarPorNombre(query);
     }
 
-    // --- Inicialización al cargar la página ---
     document.addEventListener('DOMContentLoaded', async () => {
       const sessionResponse = await client.auth.getSession();
       const session = sessionResponse?.data?.session;
@@ -248,7 +218,7 @@
 
       const {  perfil } = await client
         .from('perfiles')
-        .select('email, rol, modulos_asignados, estados_asignados')
+        .select('email, rol')
         .eq('id', session.user.id)
         .single();
 
@@ -257,12 +227,8 @@
         return;
       }
 
-      userProfile = perfil; // ← Guardamos el perfil completo
+      document.getElementById('user-info').textContent = `Usuario: ${perfil.email} | Rol: ${perfil.rol}`;
 
-      const userInfo = document.getElementById('user-info');
-      userInfo.textContent = `Usuario: ${perfil.email} | Rol: ${perfil.rol}`;
-
-      // Permitir búsqueda al presionar Enter
       document.getElementById('searchQuery').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') iniciarBusqueda();
       });
