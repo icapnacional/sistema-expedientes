@@ -45,12 +45,6 @@
     .filters-section.active {
       display: block;
     }
-    .filters-title {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: #555;
-    }
     .filter-row {
       display: flex;
       gap: 16px;
@@ -124,7 +118,7 @@
 
     <!-- Filtros (solo admin) -->
     <div id="filtersSection" class="filters-section">
-      <div class="filters-title">🔍 Buscar con filtros</div>
+      <div style="font-size:18px; font-weight:600; margin-bottom:16px; color:#555;">🔍 Buscar con filtros</div>
       <div class="filter-row">
         <div class="filter-group">
           <label for="filtroSexo">Sexo</label>
@@ -168,19 +162,6 @@
     let userEstados = [];
     let fullData = [];
 
-    function fillUniqueOptions(field, selectorId, data) {
-      const values = [...new Set(data.map(item => item[field]).filter(v => v != null && v !== ''))];
-      const select = document.getElementById(selectorId);
-      select.innerHTML = '<option value="">Todos</option>';
-      values.sort((a, b) => String(a).localeCompare(String(b)));
-      values.forEach(val => {
-        const opt = document.createElement('option');
-        opt.value = val;
-        opt.textContent = val;
-        select.appendChild(opt);
-      });
-    }
-
     function applyFilters() {
       let filtered = fullData;
 
@@ -197,73 +178,80 @@
       renderTable(filtered);
     }
 
-   async function loadUserData() {
-  try {
-    // ✅ CORRECTO — línea 203 corregida
-    const {  { session } } = await client.auth.getSession();
-    
-    if (!session) {
-      window.location.href = '../index.html';
-      return;
+    // Llenar selects con valores reales y únicos
+    function fillUniqueOptions(field, selectorId, data) {
+      const values = [...new Set(data.map(item => item[field]).filter(v => v != null && v !== ''))];
+      const select = document.getElementById(selectorId);
+      select.innerHTML = '<option value="">Todos</option>';
+      values.sort((a, b) => String(a).localeCompare(String(b)));
+      values.forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        select.appendChild(opt);
+      });
     }
 
-    // ✅ CORRECTO
-    const { data: perfil } = await client
-      .from('perfiles')
-      .select('rol, estados_asignados')
-      .eq('id', session.user.id)
-      .single();
+    async function loadUserData() {
+      const {  { session } } = await client.auth.getSession();
+      if (!session) return window.location.href = '../index.html';
 
-    if (!perfil) {
-      alert('Perfil no encontrado.');
-      window.location.href = '../index.html';
-      return;
+      const {  perfil } = await client
+        .from('perfiles')
+        .select('rol, estados_asignados')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!perfil) return window.location.href = '../index.html';
+
+      userRole = perfil.rol || 'consultor';
+      userEstados = perfil.estados_asignados || [];
+
+      document.getElementById('userEstados').textContent =
+        userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
+
+      fetchPersonalData();
     }
 
-    // ... resto del código
-  } catch (err) {
-    console.error(err);
-  }
-}
     async function fetchPersonalData() {
-      try {
-        let query = client.from('rrhh_icap').select('*');
+      let query = client.from('rrhh_icap').select('*');
 
-        if (userRole !== 'admin') {
-          if (!userEstados.length) {
-            document.getElementById('tableContainer').innerHTML = '<div class="loading">No tiene estados asignados.</div>';
-            return;
-          }
-          query = query.in('estado', userEstados);
-        }
-
-        const {  error } = await query.order('nombre_apellidos', { ascending: true });
-
-        if (error) {
-          console.error('Error Supabase:', error);
-          document.getElementById('tableContainer').innerHTML = '<div class="loading">Error al cargar los datos del personal.</div>';
+      if (userRole !== 'admin') {
+        if (!userEstados.length) {
+          document.getElementById('tableContainer').innerHTML = '<div class="loading">No tiene estados asignados.</div>';
           return;
         }
-
-        fullData = data;
-
-        if (userRole === 'admin') {
-          document.getElementById('filtersSection').classList.add('active');
-          fillUniqueOptions('sexo', 'filtroSexo', fullData);
-          fillUniqueOptions('region', 'filtroRegion', fullData);
-          fillUniqueOptions('estado', 'filtroEstado', fullData);
-          fillUniqueOptions('estatus', 'filtroEstatus', fullData);
-
-          ['filtroSexo', 'filtroRegion', 'filtroEstado', 'filtroEstatus'].forEach(id => {
-            document.getElementById(id).addEventListener('change', applyFilters);
-          });
-        }
-
-        applyFilters();
-      } catch (err) {
-        console.error('Error en fetchPersonalData:', err);
-        document.getElementById('tableContainer').innerHTML = '<div class="loading">Error inesperado.</div>';
+        query = query.in('estado', userEstados);
       }
+
+      const {  error } = await query.order('nombre_apellidos', { ascending: true });
+
+      if (error) {
+        console.error('Error:', error);
+        document.getElementById('tableContainer').innerHTML = '<div class="loading">Error al cargar los datos.</div>';
+        return;
+      }
+
+      fullData = data;
+
+      // Mostrar filtros solo si es admin
+      if (userRole === 'admin') {
+        document.getElementById('filtersSection').classList.add('active');
+        fillUniqueOptions('sexo', 'filtroSexo', fullData);
+        fillUniqueOptions('region', 'filtroRegion', fullData);
+        fillUniqueOptions('estado', 'filtroEstado', fullData);
+        fillUniqueOptions('estatus', 'filtroEstatus', fullData);
+      }
+
+      // Añadir listeners a los filtros
+      ['filtroSexo', 'filtroRegion', 'filtroEstado', 'filtroEstatus'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('change', applyFilters);
+        }
+      });
+
+      applyFilters(); // Render inicial
     }
 
     function renderTable(rows) {
@@ -310,7 +298,7 @@
 
     document.getElementById('exportBtn').addEventListener('click', exportToExcel);
 
-    // Iniciar cuando el DOM esté listo
+    // Iniciar
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', loadUserData);
     } else {
