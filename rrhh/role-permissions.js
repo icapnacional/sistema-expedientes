@@ -15,7 +15,7 @@ const PERMISSIONS = {
     tooltip: '🔒 Solo RRHH autorizado'
   },
   'btnAuditoriaModificar': {
-    roles: ['admin', 'moderador'],
+    roles: ['admin'],
     action: () => { window.location.href = 'auditoria-nacional/modificar.html'; },
     tooltip: '🔒 Solo RRHH autorizado'
   },
