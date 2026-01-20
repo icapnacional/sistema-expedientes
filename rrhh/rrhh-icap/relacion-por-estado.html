@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Relación por Estado | RRHH ICAP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fafafa;
+      color: #2d2d2d;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      padding: 24px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #722F37;
+    }
+    .header-info {
+      margin-bottom: 20px;
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background: #722F37;
+      color: white;
+      position: sticky;
+      top: 0;
+    }
+    tr:hover {
+      background: #fdf7f7;
+    }
+    .btn {
+      background: #722F37;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 16px;
+    }
+    .btn:hover {
+      background: #5e262d;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-style: italic;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Relación de Personal por Estado</h1>
+    <div class="header-info">
+      <strong>Estados asignados:</strong> <span id="userEstados">Cargando...</span>
+    </div>
+    <button class="btn" id="exportBtn" disabled>📥 Exportar a Excel</button>
+    <div id="tableContainer">
+      <div class="loading">Cargando datos...</div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+
+    let userEstados = [];
+
+    async function loadUserData() {
+      const { data: { session } } = await client.auth.getSession();
+      if (!session) return window.location.href = '../index.html';
+
+      const { data: perfil } = await client
+        .from('perfiles')
+        .select('estados_asignados')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!perfil || !perfil.estados_asignados?.length) {
+        document.getElementById('tableContainer').innerHTML = '<div class="loading">No tiene estados asignados.</div>';
+        return;
+      }
+
+      userEstados = perfil.estados_asignados;
+      document.getElementById('userEstados').textContent = userEstados.join(', ');
+      fetchPersonalData();
+    }
+
+    async function fetchPersonalData() {
+      const { data, error } = await client
+        .from('rrhh_icap')
+        .select('*')
+        .in('estado', userEstados)
+        .order('nombre_y_apellidos', { ascending: true });
+
+      if (error) {
+        console.error('Error:', error);
+        document.getElementById('tableContainer').innerHTML = '<div class="loading">Error al cargar los datos.</div>';
+        return;
+      }
+
+      renderTable(data);
+    }
+
+    function renderTable(rows) {
+      if (!rows.length) {
+        document.getElementById('tableContainer').innerHTML = '<div class="loading">No hay personal registrado en sus estados asignados.</div>';
+        return;
+      }
+
+      const headers = [
+        'RANGO', 'NOMBRE Y APELLIDOS', 'C.I', 'SEXO', 'REGION', 'ESTADO',
+        'DIRECCION', 'CARGO', 'ESTATUS'
+      ];
+
+      let html = '<table><thead><tr>';
+      headers.forEach(h => html += `<th>${h}</th>`);
+      html += '</tr></thead><tbody>';
+
+      rows.forEach(row => {
+        html += `<tr>
+          <td>${row.rango || ''}</td>
+          <td>${row.nombre_y_apellidos || ''}</td>
+          <td>${row.cedula || ''}</td>
+          <td>${row.sexo || ''}</td>
+          <td>${row.region || ''}</td>
+          <td>${row.estado || ''}</td>
+          <td>${row.direccion || ''}</td>
+          <td>${row.cargo || ''}</td>
+          <td>${row.estatus || ''}</td>
+        </tr>`;
+      });
+
+      html += '</tbody></table>';
+      document.getElementById('tableContainer').innerHTML = html;
+      document.getElementById('exportBtn').disabled = false;
+    }
+
+    function exportToExcel() {
+      const ws = XLSX.utils.table_to_sheet(document.querySelector('table'));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Relación por Estado");
+      XLSX.writeFile(wb, `relacion_personal_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    document.getElementById('exportBtn').addEventListener('click', exportToExcel);
+
+    // Iniciar
+    loadUserData();
+  </script>
+</body>
+</html>
