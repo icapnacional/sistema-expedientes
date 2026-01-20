@@ -412,43 +412,43 @@ let userEstado = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
 try {
-const sessionResponse = await client.auth.getSession();
-const session = sessionResponse?.data?.session;
-const sessionError = sessionResponse?.error;
-if (sessionError || !session) return window.location.href = '../index.html';
+  const sessionResponse = await client.auth.getSession();
+  const session = sessionResponse?.data?.session;
+  if (!session) return window.location.href = '../index.html';
 
-const { data: perfil } = await client
-.from('perfiles')
-.select('email, rol, modulos_asignados, estado_asignado')
-.eq('id', session.user.id)
-.single();
+  // ✅ Corrección: usar ' perfil' para renombrar 'data'
+  const {  perfil, error } = await client
+    .from('perfiles')
+    .select('email, rol, modulos_asignados, estado_asignado')
+    .eq('id', session.user.id)
+    .single();
 
-if (!perfil) {
-alert('⚠️ Perfil no encontrado. Redirigiendo...');
-return window.location.href = '../index.html';
-}
+  if (error || !perfil) {
+    alert('⚠️ Perfil no encontrado. Redirigiendo...');
+    return window.location.href = '../index.html';
+  }
 
-userRol = perfil.rol || 'consultor';
-userEstado = perfil.estado_asignado || null;
+  userRol = perfil.rol || 'consultor';
+  userEstado = perfil.estado_asignado || null;
 
-if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
-alert('🔒 Acceso denegado: no tienes permiso para Recursos Humanos.');
-return window.location.href = '../index.html';
-}
+  if (userRol !== 'admin' && !perfil.modulos_asignados?.includes('rh')) {
+    alert('🔒 Acceso denegado: no tienes permiso para Recursos Humanos.');
+    return window.location.href = '../index.html';
+  }
 
-document.getElementById('userEmail').textContent = perfil.email;
-document.getElementById('userRol').textContent =
-userRol === 'admin' ? 'Administrador' :
-userRol === 'moderador' ? 'Moderador' : 'Consultor';
+  document.getElementById('userEmail').textContent = perfil.email;
+  document.getElementById('userRol').textContent =
+    userRol === 'admin' ? 'Administrador' :
+    userRol === 'moderador' ? 'Moderador' : 'Consultor';
 
-document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
-document.getElementById('searchQuery').addEventListener('keypress', e => e.key === 'Enter' && iniciarBusqueda());
-document.getElementById('btnCerrarFicha').addEventListener('click', cerrarFicha);
-document.getElementById('btnExportPDF').addEventListener('click', exportarPDF);
+  document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
+  document.getElementById('searchQuery').addEventListener('keypress', e => e.key === 'Enter' && iniciarBusqueda());
+  document.getElementById('btnCerrarFicha').addEventListener('click', cerrarFicha);
+  document.getElementById('btnExportPDF').addEventListener('click', exportarPDF);
 
 } catch (err) {
-console.error('Error en autenticación:', err);
-window.location.href = '../index.html';
+  console.error('Error en autenticación:', err);
+  window.location.href = '../index.html';
 }
 });
 
@@ -812,7 +812,7 @@ try {
 const sessionResponse = await client.auth.getSession();
 const session = sessionResponse?.data?.session;
 if (!session) return;
-const { data: perfil } = await client
+const {  perfil } = await client
 .from('perfiles')
 .select('email, rol')
 .eq('id', session.user.id)
