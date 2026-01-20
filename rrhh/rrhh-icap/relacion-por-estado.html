@@ -199,7 +199,7 @@
 
     async function loadUserData() {
       try {
-        // ✅ CORRECCIÓN CLAVE: sintaxis válida
+        // ✅ CORRECCIÓN FINAL: sintaxis válida
         const {  { session } } = await client.auth.getSession();
         
         if (!session) {
@@ -207,7 +207,7 @@
           return;
         }
 
-        // ✅ CORRECCIÓN CLAVE: desestructuración correcta
+        // ✅ CORRECCIÓN FINAL: desestructuración correcta
         const {  perfil } = await client
           .from('perfiles')
           .select('rol, estados_asignados')
@@ -228,7 +228,7 @@
 
         fetchPersonalData();
       } catch (err) {
-        console.error('Error:', err);
+        console.error('Error en loadUserData:', err);
         document.getElementById('tableContainer').innerHTML = '<div class="loading">Error al cargar tu información.</div>';
       }
     }
@@ -269,8 +269,8 @@
 
         applyFilters();
       } catch (err) {
-        console.error('Error en fetch:', err);
-        document.getElementById('tableContainer').innerHTML = '<div class="loading">Error inesperado al procesar los datos.</div>';
+        console.error('Error en fetchPersonalData:', err);
+        document.getElementById('tableContainer').innerHTML = '<div class="loading">Error inesperado.</div>';
       }
     }
 
