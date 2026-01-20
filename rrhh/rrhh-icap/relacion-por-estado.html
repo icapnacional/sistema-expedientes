@@ -36,11 +36,11 @@
       font-size: 15px;
     }
     .filters-section {
-      display: none;
+      display: none; /* Oculto por defecto */
       background: #f5f5f5;
-      padding: 20px;
+      padding: 16px;
       border-radius: 10px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
     .filters-section.active {
       display: block;
@@ -49,6 +49,7 @@
       display: flex;
       gap: 16px;
       flex-wrap: wrap;
+      margin-bottom: 12px;
     }
     .filter-group {
       flex: 1;
@@ -118,12 +119,13 @@
 
     <!-- Filtros (solo admin) -->
     <div id="filtersSection" class="filters-section">
-      <div style="font-size:18px; font-weight:600; margin-bottom:16px; color:#555;">🔍 Buscar con filtros</div>
       <div class="filter-row">
         <div class="filter-group">
           <label for="filtroSexo">Sexo</label>
           <select id="filtroSexo">
             <option value="">Todos</option>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
           </select>
         </div>
         <div class="filter-group">
@@ -142,6 +144,13 @@
           <label for="filtroEstatus">Estatus</label>
           <select id="filtroEstatus">
             <option value="">Todos</option>
+            <option value="activo">Activo</option>
+            <option value="reposo">Reposo</option>
+            <option value="suspendido">Suspendido</option>
+            <option value="destituido">Destituido</option>
+            <option value="DA">DA</option>
+            <option value="D">D</option>
+            <option value="P">P</option>
           </select>
         </div>
       </div>
@@ -162,6 +171,20 @@
     let userEstados = [];
     let fullData = [];
 
+    // Llenar selects únicos
+    function fillUniqueOptions(field, selectorId, data) {
+      const values = [...new Set(data.map(item => item[field]).filter(v => v))];
+      const select = document.getElementById(selectorId);
+      select.innerHTML = '<option value="">Todos</option>';
+      values.sort().forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        select.appendChild(opt);
+      });
+    }
+
+    // Aplicar filtros
     function applyFilters() {
       let filtered = fullData;
 
@@ -178,25 +201,11 @@
       renderTable(filtered);
     }
 
-    // Llenar selects con valores reales y únicos
-    function fillUniqueOptions(field, selectorId, data) {
-      const values = [...new Set(data.map(item => item[field]).filter(v => v != null && v !== ''))];
-      const select = document.getElementById(selectorId);
-      select.innerHTML = '<option value="">Todos</option>';
-      values.sort((a, b) => String(a).localeCompare(String(b)));
-      values.forEach(val => {
-        const opt = document.createElement('option');
-        opt.value = val;
-        opt.textContent = val;
-        select.appendChild(opt);
-      });
-    }
-
     async function loadUserData() {
-      const {  { session } } = await client.auth.getSession();
+      const { data: { session } } = await client.auth.getSession();
       if (!session) return window.location.href = '../index.html';
 
-      const {  perfil } = await client
+      const { data: perfil } = await client
         .from('perfiles')
         .select('rol, estados_asignados')
         .eq('id', session.user.id)
@@ -224,7 +233,7 @@
         query = query.in('estado', userEstados);
       }
 
-      const {  error } = await query.order('nombre_apellidos', { ascending: true });
+      const { data, error } = await query.order('nombre_apellidos', { ascending: true });
 
       if (error) {
         console.error('Error:', error);
@@ -237,25 +246,20 @@
       // Mostrar filtros solo si es admin
       if (userRole === 'admin') {
         document.getElementById('filtersSection').classList.add('active');
-        fillUniqueOptions('sexo', 'filtroSexo', fullData);
         fillUniqueOptions('region', 'filtroRegion', fullData);
         fillUniqueOptions('estado', 'filtroEstado', fullData);
-        fillUniqueOptions('estatus', 'filtroEstatus', fullData);
       }
 
       // Añadir listeners a los filtros
       ['filtroSexo', 'filtroRegion', 'filtroEstado', 'filtroEstatus'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.addEventListener('change', applyFilters);
-        }
+        document.getElementById(id).addEventListener('change', applyFilters);
       });
 
       applyFilters(); // Render inicial
     }
 
     function renderTable(rows) {
-      if (!rows || rows.length === 0) {
+      if (!rows.length) {
         document.getElementById('tableContainer').innerHTML = '<div class="loading">No hay personal disponible.</div>';
         document.getElementById('exportBtn').disabled = true;
         return;
@@ -298,12 +302,7 @@
 
     document.getElementById('exportBtn').addEventListener('click', exportToExcel);
 
-    // Iniciar
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', loadUserData);
-    } else {
-      loadUserData();
-    }
+    loadUserData();
   </script>
 </body>
 </html>
