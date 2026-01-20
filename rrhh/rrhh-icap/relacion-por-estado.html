@@ -1,308 +1,423 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Relación por Estado | RRHH ICAP</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #fafafa;
-      color: #2d2d2d;
-      padding: 20px;
-    }
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      padding: 24px;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #722F37;
-    }
-    .header-info {
-      margin-bottom: 16px;
-      padding: 12px;
-      background: #f9f9f9;
-      border-radius: 8px;
-      font-size: 15px;
-    }
-    .filters-section {
-      display: none; /* Oculto por defecto */
-      background: #f5f5f5;
-      padding: 16px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-    .filters-section.active {
-      display: block;
-    }
-    .filter-row {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-    .filter-group {
-      flex: 1;
-      min-width: 180px;
-    }
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 6px;
-      font-size: 14px;
-      color: #444;
-    }
-    select, button {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-    button.btn {
-      background: #722F37;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      margin-top: 16px;
-      width: auto;
-    }
-    button.btn:hover {
-      background: #5e262d;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 16px;
-    }
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-    }
-    th {
-      background: #722F37;
-      color: white;
-      position: sticky;
-      top: 0;
-    }
-    tr:hover {
-      background: #fdf7f7;
-    }
-    .loading {
-      text-align: center;
-      padding: 40px;
-      font-style: italic;
-      color: #777;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Relación por Estado | RRHH ICAP</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #fafafa;
+  color: #2d2d2d;
+  padding: 20px;
+}
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  padding: 24px;
+}
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #722F37;
+}
+.header-info {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  font-size: 15px;
+}
+.filters-section {
+  display: none;
+  background: #f5f5f5;
+  padding: 16px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+.filters-section.active {
+  display: block;
+}
+.filter-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.filter-group {
+  flex: 1;
+  min-width: 180px;
+}
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #444;
+}
+select, button {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+button.btn {
+  background: #722F37;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 16px;
+  width: auto;
+}
+button.btn:hover {
+  background: #5e262d;
+}
+button.volver {
+  background: #722F37;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-left: 12px;
+}
+button.volver:hover {
+  background: #5e262d;
+}
+.table-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+th {
+  background: #722F37;
+  color: white;
+  position: sticky;
+  top: 0;
+}
+tr:hover {
+  background: #fdf7f7;
+}
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-style: italic;
+  color: #777;
+}
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 8px;
+}
+.pagination button {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.pagination button.active {
+  background: #722F37;
+  color: white;
+}
+.pagination button:hover:not(.active) {
+  background: #f0f0f0;
+}
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>📊 Relación de Personal por Estado</h1>
-    <div class="header-info">
-      <strong>Estados asignados:</strong> <span id="userEstados">Cargando...</span>
-    </div>
+<div class="container">
+  <h1>📊 Relación de Personal por Estado</h1>
+  <div class="header-info">
+    <strong>Estados asignados:</strong> <span id="userEstados">Cargando...</span>
+  </div>
 
-    <!-- Filtros (solo admin) -->
-    <div id="filtersSection" class="filters-section">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label for="filtroSexo">Sexo</label>
-          <select id="filtroSexo">
-            <option value="">Todos</option>
-            <option value="M">Masculino</option>
-            <option value="F">Femenino</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="filtroRegion">Región</label>
-          <select id="filtroRegion">
-            <option value="">Todas</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="filtroEstado">Estado</label>
-          <select id="filtroEstado">
-            <option value="">Todos</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="filtroEstatus">Estatus</label>
-          <select id="filtroEstatus">
-            <option value="">Todos</option>
-            <option value="activo">Activo</option>
-            <option value="reposo">Reposo</option>
-            <option value="suspendido">Suspendido</option>
-            <option value="destituido">Destituido</option>
-            <option value="DA">DA</option>
-            <option value="D">D</option>
-            <option value="P">P</option>
-          </select>
-        </div>
+  <!-- Filtros (solo admin) -->
+  <div id="filtersSection" class="filters-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label for="filtroSexo">Sexo</label>
+        <select id="filtroSexo">
+          <option value="">Todos</option>
+          <option value="M">Masculino</option>
+          <option value="F">Femenino</option>
+        </select>
       </div>
-    </div>
-
-    <button class="btn" id="exportBtn" disabled>📥 Exportar a Excel</button>
-    <div id="tableContainer">
-      <div class="loading">Cargando datos...</div>
+      <div class="filter-group">
+        <label for="filtroRegion">Región</label>
+        <select id="filtroRegion">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filtroEstado">Estado</label>
+        <select id="filtroEstado">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filtroEstatus">Estatus</label>
+        <select id="filtroEstatus">
+          <option value="">Todos</option>
+          <option value="activo">Activo</option>
+          <option value="reposo">Reposo</option>
+          <option value="suspendido">Suspendido</option>
+          <option value="destituido">Destituido</option>
+          <option value="DA">DA</option>
+          <option value="D">D</option>
+          <option value="P">P</option>
+        </select>
+      </div>
     </div>
   </div>
 
-  <script>
-    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
-    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
-    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+  <div class="table-actions">
+    <button class="btn" id="exportBtn" disabled>📥 Exportar a Excel</button>
+    <button class="volver" id="volverBtn">↩️ Volver</button>
+  </div>
 
-    let userRole = '';
-    let userEstados = [];
-    let fullData = [];
+  <div id="tableContainer">
+    <div class="loading">Cargando datos...</div>
+  </div>
 
-    // Llenar selects únicos
-    function fillUniqueOptions(field, selectorId, data) {
-      const values = [...new Set(data.map(item => item[field]).filter(v => v))];
-      const select = document.getElementById(selectorId);
-      select.innerHTML = '<option value="">Todos</option>';
-      values.sort().forEach(val => {
-        const opt = document.createElement('option');
-        opt.value = val;
-        opt.textContent = val;
-        select.appendChild(opt);
-      });
+  <div id="pagination" class="pagination"></div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+
+let userRole = '';
+let userEstados = [];
+let fullData = [];
+let currentPage = 1;
+const itemsPerPage = 30;
+
+// Llenar selects únicos
+function fillUniqueOptions(field, selectorId, data) {
+  const values = [...new Set(data.map(item => item[field]).filter(v => v))];
+  const select = document.getElementById(selectorId);
+  select.innerHTML = '<option value="">Todos</option>';
+  values.sort().forEach(val => {
+    const opt = document.createElement('option');
+    opt.value = val;
+    opt.textContent = val;
+    select.appendChild(opt);
+  });
+}
+
+// Aplicar filtros y actualizar paginación
+function applyFilters() {
+  let filtered = fullData;
+  const sexo = document.getElementById('filtroSexo').value;
+  const region = document.getElementById('filtroRegion').value;
+  const estado = document.getElementById('filtroEstado').value;
+  const estatus = document.getElementById('filtroEstatus').value;
+
+  if (sexo) filtered = filtered.filter(r => r.sexo === sexo);
+  if (region) filtered = filtered.filter(r => r.region === region);
+  if (estado) filtered = filtered.filter(r => r.estado === estado);
+  if (estatus) filtered = filtered.filter(r => r.estatus === estatus);
+
+  currentPage = 1;
+  renderTableWithPagination(filtered);
+}
+
+// Renderizar tabla con paginación
+function renderTableWithPagination(rows) {
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  const paginatedRows = rows.slice(start, end);
+
+  if (!rows.length) {
+    document.getElementById('tableContainer').innerHTML = '<div class="loading">No hay personal disponible.</div>';
+    document.getElementById('exportBtn').disabled = true;
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
+
+  const headers = [
+    'RANGO', 'NOMBRE Y APELLIDOS', 'C.I', 'SEXO', 'REGION', 'ESTADO',
+    'DIRECCION', 'CARGO', 'ESTATUS'
+  ];
+
+  let html = '<table><thead><tr>';
+  headers.forEach(h => html += `<th>${h}</th>`);
+  html += '</tr></thead><tbody>';
+
+  paginatedRows.forEach(row => {
+    html += `<tr>
+      <td>${row.rango || ''}</td>
+      <td>${row.nombre_apellidos || ''}</td>
+      <td>${row.cedula || ''}</td>
+      <td>${row.sexo || ''}</td>
+      <td>${row.region || ''}</td>
+      <td>${row.estado || ''}</td>
+      <td>${row.direccion || ''}</td>
+      <td>${row.cargo || ''}</td>
+      <td>${row.estatus || ''}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('tableContainer').innerHTML = html;
+  document.getElementById('exportBtn').disabled = false;
+
+  // Renderizar paginación
+  renderPagination(rows.length);
+}
+
+// Renderizar controles de paginación
+function renderPagination(totalItems) {
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const paginationEl = document.getElementById('pagination');
+  if (totalPages <= 1) {
+    paginationEl.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+  const maxVisible = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+  if (endPage - startPage + 1 < maxVisible) {
+    startPage = Math.max(1, endPage - maxVisible + 1);
+  }
+
+  if (currentPage > 1) {
+    html += `<button onclick="changePage(${currentPage - 1})">‹</button>`;
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    html += `<button class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+  }
+
+  if (currentPage < totalPages) {
+    html += `<button onclick="changePage(${currentPage + 1})">›</button>`;
+  }
+
+  paginationEl.innerHTML = html;
+}
+
+// Cambiar página
+function changePage(page) {
+  currentPage = page;
+  const sexo = document.getElementById('filtroSexo').value;
+  const region = document.getElementById('filtroRegion').value;
+  const estado = document.getElementById('filtroEstado').value;
+  const estatus = document.getElementById('filtroEstatus').value;
+
+  let filtered = fullData;
+  if (sexo) filtered = filtered.filter(r => r.sexo === sexo);
+  if (region) filtered = filtered.filter(r => r.region === region);
+  if (estado) filtered = filtered.filter(r => r.estado === estado);
+  if (estatus) filtered = filtered.filter(r => r.estatus === estatus);
+
+  renderTableWithPagination(filtered);
+}
+
+// Exportar a Excel (solo datos visibles en la tabla actual)
+function exportToExcel() {
+  const table = document.querySelector('table');
+  if (!table) return;
+
+  const ws = XLSX.utils.table_to_sheet(table);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Relación por Estado");
+  XLSX.writeFile(wb, `relacion_personal_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// Cargar datos del usuario
+async function loadUserData() {
+  const { data: { session } } = await client.auth.getSession();
+  if (!session) return window.location.href = '../index.html';
+
+  const { data: perfil } = await client
+    .from('perfiles')
+    .select('rol, estados_asignados')
+    .eq('id', session.user.id)
+    .single();
+
+  if (!perfil) return window.location.href = '../index.html';
+
+  userRole = perfil.rol || 'consultor';
+  userEstados = perfil.estados_asignados || [];
+  document.getElementById('userEstados').textContent =
+    userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
+
+  fetchPersonalData();
+}
+
+// Cargar datos del personal
+async function fetchPersonalData() {
+  let query = client.from('rrhh_icap').select('*');
+  if (userRole !== 'admin') {
+    if (!userEstados.length) {
+      document.getElementById('tableContainer').innerHTML = '<div class="loading">No tiene estados asignados.</div>';
+      return;
     }
+    query = query.in('estado', userEstados);
+  }
 
-    // Aplicar filtros
-    function applyFilters() {
-      let filtered = fullData;
+  const { data, error } = await query.order('nombre_apellidos', { ascending: true });
+  if (error) {
+    console.error('Error:', error);
+    document.getElementById('tableContainer').innerHTML = '<div class="loading">Error al cargar los datos.</div>';
+    return;
+  }
 
-      const sexo = document.getElementById('filtroSexo').value;
-      const region = document.getElementById('filtroRegion').value;
-      const estado = document.getElementById('filtroEstado').value;
-      const estatus = document.getElementById('filtroEstatus').value;
+  fullData = data;
 
-      if (sexo) filtered = filtered.filter(r => r.sexo === sexo);
-      if (region) filtered = filtered.filter(r => r.region === region);
-      if (estado) filtered = filtered.filter(r => r.estado === estado);
-      if (estatus) filtered = filtered.filter(r => r.estatus === estatus);
+  // Mostrar filtros solo si es admin
+  if (userRole === 'admin') {
+    document.getElementById('filtersSection').classList.add('active');
+    fillUniqueOptions('region', 'filtroRegion', fullData);
+    fillUniqueOptions('estado', 'filtroEstado', fullData);
+  }
 
-      renderTable(filtered);
-    }
+  // Añadir listeners a los filtros
+  ['filtroSexo', 'filtroRegion', 'filtroEstado', 'filtroEstatus'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', applyFilters);
+  });
 
-    async function loadUserData() {
-      const { data: { session } } = await client.auth.getSession();
-      if (!session) return window.location.href = '../index.html';
+  applyFilters(); // Render inicial
+}
 
-      const { data: perfil } = await client
-        .from('perfiles')
-        .select('rol, estados_asignados')
-        .eq('id', session.user.id)
-        .single();
+// Inicializar botones
+document.getElementById('exportBtn').addEventListener('click', exportToExcel);
+document.getElementById('volverBtn').addEventListener('click', () => {
+  window.location.href = 'sistema-expedientes/rrhh/auditoria-nacional';
+});
 
-      if (!perfil) return window.location.href = '../index.html';
-
-      userRole = perfil.rol || 'consultor';
-      userEstados = perfil.estados_asignados || [];
-
-      document.getElementById('userEstados').textContent =
-        userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
-
-      fetchPersonalData();
-    }
-
-    async function fetchPersonalData() {
-      let query = client.from('rrhh_icap').select('*');
-
-      if (userRole !== 'admin') {
-        if (!userEstados.length) {
-          document.getElementById('tableContainer').innerHTML = '<div class="loading">No tiene estados asignados.</div>';
-          return;
-        }
-        query = query.in('estado', userEstados);
-      }
-
-      const { data, error } = await query.order('nombre_apellidos', { ascending: true });
-
-      if (error) {
-        console.error('Error:', error);
-        document.getElementById('tableContainer').innerHTML = '<div class="loading">Error al cargar los datos.</div>';
-        return;
-      }
-
-      fullData = data;
-
-      // Mostrar filtros solo si es admin
-      if (userRole === 'admin') {
-        document.getElementById('filtersSection').classList.add('active');
-        fillUniqueOptions('region', 'filtroRegion', fullData);
-        fillUniqueOptions('estado', 'filtroEstado', fullData);
-      }
-
-      // Añadir listeners a los filtros
-      ['filtroSexo', 'filtroRegion', 'filtroEstado', 'filtroEstatus'].forEach(id => {
-        document.getElementById(id).addEventListener('change', applyFilters);
-      });
-
-      applyFilters(); // Render inicial
-    }
-
-    function renderTable(rows) {
-      if (!rows.length) {
-        document.getElementById('tableContainer').innerHTML = '<div class="loading">No hay personal disponible.</div>';
-        document.getElementById('exportBtn').disabled = true;
-        return;
-      }
-
-      const headers = [
-        'RANGO', 'NOMBRE Y APELLIDOS', 'C.I', 'SEXO', 'REGION', 'ESTADO',
-        'DIRECCION', 'CARGO', 'ESTATUS'
-      ];
-
-      let html = '<table><thead><tr>';
-      headers.forEach(h => html += `<th>${h}</th>`);
-      html += '</tr></thead><tbody>';
-
-      rows.forEach(row => {
-        html += `<tr>
-          <td>${row.rango || ''}</td>
-          <td>${row.nombre_apellidos || ''}</td>
-          <td>${row.cedula || ''}</td>
-          <td>${row.sexo || ''}</td>
-          <td>${row.region || ''}</td>
-          <td>${row.estado || ''}</td>
-          <td>${row.direccion || ''}</td>
-          <td>${row.cargo || ''}</td>
-          <td>${row.estatus || ''}</td>
-        </tr>`;
-      });
-
-      html += '</tbody></table>';
-      document.getElementById('tableContainer').innerHTML = html;
-      document.getElementById('exportBtn').disabled = false;
-    }
-
-    function exportToExcel() {
-      const ws = XLSX.utils.table_to_sheet(document.querySelector('table'));
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Relación por Estado");
-      XLSX.writeFile(wb, `relacion_personal_${new Date().toISOString().slice(0,10)}.xlsx`);
-    }
-
-    document.getElementById('exportBtn').addEventListener('click', exportToExcel);
-
-    loadUserData();
-  </script>
+// Iniciar
+loadUserData();
+</script>
 </body>
 </html>
