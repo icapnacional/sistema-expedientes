@@ -414,11 +414,11 @@
 
     if (sessionError || !session) return window.location.href = '../index.html';
 
-    const { data: perfil } = await client
-      .from('perfiles')
-      .select('email, rol, modulos_asignados')
-      .eq('id', session.user.id)
-      .single();
+ const { data: perfil } = await client
+  .from('perfiles')
+  .select('email, rol, modulos_asignados')
+  .eq('id', session.user.id)
+  .single();
 
    if (!perfil) {
   alert('⚠️ Perfil no encontrado. Redirigiendo...');
