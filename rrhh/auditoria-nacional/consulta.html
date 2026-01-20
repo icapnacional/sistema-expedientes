@@ -434,8 +434,7 @@ const { data: perfil } = await client
         document.getElementById('userRol').textContent = 
           userRol === 'admin' ? 'Administrador' :
           userRol === 'moderador' ? 'Moderador' : 'Consultor';
-document.getElementById('userEstados').textContent = 
-  (perfil.estados_asignados || []).join(', ') || '—';
+    
         document.getElementById('btnBuscar').addEventListener('click', iniciarBusqueda);
         document.getElementById('searchQuery').addEventListener('keypress', e => e.key === 'Enter' && iniciarBusqueda());
         document.getElementById('btnCerrarFicha').addEventListener('click', cerrarFicha);
@@ -781,11 +780,13 @@ async function registrarLogConsulta(cedula = null, nombre = null) {
     const sessionResponse = await client.auth.getSession();
     const session = sessionResponse?.data?.session;
     if (!session) return;
-    const { data: perfil } = await client
-      .from('perfiles')
-      .select('email, rol')
-      .eq('id', session.user.id)
-      .single();
+    
+ const { data: perfil } = await client
+  .from('perfiles')
+  .select('email, rol, modulos_asignados')
+  .eq('id', session.user.id)
+  .single();;
+    
     if (!perfil) return;
     await client.from('rrhh_logs').insert({
       user_id: session.user.id,
