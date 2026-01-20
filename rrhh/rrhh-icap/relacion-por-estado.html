@@ -36,20 +36,25 @@
       font-size: 15px;
     }
     .filters-section {
-      display: none; /* Oculto por defecto */
+      display: none;
       background: #f5f5f5;
-      padding: 16px;
+      padding: 20px;
       border-radius: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
     .filters-section.active {
       display: block;
+    }
+    .filters-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #555;
     }
     .filter-row {
       display: flex;
       gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 12px;
     }
     .filter-group {
       flex: 1;
@@ -119,13 +124,12 @@
 
     <!-- Filtros (solo admin) -->
     <div id="filtersSection" class="filters-section">
+      <div class="filters-title">🔍 Buscar con filtros</div>
       <div class="filter-row">
         <div class="filter-group">
           <label for="filtroSexo">Sexo</label>
           <select id="filtroSexo">
             <option value="">Todos</option>
-            <option value="M">Masculino</option>
-            <option value="F">Femenino</option>
           </select>
         </div>
         <div class="filter-group">
@@ -144,13 +148,6 @@
           <label for="filtroEstatus">Estatus</label>
           <select id="filtroEstatus">
             <option value="">Todos</option>
-            <option value="activo">Activo</option>
-            <option value="reposo">Reposo</option>
-            <option value="suspendido">Suspendido</option>
-            <option value="destituido">Destituido</option>
-            <option value="DA">DA</option>
-            <option value="D">D</option>
-            <option value="P">P</option>
           </select>
         </div>
       </div>
@@ -171,12 +168,13 @@
     let userEstados = [];
     let fullData = [];
 
-    // Llenar selects únicos
+    // Llenar selects con valores reales y únicos
     function fillUniqueOptions(field, selectorId, data) {
-      const values = [...new Set(data.map(item => item[field]).filter(v => v))];
+      const values = [...new Set(data.map(item => item[field]).filter(v => v != null && v !== ''))];
       const select = document.getElementById(selectorId);
       select.innerHTML = '<option value="">Todos</option>';
-      values.sort().forEach(val => {
+      values.sort((a, b) => String(a).localeCompare(String(b)));
+      values.forEach(val => {
         const opt = document.createElement('option');
         opt.value = val;
         opt.textContent = val;
@@ -184,7 +182,7 @@
       });
     }
 
-    // Aplicar filtros
+    // Aplicar filtros en tiempo real
     function applyFilters() {
       let filtered = fullData;
 
@@ -202,10 +200,10 @@
     }
 
     async function loadUserData() {
-      const { data: { session } } = await client.auth.getSession();
+      const {  { session } } = await client.auth.getSession();
       if (!session) return window.location.href = '../index.html';
 
-      const { data: perfil } = await client
+      const {  perfil } = await client
         .from('perfiles')
         .select('rol, estados_asignados')
         .eq('id', session.user.id)
@@ -246,14 +244,16 @@
       // Mostrar filtros solo si es admin
       if (userRole === 'admin') {
         document.getElementById('filtersSection').classList.add('active');
+        fillUniqueOptions('sexo', 'filtroSexo', fullData);
         fillUniqueOptions('region', 'filtroRegion', fullData);
         fillUniqueOptions('estado', 'filtroEstado', fullData);
-      }
+        fillUniqueOptions('estatus', 'filtroEstatus', fullData);
 
-      // Añadir listeners a los filtros
-      ['filtroSexo', 'filtroRegion', 'filtroEstado', 'filtroEstatus'].forEach(id => {
-        document.getElementById(id).addEventListener('change', applyFilters);
-      });
+        // Añadir listeners a los filtros
+        ['filtroSexo', 'filtroRegion', 'filtroEstado', 'filtroEstatus'].forEach(id => {
+          document.getElementById(id).addEventListener('change', applyFilters);
+        });
+      }
 
       applyFilters(); // Render inicial
     }
@@ -302,6 +302,7 @@
 
     document.getElementById('exportBtn').addEventListener('click', exportToExcel);
 
+    // Iniciar
     loadUserData();
   </script>
 </body>
