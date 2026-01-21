@@ -11,6 +11,46 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <style>
+  .breadcrumb {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  color: #555;
+}
+.breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+.breadcrumb span { margin: 0 8px; color: #888; }
+
+.header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 20px 0;
+}
+.header img {
+  width: 90px;
+  margin-bottom: 16px;
+}
+.header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2d2d2d;
+  margin-bottom: 8px;
+}
+.header .subtitle {
+  font-size: 16px;
+  color: #722F37;
+  font-weight: 600;
+}
+
+.user-info {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  border: 1px solid #eee;
+}
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
 font-family: 'Inter', sans-serif;
@@ -235,7 +275,21 @@ background: #f0f0f0;
 </div>
 
 <div class="main-content">
-<h1>📊 Relación de Personal por Estado</h1>
+<div class="breadcrumb">
+  <a href="../../index.html">Inicio</a> <span>›</span>
+  <a href="../index.html">RRHH</a> <span>›</span>
+  <strong>Relación por Estado</strong>
+</div>
+<div class="header">
+  <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+  <h1>Inspectoria para el Control de la Actuación Policial</h1>
+  <div class="subtitle">• Relación de Personal de la ICAP Nacional •</div>
+</div>
+  <div class="user-info">
+  <strong>Usuario:</strong> <span id="userEmail">—</span> |
+  <strong>Rol:</strong> <span id="userRol">—</span> |
+  <strong>Estados asignados:</strong> <span id="userEstados">Cargando...</span>
+</div>
 <div class="header-info">
 <strong>Estados asignados:</strong> <span id="userEstados">Cargando...</span>
 </div>
@@ -329,8 +383,13 @@ document.getElementById('userRol').textContent =
 userRole === 'admin' ? 'Administrador' :
 userRole === 'moderador' ? 'Moderador' : 'Consultor';
   
+// Actualizar UI del usuario
+document.getElementById('userEmail').textContent = session.user.email || '—';
+document.getElementById('userRol').textContent =
+  userRole === 'admin' ? 'Administrador' :
+  userRole === 'moderador' ? 'Moderador' : 'Consultor';
 document.getElementById('userEstados').textContent =
-userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
+  userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
 
 // Configurar eventos
 document.getElementById('exportBtn').addEventListener('click', exportToExcel);
