@@ -177,8 +177,6 @@ tr:hover {
           <option value="DESTITUIDO">Destituido</option>
           <option value="PRIVADO DE LIBERTAD">Privado de Libertad</option>
           <option value="CONDUCTOR GENERAL">Conductor General</option>
-          <option value="BAJA EN PROCESO">Baja en Proceso</option>
-          <option value="PROVIDENCIA">Providencia</option>
         </select>
       </div>
     </div>
@@ -325,40 +323,9 @@ function changePage(page) {
 }
 
 function exportToExcel() {
-  let filtered = fullData;
-  const sexoFilter = document.getElementById('filtroSexo').value;
-  const estatusFilter = document.getElementById('filtroEstatus').value;
-  const regionFilter = document.getElementById('filtroRegion').value;
-  const estadoFilter = document.getElementById('filtroEstado').value;
-
-  if (sexoFilter) filtered = filtered.filter(r => (r.sexo || '').toLowerCase() === sexoFilter.toLowerCase());
-  if (estatusFilter) filtered = filtered.filter(r => r.estatus === estatusFilter);
-  if (regionFilter) filtered = filtered.filter(r => r.region === regionFilter);
-  if (estadoFilter) filtered = filtered.filter(r => r.estado === estadoFilter);
-
-  if (!filtered.length) {
-    alert('No hay datos para exportar.');
-    return;
-  }
-
-  const headers = ['RANGO', 'NOMBRE Y APELLIDOS', 'C.I', 'SEXO', 'REGION', 'ESTADO', 'DIRECCION', 'CARGO', 'ESTATUS'];
-  const wsData = [headers];
-
-  filtered.forEach(row => {
-    wsData.push([
-      row.rango || '',
-      row.nombre_apellidos || '',
-      row.cedula || '',
-      row.sexo || '',
-      row.region || '',
-      row.estado || '',
-      row.direccion || '',
-      row.cargo || '',
-      row.estatus || ''
-    ]);
-  });
-
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const table = document.querySelector('table');
+  if (!table) return;
+  const ws = XLSX.utils.table_to_sheet(table);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Relación por Estado");
   XLSX.writeFile(wb, `relacion_personal_${new Date().toISOString().slice(0,10)}.xlsx`);
@@ -366,11 +333,10 @@ function exportToExcel() {
 
 async function loadUserData() {
   // ✅ CORREGIDO: sintaxis válida
-  const {  { session } } = await client.auth.getSession();
+  const { data: { session } } = await client.auth.getSession();
   if (!session) return window.location.href = '../index.html';
 
-  // ✅ También corregido aquí
-  const {  perfil } = await client
+  const { data: perfil } = await client
     .from('perfiles')
     .select('rol, estados_asignados')
     .eq('id', session.user.id)
