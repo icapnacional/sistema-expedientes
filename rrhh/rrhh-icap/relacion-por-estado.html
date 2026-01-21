@@ -177,7 +177,6 @@ tr:hover {
           <option value="DESTITUIDO">Destituido</option>
           <option value="PRIVADO DE LIBERTAD">Privado de Libertad</option>
           <option value="CONDUCTOR GENERAL">Conductor General</option>
-          <!-- Añade más si identificas otros en tu BD -->
         </select>
       </div>
     </div>
@@ -226,7 +225,7 @@ function applyFilters() {
   const estadoFilter = document.getElementById('filtroEstado').value;
 
   if (sexoFilter) filtered = filtered.filter(r => (r.sexo || '').toLowerCase() === sexoFilter.toLowerCase());
-  if (estatusFilter) filtered = filtered.filter(r => r.estatus === estatusFilter); // ¡Coincidencia exacta!
+  if (estatusFilter) filtered = filtered.filter(r => r.estatus === estatusFilter);
   if (regionFilter) filtered = filtered.filter(r => r.region === regionFilter);
   if (estadoFilter) filtered = filtered.filter(r => r.estado === estadoFilter);
 
@@ -333,7 +332,8 @@ function exportToExcel() {
 }
 
 async function loadUserData() {
-  const {  { session } } = await client.auth.getSession();
+  // ✅ CORREGIDO: sintaxis válida
+  const { data: { session } } = await client.auth.getSession();
   if (!session) return window.location.href = '../index.html';
 
   const { data: perfil } = await client
