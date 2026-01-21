@@ -149,8 +149,8 @@ tr:hover {
         <label for="filtroSexo">Sexo</label>
         <select id="filtroSexo">
           <option value="">Todos</option>
-          <option value="Masculino">Masculino</option>
-          <option value="Femenino">Femenino</option>
+          <option value="masculino">Masculino</option>
+          <option value="femenino">Femenino</option>
         </select>
       </div>
       <div class="filter-group">
@@ -169,13 +169,15 @@ tr:hover {
         <label for="filtroEstatus">Estatus</label>
         <select id="filtroEstatus">
           <option value="">Todos</option>
-          <option value="Activo">Activo</option>
-          <option value="Reposo">Reposo</option>
-          <option value="Suspendido">Suspendido</option>
-          <option value="Destituido">Destituido</option>
-          <option value="DA">DA</option>
-          <option value="D">D</option>
-          <option value="P">P</option>
+          <option value="DISPONIBLE">Disponible</option>
+          <option value="REPOSOS MEDICO">Reposo Médico</option>
+          <option value="ABANDONO DE CARGO">Abandono de Cargo</option>
+          <option value="PROCESO DE RENUNCIA">Proceso de Renuncia</option>
+          <option value="VACIONES">Vacaciones</option>
+          <option value="DESTITUIDO">Destituido</option>
+          <option value="PRIVADO DE LIBERTAD">Privado de Libertad</option>
+          <option value="CONDUCTOR GENERAL">Conductor General</option>
+          <!-- Añade más si identificas otros en tu BD -->
         </select>
       </div>
     </div>
@@ -223,18 +225,8 @@ function applyFilters() {
   const regionFilter = document.getElementById('filtroRegion').value;
   const estadoFilter = document.getElementById('filtroEstado').value;
 
-  if (sexoFilter) {
-    filtered = filtered.filter(r =>
-      (r.sexo || '').toLowerCase().includes(sexoFilter.toLowerCase())
-    );
-  }
-
-  if (estatusFilter) {
-    filtered = filtered.filter(r =>
-      (r.estatus || '').toLowerCase().includes(estatusFilter.toLowerCase())
-    );
-  }
-
+  if (sexoFilter) filtered = filtered.filter(r => (r.sexo || '').toLowerCase() === sexoFilter.toLowerCase());
+  if (estatusFilter) filtered = filtered.filter(r => r.estatus === estatusFilter); // ¡Coincidencia exacta!
   if (regionFilter) filtered = filtered.filter(r => r.region === regionFilter);
   if (estadoFilter) filtered = filtered.filter(r => r.estado === estadoFilter);
 
@@ -323,16 +315,8 @@ function changePage(page) {
   const estadoFilter = document.getElementById('filtroEstado').value;
 
   let filtered = fullData;
-  if (sexoFilter) {
-    filtered = filtered.filter(r =>
-      (r.sexo || '').toLowerCase().includes(sexoFilter.toLowerCase())
-    );
-  }
-  if (estatusFilter) {
-    filtered = filtered.filter(r =>
-      (r.estatus || '').toLowerCase().includes(estatusFilter.toLowerCase())
-    );
-  }
+  if (sexoFilter) filtered = filtered.filter(r => (r.sexo || '').toLowerCase() === sexoFilter.toLowerCase());
+  if (estatusFilter) filtered = filtered.filter(r => r.estatus === estatusFilter);
   if (regionFilter) filtered = filtered.filter(r => r.region === regionFilter);
   if (estadoFilter) filtered = filtered.filter(r => r.estado === estadoFilter);
 
@@ -349,7 +333,7 @@ function exportToExcel() {
 }
 
 async function loadUserData() {
-  const { data: { session } } = await client.auth.getSession();
+  const {  { session } } = await client.auth.getSession();
   if (!session) return window.location.href = '../index.html';
 
   const { data: perfil } = await client
@@ -369,7 +353,6 @@ async function loadUserData() {
 }
 
 async function fetchPersonalData() {
-  // ✅ USAMOS EXCLUSIVAMENTE rrhh_icap
   let query = client.from('rrhh_icap').select('*');
   if (userRole !== 'admin') {
     if (!userEstados.length) {
