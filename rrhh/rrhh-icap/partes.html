@@ -98,7 +98,6 @@
       background-color: #1565c0;
     }
 
-    /* Tarjetas numéricas */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -132,14 +131,12 @@
     <strong>Partes Generales</strong>
   </div>
 
-  <!-- Encabezado principal -->
   <div class="header">
     <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
     <h1>Inspectoria para el Control de la Actuación Policial</h1>
     <div class="subtitle">• Partes Generales del Personal ICAP •</div>
   </div>
 
-  <!-- Información del usuario -->
   <div class="user-info">
     <strong>Usuario:</strong> <span id="userEmail">—</span> |
     <strong>Rol:</strong> <span id="userRol">—</span> |
@@ -151,27 +148,13 @@
     
     <button class="btn volver" id="volverBtn">↩️ Volver</button>
 
-    <!-- Tarjetas numéricas -->
     <div id="stats-cards" class="stats-grid"></div>
 
-    <!-- Gráficos -->
     <div class="chart-grid">
-      <div class="chart-card">
-        <h3>Distribución por Sexo</h3>
-        <canvas id="sexoChart"></canvas>
-      </div>
-      <div class="chart-card">
-        <h3>Distribución por Estatus</h3>
-        <canvas id="estatusChart"></canvas>
-      </div>
-      <div class="chart-card">
-        <h3>Personal por Estado</h3>
-        <canvas id="estadoChart"></canvas>
-      </div>
-      <div class="chart-card">
-        <h3>Personal por Región</h3>
-        <canvas id="regionChart"></canvas>
-      </div>
+      <div class="chart-card"><h3>Distribución por Sexo</h3><canvas id="sexoChart"></canvas></div>
+      <div class="chart-card"><h3>Distribución por Estatus</h3><canvas id="estatusChart"></canvas></div>
+      <div class="chart-card"><h3>Personal por Estado</h3><canvas id="estadoChart"></canvas></div>
+      <div class="chart-card"><h3>Personal por Región</h3><canvas id="regionChart"></canvas></div>
     </div>
   </div>
 
@@ -192,7 +175,6 @@
       return counts;
     }
 
-    // ✅ FUNCIÓN CORREGIDA: sin errores de sintaxis
     function renderChart(canvasId, labels, dataValues, title) {
       const ctx = document.getElementById(canvasId).getContext('2d');
       if (window[canvasId + 'Instance']) {
@@ -200,11 +182,11 @@
       }
       window[canvasId + 'Instance'] = new Chart(ctx, {
         type: 'bar',
-         {  // ✅ Correcto: clave "data"
+        data: {
           labels: labels,
           datasets: [{
             label: title,
-             dataValues,  // ✅ Usamos el parámetro correcto
+            data: dataValues,
             backgroundColor: '#722F37',
             borderColor: '#5e262d',
             borderWidth: 1
@@ -231,17 +213,24 @@
     }
 
     async function loadUserData() {
-      const {  { session } } = await client.auth.getSession();
-      if (!session) return window.location.href = '../../index.html';
-      const {  perfil } = await client
+      const { data: { session } } = await client.auth.getSession();
+      if (!session) {
+        return window.location.href = '../../index.html';
+      }
+
+      const { data: perfil, error } = await client
         .from('perfiles')
         .select('email, rol, estados_asignados')
         .eq('id', session.user.id)
         .single();
-      if (!perfil) return window.location.href = '../../index.html';
+
+      if (error || !perfil) {
+        console.error('Error al cargar perfil:', error);
+        return window.location.href = '../../index.html';
+      }
 
       userRole = perfil.rol || 'consultor';
-      userEstados = perfil.estados_asignados || [];
+      userEstados = Array.isArray(perfil.estados_asignados) ? perfil.estados_asignados : [];
 
       document.getElementById('userEmail').textContent = perfil.email || '—';
       document.getElementById('userRol').textContent =
@@ -255,18 +244,21 @@
 
     async function fetchDataAndRenderCharts() {
       let query = client.from('rrhh_icap').select('sexo, estatus, estado, region, fecha_ingreso');
+      
       if (userRole !== 'admin' && userEstados.length > 0) {
         query = query.in('estado', userEstados);
       }
+
       const { data, error } = await query;
       if (error) {
-        console.error(error);
+        console.error('Error al cargar rrhh_icap:', error);
+        alert('Error al cargar los datos. Verifica tu conexión o permisos.');
         return;
       }
 
       const total = data.length;
-      const activos = data.filter(r => r.estatus === 'DISPONIBLE').length;
-      const reposos = data.filter(r => r.estatus === 'REPOSOS MEDICO').length;
+      const activos = data.filter(r => r.estatus?.toUpperCase() === 'DISPONIBLE').length;
+      const reposos = data.filter(r => r.estatus?.toUpperCase() === 'REPOSOS MEDICO').length;
       const masculino = data.filter(r => (r.sexo || '').toLowerCase() === 'masculino').length;
       const femenino = data.filter(r => (r.sexo || '').toLowerCase() === 'femenino').length;
       const estadosUnicos = [...new Set(data.map(r => r.estado).filter(Boolean))].length;
@@ -279,6 +271,7 @@
         .filter(f => f)
         .map(f => new Date(f))
         .filter(d => !isNaN(d.getTime()));
+      
       if (fechasValidas.length > 0) {
         const totalAnios = fechasValidas.reduce((sum, fecha) => {
           return sum + (hoy.getFullYear() - fecha.getFullYear());
@@ -287,37 +280,19 @@
       }
 
       // Renderizar tarjetas
-      const statsHtml = `
-        <div class="stats-card">
-          <div class="label">Total Personal</div>
-          <div class="value">${total}</div>
-        </div>
-        <div class="stats-card">
-          <div class="label">Disponible</div>
-          <div class="value">${activos}</div>
-        </div>
-        <div class="stats-card">
-          <div class="label">Reposo Médico</div>
-          <div class="value">${reposos}</div>
-        </div>
-        <div class="stats-card">
-          <div class="label">Masculino</div>
-          <div class="value">${masculino}</div>
-        </div>
-        <div class="stats-card">
-          <div class="label">Femenino</div>
-          <div class="value">${femenino}</div>
-        </div>
-        <div class="stats-card">
-          <div class="label">Estados</div>
-          <div class="value">${estadosUnicos}</div>
-        </div>
-        ${antiguedadPromedio > 0 ? `
-        <div class="stats-card">
-          <div class="label">Antigüedad Prom.</div>
-          <div class="value">${antiguedadPromedio} años</div>
-        </div>` : ''}
+      let statsHtml = `
+        <div class="stats-card"><div class="label">Total Personal</div><div class="value">${total}</div></div>
+        <div class="stats-card"><div class="label">Disponible</div><div class="value">${activos}</div></div>
+        <div class="stats-card"><div class="label">Reposo Médico</div><div class="value">${reposos}</div></div>
+        <div class="stats-card"><div class="label">Masculino</div><div class="value">${masculino}</div></div>
+        <div class="stats-card"><div class="label">Femenino</div><div class="value">${femenino}</div></div>
+        <div class="stats-card"><div class="label">Estados</div><div class="value">${estadosUnicos}</div></div>
       `;
+      
+      if (antiguedadPromedio > 0) {
+        statsHtml += `<div class="stats-card"><div class="label">Antigüedad Prom.</div><div class="value">${antiguedadPromedio} años</div></div>`;
+      }
+
       document.getElementById('stats-cards').innerHTML = statsHtml;
 
       // Gráficos
@@ -335,7 +310,8 @@
     }
 
     document.getElementById('volverBtn').addEventListener('click', () => {
-      window.location.href = 'index.html';
+      // Redirección específica según tu solicitud
+      window.location.href = 'sistema-expedientes/rrhh/auditoria-nacional';
     });
 
     loadUserData();
