@@ -7,6 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Librerías para PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -45,6 +48,14 @@ margin-bottom: 20px;
 .filters-section.active {
 display: block;
 }
+.filter-title {
+font-size: 18px;
+font-weight: 700;
+color: #722F37;
+margin-bottom: 16px;
+padding-bottom: 8px;
+border-bottom: 2px solid #722F37;
+}
 .filter-row {
 display: flex;
 gap: 16px;
@@ -78,14 +89,24 @@ border-radius: 6px;
 cursor: pointer;
 font-weight: 600;
 font-size: 14px;
+display: inline-flex;
+align-items: center;
+gap: 5px;
 }
 .btn:hover {
 background: #5e262d;
+}
+.btn.pdf {
+background: #d32f2f;
+}
+.btn.pdf:hover {
+background: #b71c1c;
 }
 .table-actions {
 display: flex;
 gap: 10px;
 margin: 16px 0;
+flex-wrap: wrap;
 }
 table {
 width: 100%;
@@ -143,6 +164,7 @@ background: #f0f0f0;
 </div>
 <!-- Filtros (solo admin) -->
 <div id="filtersSection" class="filters-section">
+<h2 class="filter-title">🔍 Filtrar</h2>
 <div class="filter-row">
 <div class="filter-group">
 <label for="filtroSexo">Sexo</label>
@@ -183,6 +205,7 @@ background: #f0f0f0;
 <div class="table-actions">
 <button class="btn" id="volverBtn">↩️ Volver</button>
 <button class="btn" id="exportBtn" disabled>📥 Exportar a Excel</button>
+<button class="btn pdf" id="exportPdfBtn" disabled>📄 Exportar a PDF</button>
 </div>
 <div id="tableContainer">
 <div class="loading">Cargando datos...</div>
@@ -190,6 +213,9 @@ background: #f0f0f0;
 <div id="pagination" class="pagination"></div>
 </div>
 <script>
+// Inicializar jsPDF
+const { jsPDF } = window.jspdf;
+
 const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
@@ -239,6 +265,7 @@ const paginatedRows = rows.slice(start, end);
 if (!rows.length) {
 document.getElementById('tableContainer').innerHTML = '<div class="loading">No hay personal disponible.</div>';
 document.getElementById('exportBtn').disabled = true;
+document.getElementById('exportPdfBtn').disabled = true;
 document.getElementById('pagination').innerHTML = '';
 return;
 }
@@ -265,6 +292,7 @@ html += `<tr>
 html += '</tbody></table>';
 document.getElementById('tableContainer').innerHTML = html;
 document.getElementById('exportBtn').disabled = false;
+document.getElementById('exportPdfBtn').disabled = false;
 renderPagination(rows.length);
 }
 
@@ -323,8 +351,86 @@ XLSX.utils.book_append_sheet(wb, ws, "Relación por Estado");
 XLSX.writeFile(wb, `relacion_personal_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
+function exportToPDF() {
+const filteredData = getFilteredData();
+if (filteredData.length === 0) return;
+
+const doc = new jsPDF({
+orientation: 'landscape',
+unit: 'mm',
+format: 'a4'
+});
+
+// Título del documento
+const title = 'Relación de Personal por Estado';
+doc.setFontSize(18);
+doc.setFont('helvetica', 'bold');
+doc.text(title, doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+
+// Información adicional
+doc.setFontSize(10);
+doc.setFont('helvetica', 'normal');
+doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-ES')}`, 14, 25);
+doc.text(`Total de registros: ${filteredData.length}`, doc.internal.pageSize.getWidth() - 14, 25, { align: 'right' });
+
+// Tabla con datos
+const headers = [
+['RANGO', 'NOMBRE Y APELLIDOS', 'C.I', 'SEXO', 'REGION', 'ESTADO', 'DIRECCION', 'CARGO', 'ESTATUS']
+];
+
+const data = filteredData.map(row => [
+row.rango || '',
+row.nombre_apellidos || '',
+row.cedula || '',
+row.sexo || '',
+row.region || '',
+row.estado || '',
+row.direccion || '',
+row.cargo || '',
+row.estatus || ''
+]);
+
+// Ajustar columnas para mejor visualización en landscape
+doc.autoTable({
+head: headers,
+body: data,
+startY: 35,
+theme: 'grid',
+styles: { 
+font: 'helvetica', 
+fontSize: 7,
+cellPadding: 2
+},
+headStyles: { 
+fillColor: [114, 47, 55], 
+textColor: 255,
+fontSize: 8,
+halign: 'center'
+},
+columnStyles: {
+0: { cellWidth: 20 },   // RANGO
+1: { cellWidth: 40 },   // NOMBRE Y APELLIDOS
+2: { cellWidth: 20 },   // C.I
+3: { cellWidth: 15 },   // SEXO
+4: { cellWidth: 20 },   // REGION
+5: { cellWidth: 20 },   // ESTADO
+6: { cellWidth: 35 },   // DIRECCION
+7: { cellWidth: 25 },   // CARGO
+8: { cellWidth: 25 }    // ESTATUS
+},
+didDrawPage: function (data) {
+// Footer con número de página
+const str = "Página " + doc.internal.getNumberOfPages();
+doc.setFontSize(8);
+doc.text(str, data.settings.margin.left, doc.internal.pageSize.height - 10);
+}
+});
+
+// Guardar el PDF
+doc.save(`relacion_personal_${new Date().toISOString().slice(0,10)}.pdf`);
+}
+
 async function loadUserData() {
-// ✅ CORREGIDO: sintaxis válida
 const { data: { session } } = await client.auth.getSession();
 if (!session) return window.location.href = '../index.html';
 const { data: perfil } = await client
@@ -369,6 +475,7 @@ applyFilters();
 }
 
 document.getElementById('exportBtn').addEventListener('click', exportToExcel);
+document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
 document.getElementById('volverBtn').addEventListener('click', () => {
 window.location.href = 'sistema-expedientes/rrhh/auditoria-nacional';
 });
