@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Partes Generales | RRHH ICAP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fafafa;
+      color: #2d2d2d;
+      padding: 20px;
+    }
+    .breadcrumb {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 12px 20px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: #555;
+    }
+    .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+    .breadcrumb span { margin: 0 8px; color: #888; }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 20px 0;
+    }
+    .header img {
+      width: 90px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d2d2d;
+      margin-bottom: 8px;
+    }
+    .header .subtitle {
+      font-size: 16px;
+      color: #722F37;
+      font-weight: 600;
+    }
+    .user-info {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      border: 1px solid #eee;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      padding: 24px;
+    }
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 20px;
+    }
+    .chart-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid #eee;
+    }
+    .chart-card h3 {
+      text-align: center;
+      margin-bottom: 12px;
+      font-size: 16px;
+      color: #722F37;
+    }
+    .btn.volver {
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn.volver:hover {
+      background-color: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="../../index.html">Inicio</a> <span>›</span>
+    <a href="index.html">RRHH</a> <span>›</span>
+    <strong>Partes Generales</strong>
+  </div>
+
+  <!-- Encabezado principal -->
+  <div class="header">
+    <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+    <h1>Inspectoria para el Control de la Actuación Policial</h1>
+    <div class="subtitle">• Partes Generales del Personal ICAP •</div>
+  </div>
+
+  <!-- Información del usuario -->
+  <div class="user-info">
+    <strong>Usuario:</strong> <span id="userEmail">—</span> |
+    <strong>Rol:</strong> <span id="userRol">—</span> |
+    <strong>Estados asignados:</strong> <span id="userEstados">Cargando...</span>
+  </div>
+
+  <div class="container">
+    <h1 style="text-align: center; color: #722F37;">📈 Partes Generales</h1>
+    
+    <button class="btn volver" id="volverBtn">↩️ Volver</button>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h3>Distribución por Sexo</h3>
+        <canvas id="sexoChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Distribución por Estatus</h3>
+        <canvas id="estatusChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Personal por Estado</h3>
+        <canvas id="estadoChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Personal por Región</h3>
+        <canvas id="regionChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+    const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
+
+    let userRole = '';
+    let userEstados = [];
+
+    // Inicializar gráficos vacíos
+    let sexoChart, estatusChart, estadoChart, regionChart;
+
+    function countByField(data, field) {
+      const counts = {};
+      data.forEach(item => {
+        const val = item[field] || 'Sin dato';
+        counts[val] = (counts[val] || 0) + 1;
+      });
+      return counts;
+    }
+
+    function renderChart(canvasId, labels, data, title) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      if (window[canvasId + 'Instance']) window[canvasId + 'Instance'].destroy();
+      window[canvasId + 'Instance'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: title,
+            data: data,
+            backgroundColor: '#722F37',
+            borderColor: '#5e262d',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: (item) => `${item.label}: ${item.raw}` } }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+          }
+        }
+      });
+    }
+
+    async function loadUserData() {
+      const { data: { session } } = await client.auth.getSession();
+      if (!session) return window.location.href = '../../index.html';
+      const { data: perfil } = await client
+        .from('perfiles')
+        .select('email, rol, estados_asignados')
+        .eq('id', session.user.id)
+        .single();
+      if (!perfil) return window.location.href = '../../index.html';
+
+      userRole = perfil.rol || 'consultor';
+      userEstados = perfil.estados_asignados || [];
+
+      document.getElementById('userEmail').textContent = perfil.email || '—';
+      document.getElementById('userRol').textContent =
+        userRole === 'admin' ? 'Administrador' :
+        userRole === 'moderador' ? 'Moderador' : 'Consultor';
+      document.getElementById('userEstados').textContent =
+        userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
+
+      fetchDataAndRenderCharts();
+    }
+
+    async function fetchDataAndRenderCharts() {
+      let query = client.from('rrhh_icap').select('sexo, estatus, estado, region');
+      if (userRole !== 'admin' && userEstados.length > 0) {
+        query = query.in('estado', userEstados);
+      }
+      const { data, error } = await query;
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      // Gráfico: Sexo
+      const sexoCounts = countByField(data, 'sexo');
+      renderChart('sexoChart', Object.keys(sexoCounts), Object.values(sexoCounts), 'Por Sexo');
+
+      // Gráfico: Estatus
+      const estatusCounts = countByField(data, 'estatus');
+      renderChart('estatusChart', Object.keys(estatusCounts), Object.values(estatusCounts), 'Por Estatus');
+
+      // Gráfico: Estado
+      const estadoCounts = countByField(data, 'estado');
+      renderChart('estadoChart', Object.keys(estadoCounts), Object.values(estadoCounts), 'Por Estado');
+
+      // Gráfico: Región
+      const regionCounts = countByField(data, 'region');
+      renderChart('regionChart', Object.keys(regionCounts), Object.values(regionCounts), 'Por Región');
+    }
+
+    document.getElementById('volverBtn').addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    loadUserData();
+  </script>
+</body>
+</html>
