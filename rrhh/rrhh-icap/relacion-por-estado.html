@@ -62,45 +62,29 @@ label {
   font-size: 14px;
   color: #444;
 }
-select, button {
+select {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 14px;
 }
-button.btn {
+.btn {
   background: #722F37;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
+  padding: 8px 14px;
+  border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
-  margin-top: 16px;
-  width: auto;
+  font-size: 14px;
 }
-button.btn:hover {
-  background: #5e262d;
-}
-button.volver {
-  background: #722F37;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  margin-left: 12px;
-}
-button.volver:hover {
+.btn:hover {
   background: #5e262d;
 }
 .table-actions {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
+  gap: 10px;
   margin: 16px 0;
 }
 table {
@@ -132,10 +116,11 @@ tr:hover {
   display: flex;
   justify-content: center;
   margin-top: 20px;
-  gap: 8px;
+  gap: 4px;
 }
 .pagination button {
-  padding: 6px 12px;
+  padding: 4px 8px;
+  font-size: 13px;
   border: 1px solid #ccc;
   background: #fff;
   cursor: pointer;
@@ -197,8 +182,8 @@ tr:hover {
   </div>
 
   <div class="table-actions">
+    <button class="btn" id="volverBtn">↩️ Volver</button>
     <button class="btn" id="exportBtn" disabled>📥 Exportar a Excel</button>
-    <button class="volver" id="volverBtn">↩️ Volver</button>
   </div>
 
   <div id="tableContainer">
@@ -219,7 +204,6 @@ let fullData = [];
 let currentPage = 1;
 const itemsPerPage = 30;
 
-// Llenar selects únicos
 function fillUniqueOptions(field, selectorId, data) {
   const values = [...new Set(data.map(item => item[field]).filter(v => v))];
   const select = document.getElementById(selectorId);
@@ -232,7 +216,6 @@ function fillUniqueOptions(field, selectorId, data) {
   });
 }
 
-// Aplicar filtros y actualizar paginación
 function applyFilters() {
   let filtered = fullData;
   const sexo = document.getElementById('filtroSexo').value;
@@ -249,7 +232,6 @@ function applyFilters() {
   renderTableWithPagination(filtered);
 }
 
-// Renderizar tabla con paginación
 function renderTableWithPagination(rows) {
   const start = (currentPage - 1) * itemsPerPage;
   const end = start + itemsPerPage;
@@ -289,11 +271,9 @@ function renderTableWithPagination(rows) {
   document.getElementById('tableContainer').innerHTML = html;
   document.getElementById('exportBtn').disabled = false;
 
-  // Renderizar paginación
   renderPagination(rows.length);
 }
 
-// Renderizar controles de paginación
 function renderPagination(totalItems) {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const paginationEl = document.getElementById('pagination');
@@ -325,7 +305,6 @@ function renderPagination(totalItems) {
   paginationEl.innerHTML = html;
 }
 
-// Cambiar página
 function changePage(page) {
   currentPage = page;
   const sexo = document.getElementById('filtroSexo').value;
@@ -342,18 +321,15 @@ function changePage(page) {
   renderTableWithPagination(filtered);
 }
 
-// Exportar a Excel (solo datos visibles en la tabla actual)
 function exportToExcel() {
   const table = document.querySelector('table');
   if (!table) return;
-
   const ws = XLSX.utils.table_to_sheet(table);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Relación por Estado");
   XLSX.writeFile(wb, `relacion_personal_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
-// Cargar datos del usuario
 async function loadUserData() {
   const { data: { session } } = await client.auth.getSession();
   if (!session) return window.location.href = '../index.html';
@@ -374,7 +350,6 @@ async function loadUserData() {
   fetchPersonalData();
 }
 
-// Cargar datos del personal
 async function fetchPersonalData() {
   let query = client.from('rrhh_icap').select('*');
   if (userRole !== 'admin') {
@@ -394,29 +369,25 @@ async function fetchPersonalData() {
 
   fullData = data;
 
-  // Mostrar filtros solo si es admin
   if (userRole === 'admin') {
     document.getElementById('filtersSection').classList.add('active');
     fillUniqueOptions('region', 'filtroRegion', fullData);
     fillUniqueOptions('estado', 'filtroEstado', fullData);
   }
 
-  // Añadir listeners a los filtros
   ['filtroSexo', 'filtroRegion', 'filtroEstado', 'filtroEstatus'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('change', applyFilters);
   });
 
-  applyFilters(); // Render inicial
+  applyFilters();
 }
 
-// Inicializar botones
 document.getElementById('exportBtn').addEventListener('click', exportToExcel);
 document.getElementById('volverBtn').addEventListener('click', () => {
   window.location.href = 'sistema-expedientes/rrhh/auditoria-nacional';
 });
 
-// Iniciar
 loadUserData();
 </script>
 </body>
