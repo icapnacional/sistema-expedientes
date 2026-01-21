@@ -92,27 +92,36 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
+      margin-bottom: 20px;
     }
     .btn.volver:hover {
       background-color: #1565c0;
     }
+
+    /* Tarjetas numéricas */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
     .stats-card {
-  background: #f9f9f9;
-  border-radius: 10px;
-  padding: 16px;
-  text-align: center;
-  border: 1px solid #eee;
-}
-.stats-card .value {
-  font-size: 24px;
-  font-weight: 700;
-  color: #722F37;
-  margin: 8px 0;
-}
-.stats-card .label {
-  font-size: 14px;
-  color: #555;
-}
+      background: #f9f9f9;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid #eee;
+    }
+    .stats-card .value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #722F37;
+      margin: 8px 0;
+    }
+    .stats-card .label {
+      font-size: 14px;
+      color: #555;
+    }
   </style>
 </head>
 <body>
@@ -138,11 +147,14 @@
   </div>
 
   <div class="container">
-    <h1 style="text-align: center; color: #722F37;">📈 Partes Generales</h1>
-    <!-- Tarjetas numéricas -->
-<div id="stats-cards" class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 24px 0;"></div>
+    <h1 style="text-align: center; color: #722F37; margin-bottom: 16px;">📈 Partes Generales</h1>
+    
     <button class="btn volver" id="volverBtn">↩️ Volver</button>
 
+    <!-- Tarjetas numéricas -->
+    <div id="stats-cards" class="stats-grid"></div>
+
+    <!-- Gráficos -->
     <div class="chart-grid">
       <div class="chart-card">
         <h3>Distribución por Sexo</h3>
@@ -171,13 +183,10 @@
     let userRole = '';
     let userEstados = [];
 
-    // Inicializar gráficos vacíos
-    let sexoChart, estatusChart, estadoChart, regionChart;
-
     function countByField(data, field) {
       const counts = {};
       data.forEach(item => {
-        const val = item[field] || 'Sin dato';
+        const val = (item[field] || 'Sin dato').toString().trim() || 'Sin dato';
         counts[val] = (counts[val] || 0) + 1;
       });
       return counts;
@@ -188,11 +197,11 @@
       if (window[canvasId + 'Instance']) window[canvasId + 'Instance'].destroy();
       window[canvasId + 'Instance'] = new Chart(ctx, {
         type: 'bar',
-        data: {
+         {
           labels: labels,
           datasets: [{
             label: title,
-            data: data,
+             data,
             backgroundColor: '#722F37',
             borderColor: '#5e262d',
             borderWidth: 1
@@ -212,9 +221,9 @@
     }
 
     async function loadUserData() {
-      const { data: { session } } = await client.auth.getSession();
+      const {  { session } } = await client.auth.getSession();
       if (!session) return window.location.href = '../../index.html';
-      const { data: perfil } = await client
+      const {  perfil } = await client
         .from('perfiles')
         .select('email, rol, estados_asignados')
         .eq('id', session.user.id)
@@ -234,87 +243,86 @@
       fetchDataAndRenderCharts();
     }
 
-  async function fetchDataAndRenderCharts() {
-  let query = client.from('rrhh_icap').select('sexo, estatus, estado, region, fecha_ingreso');
-  if (userRole !== 'admin' && userEstados.length > 0) {
-    query = query.in('estado', userEstados);
-  }
-  const { data, error } = await query;
-  if (error) {
-    console.error(error);
-    return;
-  }
+    async function fetchDataAndRenderCharts() {
+      let query = client.from('rrhh_icap').select('sexo, estatus, estado, region, fecha_ingreso');
+      if (userRole !== 'admin' && userEstados.length > 0) {
+        query = query.in('estado', userEstados);
+      }
+      const { data, error } = await query;
+      if (error) {
+        console.error(error);
+        return;
+      }
 
-  const total = data.length;
+      const total = data.length;
+      const activos = data.filter(r => r.estatus === 'DISPONIBLE').length;
+      const reposos = data.filter(r => r.estatus === 'REPOSOS MEDICO').length;
+      const masculino = data.filter(r => (r.sexo || '').toLowerCase() === 'masculino').length;
+      const femenino = data.filter(r => (r.sexo || '').toLowerCase() === 'femenino').length;
+      const estadosUnicos = [...new Set(data.map(r => r.estado).filter(Boolean))].length;
 
-  // === Métricas numéricas ===
-  const activos = data.filter(r => r.estatus === 'DISPONIBLE').length;
-  const reposos = data.filter(r => r.estatus === 'REPOSOS MEDICO').length;
-  const masculino = data.filter(r => (r.sexo || '').toLowerCase() === 'masculino').length;
-  const femenino = data.filter(r => (r.sexo || '').toLowerCase() === 'femenino').length;
-  const estadosUnicos = [...new Set(data.map(r => r.estado).filter(Boolean))].length;
-  
-  // Cálculo de antigüedad promedio (opcional)
-  let antiguedadPromedio = 0;
-  const hoy = new Date();
-  const fechasValidas = data
-    .map(r => r.fecha_ingreso)
-    .filter(f => f)
-    .map(f => new Date(f));
-  if (fechasValidas.length > 0) {
-    const totalAnios = fechasValidas.reduce((sum, fecha) => {
-      return sum + (hoy.getFullYear() - fecha.getFullYear());
-    }, 0);
-    antiguedadPromedio = (totalAnios / fechasValidas.length).toFixed(1);
-  }
+      // Antigüedad promedio
+      let antiguedadPromedio = 0;
+      const hoy = new Date();
+      const fechasValidas = data
+        .map(r => r.fecha_ingreso)
+        .filter(f => f)
+        .map(f => new Date(f))
+        .filter(d => !isNaN(d.getTime()));
+      if (fechasValidas.length > 0) {
+        const totalAnios = fechasValidas.reduce((sum, fecha) => {
+          return sum + (hoy.getFullYear() - fecha.getFullYear());
+        }, 0);
+        antiguedadPromedio = (totalAnios / fechasValidas.length).toFixed(1);
+      }
 
-  // Renderizar tarjetas
-  const statsHtml = `
-    <div class="stats-card">
-      <div class="label">Total Personal</div>
-      <div class="value">${total}</div>
-    </div>
-    <div class="stats-card">
-      <div class="label">Disponible</div>
-      <div class="value">${activos}</div>
-    </div>
-    <div class="stats-card">
-      <div class="label">Reposo Médico</div>
-      <div class="value">${reposos}</div>
-    </div>
-    <div class="stats-card">
-      <div class="label">Masculino</div>
-      <div class="value">${masculino}</div>
-    </div>
-    <div class="stats-card">
-      <div class="label">Femenino</div>
-      <div class="value">${femenino}</div>
-    </div>
-    <div class="stats-card">
-      <div class="label">Estados</div>
-      <div class="value">${estadosUnicos}</div>
-    </div>
-    ${antiguedadPromedio > 0 ? `
-    <div class="stats-card">
-      <div class="label">Antigüedad Prom.</div>
-      <div class="value">${antiguedadPromedio} años</div>
-    </div>` : ''}
-  `;
-  document.getElementById('stats-cards').innerHTML = statsHtml;
+      // Renderizar tarjetas
+      const statsHtml = `
+        <div class="stats-card">
+          <div class="label">Total Personal</div>
+          <div class="value">${total}</div>
+        </div>
+        <div class="stats-card">
+          <div class="label">Disponible</div>
+          <div class="value">${activos}</div>
+        </div>
+        <div class="stats-card">
+          <div class="label">Reposo Médico</div>
+          <div class="value">${reposos}</div>
+        </div>
+        <div class="stats-card">
+          <div class="label">Masculino</div>
+          <div class="value">${masculino}</div>
+        </div>
+        <div class="stats-card">
+          <div class="label">Femenino</div>
+          <div class="value">${femenino}</div>
+        </div>
+        <div class="stats-card">
+          <div class="label">Estados</div>
+          <div class="value">${estadosUnicos}</div>
+        </div>
+        ${antiguedadPromedio > 0 ? `
+        <div class="stats-card">
+          <div class="label">Antigüedad Prom.</div>
+          <div class="value">${antiguedadPromedio} años</div>
+        </div>` : ''}
+      `;
+      document.getElementById('stats-cards').innerHTML = statsHtml;
 
-  // === Gráficos ===
-  const sexoCounts = countByField(data, 'sexo');
-  renderChart('sexoChart', Object.keys(sexoCounts), Object.values(sexoCounts), 'Por Sexo');
+      // Gráficos
+      const sexoCounts = countByField(data, 'sexo');
+      renderChart('sexoChart', Object.keys(sexoCounts), Object.values(sexoCounts), 'Por Sexo');
 
-  const estatusCounts = countByField(data, 'estatus');
-  renderChart('estatusChart', Object.keys(estatusCounts), Object.values(estatusCounts), 'Por Estatus');
+      const estatusCounts = countByField(data, 'estatus');
+      renderChart('estatusChart', Object.keys(estatusCounts), Object.values(estatusCounts), 'Por Estatus');
 
-  const estadoCounts = countByField(data, 'estado');
-  renderChart('estadoChart', Object.keys(estadoCounts), Object.values(estadoCounts), 'Por Estado');
+      const estadoCounts = countByField(data, 'estado');
+      renderChart('estadoChart', Object.keys(estadoCounts), Object.values(estadoCounts), 'Por Estado');
 
-  const regionCounts = countByField(data, 'region');
-  renderChart('regionChart', Object.keys(regionCounts), Object.values(regionCounts), 'Por Región');
-}
+      const regionCounts = countByField(data, 'region');
+      renderChart('regionChart', Object.keys(regionCounts), Object.values(regionCounts), 'Por Región');
+    }
 
     document.getElementById('volverBtn').addEventListener('click', () => {
       window.location.href = 'index.html';
