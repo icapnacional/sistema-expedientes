@@ -149,8 +149,8 @@ tr:hover {
         <label for="filtroSexo">Sexo</label>
         <select id="filtroSexo">
           <option value="">Todos</option>
-          <option value="M">Masculino</option>
-          <option value="F">Femenino</option>
+          <option value="Masculino">Masculino</option>
+          <option value="Femenino">Femenino</option>
         </select>
       </div>
       <div class="filter-group">
@@ -169,10 +169,10 @@ tr:hover {
         <label for="filtroEstatus">Estatus</label>
         <select id="filtroEstatus">
           <option value="">Todos</option>
-          <option value="activo">Activo</option>
-          <option value="reposo">Reposo</option>
-          <option value="suspendido">Suspendido</option>
-          <option value="destituido">Destituido</option>
+          <option value="Activo">Activo</option>
+          <option value="Reposo">Reposo</option>
+          <option value="Suspendido">Suspendido</option>
+          <option value="Destituido">Destituido</option>
           <option value="DA">DA</option>
           <option value="D">D</option>
           <option value="P">P</option>
@@ -218,15 +218,25 @@ function fillUniqueOptions(field, selectorId, data) {
 
 function applyFilters() {
   let filtered = fullData;
-  const sexo = document.getElementById('filtroSexo').value;
-  const region = document.getElementById('filtroRegion').value;
-  const estado = document.getElementById('filtroEstado').value;
-  const estatus = document.getElementById('filtroEstatus').value;
+  const sexoFilter = document.getElementById('filtroSexo').value;
+  const estatusFilter = document.getElementById('filtroEstatus').value;
+  const regionFilter = document.getElementById('filtroRegion').value;
+  const estadoFilter = document.getElementById('filtroEstado').value;
 
-  if (sexo) filtered = filtered.filter(r => r.sexo === sexo);
-  if (region) filtered = filtered.filter(r => r.region === region);
-  if (estado) filtered = filtered.filter(r => r.estado === estado);
-  if (estatus) filtered = filtered.filter(r => r.estatus === estatus);
+  if (sexoFilter) {
+    filtered = filtered.filter(r =>
+      (r.sexo || '').toLowerCase().includes(sexoFilter.toLowerCase())
+    );
+  }
+
+  if (estatusFilter) {
+    filtered = filtered.filter(r =>
+      (r.estatus || '').toLowerCase().includes(estatusFilter.toLowerCase())
+    );
+  }
+
+  if (regionFilter) filtered = filtered.filter(r => r.region === regionFilter);
+  if (estadoFilter) filtered = filtered.filter(r => r.estado === estadoFilter);
 
   currentPage = 1;
   renderTableWithPagination(filtered);
@@ -307,16 +317,24 @@ function renderPagination(totalItems) {
 
 function changePage(page) {
   currentPage = page;
-  const sexo = document.getElementById('filtroSexo').value;
-  const region = document.getElementById('filtroRegion').value;
-  const estado = document.getElementById('filtroEstado').value;
-  const estatus = document.getElementById('filtroEstatus').value;
+  const sexoFilter = document.getElementById('filtroSexo').value;
+  const estatusFilter = document.getElementById('filtroEstatus').value;
+  const regionFilter = document.getElementById('filtroRegion').value;
+  const estadoFilter = document.getElementById('filtroEstado').value;
 
   let filtered = fullData;
-  if (sexo) filtered = filtered.filter(r => r.sexo === sexo);
-  if (region) filtered = filtered.filter(r => r.region === region);
-  if (estado) filtered = filtered.filter(r => r.estado === estado);
-  if (estatus) filtered = filtered.filter(r => r.estatus === estatus);
+  if (sexoFilter) {
+    filtered = filtered.filter(r =>
+      (r.sexo || '').toLowerCase().includes(sexoFilter.toLowerCase())
+    );
+  }
+  if (estatusFilter) {
+    filtered = filtered.filter(r =>
+      (r.estatus || '').toLowerCase().includes(estatusFilter.toLowerCase())
+    );
+  }
+  if (regionFilter) filtered = filtered.filter(r => r.region === regionFilter);
+  if (estadoFilter) filtered = filtered.filter(r => r.estado === estadoFilter);
 
   renderTableWithPagination(filtered);
 }
