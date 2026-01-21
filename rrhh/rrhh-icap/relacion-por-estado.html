@@ -21,10 +21,68 @@ padding: 20px;
 .container {
 max-width: 1400px;
 margin: 0 auto;
+}
+.breadcrumb {
+background: #f8f9fa;
+border-radius: 12px;
+padding: 12px 20px;
+margin-bottom: 24px;
+font-size: 14px;
+color: #555;
+}
+.breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb span { margin: 0 8px; color: #888; }
+.header-section {
+text-align: center;
+margin-bottom: 24px;
+padding: 20px 0;
+}
+.header-logo {
+width: 90px;
+margin-bottom: 16px;
+}
+.header-title {
+font-size: 20px;
+font-weight: 700;
+color: #2d2d2d;
+margin-bottom: 8px;
+}
+.header-subtitle {
+font-size: 16px;
+color: #722F37;
+font-weight: 600;
+}
+.user-info {
+background: #f8f9fa;
+border-radius: 8px;
+padding: 12px 20px;
+margin-bottom: 24px;
+font-size: 14px;
+color: #2d2d2d;
+}
+.user-info strong {
+color: #722F37;
+font-weight: 600;
+}
+.user-info .info-icon {
+width: 16px;
+height: 16px;
+border-radius: 50%;
+background: #722F37;
+color: white;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+font-size: 10px;
+margin-left: 4px;
+}
+.main-content {
 background: white;
 border-radius: 12px;
 box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 padding: 24px;
+margin-bottom: 24px;
 }
 h1 {
 text-align: center;
@@ -158,6 +216,25 @@ background: #f0f0f0;
 </head>
 <body>
 <div class="container">
+<div class="breadcrumb">
+<a href="../../index.html">Inicio</a> <span>›</span>
+<a href="../index.html">Recursos Humanos</a>
+</div>
+
+<div class="header-section">
+<img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" class="header-logo" />
+<h1 class="header-title">Inspectoría para el Control de la Actuación Policial</h1>
+<div class="header-subtitle">• Módulo de Recursos Humanos •</div>
+</div>
+
+<div class="user-info">
+<strong>Usuario:</strong> <span id="userEmail">—</span> |
+<strong>Estado(s):</strong> <span id="userEstados">Cargando...</span> |
+<span id="userRol">—</span>
+<span class="info-icon" title="Información del usuario">i</span>
+</div>
+
+<div class="main-content">
 <h1>📊 Relación de Personal por Estado</h1>
 <div class="header-info">
 <strong>Estados asignados:</strong> <span id="userEstados">Cargando...</span>
@@ -212,18 +289,63 @@ background: #f0f0f0;
 </div>
 <div id="pagination" class="pagination"></div>
 </div>
+</div>
 <script>
 // Inicializar jsPDF
 const { jsPDF } = window.jspdf;
-
 const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
 const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
 let userRole = '';
 let userEstados = [];
+let userEmail = '';
 let fullData = [];
 let currentPage = 1;
 const itemsPerPage = 30;
+
+document.addEventListener('DOMContentLoaded', async () => {
+try {
+const {  { session } } = await client.auth.getSession();
+if (!session) return window.location.href = '../index.html';
+  
+const {  perfil } = await client
+.from('perfiles')
+.select('email, rol, estados_asignados')
+.eq('id', session.user.id)
+.single();
+  
+if (!perfil) {
+alert('⚠️ Perfil no encontrado. Redirigiendo...');
+return window.location.href = '../index.html';
+}
+  
+userEmail = perfil.email || '—';
+userRole = perfil.rol || 'consultor';
+userEstados = perfil.estados_asignados || [];
+  
+document.getElementById('userEmail').textContent = userEmail;
+// Configurar el rol sin el prefijo "Rol:"
+document.getElementById('userRol').textContent =
+userRole === 'admin' ? 'Administrador' :
+userRole === 'moderador' ? 'Moderador' : 'Consultor';
+  
+document.getElementById('userEstados').textContent =
+userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
+
+// Configurar eventos
+document.getElementById('exportBtn').addEventListener('click', exportToExcel);
+document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
+document.getElementById('volverBtn').addEventListener('click', () => {
+window.location.href = '../index.html';
+});
+
+// Cargar datos
+fetchPersonalData();
+} catch (err) {
+console.error('Error en autenticación:', err);
+window.location.href = '../index.html';
+}
+});
 
 function fillUniqueOptions(field, selectorId, data) {
 const values = [...new Set(data.map(item => item[field]).filter(v => v))];
@@ -372,6 +494,7 @@ doc.setFontSize(10);
 doc.setFont('helvetica', 'normal');
 doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-ES')}`, 14, 25);
 doc.text(`Total de registros: ${filteredData.length}`, doc.internal.pageSize.getWidth() - 14, 25, { align: 'right' });
+doc.text(`Usuario: ${userEmail || '—'}`, 14, 32);
 
 // Tabla con datos
 const headers = [
@@ -394,7 +517,7 @@ row.estatus || ''
 doc.autoTable({
 head: headers,
 body: data,
-startY: 35,
+startY: 42,
 theme: 'grid',
 styles: { 
 font: 'helvetica', 
@@ -430,22 +553,6 @@ doc.text(str, data.settings.margin.left, doc.internal.pageSize.height - 10);
 doc.save(`relacion_personal_${new Date().toISOString().slice(0,10)}.pdf`);
 }
 
-async function loadUserData() {
-const { data: { session } } = await client.auth.getSession();
-if (!session) return window.location.href = '../index.html';
-const { data: perfil } = await client
-.from('perfiles')
-.select('rol, estados_asignados')
-.eq('id', session.user.id)
-.single();
-if (!perfil) return window.location.href = '../index.html';
-userRole = perfil.rol || 'consultor';
-userEstados = perfil.estados_asignados || [];
-document.getElementById('userEstados').textContent =
-userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
-fetchPersonalData();
-}
-
 async function fetchPersonalData() {
 let query = client.from('rrhh_icap').select('*');
 if (userRole !== 'admin') {
@@ -473,14 +580,6 @@ if (el) el.addEventListener('change', applyFilters);
 });
 applyFilters();
 }
-
-document.getElementById('exportBtn').addEventListener('click', exportToExcel);
-document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
-document.getElementById('volverBtn').addEventListener('click', () => {
-window.location.href = 'sistema-expedientes/rrhh/auditoria-nacional';
-});
-
-loadUserData();
 </script>
 </body>
 </html>
