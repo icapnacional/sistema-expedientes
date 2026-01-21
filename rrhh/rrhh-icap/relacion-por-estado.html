@@ -365,6 +365,26 @@ function exportToExcel() {
 }
 
 async function loadUserData() {
+  // ✅ CORREGIDO: sintaxis válida
+  const {  { session } } = await client.auth.getSession();
+  if (!session) return window.location.href = '../index.html';
+
+  // ✅ También corregido aquí
+  const {  perfil } = await client
+    .from('perfiles')
+    .select('rol, estados_asignados')
+    .eq('id', session.user.id)
+    .single();
+
+  if (!perfil) return window.location.href = '../index.html';
+
+  userRole = perfil.rol || 'consultor';
+  userEstados = perfil.estados_asignados || [];
+  document.getElementById('userEstados').textContent =
+    userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
+
+  fetchPersonalData();
+}
 
 async function fetchPersonalData() {
   let query = client.from('rrhh_icap').select('*');
