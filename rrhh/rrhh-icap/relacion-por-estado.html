@@ -1,290 +1,511 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Relación por Estado - ICAP RRHH</title>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f5f7fa;
-      margin: 0;
-      padding: 20px;
-      color: #333;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Relación por Estado | RRHH ICAP</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Librerías para PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+font-family: 'Inter', sans-serif;
+background: #fafafa;
+color: #2d2d2d;
+padding: 20px;
+}
+.breadcrumb {
+background: #f8f9fa;
+border-radius: 12px;
+padding: 12px 20px;
+margin-bottom: 24px;
+font-size: 14px;
+color: #555;
+}
+.breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
+.breadcrumb span { margin: 0 8px; color: #888; }
 
-    .breadcrumb {
-      background: #f8f9fa;
-      border-radius: 12px;
-      padding: 12px 20px;
-      margin-bottom: 24px;
-      font-size: 14px;
-      color: #555;
-    }
-    .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
-    .breadcrumb span { margin: 0 8px; color: #888; }
+.header {
+text-align: center;
+margin-bottom: 24px;
+padding: 20px 0;
+}
+.header img {
+width: 90px;
+margin-bottom: 16px;
+}
+.header h1 {
+font-size: 24px;
+font-weight: 700;
+color: #2d2d2d;
+margin-bottom: 8px;
+}
+.header .subtitle {
+font-size: 16px;
+color: #722F37;
+font-weight: 600;
+}
 
-    .header {
-      text-align: center;
-      margin-bottom: 24px;
-      padding: 20px 0;
-    }
-    .header img {
-      width: 90px;
-      margin-bottom: 16px;
-    }
-    .header h1 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #2d2d2d;
-      margin-bottom: 8px;
-    }
-    .header .subtitle {
-      font-size: 16px;
-      color: #722F37;
-      font-weight: 600;
-    }
+.user-info {
+background: white;
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 24px;
+box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+border: 1px solid #eee;
+}
 
-    .user-info {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 24px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-      border: 1px solid #eee;
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      background: white;
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-
-    h1 {
-      text-align: center;
-      color: #722F37;
-      margin-top: 0;
-      font-size: 22px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 16px;
-    }
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    th {
-      background-color: #722F37;
-      color: white;
-      position: sticky;
-      top: 0;
-    }
-    tr:hover {
-      background-color: #f9f9f9;
-    }
-
-    .btn {
-      background-color: #722F37;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      margin-top: 16px;
-    }
-    .btn:hover {
-      background-color: #5a242c;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 20px;
-      color: #722F37;
-    }
-
-    @media (max-width: 768px) {
-      th, td {
-        padding: 8px 6px;
-        font-size: 13px;
-      }
-      .btn {
-        width: 100%;
-        margin-top: 12px;
-      }
-    }
-  </style>
+.container {
+max-width: 1400px;
+margin: 0 auto;
+background: white;
+border-radius: 12px;
+box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+padding: 24px;
+}
+h1 {
+text-align: center;
+margin-bottom: 20px;
+color: #722F37;
+}
+.filters-section {
+display: none;
+background: #f5f5f5;
+padding: 16px;
+border-radius: 10px;
+margin-bottom: 20px;
+}
+.filters-section.active {
+display: block;
+}
+.filter-title {
+font-size: 18px;
+font-weight: 700;
+color: #722F37;
+margin-bottom: 16px;
+padding-bottom: 8px;
+border-bottom: 2px solid #722F37;
+}
+.filter-row {
+display: flex;
+gap: 16px;
+flex-wrap: wrap;
+margin-bottom: 12px;
+}
+.filter-group {
+flex: 1;
+min-width: 180px;
+}
+label {
+display: block;
+font-weight: 600;
+margin-bottom: 6px;
+font-size: 14px;
+color: #444;
+}
+select {
+width: 100%;
+padding: 8px 12px;
+border: 1px solid #ccc;
+border-radius: 6px;
+font-size: 14px;
+}
+.btn {
+background: #722F37;
+color: white;
+border: none;
+padding: 8px 14px;
+border-radius: 6px;
+cursor: pointer;
+font-weight: 600;
+font-size: 14px;
+display: inline-flex;
+align-items: center;
+gap: 5px;
+}
+.btn:hover {
+background: #5e262d;
+}
+.btn.pdf {
+background: #d32f2f;
+}
+.btn.pdf:hover {
+background: #b71c1c;
+}
+.table-actions {
+display: flex;
+gap: 10px;
+margin: 16px 0;
+flex-wrap: wrap;
+}
+table {
+width: 100%;
+border-collapse: collapse;
+margin-top: 16px;
+}
+th, td {
+padding: 12px;
+text-align: left;
+border-bottom: 1px solid #eee;
+}
+th {
+background: #722F37;
+color: white;
+position: sticky;
+top: 0;
+}
+tr:hover {
+background: #fdf7f7;
+}
+.loading {
+text-align: center;
+padding: 40px;
+font-style: italic;
+color: #777;
+}
+.pagination {
+display: flex;
+justify-content: center;
+margin-top: 20px;
+gap: 4px;
+}
+.pagination button {
+padding: 4px 8px;
+font-size: 13px;
+border: 1px solid #ccc;
+background: #fff;
+cursor: pointer;
+border-radius: 4px;
+}
+.pagination button.active {
+background: #722F37;
+color: white;
+}
+.pagination button:hover:not(.active) {
+background: #f0f0f0;
+}
+</style>
 </head>
 <body>
 
-  <!-- Breadcrumb -->
-  <div class="breadcrumb">
-    <a href="../../index.html">Inicio</a> <span>›</span>
-    <a href="../index.html">RRHH</a> <span>›</span>
-    <strong>Relación por Estado</strong>
-  </div>
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+  <a href="../../index.html">Inicio</a> <span>›</span>
+  <a href="../index.html">RRHH</a> <span>›</span>
+  <strong>Relación por Estado</strong>
+</div>
 
-  <!-- Encabezado principal -->
-  <div class="header">
-    <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
-    <h1>Inspectoria para el Control de la Actuación Policial</h1>
-    <div class="subtitle">• Relación de Personal de la ICAP Nacional •</div>
-  </div>
+<!-- Encabezado principal -->
+<div class="header">
+  <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
+  <h1>Inspectoria para el Control de la Actuación Policial</h1>
+  <div class="subtitle">• Relación de Personal de la ICAP Nacional •</div>
+</div>
 
-  <!-- Información del usuario -->
-  <div class="user-info">
-    <strong>Usuario:</strong> <span id="userEmail">—</span> |
-    <strong>Rol:</strong> <span id="userRol">—</span> |
-    <strong>Estados asignados:</strong> <span id="userEstados">Cargando...</span>
-  </div>
+<!-- Información del usuario -->
+<div class="user-info">
+  <strong>Usuario:</strong> <span id="userEmail">—</span> |
+  <strong>Rol:</strong> <span id="userRol">—</span> |
+  <strong>Estados asignados:</strong> <span id="userEstados">Cargando...</span>
+</div>
 
-  <!-- Contenido principal -->
-  <div class="container">
-    <h1>📊 Relación de Personal por Estado</h1>
-    <div id="personnelList">
-      <div class="loading">Cargando datos...</div>
+<div class="container">
+  <h1>📊 Relación de Personal por Estado</h1>
+
+  <!-- Filtros (solo admin) -->
+  <div id="filtersSection" class="filters-section">
+    <h2 class="filter-title">🔍 Filtrar</h2>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label for="filtroSexo">Sexo</label>
+        <select id="filtroSexo">
+          <option value="">Todos</option>
+          <option value="masculino">Masculino</option>
+          <option value="femenino">Femenino</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filtroRegion">Región</label>
+        <select id="filtroRegion">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filtroEstado">Estado</label>
+        <select id="filtroEstado">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filtroEstatus">Estatus</label>
+        <select id="filtroEstatus">
+          <option value="">Todos</option>
+          <option value="DISPONIBLE">Disponible</option>
+          <option value="REPOSOS MEDICO">Reposo Médico</option>
+          <option value="ABANDONO DE CARGO">Abandono de Cargo</option>
+          <option value="PROCESO DE RENUNCIA">Proceso de Renuncia</option>
+          <option value="VACIONES">Vacaciones</option>
+          <option value="DESTITUIDO">Destituido</option>
+          <option value="PRIVADO DE LIBERTAD">Privado de Libertad</option>
+          <option value="CONDUCTOR GENERAL">Conductor General</option>
+        </select>
+      </div>
     </div>
-    <button id="exportBtn" class="btn" style="display:none;">Exportar a Excel</button>
   </div>
 
-  <script>
-    // Configuración de Firebase (ajusta según tu entorno)
-    const firebaseConfig = {
-      apiKey: "TU_API_KEY",
-      authDomain: "TU_PROYECTO.firebaseapp.com",
-      projectId: "TU_PROYECTO",
-      storageBucket: "TU_PROYECTO.appspot.com",
-      messagingSenderId: "XXXXXXXXXX",
-      appId: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-    };
+  <div class="table-actions">
+    <button class="btn" id="volverBtn">↩️ Volver</button>
+    <button class="btn" id="exportBtn" disabled>📥 Exportar a Excel</button>
+    <button class="btn pdf" id="exportPdfBtn" disabled>📄 Exportar a PDF</button>
+  </div>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
+  <div id="tableContainer">
+    <div class="loading">Cargando datos...</div>
+  </div>
 
-    let currentUserRole = null;
-    let currentUserEstados = [];
+  <div id="pagination" class="pagination"></div>
+</div>
 
-    function loadUserData() {
-      const user = auth.currentUser;
-      if (!user) {
-        window.location.href = '../../index.html';
-        return;
-      }
+<script>
+// Inicializar jsPDF
+const { jsPDF } = window.jspdf;
+const SUPABASE_URL = 'https://xvqcgdbdwrocfcdfqpxv.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cWNnZGJkd3JvY2ZjZGZxcHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMjk4MjAsImV4cCI6MjA4MDYwNTgyMH0.Xjh4Dvq9A9lQKVPUv95i0MKikspYLPoNLm_6qFgYxmw';
+const client = supabase.createClient(SUPABASE_URL, ANON_KEY);
 
-      db.collection('usuarios').doc(user.email).get().then((doc) => {
-        if (!doc.exists) {
-          alert('Usuario no autorizado.');
-          auth.signOut().then(() => window.location.href = '../../login.html');
-          return;
-        }
+let userRole = '';
+let userEstados = [];
+let fullData = [];
+let currentPage = 1;
+const itemsPerPage = 30;
 
-        const perfil = doc.data();
-        currentUserRole = perfil.rol || 'consultor';
-        currentUserEstados = Array.isArray(perfil.estados_asignados) ? perfil.estados_asignados : [];
+function fillUniqueOptions(field, selectorId, data) {
+  const values = [...new Set(data.map(item => item[field]).filter(v => v))];
+  const select = document.getElementById(selectorId);
+  select.innerHTML = '<option value="">Todos</option>';
+  values.sort().forEach(val => {
+    const opt = document.createElement('option');
+    opt.value = val;
+    opt.textContent = val;
+    select.appendChild(opt);
+  });
+}
 
-        // Actualizar UI del usuario
-        document.getElementById('userEmail').textContent = user.email || '—';
-        document.getElementById('userRol').textContent =
-          currentUserRole === 'admin' ? 'Administrador' :
-          currentUserRole === 'moderador' ? 'Moderador' : 'Consultor';
-        document.getElementById('userEstados').textContent =
-          currentUserRole === 'admin' ? 'Todos los estados' : (currentUserEstados.length ? currentUserEstados.join(', ') : '—');
+function getFilteredData() {
+  let filtered = [...fullData];
+  const sexoFilter = document.getElementById('filtroSexo').value;
+  const estatusFilter = document.getElementById('filtroEstatus').value;
+  const regionFilter = document.getElementById('filtroRegion').value;
+  const estadoFilter = document.getElementById('filtroEstado').value;
+  if (sexoFilter) filtered = filtered.filter(r => (r.sexo || '').toLowerCase() === sexoFilter.toLowerCase());
+  if (estatusFilter) filtered = filtered.filter(r => r.estatus === estatusFilter);
+  if (regionFilter) filtered = filtered.filter(r => r.region === regionFilter);
+  if (estadoFilter) filtered = filtered.filter(r => r.estado === estadoFilter);
+  return filtered;
+}
 
-        loadPersonnelData();
-      }).catch(err => {
-        console.error("Error al cargar datos del usuario:", err);
-        alert("Error al cargar tu perfil. Intenta nuevamente.");
-        auth.signOut().then(() => window.location.href = '../../login.html');
-      });
+function applyFilters() {
+  const filtered = getFilteredData();
+  currentPage = 1;
+  renderTableWithPagination(filtered);
+}
+
+function renderTableWithPagination(rows) {
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  const paginatedRows = rows.slice(start, end);
+  if (!rows.length) {
+    document.getElementById('tableContainer').innerHTML = '<div class="loading">No hay personal disponible.</div>';
+    document.getElementById('exportBtn').disabled = true;
+    document.getElementById('exportPdfBtn').disabled = true;
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
+  const headers = [
+    'RANGO', 'NOMBRE Y APELLIDOS', 'C.I', 'SEXO', 'REGION', 'ESTADO',
+    'DIRECCION', 'CARGO', 'ESTATUS'
+  ];
+  let html = '<table><thead><tr>';
+  headers.forEach(h => html += `<th>${h}</th>`);
+  html += '</tr></thead><tbody>';
+  paginatedRows.forEach(row => {
+    html += `<tr>
+      <td>${row.rango || ''}</td>
+      <td>${row.nombre_apellidos || ''}</td>
+      <td>${row.cedula || ''}</td>
+      <td>${row.sexo || ''}</td>
+      <td>${row.region || ''}</td>
+      <td>${row.estado || ''}</td>
+      <td>${row.direccion || ''}</td>
+      <td>${row.cargo || ''}</td>
+      <td>${row.estatus || ''}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('tableContainer').innerHTML = html;
+  document.getElementById('exportBtn').disabled = false;
+  document.getElementById('exportPdfBtn').disabled = false;
+  renderPagination(rows.length);
+}
+
+function renderPagination(totalItems) {
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const paginationEl = document.getElementById('pagination');
+  if (totalPages <= 1) {
+    paginationEl.innerHTML = '';
+    return;
+  }
+  let html = '';
+  const maxVisible = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+  if (endPage - startPage + 1 < maxVisible) {
+    startPage = Math.max(1, endPage - maxVisible + 1);
+  }
+  if (currentPage > 1) {
+    html += `<button onclick="changePage(${currentPage - 1})">‹</button>`;
+  }
+  for (let i = startPage; i <= endPage; i++) {
+    html += `<button class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+  }
+  if (currentPage < totalPages) {
+    html += `<button onclick="changePage(${currentPage + 1})">›</button>`;
+  }
+  paginationEl.innerHTML = html;
+}
+
+function changePage(page) {
+  currentPage = page;
+  const filtered = getFilteredData();
+  renderTableWithPagination(filtered);
+}
+
+function exportToExcel() {
+  const filteredData = getFilteredData();
+  if (filteredData.length === 0) return;
+  const worksheetData = filteredData.map(row => ({
+    'RANGO': row.rango || '',
+    'NOMBRE Y APELLIDOS': row.nombre_apellidos || '',
+    'C.I': row.cedula || '',
+    'SEXO': row.sexo || '',
+    'REGION': row.region || '',
+    'ESTADO': row.estado || '',
+    'DIRECCION': row.direccion || '',
+    'CARGO': row.cargo || '',
+    'ESTATUS': row.estatus || ''
+  }));
+  const ws = XLSX.utils.json_to_sheet(worksheetData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Relación por Estado");
+  XLSX.writeFile(wb, `relacion_personal_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+function exportToPDF() {
+  const filteredData = getFilteredData();
+  if (filteredData.length === 0) return;
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: 'a4'
+  });
+  const title = 'Relación de Personal por Estado';
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text(title, doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-ES')}`, 14, 25);
+  doc.text(`Total de registros: ${filteredData.length}`, doc.internal.pageSize.getWidth() - 14, 25, { align: 'right' });
+  const headers = [['RANGO', 'NOMBRE Y APELLIDOS', 'C.I', 'SEXO', 'REGION', 'ESTADO', 'DIRECCION', 'CARGO', 'ESTATUS']];
+  const data = filteredData.map(row => [
+    row.rango || '', row.nombre_apellidos || '', row.cedula || '', row.sexo || '',
+    row.region || '', row.estado || '', row.direccion || '', row.cargo || '', row.estatus || ''
+  ]);
+  doc.autoTable({
+    head: headers,
+    body: data,
+    startY: 35,
+    theme: 'grid',
+    styles: { font: 'helvetica', fontSize: 7, cellPadding: 2 },
+    headStyles: { fillColor: [114, 47, 55], textColor: 255, fontSize: 8, halign: 'center' },
+    columnStyles: {
+      0: { cellWidth: 20 }, 1: { cellWidth: 40 }, 2: { cellWidth: 20 }, 3: { cellWidth: 15 },
+      4: { cellWidth: 20 }, 5: { cellWidth: 20 }, 6: { cellWidth: 35 }, 7: { cellWidth: 25 }, 8: { cellWidth: 25 }
+    },
+    didDrawPage: function (data) {
+      const str = "Página " + doc.internal.getNumberOfPages();
+      doc.setFontSize(8);
+      doc.text(str, data.settings.margin.left, doc.internal.pageSize.height - 10);
     }
+  });
+  doc.save(`relacion_personal_${new Date().toISOString().slice(0,10)}.pdf`);
+}
 
-    function loadPersonnelData() {
-      const queryRef = db.collection('rrhh-icap');
+async function loadUserData() {
+  const { data: { session } } = await client.auth.getSession();
+  if (!session) return window.location.href = '../../index.html'; // ← redirige a index.html (no login.html)
 
-      let finalQuery = queryRef;
+  const { data: perfil } = await client
+    .from('perfiles')
+    .select('email, rol, estados_asignados')
+    .eq('id', session.user.id)
+    .single();
 
-      if (currentUserRole !== 'admin') {
-        if (currentUserEstados.length === 0) {
-          document.getElementById('personnelList').innerHTML = '<p>No tienes estados asignados. Contacta al administrador.</p>';
-          return;
-        }
-        finalQuery = queryRef.where('ESTADO', 'in', currentUserEstados);
-      }
+  if (!perfil) return window.location.href = '../../index.html';
 
-      finalQuery.get().then(snapshot => {
-        if (snapshot.empty) {
-          document.getElementById('personnelList').innerHTML = '<p>No hay personal disponible en tu estado o en la base de datos.</p>';
-          document.getElementById('exportBtn').style.display = 'none';
-          return;
-        }
+  userRole = perfil.rol || 'consultor';
+  userEstados = perfil.estados_asignados || [];
 
-        let html = `
-          <table id="personnelTable">
-            <thead>
-              <tr>
-                <th>C.I</th>
-                <th>Nombres y Apellidos</th>
-                <th>Rango</th>
-                <th>Estado</th>
-                <th>Estatus</th>
-                <th>Fecha de Ingreso</th>
-              </tr>
-            </thead>
-            <tbody>
-        `;
+  // ✅ Actualizar UI completa del usuario
+  document.getElementById('userEmail').textContent = perfil.email || '—';
+  document.getElementById('userRol').textContent =
+    userRole === 'admin' ? 'Administrador' :
+    userRole === 'moderador' ? 'Moderador' : 'Consultor';
+  document.getElementById('userEstados').textContent =
+    userRole === 'admin' ? 'Todos los estados' : (userEstados.length ? userEstados.join(', ') : '—');
 
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          html += `
-            <tr>
-              <td>${data.CÉDULA || '—'}</td>
-              <td>${data['NOMBRE Y APELLIDOS'] || '—'}</td>
-              <td>${data.RANGO || '—'}</td>
-              <td>${data.ESTADO || '—'}</td>
-              <td>${data.ESTATUS || '—'}</td>
-              <td>${data['FECHA DE INGRESO AL CPNB'] || '—'}</td>
-            </tr>
-          `;
-        });
+  fetchPersonalData();
+}
 
-        html += `
-            </tbody>
-          </table>
-        `;
-
-        document.getElementById('personnelList').innerHTML = html;
-        document.getElementById('exportBtn').style.display = 'inline-block';
-      }).catch(err => {
-        console.error("Error al cargar personal:", err);
-        document.getElementById('personnelList').innerHTML = '<p>Error al cargar los datos. Inténtalo más tarde.</p>';
-      });
+async function fetchPersonalData() {
+  let query = client.from('rrhh_icap').select('*');
+  if (userRole !== 'admin') {
+    if (!userEstados.length) {
+      document.getElementById('tableContainer').innerHTML = '<div class="loading">No tiene estados asignados.</div>';
+      return;
     }
+    query = query.in('estado', userEstados);
+  }
+  const { data, error } = await query.order('nombre_apellidos', { ascending: true });
+  if (error) {
+    console.error('Error:', error);
+    document.getElementById('tableContainer').innerHTML = '<div class="loading">Error al cargar los datos.</div>';
+    return;
+  }
+  fullData = data;
+  if (userRole === 'admin') {
+    document.getElementById('filtersSection').classList.add('active');
+    fillUniqueOptions('region', 'filtroRegion', fullData);
+    fillUniqueOptions('estado', 'filtroEstado', fullData);
+  }
+  ['filtroSexo', 'filtroRegion', 'filtroEstado', 'filtroEstatus'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', applyFilters);
+  });
+  applyFilters();
+}
 
-    document.getElementById('exportBtn').addEventListener('click', () => {
-      const table = document.getElementById('personnelTable');
-      const wb = XLSX.utils.table_to_book(table, { sheet: "Personal" });
-      XLSX.writeFile(wb, `relacion_personal_${new Date().toISOString().slice(0,10)}.xlsx`);
-    });
+document.getElementById('exportBtn').addEventListener('click', exportToExcel);
+document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
+document.getElementById('volverBtn').addEventListener('click', () => {
+  window.location.href = '../index.html'; // ← ajustado a ruta relativa correcta
+});
 
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        loadUserData();
-      } else {
-        window.location.href = '../../login.html';
-      }
-    });
-  </script>
+loadUserData();
+</script>
 </body>
 </html>
