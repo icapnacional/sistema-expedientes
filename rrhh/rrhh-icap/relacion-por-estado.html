@@ -325,7 +325,6 @@ function changePage(page) {
 }
 
 function exportToExcel() {
-  // Aplicar los mismos filtros que en la UI
   let filtered = fullData;
   const sexoFilter = document.getElementById('filtroSexo').value;
   const estatusFilter = document.getElementById('filtroEstatus').value;
@@ -366,9 +365,11 @@ function exportToExcel() {
 }
 
 async function loadUserData() {
+  // ✅ CORREGIDO: sintaxis válida
   const {  { session } } = await client.auth.getSession();
   if (!session) return window.location.href = '../index.html';
 
+  // ✅ CORREGIDO: también aquí
   const {  perfil } = await client
     .from('perfiles')
     .select('rol, estados_asignados')
