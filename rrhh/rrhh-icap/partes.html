@@ -243,7 +243,7 @@
     }
 
     async function fetchDataAndRenderCharts() {
-      let query = client.from('rrhh_icap').select('sexo, estatus, estado, region, fecha_ingreso');
+      let query = client.from('rrhh_icap').select('sexo, estatus, estado, region');
       
       if (userRole !== 'admin' && userEstados.length > 0) {
         query = query.in('estado', userEstados);
@@ -263,24 +263,8 @@
       const femenino = data.filter(r => (r.sexo || '').toLowerCase() === 'femenino').length;
       const estadosUnicos = [...new Set(data.map(r => r.estado).filter(Boolean))].length;
 
-      // Antigüedad promedio
-      let antiguedadPromedio = 0;
-      const hoy = new Date();
-      const fechasValidas = data
-        .map(r => r.fecha_ingreso)
-        .filter(f => f)
-        .map(f => new Date(f))
-        .filter(d => !isNaN(d.getTime()));
-      
-      if (fechasValidas.length > 0) {
-        const totalAnios = fechasValidas.reduce((sum, fecha) => {
-          return sum + (hoy.getFullYear() - fecha.getFullYear());
-        }, 0);
-        antiguedadPromedio = (totalAnios / fechasValidas.length).toFixed(1);
-      }
-
-      // Renderizar tarjetas
-      let statsHtml = `
+      // Renderizar tarjetas (sin antigüedad)
+      const statsHtml = `
         <div class="stats-card"><div class="label">Total Personal</div><div class="value">${total}</div></div>
         <div class="stats-card"><div class="label">Disponible</div><div class="value">${activos}</div></div>
         <div class="stats-card"><div class="label">Reposo Médico</div><div class="value">${reposos}</div></div>
@@ -288,11 +272,6 @@
         <div class="stats-card"><div class="label">Femenino</div><div class="value">${femenino}</div></div>
         <div class="stats-card"><div class="label">Estados</div><div class="value">${estadosUnicos}</div></div>
       `;
-      
-      if (antiguedadPromedio > 0) {
-        statsHtml += `<div class="stats-card"><div class="label">Antigüedad Prom.</div><div class="value">${antiguedadPromedio} años</div></div>`;
-      }
-
       document.getElementById('stats-cards').innerHTML = statsHtml;
 
       // Gráficos
@@ -310,7 +289,6 @@
     }
 
     document.getElementById('volverBtn').addEventListener('click', () => {
-      // Redirección específica según tu solicitud
       window.location.href = 'sistema-expedientes/rrhh/auditoria-nacional';
     });
 
