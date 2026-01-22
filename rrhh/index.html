@@ -80,14 +80,17 @@
         .tab-btn {
             background: #f8f9fa;
             border: none;
-            border-radius: 12px 12px 0 0;
-            padding: 12px 24px;
-            font-size: 15px;
-            font-weight: 600;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 500;
             color: #555;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .tab-btn:hover {
@@ -114,21 +117,6 @@
             min-height: 400px;
             position: relative;
             padding: 24px;
-        }
-        
-        /* CORRECCIÓN: Alinear contenido de "Cambio de Servicios" arriba a la izquierda */
-        #cambio-servicios {
-            min-height: auto !important;
-            padding: 0 !important;
-        }
-        
-        #cambio-servicios .module-grid {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 24px;
-            box-sizing: border-box;
         }
         
         .tab-content {
@@ -258,11 +246,21 @@
             color: #888;
         }
         
+        /* Diseño de pestañas en dos filas como en el video */
+        .tab-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        /* Estilos específicos para el módulo de Cambio de Servicios */
+        #cambio-servicios {
+            min-height: auto !important;
+            padding: 0 !important;
+        }
+        
         @media (max-width: 768px) {
-            .tabs-header {
-                flex-direction: column;
-            }
-            
             .tab-btn {
                 width: 100%;
                 margin-bottom: 8px;
@@ -294,18 +292,22 @@
             <span id="userRol"></span>
         </div>
         
-        <!-- Pestañas principales -->
+        <!-- Pestañas principales organizadas en dos filas como en el video -->
         <div class="tabs-container">
             <div class="tabs-header">
-                <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
-                <button class="tab-btn" data-tab="auditoria">📋 Auditoría Nacional</button>
-                <button class="tab-btn" data-tab="rrhh-icap">👥 RRHH ICAP</button>
-                <button class="tab-btn" data-tab="pie-fuerza">👥 Pie de Fuerza</button>
-                <button class="tab-btn" data-tab="orden-servicio">📄 Orden de Servicio</button>
-                <button class="tab-btn" data-tab="reposo">🛏️ Reposo</button>
-                <button class="tab-btn" data-tab="vacaciones">🌴 Vacaciones</button>
-                <button class="tab-btn" data-tab="cambio-servicios">🔄 Cambio de Servicios</button>
-                <button class="tab-btn" data-tab="documentos">📁 Documentos</button>
+                <div class="tab-row">
+                    <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+                    <button class="tab-btn" data-tab="auditoria">📋 Auditoría Nacional</button>
+                    <button class="tab-btn" data-tab="rrhh-icap">👥 RRHH ICAP</button>
+                    <button class="tab-btn" data-tab="pie-fuerza">👥 Pie de Fuerza</button>
+                    <button class="tab-btn" data-tab="orden-servicio">📄 Orden de Servicio</button>
+                    <button class="tab-btn" data-tab="reposo">🛏️ Reposo</button>
+                </div>
+                <div class="tab-row">
+                    <button class="tab-btn" data-tab="vacaciones">🌴 Vacaciones</button>
+                    <button class="tab-btn" data-tab="cambio-servicios">🔄 Cambio de Servicios</button>
+                    <button class="tab-btn" data-tab="documentos">📁 Documentos</button>
+                </div>
             </div>
             
             <!-- Contenido de las pestañas -->
