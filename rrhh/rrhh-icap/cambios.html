@@ -480,47 +480,59 @@
                 }, 3000);
             }
             
-            // Función para buscar funcionarios
-            async function buscarFuncionarios(query) {
-                if (!query.trim()) {
-                    showNotification('⚠️ Por favor ingrese un término de búsqueda', 'error');
-                    return;
-                }
-                
-                try {
-                    let queryBuilder = client
-                        .from('auditoria_personal')
-                        .select('*')
-                        .ilike('nombre_completo', `%${query}%`);
-                    
-                    // Si tiene estados asignados, filtrar por ellos
-                    if (perfil.estados_asignados && perfil.estados_asignados.length > 0) {
-                        queryBuilder = queryBuilder.in('estado', perfil.estados_asignados);
-                    }
-                    
-                    const { data, error } = await queryBuilder;
-                    
-                    if (error) throw error;
-                    
-                    if (!data || data.length === 0) {
-                        resultsGrid.innerHTML = `
-                            <div class="no-results">
-                                <p>🔍 No se encontraron resultados para "${query}"</p>
-                                <p>Intente con otro término de búsqueda</p>
-                            </div>
-                        `;
-                        return;
-                    }
-                    
-                    // Mostrar resultados
-                    renderResults(data);
-                    
-                } catch (error) {
-                    console.error('Error al buscar funcionarios:', error);
-                    showNotification('❌ Error al buscar funcionarios', 'error');
-                }
-            }
+       async function buscarFuncionarios(query) {
+    if (!query.trim()) {
+        showNotification('⚠️ Por favor ingrese un término de búsqueda', 'error');
+        return;
+    }
+    
+    try {
+        // Primero verifica si la tabla existe consultando una sola columna
+        let queryBuilder = client
+            .from('auditoria_personal') // O el nombre correcto de tu tabla
+            .select('id, nombre_completo, cedula, cargo, estado, servicio, unidad')
+            .ilike('nombre_completo', `%${query}%`);
+        
+        // Si tienes estados asignados, filtra por ellos
+        if (perfil.estados_asignados && perfil.estados_asignados.length > 0) {
+            queryBuilder = queryBuilder.in('estado', perfil.estados_asignados);
+        }
+        
+        const { data, error } = await queryBuilder;
+        
+        if (error) {
+            console.error('Error de Supabase:', error);
+            // Intento alternativo con otra tabla
+            const { data: altData, error: altError } = await client
+                .from('personal') // Nombre alternativo común
+                .select('id, nombre_completo, cedula, cargo, estado, servicio, unidad')
+                .ilike('nombre_completo', `%${query}%`);
             
+            if (altError) {
+                console.error('Error con tabla alternativa:', altError);
+                throw new Error('No se pudo conectar con ninguna tabla de personal');
+            }
+            renderResults(altData);
+            return;
+        }
+        
+        if (!data || data.length === 0) {
+            resultsGrid.innerHTML = `
+                <div class="no-results">
+                    <p>🔍 No se encontraron resultados para "${query}"</p>
+                    <p>Intente con otro término de búsqueda</p>
+                </div>
+            `;
+            return;
+        }
+        
+        renderResults(data);
+        
+    } catch (error) {
+        console.error('Error al buscar funcionarios:', error);
+        showNotification(`❌ Error: ${error.message || 'No se pudo conectar con la base de datos'}`, 'error');
+    }
+}
             // Función para renderizar resultados
             function renderResults(funcionarios) {
                 if (funcionarios.length === 0) {
