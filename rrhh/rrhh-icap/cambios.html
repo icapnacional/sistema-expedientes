@@ -480,18 +480,20 @@
                 }, 3000);
             }
             
-       async function buscarFuncionarios(query) {
+async function buscarFuncionarios(query) {
     if (!query.trim()) {
         showNotification('⚠️ Por favor ingrese un término de búsqueda', 'error');
         return;
     }
     
     try {
-        // Primero verifica si la tabla existe consultando una sola columna
+        // Usa los nombres de columnas reales de tu tabla
         let queryBuilder = client
-            .from('auditoria_personal') // O el nombre correcto de tu tabla
-            .select('id, nombre_completo, cedula, cargo, estado, servicio, unidad')
-            .ilike('nombre_completo', `%${query}%`);
+            .from('auditoria_personal')
+            // Reemplaza estos campos con los nombres reales de tus columnas
+            .select('id, nombres, apellidos, cedula_identidad AS cedula, cargo, estado, servicio, unidad')
+            // Busca en los campos correctos - probablemente necesitas buscar en múltiples campos
+            .or(`cedula_identidad.ilike.%${query}%,nombres.ilike.%${query}%,apellidos.ilike.%${query}%`);
         
         // Si tienes estados asignados, filtra por ellos
         if (perfil.estados_asignados && perfil.estados_asignados.length > 0) {
@@ -502,18 +504,7 @@
         
         if (error) {
             console.error('Error de Supabase:', error);
-            // Intento alternativo con otra tabla
-            const { data: altData, error: altError } = await client
-                .from('personal') // Nombre alternativo común
-                .select('id, nombre_completo, cedula, cargo, estado, servicio, unidad')
-                .ilike('nombre_completo', `%${query}%`);
-            
-            if (altError) {
-                console.error('Error con tabla alternativa:', altError);
-                throw new Error('No se pudo conectar con ninguna tabla de personal');
-            }
-            renderResults(altData);
-            return;
+            throw error;
         }
         
         if (!data || data.length === 0) {
@@ -526,41 +517,47 @@
             return;
         }
         
-        renderResults(data);
+        // Formatear los datos para mostrar nombre completo
+        const funcionarios = data.map(func => ({
+            ...func,
+            nombre_completo: `${func.nombres || ''} ${func.apellidos || ''}`.trim()
+        }));
+        
+        renderResults(funcionarios);
         
     } catch (error) {
         console.error('Error al buscar funcionarios:', error);
         showNotification(`❌ Error: ${error.message || 'No se pudo conectar con la base de datos'}`, 'error');
     }
+}         function renderResults(funcionarios) {
+    if (funcionarios.length === 0) {
+        resultsGrid.innerHTML = `
+            <div class="no-results">
+                <p>🔍 No se encontraron funcionarios</p>
+                <p>Intente con otro término de búsqueda</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    funcionarios.forEach(func => {
+        html += `
+            <div class="funcionario-card" data-id="${func.id}" data-servicio="${func.servicio}">
+                <div class="funcionario-name">${func.nombre_completo}</div>
+                <div class="funcionario-info">
+                    <span><strong>Cédula:</strong> ${func.cedula || '—'}</span>
+                    <span><strong>Cargo:</strong> ${func.cargo || '—'}</span>
+                    <span><strong>Estado:</strong> ${func.estado || '—'}</span>
+                    <span><strong>Servicio:</strong> ${func.servicio || '—'}</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    resultsGrid.innerHTML = html;
+    
 }
-            // Función para renderizar resultados
-            function renderResults(funcionarios) {
-                if (funcionarios.length === 0) {
-                    resultsGrid.innerHTML = `
-                        <div class="no-results">
-                            <p>🔍 No se encontraron funcionarios</p>
-                            <p>Intente con otro término de búsqueda</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                let html = '';
-                funcionarios.forEach(func => {
-                    html += `
-                        <div class="funcionario-card" data-id="${func.id}" data-servicio="${func.servicio}">
-                            <div class="funcionario-name">${func.nombre_completo}</div>
-                            <div class="funcionario-info">
-                                <span><strong>Cédula:</strong> ${func.cedula || '—'}</span>
-                                <span><strong>Cargo:</strong> ${func.cargo || '—'}</span>
-                                <span><strong>Estado:</strong> ${func.estado || '—'}</span>
-                                <span><strong>Servicio:</strong> ${func.servicio || '—'}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                resultsGrid.innerHTML = html;
                 
                 // Agregar eventos de clic a las tarjetas
                 document.querySelectorAll('.funcionario-card').forEach(card => {
