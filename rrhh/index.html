@@ -234,6 +234,7 @@ font-weight: 600;
 <button class="tab-btn" data-tab="reposo">🛏️ Reposo</button>
 <button class="tab-btn" data-tab="vacaciones">🌴 Vacaciones</button>
 <button class="tab-btn" data-tab="cambio-servicios">🔄 Cambio de Servicios</button>
+<button class="tab-btn" data-tab="fichas">📄 Fichas</button>
 <button class="tab-btn" data-tab="documentos">📁 Documentos</button>
 </div>
 <div class="tabs-content">
@@ -385,6 +386,7 @@ Seleccione una pestaña superior para comenzar:
 </div>
 </div>
 </div>
+  
 <!-- 🔹 DOCUMENTOS -->
 <div id="documentos" class="tab-content">
 <h2>📁 Documentos</h2>
@@ -399,6 +401,28 @@ Seleccione una pestaña superior para comenzar:
 </div>
 </div>
 </div>
+</div>
+  <!-- 🔹 FICHAS -->
+<div id="fichas" class="tab-content">
+  <h2>📄 Fichas</h2>
+  <p>Gestión de fichas del personal operativo.</p>
+  <div class="module-grid">
+    <div class="module-card" id="btnFichasCrear">
+      <div class="module-icon">➕</div>
+      <div class="module-title">Crear Ficha</div>
+      <div class="module-desc">Registrar una nueva ficha de personal.</div>
+    </div>
+    <div class="module-card" id="btnFichasBuscar">
+      <div class="module-icon">🔍</div>
+      <div class="module-title">Buscar Fichas</div>
+      <div class="module-desc">Consultar fichas existentes por cédula.</div>
+    </div>
+    <div class="module-card" id="btnFichasModificar">
+      <div class="module-icon">✏️</div>
+      <div class="module-title">Modificar Fichas</div>
+      <div class="module-desc">Editar datos de una ficha registrada.</div>
+    </div>
+  </div>
 </div>
 <div class="actions-bar">
 <button class="btn btn-outline" onclick="location.href='../index.html'">← Volver</button>
@@ -449,6 +473,11 @@ const auditoriaButtons = [
 const rrhhIcapButtons = [
 'btnRrhhHistorial'
 ];
+  // Botones de Fichas
+const fichasButtons = [
+  'btnFichasModificar'
+];
+initRolePermissions(userRol, fichasButtons);
 // Aplicar permisos a ambos conjuntos
 initRolePermissions(userRol, auditoriaButtons);
 initRolePermissions(userRol, rrhhIcapButtons);
@@ -473,6 +502,9 @@ const mappings = {
 'btnRrhhConsulta': 'rrhh-icap/consulta.html',
 'btnRrhhRelacionEstado': 'rrhh-icap/relacion-por-estado.html',
 'btnRrhhPartes': 'rrhh-icap/partes.html',
+  'btnFichasCrear': 'fichas/crear.html',
+'btnFichasBuscar': 'fichas/buscar.html',
+'btnFichasModificar': 'fichas/modificar.html'
 'btnRrhhHistorial': 'rrhh-icap/historial-logs.html'
 };
 Object.entries(mappings).forEach(([id, href]) => {
