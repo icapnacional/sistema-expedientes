@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nueva Orden de Servicio | ICAP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      color: #2d2d2d;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      padding: 30px;
+      border: 1px solid #eee;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header h1 {
+      font-size: 24px;
+      color: #722F37;
+      margin-bottom: 8px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #444;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    .btn-primary {
+      background-color: #722F37;
+      color: white;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #722F37;
+      color: #722F37;
+    }
+    .btn:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📄 Nueva Orden de Servicio</h1>
+      <p>Complete los datos requeridos para generar una orden oficial.</p>
+    </div>
+
+    <form id="ordenForm">
+      <div class="form-group">
+        <label for="cedula">Cédula del Funcionario</label>
+        <input type="text" id="cedula" placeholder="Ej: V-12345678" required>
+      </div>
+
+      <div class="form-group">
+        <label for="nombre">Nombre y Apellidos</label>
+        <input type="text" id="nombre" placeholder="Nombre completo" required>
+      </div>
+
+      <div class="form-group">
+        <label for="motivo">Motivo de la Orden</label>
+        <textarea id="motivo" rows="4" placeholder="Describa el motivo o fundamento..." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="tipo">Tipo de Orden</label>
+        <select id="tipo" required>
+          <option value="">-- Seleccione --</option>
+          <option value="investigacion">Investigación Disciplinaria</option>
+          <option value="seguimiento">Seguimiento Operativo</option>
+          <option value="auditoria">Auditoría Interna</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+
+      <div class="btn-group">
+        <button type="submit" class="btn btn-primary">✅ Generar Orden</button>
+        <button type="button" class="btn btn-outline" onclick="window.history.back()">← Volver</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('ordenForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      alert('✅ ¡Orden de servicio generada exitosamente!\n(Esta funcionalidad se integrará con Supabase)');
+      // Aquí iría la lógica de guardado en Supabase
+    });
+  </script>
+</body>
+</html>
