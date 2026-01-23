@@ -3,115 +3,149 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cambiar Personal | Cambio de Servicios</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Cambiar Personal - ICAP</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Inter', sans-serif;
-      background: #fafafa;
-      color: #2d2d2d;
+      font-family: Arial, sans-serif;
       padding: 20px;
-    }
-    .breadcrumb {
-      background: #f8f9fa;
-      border-radius: 12px;
-      padding: 12px 20px;
-      margin-bottom: 24px;
-      font-size: 14px;
-      color: #555;
-    }
-    .breadcrumb a { color: #722F37; text-decoration: none; font-weight: 600; }
-    .breadcrumb span { margin: 0 8px; color: #888; }
-    .header {
-      text-align: center;
-      margin-bottom: 24px;
-      padding: 20px 0;
-    }
-    .header img {
-      width: 90px;
-      margin-bottom: 16px;
-    }
-    .header h1 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #2d2d2d;
-      margin-bottom: 8px;
-    }
-    .header .subtitle {
-      font-size: 16px;
-      color: #722F37;
-      font-weight: 600;
+      background-color: #f5f5f5;
     }
     .container {
-      max-width: 1000px;
+      max-width: 800px;
       margin: 0 auto;
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      padding: 24px;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-    .btn.volver {
-      background-color: #1976d2; /* Azul como solicitaste */
-      color: white;
+    h2 {
+      color: #722F37;
+      text-align: center;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 16px;
+      margin: 5px;
       border: none;
-      padding: 8px 14px;
-      border-radius: 6px;
+      border-radius: 4px;
       cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      margin-bottom: 20px;
     }
-    .btn.volver:hover {
-      background-color: #1565c0;
+    #volverBtn {
+      background-color: #1976D2; /* Azul como el botón 'buscar' */
+      color: white;
+      float: left;
     }
-    .content {
+    #buscarBtn {
+      background-color: #1976D2;
+      color: white;
+    }
+    #asignarIcapBtn {
+      background-color: #2E7D32; /* Verde oscuro */
+      color: white;
+    }
+    #resultado {
       margin-top: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-left: 4px solid #1976D2;
+      display: none;
     }
+    .error { color: red; }
+    .success { color: green; }
   </style>
 </head>
 <body>
-  <!-- Breadcrumb -->
-  <div class="breadcrumb">
-    <a href="../index.html">Inicio</a> <span>›</span>
-    <a href="index.html">Cambio de Servicios</a> <span>›</span>
-    <strong>Cambiar Personal</strong>
-  </div>
-
-  <!-- Encabezado principal -->
-  <div class="header">
-    <img src="https://raw.githubusercontent.com/icapnacional/sistema-expedientes/main/Logo.png" alt="ICAP Nacional - PNB" />
-    <h1>Inspectoria para el Control de la Actuación Policial</h1>
-    <div class="subtitle">• Gestión de Cambios de Personal •</div>
-  </div>
-
   <div class="container">
-    <h1 style="text-align: center; color: #722F37; margin-bottom: 16px;">🔄 Cambiar Personal</h1>
-    
-    <button class="btn volver" id="volverBtn">↩️ Volver</button>
+    <h2>Cambiar Personal a ICAP</h2>
 
-    <div class="content">
-      <!-- Aquí irá tu formulario o lógica de cambio de personal -->
-      <p style="text-align: center; color: #555;">
-        En desarrollo: interfaz para gestionar cambios de personal en el sistema ICAP.
-      </p>
-      <!-- Ejemplo de placeholder para búsqueda por cédula -->
-      <!--
-      <div style="margin-top: 20px;">
-        <label for="cedula">Cédula del funcionario:</label>
-        <input type="text" id="cedula" placeholder="Ingrese cédula" style="padding: 8px; width: 100%; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-        <button style="margin-top: 10px; padding: 8px 16px; background: #722F37; color: white; border: none; border-radius: 4px;">Buscar</button>
-      </div>
-      -->
+    <button id="volverBtn">Volver</button>
+
+    <div style="clear: both; margin-top: 20px;">
+      <label for="cedula"><strong>Cédula del funcionario:</strong></label>
+      <input type="text" id="cedula" placeholder="Ingrese número de cédula" />
+      <button id="buscarBtn">Buscar</button>
     </div>
+
+    <div id="resultado"></div>
   </div>
 
   <script>
+    // 🔑 Configuración de Supabase
+    const supabaseUrl = 'https://TU_PROJECT_REF.supabase.co';
+    const supabaseAnonKey = 'TU_ANON_KEY'; // ⚠️ Si usas RLS, asegúrate de que el usuario esté autenticado o usa un servicio seguro
+    const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+    // Botón "Volver"
     document.getElementById('volverBtn').addEventListener('click', () => {
       window.location.href = '../index.html';
+    });
+
+    // Botón "Buscar"
+    document.getElementById('buscarBtn').addEventListener('click', async () => {
+      const cedula = document.getElementById('cedula').value.trim();
+      const resultadoDiv = document.getElementById('resultado');
+
+      if (!cedula) {
+        resultadoDiv.innerHTML = '<p class="error">Por favor ingrese una cédula.</p>';
+        resultadoDiv.style.display = 'block';
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('auditoria_personal')
+          .select('*')
+          .eq('cedula', cedula)
+          .single(); // Solo un registro esperado
+
+        resultadoDiv.style.display = 'block';
+
+        if (error || !data) {
+          resultadoDiv.innerHTML = `<p class="error">Cédula no encontrada en la base de datos.</p>`;
+          return;
+        }
+
+        // Mostrar datos
+        const p = data;
+        resultadoDiv.innerHTML = `
+          <h3>Datos del personal:</h3>
+          <p><strong>Cédula:</strong> ${p.cedula}</p>
+          <p><strong>Nombre:</strong> ${p.apellidos_nombres || '—'}</p>
+          <p><strong>Rango:</strong> ${p.rango || '—'}</p>
+          <p><strong>Estado:</strong> ${p.estado || '—'}</p>
+          <p><strong>Servicio actual:</strong> ${p.servicio || '—'}</p>
+          <button id="asignarIcapBtn">Asignar a ICAP</button>
+        `;
+
+        // Asignar a ICAP
+        document.getElementById('asignarIcapBtn').addEventListener('click', async () => {
+          const { error: updateError } = await supabase
+            .from('auditoria_personal')
+            .update({ servicio: 'icap' })
+            .eq('cedula', cedula);
+
+          if (updateError) {
+            resultadoDiv.innerHTML += `<p class="error">Error al asignar: ${updateError.message}</p>`;
+          } else {
+            resultadoDiv.innerHTML += `<p class="success">✅ ¡Personal asignado a ICAP exitosamente!</p>`;
+            // Opcional: deshabilitar el botón
+            document.getElementById('asignarIcapBtn').disabled = true;
+          }
+        });
+
+      } catch (err) {
+        console.error(err);
+        resultadoDiv.innerHTML = `<p class="error">Error inesperado: ${err.message}</p>`;
+        resultadoDiv.style.display = 'block';
+      }
     });
   </script>
 </body>
